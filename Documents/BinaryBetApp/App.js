@@ -1,3 +1,4 @@
+import RangeRunnerScreen from './src/screens/RangeRunnerScreen';
 import LineBreakerScreen from './src/screens/LineBreakerScreen';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,6 +20,7 @@ export default function App() {
           <Stack.Screen name="MarketPlayground" component={MarketPlaygroundScreen} />
           <Stack.Screen name="TurboFlip" component={TurboFlipScreen} />
           <Stack.Screen name="LineBreaker" component={LineBreakerScreen} />
+          <Stack.Screen name="RangeRunner" component={RangeRunnerScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </BalanceProvider>
