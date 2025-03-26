@@ -14,6 +14,7 @@ export default function HomeScreen({ navigation }) {
   const [countdown, setCountdown] = useState(null);
   const [resultMessage, setResultMessage] = useState('');
 
+  // Fetch price and load balance/history from storage
   useEffect(() => {
     const fetchPrice = async () => {
       const livePrice = await getBTCPrice();
@@ -37,6 +38,7 @@ export default function HomeScreen({ navigation }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Persist balance and bet history
   useEffect(() => {
     AsyncStorage.setItem('balance', balance.toString());
   }, [balance]);
@@ -45,6 +47,7 @@ export default function HomeScreen({ navigation }) {
     AsyncStorage.setItem('bets', JSON.stringify(bets));
   }, [bets]);
 
+  // Countdown timer logic
   useEffect(() => {
     if (countdown === 0) {
       settleActiveBet();
@@ -55,6 +58,7 @@ export default function HomeScreen({ navigation }) {
     }
   }, [countdown]);
 
+  // Handle bet placement
   const handlePlaceBet = () => {
     const stakeAmount = parseFloat(stake);
     if (isNaN(stakeAmount) || stakeAmount <= 0) {
@@ -89,6 +93,7 @@ export default function HomeScreen({ navigation }) {
     setResultMessage('');
   };
 
+  // Settle the active bet
   const settleActiveBet = async () => {
     const currentPrice = await getBTCPrice();
     const bet = activeBet;
@@ -133,6 +138,7 @@ export default function HomeScreen({ navigation }) {
       <Text style={styles.title}>BTC Binary Game</Text>
       <Text style={styles.label}>BTC/USD Price: ${price}</Text>
 
+      {/* Direction Picker */}
       <View style={styles.row}>
         <TouchableOpacity
           style={[styles.choice, direction === 'yes' && styles.activeChoice]}
@@ -148,6 +154,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Duration Picker */}
       <Text style={styles.label}>Select Duration:</Text>
       <View style={styles.row}>
         {[10, 30, 60].map((d) => (
@@ -161,6 +168,7 @@ export default function HomeScreen({ navigation }) {
         ))}
       </View>
 
+      {/* Stake Input */}
       <TextInput
         style={styles.input}
         placeholder="Stake Amount ($)"
@@ -169,9 +177,14 @@ export default function HomeScreen({ navigation }) {
         onChangeText={setStake}
       />
 
+      {/* Place Bet Button */}
       <Button title="Place Bet" onPress={handlePlaceBet} disabled={!!activeBet} />
-      <Button title="Play Turbo Flip" onPress={() => navigation.navigate('TurboFlip')} />
 
+      {/* Game Mode Buttons */}
+      <Button title="Play Turbo Flip" onPress={() => navigation.navigate('TurboFlip')} />
+      <Button title="Play Range Reaper" onPress={() => navigation.navigate('RangeReaper')} />
+
+      {/* Active Bet Countdown */}
       {activeBet && (
         <View style={styles.statusBox}>
           <Text style={styles.statusText}>Betting ${activeBet.stake} on {activeBet.direction.toUpperCase()}</Text>
@@ -180,8 +193,10 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
+      {/* Bet Result Message */}
       {resultMessage !== '' && <Text style={styles.result}>{resultMessage}</Text>}
 
+      {/* Bet History */}
       <Text style={styles.subTitle}>Your Bets</Text>
       <FlatList
         data={[...bets].reverse()}

@@ -1,90 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getBTCPrice } from '../utils/getPrice';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { useBalance } from '../context/BalanceContext'; // 💰 Import balance context
 
-export default function TurboFlipScreen({ navigation }) {
-  const [price, setPrice] = useState(null);
+const TurboFlipScreen = () => {
+  const [livePrice, setLivePrice] = useState(69000); // Placeholder BTC price
   const [strikePrice, setStrikePrice] = useState(null);
-  const [direction, setDirection] = useState(null);
-  const [countdown, setCountdown] = useState(null);
+  const [finalPrice, setFinalPrice] = useState(null);
+  const [countdown, setCountdown] = useState(3);
+  const [gameState, setGameState] = useState('idle');
   const [result, setResult] = useState(null);
 
-  useEffect(() => {
-    const fetchPrice = async () => {
-      const livePrice = await getBTCPrice();
-      if (livePrice) setPrice(livePrice);
-    };
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const { balance, increaseBalance, decreaseBalance } = useBalance(); // 🔌 Get balance + actions
 
-  useEffect(() => {
-    if (countdown === 0) settleBet();
-    if (countdown && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
+  // 🎮 Start the game
+  const startFlip = () => {
+    const costToPlay = 50;
+
+    if (balance < costToPlay) {
+      Alert.alert("Not enough balance", "You need at least $50 to play.");
+      return;
     }
-  }, [countdown]);
 
-  const placeBet = (chosenDirection) => {
-    setDirection(chosenDirection);
-    setStrikePrice(price);
-    setCountdown(30);
+    // 💸 Deduct to play
+    decreaseBalance(costToPlay);
+    setStrikePrice(livePrice);
+    setCountdown(3);
+    setGameState('running');
     setResult(null);
+    setFinalPrice(null);
   };
 
-  const settleBet = async () => {
-    const finalPrice = await getBTCPrice();
-    let win = false;
-    if (direction === 'up' && finalPrice > strikePrice) win = true;
-    if (direction === 'down' && finalPrice < strikePrice) win = true;
-    setResult({ finalPrice, win });
+  // ⏱ Countdown logic
+  useEffect(() => {
+    let timer;
+    if (gameState === 'running' && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (gameState === 'running' && countdown === 0) {
+      finishFlip();
+    }
+    return () => clearTimeout(timer);
+  }, [countdown, gameState]);
+
+  // 🎲 Finish the flip with a random up/down outcome
+  const finishFlip = () => {
+    const priceChange = Math.random() < 0.5 ? -50 : 50;
+    const updatedPrice = livePrice + priceChange;
+
+    setFinalPrice(updatedPrice);
+    setGameState('result');
+
+    const didWin = updatedPrice > strikePrice;
+    setResult(didWin ? 'win' : 'lose');
+
+    // 💰 Payout
+    if (didWin) {
+      increaseBalance(90); // Win = +$90
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Turbo Flip: BTC/USD</Text>
-      <Text style={styles.label}>Live Price: ${price ?? '...'}</Text>
+      <Text style={styles.title}>Turbo Flip: BTC/USD</Text>
+      <Text style={styles.price}>Live Price: ${livePrice}</Text>
 
-      {strikePrice === null ? (
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.betButton} onPress={() => placeBet('up')}>
-            <Text style={styles.betText}>📈 Up</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.betButton} onPress={() => placeBet('down')}>
-            <Text style={styles.betText}>📉 Down</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.statusBox}>
-          <Text style={styles.info}>Strike Price: ${strikePrice}</Text>
-          <Text style={styles.info}>Countdown: {countdown}s</Text>
-        </View>
+      {gameState === 'idle' && (
+        <Button title="Play Turbo Flip ($50)" onPress={startFlip} />
       )}
 
-      {result && (
+      {gameState === 'running' && (
+        <>
+          <Text style={styles.info}>Strike Price: ${strikePrice}</Text>
+          <Text style={styles.countdown}>Countdown: {countdown}s</Text>
+        </>
+      )}
+
+      {gameState === 'result' && (
         <View style={styles.resultBox}>
-          <Text style={styles.resultText}>Final Price: ${result.finalPrice}</Text>
-          <Text style={[styles.resultText, { color: result.win ? 'green' : 'red' }]}>
-            You {result.win ? 'WIN 🎉' : 'LOSE ❌'}
+          <Text style={styles.info}>Strike Price: ${strikePrice}</Text>
+          <Text style={styles.info}>Final Price: ${finalPrice}</Text>
+          <Text
+            style={[
+              styles.resultText,
+              result === 'win' ? styles.win : styles.lose,
+            ]}
+          >
+            {result === 'win' ? 'You WIN ✅' : 'You LOSE ❌'}
           </Text>
+          <Button title="Play Again" onPress={() => setGameState('idle')} />
         </View>
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center', backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-  label: { fontSize: 18, textAlign: 'center', marginBottom: 20 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
-  betButton: { backgroundColor: '#2e86de', padding: 15, borderRadius: 10 },
-  betText: { color: '#fff', fontSize: 18 },
-  statusBox: { alignItems: 'center', marginVertical: 20 },
-  info: { fontSize: 16 },
-  resultBox: { alignItems: 'center', marginTop: 30 },
-  resultText: { fontSize: 20, fontWeight: 'bold' },
+  container: {
+    flex: 1,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  price: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  info: {
+    fontSize: 16,
+    marginVertical: 4,
+  },
+  countdown: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: 'orange',
+    marginTop: 20,
+  },
+  resultBox: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  resultText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 12,
+  },
+  win: {
+    color: 'green',
+  },
+  lose: {
+    color: 'red',
+  },
 });
+
+export default TurboFlipScreen;
 
