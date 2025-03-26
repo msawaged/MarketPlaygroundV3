@@ -1,3 +1,4 @@
+import LineBreakerScreen from './src/screens/LineBreakerScreen';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -17,6 +18,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="MarketPlayground">
           <Stack.Screen name="MarketPlayground" component={MarketPlaygroundScreen} />
           <Stack.Screen name="TurboFlip" component={TurboFlipScreen} />
+          <Stack.Screen name="LineBreaker" component={LineBreakerScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </BalanceProvider>
