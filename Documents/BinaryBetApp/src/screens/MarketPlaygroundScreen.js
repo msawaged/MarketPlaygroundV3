@@ -12,13 +12,14 @@ const markets = [
 const MarketPlaygroundScreen = ({ navigation }) => {
   const { balance } = useBalance();
 
-  // 🧭 Navigate to a chosen game
+  // 🧭 Navigate to a chosen game screen based on button click
   const handleSelectGame = (marketId, game) => {
     if (game === 'turbo') navigation.navigate('TurboFlip');
     if (game === 'linebreaker') navigation.navigate('LineBreaker');
+    if (game === 'rangerunner') navigation.navigate('RangeRunner');
   };
 
-  // 📦 Render each market with two game buttons
+  // 📦 Render each market card with three game launch buttons
   const renderMarket = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.marketName}>{item.name}</Text>
@@ -38,6 +39,14 @@ const MarketPlaygroundScreen = ({ navigation }) => {
         onPress={() => handleSelectGame(item.id, 'linebreaker')}
       >
         <Text style={styles.buttonText}>🚀 Play LineBreaker</Text>
+      </TouchableOpacity>
+
+      {/* 🎮 Range Runner Button */}
+      <TouchableOpacity
+        style={[styles.button, styles.rangeRunnerBtn]}
+        onPress={() => handleSelectGame(item.id, 'rangerunner')}
+      >
+        <Text style={styles.buttonText}>📉 Play RangeRunner</Text>
       </TouchableOpacity>
     </View>
   );
@@ -116,6 +125,9 @@ const styles = StyleSheet.create({
   },
   lineBreakerBtn: {
     backgroundColor: '#4caf50',
+  },
+  rangeRunnerBtn: {
+    backgroundColor: '#ff9800',
   },
   buttonText: {
     fontSize: 16,
