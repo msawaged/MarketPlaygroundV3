@@ -1,27 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBTCPrice } from '../utils/getPrice';
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const [price, setPrice] = useState(69000);
   const [stake, setStake] = useState('');
   const [direction, setDirection] = useState('yes');
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState([]);
+  const [duration, setDuration] = useState(10);
+  const [activeBet, setActiveBet] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  const [resultMessage, setResultMessage] = useState('');
 
-  // Fetch live price every 5 sec (optional)
   useEffect(() => {
     const fetchPrice = async () => {
       const livePrice = await getBTCPrice();
       if (livePrice) setPrice(livePrice);
     };
 
+    const loadData = async () => {
+      try {
+        const savedBalance = await AsyncStorage.getItem('balance');
+        const savedBets = await AsyncStorage.getItem('bets');
+        if (savedBalance !== null) setBalance(parseFloat(savedBalance));
+        if (savedBets !== null) setBets(JSON.parse(savedBets));
+      } catch (err) {
+        console.log('Failed to load saved data:', err);
+      }
+    };
+
     fetchPrice();
+    loadData();
     const interval = setInterval(fetchPrice, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const handlePlaceBet = async () => {
+  useEffect(() => {
+    AsyncStorage.setItem('balance', balance.toString());
+  }, [balance]);
+
+  useEffect(() => {
+    AsyncStorage.setItem('bets', JSON.stringify(bets));
+  }, [bets]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      settleActiveBet();
+    }
+    if (countdown && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handlePlaceBet = () => {
     const stakeAmount = parseFloat(stake);
     if (isNaN(stakeAmount) || stakeAmount <= 0) {
       Alert.alert('Invalid Stake', 'Enter a valid dollar amount.');
@@ -34,51 +68,52 @@ export default function HomeScreen() {
 
     const strikePrice = price;
     const createdAt = Date.now();
+    const expiresAt = createdAt + duration * 1000;
 
-    const newBet = {
+    const bet = {
       id: createdAt,
       direction,
       stake: stakeAmount,
       strikePrice,
       createdAt,
-      expiresAt: createdAt + 10000, // 10 seconds
+      expiresAt,
+      duration,
       status: 'pending',
       result: null,
     };
 
     setBalance((prev) => prev - stakeAmount);
-    setBets((prev) => [...prev, newBet]);
+    setActiveBet(bet);
+    setCountdown(duration);
     setStake('');
+    setResultMessage('');
+  };
 
-    // Schedule settlement
-    setTimeout(async () => {
-      const currentPrice = await getBTCPrice();
-      const didWin =
-        (direction === 'yes' && currentPrice > strikePrice) ||
-        (direction === 'no' && currentPrice < strikePrice);
+  const settleActiveBet = async () => {
+    const currentPrice = await getBTCPrice();
+    const bet = activeBet;
+    const didWin =
+      (bet.direction === 'yes' && currentPrice > bet.strikePrice) ||
+      (bet.direction === 'no' && currentPrice < bet.strikePrice);
 
-      const payout = didWin ? stakeAmount * 1.9 : 0;
+    const payout = didWin ? bet.stake * 1.9 : 0;
 
-      setBets((prevBets) =>
-        prevBets.map((b) =>
-          b.id === newBet.id
-            ? {
-                ...b,
-                status: 'settled',
-                result: didWin ? 'won' : 'lost',
-                resolvedPrice: currentPrice,
-              }
-            : b
-        )
-      );
+    const resolvedBet = {
+      ...bet,
+      status: 'settled',
+      result: didWin ? 'won' : 'lost',
+      resolvedPrice: currentPrice,
+    };
 
-      if (didWin) {
-        Alert.alert('You Won!', `Payout: $${payout.toFixed(2)}`);
-        setBalance((prev) => prev + payout);
-      } else {
-        Alert.alert('You Lost', 'Better luck next time.');
-      }
-    }, 10000);
+    setBets((prev) => [...prev, resolvedBet]);
+    setActiveBet(null);
+    setCountdown(null);
+    if (didWin) {
+      setBalance((prev) => prev + payout);
+      setResultMessage(`🎉 You WON! +$${payout.toFixed(2)}`);
+    } else {
+      setResultMessage(`❌ You LOST. Better luck next time.`);
+    }
   };
 
   const renderBet = ({ item }) => (
@@ -87,12 +122,8 @@ export default function HomeScreen() {
       <Text>Stake: ${item.stake}</Text>
       <Text>Direction: {item.direction.toUpperCase()}</Text>
       <Text>Strike: ${item.strikePrice}</Text>
-      {item.status === 'settled' && (
-        <>
-          <Text>Result: {item.result}</Text>
-          <Text>Resolved: ${item.resolvedPrice}</Text>
-        </>
-      )}
+      <Text>Result: {item.result?.toUpperCase()}</Text>
+      <Text>Resolved Price: ${item.resolvedPrice}</Text>
     </View>
   );
 
@@ -117,6 +148,19 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      <Text style={styles.label}>Select Duration:</Text>
+      <View style={styles.row}>
+        {[10, 30, 60].map((d) => (
+          <TouchableOpacity
+            key={d}
+            style={[styles.choice, duration === d && styles.activeChoice]}
+            onPress={() => setDuration(d)}
+          >
+            <Text style={styles.choiceText}>{d}s</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Stake Amount ($)"
@@ -125,7 +169,18 @@ export default function HomeScreen() {
         onChangeText={setStake}
       />
 
-      <Button title="Place Bet" onPress={handlePlaceBet} />
+      <Button title="Place Bet" onPress={handlePlaceBet} disabled={!!activeBet} />
+      <Button title="Play Turbo Flip" onPress={() => navigation.navigate('TurboFlip')} />
+
+      {activeBet && (
+        <View style={styles.statusBox}>
+          <Text style={styles.statusText}>Betting ${activeBet.stake} on {activeBet.direction.toUpperCase()}</Text>
+          <Text style={styles.statusText}>Strike Price: ${activeBet.strikePrice}</Text>
+          <Text style={styles.countdown}>⏱ {countdown}s</Text>
+        </View>
+      )}
+
+      {resultMessage !== '' && <Text style={styles.result}>{resultMessage}</Text>}
 
       <Text style={styles.subTitle}>Your Bets</Text>
       <FlatList
@@ -146,7 +201,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
   choice: {
     paddingVertical: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     backgroundColor: '#ccc',
     borderRadius: 10,
   },
@@ -154,7 +209,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2e86de',
   },
   choiceText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#fff',
   },
   input: {
@@ -165,6 +220,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
   },
+  statusBox: {
+    backgroundColor: '#f1f1f1',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  statusText: { fontSize: 16 },
+  countdown: { fontSize: 24, fontWeight: 'bold', color: '#2c3e50' },
+  result: { textAlign: 'center', fontSize: 20, marginVertical: 10, fontWeight: 'bold' },
   betCard: {
     padding: 10,
     marginBottom: 10,
