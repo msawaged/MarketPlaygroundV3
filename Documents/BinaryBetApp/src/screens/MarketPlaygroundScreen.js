@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { useBalance } from '../context/BalanceContext'; // 💰 Import balance hook
+import { useBalance } from '../context/BalanceContext'; // 💰 Use global balance
 
-// 🧪 Simulated market data — later this will be real-time
+// 🔧 Simulated market data — we’ll wire to real API later
 const markets = [
   { id: 'btc', name: 'BTC/USD', price: 69000 },
   { id: 'eth', name: 'ETH/USD', price: 3500 },
@@ -10,23 +10,40 @@ const markets = [
 ];
 
 const MarketPlaygroundScreen = ({ navigation }) => {
-  const { balance } = useBalance(); // 🧠 Access the user's current balance
+  const { balance } = useBalance();
 
-  const handleSelectMarket = (marketId) => {
-    navigation.navigate('TurboFlip');
+  // 🧭 Navigate to a chosen game
+  const handleSelectGame = (marketId, game) => {
+    if (game === 'turbo') navigation.navigate('TurboFlip');
+    if (game === 'linebreaker') navigation.navigate('LineBreaker');
   };
 
+  // 📦 Render each market with two game buttons
   const renderMarket = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleSelectMarket(item.id)}>
+    <View style={styles.card}>
       <Text style={styles.marketName}>{item.name}</Text>
       <Text style={styles.marketPrice}>${item.price}</Text>
-      <Text style={styles.playText}>▶ Play Turbo Flip</Text>
-    </TouchableOpacity>
+
+      {/* 🎮 Turbo Flip Button */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleSelectGame(item.id, 'turbo')}
+      >
+        <Text style={styles.buttonText}>▶ Play Turbo Flip</Text>
+      </TouchableOpacity>
+
+      {/* 🎮 Line Breaker Button */}
+      <TouchableOpacity
+        style={[styles.button, styles.lineBreakerBtn]}
+        onPress={() => handleSelectGame(item.id, 'linebreaker')}
+      >
+        <Text style={styles.buttonText}>🚀 Play LineBreaker</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* 💰 Balance shown at top */}
       <View style={styles.balanceBox}>
         <Text style={styles.balanceText}>Balance: ${balance}</Text>
       </View>
@@ -42,6 +59,8 @@ const MarketPlaygroundScreen = ({ navigation }) => {
     </View>
   );
 };
+
+export default MarketPlaygroundScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -88,13 +107,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#555',
   },
-  playText: {
+  button: {
+    backgroundColor: '#2e86de',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  lineBreakerBtn: {
+    backgroundColor: '#4caf50',
+  },
+  buttonText: {
     fontSize: 16,
-    marginTop: 12,
-    color: '#2e86de',
+    color: '#fff',
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
-
-export default MarketPlaygroundScreen;
 
