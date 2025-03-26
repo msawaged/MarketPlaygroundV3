@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { getBTCPrice } from '../utils/getPrice';
 
 export default function HomeScreen() {
   const [price, setPrice] = useState(69000);
   const [stake, setStake] = useState('');
   const [direction, setDirection] = useState('yes');
-  const [balance, setBalance] = useState(1000); // 💰 starting balance
+  const [balance, setBalance] = useState(1000);
+  const [bets, setBets] = useState([]);
 
+  // Fetch live price every 5 sec (optional)
   useEffect(() => {
     const fetchPrice = async () => {
       const livePrice = await getBTCPrice();
@@ -19,46 +21,86 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePlaceBet = () => {
+  const handlePlaceBet = async () => {
     const stakeAmount = parseFloat(stake);
-
     if (isNaN(stakeAmount) || stakeAmount <= 0) {
-      Alert.alert('Invalid Stake', 'Please enter a valid dollar amount.');
+      Alert.alert('Invalid Stake', 'Enter a valid dollar amount.');
       return;
     }
-
     if (stakeAmount > balance) {
-      Alert.alert('Insufficient Funds', 'You do not have enough balance.');
+      Alert.alert('Insufficient Funds', 'Not enough balance.');
       return;
     }
 
-    // Subtract the stake
+    const strikePrice = price;
+    const createdAt = Date.now();
+
+    const newBet = {
+      id: createdAt,
+      direction,
+      stake: stakeAmount,
+      strikePrice,
+      createdAt,
+      expiresAt: createdAt + 10000, // 10 seconds
+      status: 'pending',
+      result: null,
+    };
+
     setBalance((prev) => prev - stakeAmount);
-
-    // Simulate win/loss (50/50 chance for now)
-    const won = Math.random() > 0.5;
-
-    if (won) {
-      const payout = stakeAmount * 1.9; // stake + 90%
-      setTimeout(() => {
-        Alert.alert('You Won!', `You earned $${payout.toFixed(2)}`);
-        setBalance((prev) => prev + payout);
-      }, 500);
-    } else {
-      setTimeout(() => {
-        Alert.alert('You Lost', `You lost your $${stakeAmount.toFixed(2)} stake.`);
-      }, 500);
-    }
-
+    setBets((prev) => [...prev, newBet]);
     setStake('');
+
+    // Schedule settlement
+    setTimeout(async () => {
+      const currentPrice = await getBTCPrice();
+      const didWin =
+        (direction === 'yes' && currentPrice > strikePrice) ||
+        (direction === 'no' && currentPrice < strikePrice);
+
+      const payout = didWin ? stakeAmount * 1.9 : 0;
+
+      setBets((prevBets) =>
+        prevBets.map((b) =>
+          b.id === newBet.id
+            ? {
+                ...b,
+                status: 'settled',
+                result: didWin ? 'won' : 'lost',
+                resolvedPrice: currentPrice,
+              }
+            : b
+        )
+      );
+
+      if (didWin) {
+        Alert.alert('You Won!', `Payout: $${payout.toFixed(2)}`);
+        setBalance((prev) => prev + payout);
+      } else {
+        Alert.alert('You Lost', 'Better luck next time.');
+      }
+    }, 10000);
   };
+
+  const renderBet = ({ item }) => (
+    <View style={styles.betCard}>
+      <Text>🕓 {new Date(item.createdAt).toLocaleTimeString()}</Text>
+      <Text>Stake: ${item.stake}</Text>
+      <Text>Direction: {item.direction.toUpperCase()}</Text>
+      <Text>Strike: ${item.strikePrice}</Text>
+      {item.status === 'settled' && (
+        <>
+          <Text>Result: {item.result}</Text>
+          <Text>Resolved: ${item.resolvedPrice}</Text>
+        </>
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.balance}>Balance: ${balance.toFixed(2)}</Text>
-      <Text style={styles.title}>Binary Betting</Text>
-      <Text style={styles.label}>Asset: BTC/USD</Text>
-      <Text style={styles.price}>Current Price: ${price}</Text>
+      <Text style={styles.title}>BTC Binary Game</Text>
+      <Text style={styles.label}>BTC/USD Price: ${price}</Text>
 
       <View style={styles.row}>
         <TouchableOpacity
@@ -84,21 +126,28 @@ export default function HomeScreen() {
       />
 
       <Button title="Place Bet" onPress={handlePlaceBet} />
+
+      <Text style={styles.subTitle}>Your Bets</Text>
+      <FlatList
+        data={[...bets].reverse()}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderBet}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
-  balance: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#2ecc71' },
-  label: { fontSize: 18, marginBottom: 8 },
-  price: { fontSize: 24, marginBottom: 20 },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  balance: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#2ecc71', textAlign: 'center' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  subTitle: { fontSize: 20, marginTop: 30, marginBottom: 10, fontWeight: 'bold' },
+  label: { fontSize: 16, marginBottom: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
   choice: {
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: '#eee',
+    backgroundColor: '#ccc',
     borderRadius: 10,
   },
   activeChoice: {
@@ -115,6 +164,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
     fontSize: 16,
+  },
+  betCard: {
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
   },
 });
 
