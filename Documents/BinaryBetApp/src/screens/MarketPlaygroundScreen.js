@@ -1,139 +1,96 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { useBalance } from '../context/BalanceContext'; // 💰 Use global balance
+import React, { useContext } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../context/UserContext';
 
-// 🔧 Simulated market data — we’ll wire to real API later
-const markets = [
-  { id: 'btc', name: 'BTC/USD', price: 69000 },
-  { id: 'eth', name: 'ETH/USD', price: 3500 },
-  { id: 'sol', name: 'SOL/USD', price: 180 },
-];
-
-const MarketPlaygroundScreen = ({ navigation }) => {
-  const { balance } = useBalance();
-
-  // 🧭 Navigate to a chosen game screen based on button click
-  const handleSelectGame = (marketId, game) => {
-    if (game === 'turbo') navigation.navigate('TurboFlip');
-    if (game === 'linebreaker') navigation.navigate('LineBreaker');
-    if (game === 'rangerunner') navigation.navigate('RangeRunner');
-  };
-
-  // 📦 Render each market card with three game launch buttons
-  const renderMarket = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.marketName}>{item.name}</Text>
-      <Text style={styles.marketPrice}>${item.price}</Text>
-
-      {/* 🎮 Turbo Flip Button */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => handleSelectGame(item.id, 'turbo')}
-      >
-        <Text style={styles.buttonText}>▶ Play Turbo Flip</Text>
-      </TouchableOpacity>
-
-      {/* 🎮 Line Breaker Button */}
-      <TouchableOpacity
-        style={[styles.button, styles.lineBreakerBtn]}
-        onPress={() => handleSelectGame(item.id, 'linebreaker')}
-      >
-        <Text style={styles.buttonText}>🚀 Play LineBreaker</Text>
-      </TouchableOpacity>
-
-      {/* 🎮 Range Runner Button */}
-      <TouchableOpacity
-        style={[styles.button, styles.rangeRunnerBtn]}
-        onPress={() => handleSelectGame(item.id, 'rangerunner')}
-      >
-        <Text style={styles.buttonText}>📉 Play RangeRunner</Text>
-      </TouchableOpacity>
-    </View>
-  );
+const MarketPlaygroundScreen = () => {
+  const navigation = useNavigation();
+  const { balance } = useContext(UserContext); // ✅ Safely pull balance from context
 
   return (
-    <View style={styles.container}>
-      <View style={styles.balanceBox}>
-        <Text style={styles.balanceText}>Balance: ${balance}</Text>
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Market Playground 🧠</Text>
+      <Text style={styles.balance}>Balance: ${balance}</Text>
 
-      <Text style={styles.header}>🎯 Market Playground</Text>
+      <TouchableOpacity
+        style={styles.gameButton}
+        onPress={() => navigation.navigate('TurboFlip')}
+      >
+        <Text style={styles.gameText}>Turbo Flip ⚡</Text>
+      </TouchableOpacity>
 
-      <FlatList
-        data={markets}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMarket}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+      <TouchableOpacity
+        style={styles.gameButton}
+        onPress={() => navigation.navigate('LineBreaker')}
+      >
+        <Text style={styles.gameText}>Line Breaker 💥</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.gameButton}
+        onPress={() => navigation.navigate('RangeReaper')}
+      >
+        <Text style={styles.gameText}>Range Reaper ☠️</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.gameButton}
+        onPress={() => navigation.navigate('RangeRunner')}
+      >
+        <Text style={styles.gameText}>Range Runner 🏃‍♂️</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.historyButton}
+        onPress={() => navigation.navigate('BetHistory')}
+      >
+        <Text style={styles.historyText}>📜 View Bet History</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
-export default MarketPlaygroundScreen;
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    paddingTop: 50,
-    paddingHorizontal: 16,
+    flexGrow: 1,
+    padding: 24,
+    alignItems: 'center',
+    backgroundColor: '#0f0f0f',
   },
-  balanceBox: {
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 10,
+  },
+  balance: {
+    fontSize: 18,
+    color: '#ccc',
+    marginBottom: 30,
+  },
+  gameButton: {
+    backgroundColor: '#1e90ff',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+    marginVertical: 10,
+    width: '100%',
     alignItems: 'center',
   },
-  balanceText: {
+  gameText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#444',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  list: {
-    paddingBottom: 40,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  marketName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  marketPrice: {
-    fontSize: 16,
-    marginTop: 4,
-    color: '#555',
-  },
-  button: {
-    backgroundColor: '#2e86de',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  lineBreakerBtn: {
-    backgroundColor: '#4caf50',
-  },
-  rangeRunnerBtn: {
-    backgroundColor: '#ff9800',
-  },
-  buttonText: {
-    fontSize: 16,
     color: '#fff',
     fontWeight: '600',
-    textAlign: 'center',
+  },
+  historyButton: {
+    marginTop: 30,
+    padding: 12,
+  },
+  historyText: {
+    color: '#aaa',
+    textDecorationLine: 'underline',
   },
 });
+
+export default MarketPlaygroundScreen;
 

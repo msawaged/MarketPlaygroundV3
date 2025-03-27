@@ -1,29 +1,37 @@
-import RangeRunnerScreen from './src/screens/RangeRunnerScreen';
-import LineBreakerScreen from './src/screens/LineBreakerScreen';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ThemeProvider } from '@rneui/themed';
+
 import MarketPlaygroundScreen from './src/screens/MarketPlaygroundScreen';
 import TurboFlipScreen from './src/screens/TurboFlipScreen';
+import RangeReaperScreen from './src/screens/RangeReaperScreen';
+import LineBreakerScreen from './src/screens/LineBreakerScreen';
+import RangeRunnerScreen from './src/screens/RangeRunnerScreen';
+import BetHistoryScreen from './src/screens/BetHistoryScreen';
+import LoginScreen from './src/screens/LoginScreen';
 
-// 🔌 Import the BalanceProvider so all screens can access the balance
-import { BalanceProvider } from './src/context/BalanceContext';
+import { UserContextProvider } from './src/context/UserContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    // 💰 Wrap everything in BalanceProvider
-    <BalanceProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="MarketPlayground">
-          <Stack.Screen name="MarketPlayground" component={MarketPlaygroundScreen} />
-          <Stack.Screen name="TurboFlip" component={TurboFlipScreen} />
-          <Stack.Screen name="LineBreaker" component={LineBreakerScreen} />
-          <Stack.Screen name="RangeRunner" component={RangeRunnerScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </BalanceProvider>
+    <UserContextProvider>
+      <ThemeProvider>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="MarketPlayground" component={MarketPlaygroundScreen} />
+            <Stack.Screen name="TurboFlip" component={TurboFlipScreen} />
+            <Stack.Screen name="RangeReaper" component={RangeReaperScreen} />
+            <Stack.Screen name="LineBreaker" component={LineBreakerScreen} />
+            <Stack.Screen name="RangeRunner" component={RangeRunnerScreen} />
+            <Stack.Screen name="BetHistory" component={BetHistoryScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ThemeProvider>
+    </UserContextProvider>
   );
 }
 
