@@ -1,17 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
+import { useUser } from '../context/UserContext'; // ✅ use the custom hook
 
 const MarketPlaygroundScreen = () => {
   const navigation = useNavigation();
-  const { balance, username } = useContext(UserContext); // Access username and balance from context
+  const { balance, nickname } = useUser(); // ✅ use the hook to access context values
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Dynamic welcome */}
+      {/* Welcome message */}
       <Text style={styles.welcomeText}>
-        Welcome{username ? `, ${username}` : ''} 👋
+        Welcome{nickname ? `, ${nickname}` : ''} 👋
       </Text>
 
       {/* Balance display */}

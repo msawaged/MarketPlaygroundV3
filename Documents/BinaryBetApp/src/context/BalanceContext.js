@@ -1,35 +1,32 @@
-import React, { createContext, useState, useContext } from 'react';
+// src/context/BalanceContext.js
 
-// 🧠 Create a context object to hold balance state
-const BalanceContext = createContext();
+import React, { createContext, useContext, useState } from 'react';
 
-// 🏦 Create a provider that wraps the app and shares balance globally
+// Create the BalanceContext
+export const BalanceContext = createContext();
+
+// Provider component to wrap your app with balance state
 export const BalanceProvider = ({ children }) => {
-  const [balance, setBalance] = useState(1000); // 💵 Starting balance
+  const [balance, setBalance] = useState(1000); // Starting balance
 
-  // ➕ Increase balance (e.g., win a bet)
-  const increaseBalance = (amount) => {
-    setBalance((prev) => prev + amount);
-  };
-
-  // ➖ Decrease balance (e.g., place a bet)
-  const decreaseBalance = (amount) => {
-    setBalance((prev) => prev - amount);
+  // updateBalance: function to update balance
+  const updateBalance = (newBalance) => {
+    setBalance(newBalance);
   };
 
   return (
-    <BalanceContext.Provider
-      value={{
-        balance,
-        increaseBalance,
-        decreaseBalance,
-      }}
-    >
+    <BalanceContext.Provider value={{ balance, updateBalance }}>
       {children}
     </BalanceContext.Provider>
   );
 };
 
-// 🧩 Custom hook for using balance easily anywhere in the app
-export const useBalance = () => useContext(BalanceContext);
+// Custom hook to use balance context
+export const useBalance = () => {
+  const context = useContext(BalanceContext);
+  if (!context) {
+    throw new Error('useBalance must be used within a BalanceProvider');
+  }
+  return context;
+};
 
