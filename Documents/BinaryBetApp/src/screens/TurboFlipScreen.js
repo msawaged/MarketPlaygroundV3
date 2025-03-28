@@ -1,93 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
-import { useBalance } from '../context/BalanceContext'; // 💰 Import balance context
+// TurboFlipScreen.js
 
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useBalance } from '../context/BalanceContext'; // Custom hook to access balance
+import { useUser } from '../context/UserContext';         // Custom hook to access user info
+
+// TurboFlipScreen lets the user flip a coin and adjusts balance based on win/loss.
 const TurboFlipScreen = () => {
-  const [livePrice, setLivePrice] = useState(69000); // Placeholder BTC price
-  const [strikePrice, setStrikePrice] = useState(null);
-  const [finalPrice, setFinalPrice] = useState(null);
-  const [countdown, setCountdown] = useState(3);
-  const [gameState, setGameState] = useState('idle');
+  // Access balance and its update function from BalanceContext
+  const { balance, updateBalance } = useBalance();
+  // Access the user's nickname from UserContext
+  const { nickname } = useUser();
+
+  // Local state to store game result
   const [result, setResult] = useState(null);
+  const stake = 10; // Fixed bet amount
 
-  const { balance, increaseBalance, decreaseBalance } = useBalance(); // 🔌 Get balance + actions
-
-  // 🎮 Start the game
-  const startFlip = () => {
-    const costToPlay = 50;
-
-    if (balance < costToPlay) {
-      Alert.alert("Not enough balance", "You need at least $50 to play.");
+  // Function to simulate coin flip game
+  const handleFlip = () => {
+    if (balance < stake) {
+      Alert.alert("Insufficient Funds", "You don't have enough balance to place this bet.");
       return;
     }
-
-    // 💸 Deduct to play
-    decreaseBalance(costToPlay);
-    setStrikePrice(livePrice);
-    setCountdown(3);
-    setGameState('running');
-    setResult(null);
-    setFinalPrice(null);
-  };
-
-  // ⏱ Countdown logic
-  useEffect(() => {
-    let timer;
-    if (gameState === 'running' && countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (gameState === 'running' && countdown === 0) {
-      finishFlip();
-    }
-    return () => clearTimeout(timer);
-  }, [countdown, gameState]);
-
-  // 🎲 Finish the flip with a random up/down outcome
-  const finishFlip = () => {
-    const priceChange = Math.random() < 0.5 ? -50 : 50;
-    const updatedPrice = livePrice + priceChange;
-
-    setFinalPrice(updatedPrice);
-    setGameState('result');
-
-    const didWin = updatedPrice > strikePrice;
-    setResult(didWin ? 'win' : 'lose');
-
-    // 💰 Payout
-    if (didWin) {
-      increaseBalance(90); // Win = +$90
-    }
+    const win = Math.random() < 0.5; // Randomly win or lose
+    const newBalance = win ? balance + stake : balance - stake;
+    updateBalance(newBalance);
+    setResult(win ? "WIN" : "LOSS");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Turbo Flip: BTC/USD</Text>
-      <Text style={styles.price}>Live Price: ${livePrice}</Text>
-
-      {gameState === 'idle' && (
-        <Button title="Play Turbo Flip ($50)" onPress={startFlip} />
-      )}
-
-      {gameState === 'running' && (
-        <>
-          <Text style={styles.info}>Strike Price: ${strikePrice}</Text>
-          <Text style={styles.countdown}>Countdown: {countdown}s</Text>
-        </>
-      )}
-
-      {gameState === 'result' && (
-        <View style={styles.resultBox}>
-          <Text style={styles.info}>Strike Price: ${strikePrice}</Text>
-          <Text style={styles.info}>Final Price: ${finalPrice}</Text>
-          <Text
-            style={[
-              styles.resultText,
-              result === 'win' ? styles.win : styles.lose,
-            ]}
-          >
-            {result === 'win' ? 'You WIN ✅' : 'You LOSE ❌'}
-          </Text>
-          <Button title="Play Again" onPress={() => setGameState('idle')} />
-        </View>
+      <Text style={styles.title}>Turbo Flip</Text>
+      <Text style={styles.info}>Player: {nickname ? nickname : "Guest"}</Text>
+      <Text style={styles.info}>Balance: ${balance}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleFlip}>
+        <Text style={styles.buttonText}>Flip the Coin ($10)</Text>
+      </TouchableOpacity>
+      {result && (
+        <Text style={[styles.result, result === "WIN" ? styles.win : styles.loss]}>
+          You {result}!
+        </Text>
       )}
     </View>
   );
@@ -96,46 +48,44 @@ const TurboFlipScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    padding: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  price: {
-    fontSize: 18,
+    color: '#fff',
     marginBottom: 20,
   },
   info: {
-    fontSize: 16,
-    marginVertical: 4,
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 10,
   },
-  countdown: {
-    fontSize: 26,
+  button: {
+    backgroundColor: '#1e90ff',
+    padding: 15,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    color: 'orange',
+  },
+  result: {
+    fontSize: 24,
     marginTop: 20,
-  },
-  resultBox: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  resultText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 12,
   },
   win: {
     color: 'green',
   },
-  lose: {
+  loss: {
     color: 'red',
   },
 });
 
+// IMPORTANT: Ensure the component is exported as default.
 export default TurboFlipScreen;
 

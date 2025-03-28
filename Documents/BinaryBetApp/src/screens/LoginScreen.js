@@ -1,37 +1,58 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
+import { useUser } from '../context/UserContext'; // ✅ Using our custom hook
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('');
+  const [input, setInput] = useState('');
   const navigation = useNavigation();
-  const { setBalance, setUsername: setUserContextName } = useContext(UserContext); // access context setters
+  const { nickname, setNickname } = useUser(); // ✅ Correctly accessing context
 
-  // Handle login press
-  const handleLogin = () => {
-    if (username.trim().length === 0) return; // ignore empty names
-    setUserContextName(username); // store username in context
-    setBalance(1000); // initialize balance
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'MarketPlayground' }],
-    });
+  // Load stored nickname if it exists
+  useEffect(() => {
+    const loadNickname = async () => {
+      try {
+        const storedNickname = await AsyncStorage.getItem('nickname');
+        if (storedNickname) {
+          setNickname(storedNickname);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MarketPlayground' }],
+          });
+        }
+      } catch (e) {
+        console.log('Failed to load nickname', e);
+      }
+    };
+
+    loadNickname();
+  }, []);
+
+  // Save nickname and navigate
+  const handleLogin = async () => {
+    try {
+      await AsyncStorage.setItem('nickname', input);
+      setNickname(input);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MarketPlayground' }],
+      });
+    } catch (e) {
+      console.log('Failed to save nickname', e);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Market Playground 🧠</Text>
+      <Text style={styles.label}>Enter Your Nickname</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter a nickname"
-        placeholderTextColor="#aaa"
-        value={username}
-        onChangeText={setUsername}
+        value={input}
+        onChangeText={setInput}
+        placeholder="Nickname"
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Enter</Text>
-      </TouchableOpacity>
+      <Button title="Enter Market Playground" onPress={handleLogin} />
     </View>
   );
 };
@@ -39,40 +60,22 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f0f0f',
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    padding: 20,
+    backgroundColor: '#0e0e0e',
   },
-  title: {
-    fontSize: 26,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 40,
-    textAlign: 'center',
+  label: {
+    color: 'white',
+    fontSize: 18,
+    marginBottom: 10,
+    alignSelf: 'center',
   },
   input: {
-    backgroundColor: '#1f1f1f',
-    color: '#fff',
+    backgroundColor: 'white',
     borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    width: '100%',
+    padding: 10,
     fontSize: 16,
     marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#1e90ff',
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    width: '100%',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 
