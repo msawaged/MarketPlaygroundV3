@@ -1,10 +1,8 @@
-# Python backend
 backend/venv/
 backend/__pycache__/
 *.py[cod]
 *.env
 
-# Node / Expo mobile
 node_modules/
 .expo/
 .expo-shared/
