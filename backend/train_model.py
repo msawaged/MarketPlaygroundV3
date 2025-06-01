@@ -7,16 +7,17 @@ import joblib
 import sys
 
 # ─────────────────────────────────────────────────────────────────────────────
-# This script reads historic_data.csv, trains a RandomForestRegressor to
-# predict realized P/L at expiry for each option (based on impliedVolatility,
-# volume, and mid_price), and saves the trained model to best_model.joblib.
+# This script reads historic_data.csv (which grows as you append daily expiry
+# labels), trains a RandomForestRegressor to predict realized P/L at expiry
+# from [impliedVolatility, volume, mid_price], and saves the model to disk.
+# Every time you run it, it retrains on the entire accumulated dataset.
 # ─────────────────────────────────────────────────────────────────────────────
 
 DATA_FILE  = "historic_data.csv"
 MODEL_FILE = "best_model.joblib"
 
 def main():
-    # 1) Attempt to read the CSV
+    # 1) Try to read the historic CSV
     try:
         df = pd.read_csv(DATA_FILE)
     except FileNotFoundError:
@@ -26,17 +27,16 @@ def main():
         print(f"ERROR: '{DATA_FILE}' is empty or malformed. Exiting without training.")
         sys.exit(1)
 
-    # 2) Check that there is at least one data row
-    #    (After read_csv, df.shape[0] counts rows excluding header.)
+    # 2) Check that there is at least one row
     num_rows = df.shape[0]
     if num_rows < 2:
-        print(f"ERROR: '{DATA_FILE}' contains {num_rows} row(s) of data. Need at least 2 rows to train.")
+        print(f"ERROR: '{DATA_FILE}' contains {num_rows} row(s) of data. Need at least 2 to train.")
         sys.exit(1)
 
-    # 3) Drop any rows missing our key columns
+    # 3) Drop any rows missing our required columns
     df = df.dropna(subset=["impliedVolatility", "volume", "mid_price", "realizedPL"])
 
-    # 4) After dropna, check again
+    # 4) After dropna, confirm we still have ≥2 rows
     num_rows_after_drop = df.shape[0]
     if num_rows_after_drop < 2:
         print(f"ERROR: After dropping NaNs, only {num_rows_after_drop} row(s) remain. Need ≥2 to train.")
@@ -49,7 +49,6 @@ def main():
     y = df["realizedPL"].to_numpy()
 
     # 6) Split into train/test (90% train, 10% test)
-    #    random_state=42 ensures reproducibility
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.10, random_state=42
     )
@@ -73,7 +72,7 @@ def main():
         print("ERROR during model.fit():", e)
         sys.exit(1)
 
-    # 9) Evaluate on test set
+    # 9) Evaluate on test set (R²)
     try:
         r2 = model.score(X_test, y_test)
     except Exception as e:
