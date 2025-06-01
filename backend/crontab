@@ -1,0 +1,2 @@
+5 16 * * 1-5 cd /Users/muradsawaged/Documents/MarketPlaygroundV3/backend && /Users/muradsawaged/Documents/MarketPlaygroundV3/backend/venv/bin/python collect_labels.py >> /Users/muradsawaged/Documents/MarketPlaygroundV3/backend/cron_labels.log 2>&1
+

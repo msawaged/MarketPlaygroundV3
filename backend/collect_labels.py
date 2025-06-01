@@ -2,40 +2,60 @@
 
 import pandas as pd
 import yfinance as yf
+from datetime import date
 
-# 1) Path to the CSV where we store historical labels
+# ─────────────────────────────────────────────────────────────────────────────
+# This script labels all tickers with an expiry *equal to today*. It writes:
+#   date,contractSymbol,underlying,optionType,strike,impliedVolatility,volume,mid_price,realizedPL
+#
+# Every time you run it, it will:
+#   • Use today’s date (e.g., "2025-06-06") and check each ticker’s available expiries.
+#   • If that date is in ticker.options, fetch the chain, compute realized P/L, and append.
+#   • If ‘historic_data.csv’ is missing/empty, it will create a new one.
+# ─────────────────────────────────────────────────────────────────────────────
+
 OUTPUT_FILE = "historic_data.csv"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# FOR TESTING: only label AAPL on the known, currently available expiry 2025-06-06
-TICKERS   = ["AAPL"]
-today_str = "2025-06-06"   # forced expiry for testing (must be in tkr.options)
-# ─────────────────────────────────────────────────────────────────────────────
+# 1) List all tickers you want to label whenever they expire today.
+#    Feel free to add more symbols here.
+TICKERS = [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "GOOGL",
+    "AMZN"
+    # add additional tickers as needed, e.g. "TSLA", "META", etc.
+]
+
+# 2) Determine today's date in YYYY-MM-DD format:
+today_str = date.today().strftime("%Y-%m-%d")
 
 all_rows = []
 
 for sym in TICKERS:
     tkr = yf.Ticker(sym)
 
-    # If that forced expiry isn't in the ticker’s available options, skip.
+    # 3) If today_str is not in this ticker's options, skip:
     if today_str not in tkr.options:
-        print(f"Skipping {sym}: expiry {today_str} not found in {tkr.options}")
+        # Uncomment the next line if you want to see which tickers had no expiry
+        # print(f"Skipping {sym}: no {today_str} expiry (available: {tkr.options[:3]}...)")
         continue
 
+    # 4) Fetch the option chain for today_str
     try:
         chain = tkr.option_chain(today_str)
     except Exception as e:
-        print(f"Warning: could not fetch chain for {sym} {today_str}: {e}")
+        print(f"Warning: could not fetch option chain for {sym} {today_str}: {e}")
         continue
 
-    # Get that day’s closing price for the underlying
+    # 5) Fetch today’s closing price for the underlying (used as “settlement”)
     try:
         underlying_price = tkr.history(period="1d")["Close"].iloc[-1]
     except Exception as e:
         print(f"Warning: could not fetch closing price for {sym}: {e}")
         continue
 
-    # Process calls
+    # 6) Process calls
     for _, row in chain.calls.iterrows():
         contract_symbol = row["contractSymbol"]
         strike          = row["strike"]
@@ -55,7 +75,7 @@ for sym in TICKERS:
             "realizedPL":        realized_pl
         })
 
-    # Process puts
+    # 7) Process puts
     for _, row in chain.puts.iterrows():
         contract_symbol = row["contractSymbol"]
         strike          = row["strike"]
@@ -75,16 +95,17 @@ for sym in TICKERS:
             "realizedPL":        realized_pl
         })
 
-# Convert the collected rows into a DataFrame
+# 8) Convert to DataFrame
 df_new = pd.DataFrame(all_rows)
 
-# Try reading the existing CSV; if missing or empty, start fresh
+# 9) Append to existing CSV (if it exists and is non-empty), else start fresh
 try:
     df_old = pd.read_csv(OUTPUT_FILE)
     df_all = pd.concat([df_old, df_new], ignore_index=True)
 except (FileNotFoundError, pd.errors.EmptyDataError):
     df_all = df_new
 
-# Overwrite (or create) the CSV
+# 10) Overwrite / create the CSV
 df_all.to_csv(OUTPUT_FILE, index=False)
-print(f"Appended {len(df_new)} new rows to {OUTPUT_FILE}")
+
+print(f"[collect_labels.py] Date={today_str} → Appended {len(df_new)} new rows to {OUTPUT_FILE}")
