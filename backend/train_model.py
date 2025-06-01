@@ -1,96 +1,105 @@
 # train_model.py
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-import joblib
-import sys
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from joblib import dump
 
-# ─────────────────────────────────────────────────────────────────────────────
-# This script reads historic_data.csv (which grows as you append daily expiry
-# labels), trains a RandomForestRegressor to predict realized P/L at expiry
-# from [impliedVolatility, volume, mid_price], and saves the model to disk.
-# Every time you run it, it retrains on the entire accumulated dataset.
-# ─────────────────────────────────────────────────────────────────────────────
-
-DATA_FILE  = "historic_data.csv"
-MODEL_FILE = "best_model.joblib"
+# Path to your historic data CSV
+DATA_FILE = "historic_data.csv"
 
 def main():
-    # 1) Try to read the historic CSV
-    try:
-        df = pd.read_csv(DATA_FILE)
-    except FileNotFoundError:
-        print(f"ERROR: '{DATA_FILE}' not found. Exiting without training.")
-        sys.exit(1)
-    except pd.errors.EmptyDataError:
-        print(f"ERROR: '{DATA_FILE}' is empty or malformed. Exiting without training.")
-        sys.exit(1)
+    # 1) Load the full dataset
+    df = pd.read_csv(DATA_FILE)
 
-    # 2) Check that there is at least one row
-    num_rows = df.shape[0]
-    if num_rows < 2:
-        print(f"ERROR: '{DATA_FILE}' contains {num_rows} row(s) of data. Need at least 2 to train.")
-        sys.exit(1)
+    # 2) Drop any rows missing required columns
+    required_cols = [
+        "impliedVolatility",
+        "volume",
+        "mid_price",
+        "strike",
+        "openInterest",
+        "underlyingReturn",
+        "assetType",
+        "realizedPL"
+    ]
+    df = df.dropna(subset=required_cols)
 
-    # 3) Drop any rows missing our required columns
-    df = df.dropna(subset=["impliedVolatility", "volume", "mid_price", "realizedPL"])
+    # If there aren’t enough rows, abort
+    if len(df) < 10:
+        print(f"[train_model.py] Not enough rows to train (only {len(df)}). Skipping.")
+        return
 
-    # 4) After dropna, confirm we still have ≥2 rows
-    num_rows_after_drop = df.shape[0]
-    if num_rows_after_drop < 2:
-        print(f"ERROR: After dropping NaNs, only {num_rows_after_drop} row(s) remain. Need ≥2 to train.")
-        sys.exit(1)
+    # 3) Define feature columns X and target y
+    feature_cols = [
+        "impliedVolatility",
+        "volume",
+        "mid_price",
+        "strike",
+        "openInterest",
+        "underlyingReturn",
+        "assetType"
+    ]
+    X = df[feature_cols]
+    y = df["realizedPL"]
 
-    # 5) Build feature matrix X and target y
-    #    Features: impliedVolatility, volume, mid_price
-    #    Target:  realizedPL
-    X = df[["impliedVolatility", "volume", "mid_price"]].to_numpy()
-    y = df["realizedPL"].to_numpy()
+    # 4) Specify numeric vs. categorical features
+    numeric_features = [
+        "impliedVolatility",
+        "volume",
+        "mid_price",
+        "strike",
+        "openInterest",
+        "underlyingReturn"
+    ]
+    categorical_features = ["assetType"]
 
-    # 6) Split into train/test (90% train, 10% test)
+    # 5) Build transformers
+    numeric_transformer = StandardScaler()
+    categorical_transformer = OneHotEncoder(handle_unknown="ignore")
+
+    # 6) ColumnTransformer: scale numeric, one-hot encode assetType
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", numeric_transformer, numeric_features),
+            ("cat", categorical_transformer, categorical_features)
+        ]
+    )
+
+    # 7) Build the pipeline: preprocessing + random forest regressor
+    model_pipeline = Pipeline(steps=[
+        ("preprocessor", preprocessor),
+        (
+            "regressor",
+            RandomForestRegressor(
+                n_estimators=200,
+                max_depth=10,
+                random_state=42,
+                n_jobs=-1
+            )
+        )
+    ])
+
+    # 8) Split into train/test
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.10, random_state=42
+        X, y, test_size=0.1, random_state=42
     )
 
-    # 7) Print how many rows ended up in train vs. test
-    print(f"Training rows: {X_train.shape[0]}, Test rows: {X_test.shape[0]}")
+    # 9) Fit the model
+    model_pipeline.fit(X_train, y_train)
 
-    if X_train.shape[0] < 1:
-        print("ERROR: No training rows after split. Cannot train. Exiting.")
-        sys.exit(1)
+    # 10) Evaluate on test set
+    r2 = model_pipeline.score(X_test, y_test)
+    print(f"[train_model.py] Training rows: {len(X_train)}, Test rows: {len(X_test)}")
+    print(f"[train_model.py] R^2 on test set: {r2:.4f}")
 
-    # 8) Fit a RandomForestRegressor
-    model = RandomForestRegressor(
-        n_estimators=200,
-        max_depth=10,
-        random_state=42
-    )
-    try:
-        model.fit(X_train, y_train)
-    except Exception as e:
-        print("ERROR during model.fit():", e)
-        sys.exit(1)
-
-    # 9) Evaluate on test set (R²)
-    try:
-        r2 = model.score(X_test, y_test)
-    except Exception as e:
-        print("WARNING: Could not compute R^2 on test set:", e)
-        r2 = None
-
-    if r2 is not None:
-        print(f"R^2 on test set: {r2:.4f}")
-    else:
-        print("R^2 on test set: n/a")
-
-    # 10) Save the trained model to disk
-    try:
-        joblib.dump(model, MODEL_FILE)
-        print(f"Trained model saved to {MODEL_FILE}")
-    except Exception as e:
-        print("ERROR saving model to disk:", e)
-        sys.exit(1)
+    # 11) Save the full pipeline to disk
+    dump(model_pipeline, "best_model.joblib")
+    print("[train_model.py] Trained model saved to best_model.joblib")
 
 if __name__ == "__main__":
     main()
