@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pydantic
+yfinance
+pandas
+matplotlib   # optional if you later embed charts
+
