@@ -9,3 +9,9 @@ npm-debug.log*
 yarn-error.log*
 historic_data.csv
 best_model.joblib
+__pycache__/
+*.joblib
+*.png
+*.csv
+venv/
+node_modules/
