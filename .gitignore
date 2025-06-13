@@ -30,3 +30,5 @@ expo-debug.log
 # Any other local artifacts
 *.sqlite3
 *.env
+backend.zip
+backend_latest.zip
