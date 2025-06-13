@@ -1,29 +1,59 @@
 # belief_parser.py
-# Extracts the ticker from a belief using simple keyword matching
+# Parses raw user beliefs into structured tags using your trained ML model
+
+import joblib
+import re
+
+# Load the trained ML model and vectorizer
+model = joblib.load("belief_model.joblib")
+vectorizer = joblib.load("belief_vectorizer.joblib")
+
+# Basic fallback tickers list (can be upgraded with ML later)
+COMMON_TICKERS = {
+    "oil": "OIL",
+    "gold": "GOLD",
+    "tesla": "TSLA",
+    "tsla": "TSLA",
+    "apple": "AAPL",
+    "aapl": "AAPL",
+    "spy": "SPY",
+    "qqq": "QQQ",
+    "nvda": "NVDA",
+    "nvidia": "NVDA",
+    "amazon": "AMZN",
+    "amzn": "AMZN"
+}
 
 def detect_ticker(belief_text):
     """
-    Detects a stock, ETF, or crypto ticker from the belief text.
-    You can expand this dictionary or replace with named entity recognition later.
-
-    Returns:
-        str: Uppercase ticker (e.g., "TSLA")
+    Tries to detect a known ticker/symbol from the belief text.
     """
-    tickers = {
-        "tesla": "TSLA", "tsla": "TSLA",
-        "apple": "AAPL", "aapl": "AAPL",
-        "google": "GOOGL", "googl": "GOOGL",
-        "meta": "META", "facebook": "META",
-        "amazon": "AMZN", "amzn": "AMZN",
-        "oil": "OIL", "crude": "OIL",
-        "gold": "GOLD", "btc": "BTC", "bitcoin": "BTC",
-        "eth": "ETH", "ethereum": "ETH",
-        "qqq": "QQQ", "spy": "SPY"
+    belief_text = belief_text.lower()
+    for keyword, ticker in COMMON_TICKERS.items():
+        if keyword in belief_text:
+            return ticker
+    return "SPY"  # Default fallback
+
+def predict_tags(belief_text):
+    """
+    Uses the ML model to predict direction, duration, and volatility from a belief.
+    """
+    X = vectorizer.transform([belief_text])
+    preds = model.predict(X)
+
+    direction, duration, volatility = preds[0]
+    return {
+        "direction": direction,
+        "duration": duration,
+        "volatility": volatility
     }
 
-    belief_text = belief_text.lower()
-    for key in tickers:
-        if key in belief_text:
-            return tickers[key]
-    
-    return "SPY"  # Default fallback
+def parse_belief(belief_text):
+    """
+    Main entry point to convert raw user belief into structured data.
+    """
+    return {
+        "input": belief_text,
+        "ticker": detect_ticker(belief_text),
+        "tags": predict_tags(belief_text)
+    }

@@ -1,55 +1,57 @@
 # strategy_selector.py
-# Selects a base strategy based on predicted tags
+# Smart strategy selector based on ML tags and ticker input
+# Future-ready for ML-based leg optimization and contract pricing
 
 from datetime import datetime, timedelta
 
-def select_strategy(ticker, tags):
+def get_expiry_date(duration: str) -> str:
+    """Returns a future expiry date string based on duration tag."""
+    days = {"short": 7, "medium": 30, "long": 90}.get(duration, 30)
+    return (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+
+
+def suggest_strategy(tags: dict, ticker: str) -> dict:
     """
-    Generates a basic options strategy based on AI-inferred tags.
+    Suggests an options strategy based on parsed ML tags.
     
     Args:
-        ticker (str): Detected ticker
-        tags (dict): Predicted tags (direction, duration, volatility)
-
-    Returns:
-        dict: Base strategy output
-    """
-    direction = tags["direction"]
-    duration = tags["duration"]
-    vol = tags["volatility"]
-
-    # Set expiry date logic
-    today = datetime.today()
-    if duration == "short":
-        expiry = today + timedelta(days=7)
-    elif duration == "medium":
-        expiry = today + timedelta(days=30)
-    else:
-        expiry = today + timedelta(days=90)
+        tags (dict): Tags like {'direction': 'bullish', 'duration': 'short', 'volatility': 'high'}
+        ticker (str): Parsed asset ticker symbol (e.g. 'TSLA')
     
-    expiry_str = expiry.strftime("%Y-%m-%d")
+    Returns:
+        dict: Strategy dictionary with keys: type, legs, expiry, payout
+    """
+    direction = tags.get("direction", "neutral")
+    duration = tags.get("duration", "medium")
+    volatility = tags.get("volatility", "medium")
+    expiry = get_expiry_date(duration)
 
-    # Strategy type and legs
+    # 🔮 Strategy logic — replace with ML later
     if direction == "bullish":
-        strategy = {
-            "type": "Call Debit Spread (Live)",
-            "legs": [f"Buy {ticker} ATM call", f"Sell {ticker} higher call"],
-        }
+        strategy_type = "Call Debit Spread (Live)"
+        legs = [f"Buy {ticker} ATM call", f"Sell {ticker} higher call"]
+        payout = "2.0x"
     elif direction == "bearish":
-        strategy = {
-            "type": "Put Debit Spread (Live)",
-            "legs": [f"Buy {ticker} ATM put", f"Sell {ticker} lower put"],
-        }
+        strategy_type = "Put Debit Spread (Live)"
+        legs = [f"Buy {ticker} ATM put", f"Sell {ticker} lower put"]
+        payout = "2.0x"
+    elif direction == "neutral":
+        strategy_type = "Iron Condor (Live)"
+        legs = [
+            f"Sell {ticker} lower put",
+            f"Buy {ticker} even-lower put",
+            f"Sell {ticker} higher call",
+            f"Buy {ticker} even-higher call",
+        ]
+        payout = "2.0x"
     else:
-        strategy = {
-            "type": "Iron Condor (Live)",
-            "legs": [
-                f"Sell {ticker} lower put", f"Buy {ticker} even-lower put",
-                f"Sell {ticker} higher call", f"Buy {ticker} even-higher call"
-            ],
-        }
+        strategy_type = "Default Strategy"
+        legs = [f"Buy {ticker} call", f"Sell {ticker} call"]
+        payout = "1.5x"
 
-    strategy["expiry"] = expiry_str
-    strategy["payout"] = "2.0x"  # You can change this dynamically later
-
-    return strategy
+    return {
+        "type": strategy_type,
+        "legs": legs,
+        "expiry": expiry,
+        "payout": payout
+    }
