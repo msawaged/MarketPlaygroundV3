@@ -3,5 +3,7 @@ uvicorn[standard]
 pydantic
 yfinance
 pandas
-matplotlib   # optional if you later embed charts
-
+matplotlib
+joblib
+scikit-learn
+xgboost
