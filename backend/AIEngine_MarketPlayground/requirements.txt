@@ -4,14 +4,14 @@ uvicorn
 
 # === Data & Finance ===
 pandas
-numpy==1.23.5              # ✅ Required: Prevents dtype mismatch with scikit-learn==1.2.2
-yfinance
+numpy==1.23.5            # ✅ MUST MATCH model training numpy version
 matplotlib
+yfinance
 
 # === Machine Learning ===
-scikit-learn==1.2.2        # ✅ Required: Matches your local model training version
+scikit-learn==1.2.2      # ✅ MUST MATCH model training version
 xgboost
-joblib==1.2.0              # ✅ Recommended: Matches joblib format used during model serialization
+joblib==1.2.0            # ✅ MUST MATCH saved joblib format
 
 # === Build Tools ===
 setuptools>=61.0.0
