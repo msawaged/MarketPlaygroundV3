@@ -1,34 +1,8 @@
-# Python/venv
-/venv/
-/backend/venv/
-
-# macOS (ignore DS_Store)
-*.DS_Store
-
-# Node/npm
-/node_modules/
-/mobile/node_modules/
-*.log
-dist/
-build/
-
-# VSCode
-.vscode/
-
-# Python caches
+*.zip
+*.joblib
 __pycache__/
-*.pyc
+*.pkl
+*.csv
+*.png
+*.log
 
-# Expo/React Native
-*.expo
-.expo/
-expo-debug.log
-
-# JetBrains IDEs
-.idea/
-
-# Any other local artifacts
-*.sqlite3
-*.env
-backend.zip
-backend_latest.zip
