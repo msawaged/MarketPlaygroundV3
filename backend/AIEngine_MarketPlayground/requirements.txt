@@ -6,7 +6,6 @@ xgboost
 joblib
 matplotlib
 yfinance
-scikit-learn==1.6.1
+scikit-learn==1.2.2
 setuptools>=61.0.0
-
 setuptools>=61.0.0
