@@ -1,11 +1,17 @@
+# === Web Framework ===
 fastapi
 uvicorn
+
+# === Data & Finance ===
 pandas
-numpy
-xgboost
-joblib
-matplotlib
+numpy==1.23.5              # ✅ Required: Prevents dtype mismatch with scikit-learn==1.2.2
 yfinance
-scikit-learn==1.2.2
-setuptools>=61.0.0
+matplotlib
+
+# === Machine Learning ===
+scikit-learn==1.2.2        # ✅ Required: Matches your local model training version
+xgboost
+joblib==1.2.0              # ✅ Recommended: Matches joblib format used during model serialization
+
+# === Build Tools ===
 setuptools>=61.0.0
