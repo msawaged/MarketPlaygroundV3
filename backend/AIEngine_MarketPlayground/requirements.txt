@@ -1,7 +1,11 @@
 fastapi
-uvicorn[standard]
-pydantic
-yfinance
+uvicorn
 pandas
-matplotlib   # optional if you later embed charts
+numpy
+xgboost
+joblib
+matplotlib
+yfinance
+scikit-learn==1.6.1
+setuptools>=61.0.0
 
