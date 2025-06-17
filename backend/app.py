@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 # ✅ Correct import: 'ai_engine.py' is a module inside the same 'backend' directory
-from ai_engine import run_ai_engine
+from ai_engine.ai_engine import run_ai_engine
 
 # Create FastAPI app instance
 app = FastAPI()
