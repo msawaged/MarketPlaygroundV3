@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: marketplayground-backend
+    env: python
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app:app --host 0.0.0.0 --port 10000
+    rootDir: .
+    plan: starter
+    branch: main
+    autoDeploy: true
