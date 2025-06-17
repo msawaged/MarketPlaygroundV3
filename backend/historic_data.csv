@@ -1,0 +1,12 @@
+belief,impliedVolatility,volume,mid_price,strike,openInterest,underlyingReturn,assetType,realizedPL
+TSLA will go up,0.45,320,2.55,300,1500,0.015,stock,1
+TSLA will go down,0.50,280,2.80,290,1450,-0.012,stock,1
+AAPL to crash,0.40,400,1.95,150,1700,-0.025,stock,0
+Gold is rising,0.35,150,1.25,1800,900,0.010,commodity,1
+Crypto will fall,0.60,500,3.20,2000,2500,-0.030,crypto,0
+Bonds are safe,0.25,100,0.95,100,400,0.005,bond,1
+Oil will surge,0.55,340,2.85,75,1100,0.020,commodity,1
+USD will weaken,0.33,270,1.10,100,800,-0.014,currency,0
+SPY is bearish,0.48,310,2.10,400,1300,-0.018,etf,0
+QQQ will rally,0.42,290,2.65,350,1200,0.022,etf,1
+
