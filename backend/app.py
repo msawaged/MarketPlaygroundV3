@@ -1,34 +1,27 @@
-# app.py
+# backend/app.py
 
-# Import FastAPI and HTTPException for API behavior and error handling
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from ai_engine import run_ai_engine  # ✅ FIXED: correct import if ai_engine.py is in backend/
 
-# Pydantic BaseModel for request body validation
-from pydantic import BaseModel
-
-# ✅ Correct import: 'ai_engine.py' is a module inside the same 'backend' directory
-from ai_engine.ai_engine import run_ai_engine
-
-# Create FastAPI app instance
 app = FastAPI()
 
-# Define the expected format of incoming JSON request
-class BeliefRequest(BaseModel):
-    belief: str  # Expecting a string belief from user (e.g., "TSLA will go up")
+# Allow all origins for now (can restrict later)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Define the POST endpoint to analyze beliefs
-@app.post("/analyze/")
-async def analyze_belief(request: BeliefRequest):
-    try:
-        # Pass the belief to the AI engine
-        result = run_ai_engine(request.belief)
-        # Return the result with success status
-        return {"status": "success", "result": result}
-    except Exception as e:
-        # Catch and raise errors with proper API response
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Define a GET endpoint to check if the API is running
 @app.get("/")
 def read_root():
-    return {"message": "MarketPlayground API is up and running"}
+    return {"status": "MarketPlayground AI backend is live!"}
+
+@app.post("/run_ai_engine/")
+async def run_engine(request: Request):
+    data = await request.json()
+    belief = data.get("belief", "")
+    result = run_ai_engine(belief)
+    return {"result": result}
