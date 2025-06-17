@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .ai_engine import run_ai_engine  # ✅ FIX: Use relative import
+from ai_engine.ai_engine import run_ai_engine
 
 app = FastAPI()
 
