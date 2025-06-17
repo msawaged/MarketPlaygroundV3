@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from backend.ai_engine.ai_engine import run_ai_engine
+from ai_engine.ai_engine import run_ai_engine
 
 app = FastAPI()
 
