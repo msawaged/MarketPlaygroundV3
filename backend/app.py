@@ -1,15 +1,17 @@
-from fastapi import FastAPI
-from ai_engine.ai_engine import run_ai_engine
+# backend/app.py
+
+from fastapi import FastAPI, Request
+from backend.ai_engine.ai_engine import run_ai_engine  # ✅ ABSOLUTE IMPORT FROM ROOT
 
 app = FastAPI()
 
 @app.get("/")
-def read_root():
-    return {"message": "MarketPlayground AI is live 🎉"}
+def root():
+    return {"message": "MarketPlayground API is running."}
 
-@app.post("/run_ai_engine/")
-def run_engine(prompt: str):
-    """
-    Run the AI engine on a user-submitted belief prompt.
-    """
-    return run_ai_engine(prompt)
+@app.post("/process")
+async def process_belief(request: Request):
+    data = await request.json()
+    belief = data.get("belief", "")
+    result = run_ai_engine(belief)
+    return result
