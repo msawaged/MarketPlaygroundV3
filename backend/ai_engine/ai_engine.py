@@ -1,7 +1,7 @@
 # ai_engine.py
 # Main engine: converts a belief into a trade strategy using AI/ML helpers
 
-from belief_parser import clean_belief, detect_asset_and_direction
+from backend.belief_parser import clean_belief, detect_asset_and_direction
 from strategy_selector import select_strategy
 
 
