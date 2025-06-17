@@ -5,3 +5,5 @@ numpy==1.24.4
 pandas==1.5.3
 joblib==1.3.2
 Cython==0.29.36
+yfinance==0.2.37
+python-multipart==0.0.6
