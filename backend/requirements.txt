@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+yfinance
+pandas
+matplotlib
+joblib
+scikit-learn==1.0.2
+xgboost
