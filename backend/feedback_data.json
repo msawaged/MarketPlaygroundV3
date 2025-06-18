@@ -1,0 +1,52 @@
+[
+  {
+    "belief": "TSLA will go up this week",
+    "strategy": {
+      "type": "Default Strategy",
+      "description": "Buy diversified ETF or broad market asset.",
+      "risk_level": "moderate",
+      "suggested_allocation": "50% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "NVDA will fall after earnings",
+    "strategy": {
+      "type": "Put Spread",
+      "description": "Buy NVDA put 400 / Sell 390 put",
+      "risk_level": "high",
+      "suggested_allocation": "25% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "AAPL will outperform this month",
+    "strategy": {
+      "type": "Call Spread",
+      "description": "Buy AAPL 180c / Sell 190c",
+      "risk_level": "medium",
+      "suggested_allocation": "30% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "META will crash after ad revenue report",
+    "strategy": {
+      "type": "Put Option",
+      "description": "Buy META 250p",
+      "risk_level": "high",
+      "suggested_allocation": "20% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "TSLA will go up this week",
+    "strategy": {
+      "type": "Put Spread",
+      "description": "Buy TSLA put 300 / Sell 290 put",
+      "risk_level": "high",
+      "suggested_allocation": "25% of trade capital"
+    },
+    "feedback": "good"
+  }
+]
