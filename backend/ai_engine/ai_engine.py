@@ -1,41 +1,36 @@
-# ai_engine.py
-# Main engine: converts a belief into a trade strategy using AI/ML helpers
+# backend/ai_engine/ai_engine.py
+# ✅ Main AI logic that interprets user belief and outputs a strategy
 
 from backend.belief_parser import clean_belief, detect_asset_and_direction
-from strategy_selector import select_strategy
+from backend.strategy_selector import select_strategy
+from backend.asset_selector import detect_asset_class
 
-
-def run_ai_engine(belief: str) -> dict:
+def run_ai_engine(user_belief: str) -> dict:
     """
-    Orchestrates the belief analysis pipeline.
+    Main interface to process a user belief into a tradable strategy.
 
-    Parameters:
-    - belief (str): The user's natural language statement.
+    Args:
+        user_belief (str): Natural-language belief, e.g. "TSLA will go up next week"
 
     Returns:
-    - dict: A dictionary with asset, direction, strategy details.
+        dict: Strategy output including type, legs, asset, etc.
     """
+    print(f"[AI ENGINE] Received belief: {user_belief}")
 
-    # Step 1: Preprocess the belief to clean punctuation/noise
-    cleaned = clean_belief(belief)
+    # Step 1: Clean and parse the belief
+    cleaned = clean_belief(user_belief)
+    print(f"[AI ENGINE] Cleaned belief: {cleaned}")
 
-    # Step 2: Use ML to detect asset class and direction (up/down/neutral)
+    # Step 2: Detect asset class, direction, and confidence
     asset_info = detect_asset_and_direction(cleaned)
-    asset_class = asset_info.get("asset_class")
-    direction = asset_info.get("direction")
-    confidence = asset_info.get("confidence", 0.5)  # Default if missing
+    print(f"[AI ENGINE] Parsed direction/confidence: {asset_info}")
 
-    # Safety check
-    if not asset_class or not direction:
-        return {"error": "Could not detect asset class or direction."}
+    # Step 3: Fallback to asset class detector if not explicitly defined
+    if not asset_info.get("asset_class"):
+        asset_info["asset_class"] = detect_asset_class(cleaned)
 
-    # Step 3: Select a strategy based on those predictions
-    strategy = select_strategy(asset_class, direction, confidence)
+    # Step 4: Generate a strategy based on parsed belief
+    strategy = select_strategy(asset_info)
+    print(f"[AI ENGINE] Selected strategy: {strategy}")
 
-    # Step 4: Return final strategy object
-    return {
-        "asset_class": asset_class,
-        "direction": direction,
-        "confidence": confidence,
-        "strategy": strategy,
-    }
+    return strategy
