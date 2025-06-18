@@ -9,7 +9,7 @@ services:
       - key: PORT
         value: 10000
     rootDir: backend
-    pythonVersion: 3.11
+    pythonVersion: 3.10.12   # ✅ Use stable supported version
 
   - type: worker
     name: retrain-worker
@@ -18,4 +18,4 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python retrain_worker.py"
     rootDir: backend
-    pythonVersion: 3.11
+    pythonVersion: 3.10.12   # ✅ Match version to avoid scikit-learn/Cython failures
