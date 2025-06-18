@@ -1,1 +1,31 @@
+# Virtual environments
+venv/
+.env/
+__pycache__/
+
+# Python compiled files
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Mac system files
+.DS_Store
+
+# Logs and metadata
+*.log
+
+# Model and cache files
+*.joblib
+*.pkl
+*.h5
+*.pt
+
+# VS Code settings
+.vscode/
 
