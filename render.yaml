@@ -10,3 +10,12 @@ services:
         value: 10000
     autoDeploy: true
     rootDir: .
+
+  - type: worker
+    name: marketplayground-trainer
+    env: python
+    plan: starter
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/retrain_worker.py
+    autoDeploy: true
+    rootDir: .
