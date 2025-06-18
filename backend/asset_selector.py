@@ -1,34 +1,31 @@
-# asset_selector.py
-# Determines best asset class + tickers based on belief text
+# backend/asset_selector.py
 
-theme_to_assets = {
-    "ai":               ("stock", ["NVDA", "MSFT", "GOOGL", "SMCI"]),
-    "robotics":         ("etf", ["BOTZ", "ROBO", "IRBT"]),
-    "semiconductors":   ("stock", ["NVDA", "AMD", "AVGO", "INTC"]),
-    "clean energy":     ("etf", ["ICLN", "ENPH", "PLUG"]),
-    "china tech":       ("etf", ["KWEB", "BABA", "JD", "PDD"]),
-    "crypto":           ("crypto", ["BTC-USD", "ETH-USD"]),
-    "value":            ("stock", ["BRK.B", "JNJ", "KO"]),
-    "diversified":      ("etf", ["SPY", "QQQ", "VTI"]),
-    "tech":             ("etf", ["QQQ", "XLK", "VGT"]),
-    "growth":           ("stock", ["TSLA", "AMZN", "NVDA"]),
-    "finance":          ("etf", ["XLF", "JPM", "GS"]),
-    "bonds":            ("etf", ["TLT", "IEF", "BND"]),
-}
+"""
+This module detects which asset class (stocks, ETFs, bonds, crypto, etc.)
+is most relevant based on the user's belief or strategy goal.
+"""
 
-fallback_default = {
-    "asset_class": "stock",
-    "tickers": ["AAPL"]
-}
+def detect_asset_class(belief: str) -> str:
+    """
+    Infers asset class from the belief text.
 
-def select_assets_from_belief(text):
-    text = text.lower()
+    Parameters:
+        belief (str): User's belief input (e.g., "the market will tank")
 
-    for theme, (asset_class, tickers) in theme_to_assets.items():
-        if theme in text:
-            return {
-                "asset_class": asset_class,
-                "tickers": tickers
-            }
+    Returns:
+        str: One of ['stocks', 'etfs', 'bonds', 'crypto', 'currencies']
+    """
+    belief = belief.lower()
 
-    return fallback_default
+    if any(term in belief for term in ['stock', 'equity', 'company', 'share']):
+        return 'stocks'
+    elif any(term in belief for term in ['etf', 'index fund', 'spy', 'qqq', 'iwm']):
+        return 'etfs'
+    elif any(term in belief for term in ['bond', 'yield', 'treasury']):
+        return 'bonds'
+    elif any(term in belief for term in ['bitcoin', 'crypto', 'ethereum', 'altcoin']):
+        return 'crypto'
+    elif any(term in belief for term in ['forex', 'currency', 'dollar', 'euro', 'yen']):
+        return 'currencies'
+    else:
+        return 'stocks'  # default fallback
