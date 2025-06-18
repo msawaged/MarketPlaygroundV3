@@ -2,25 +2,18 @@
 
 import time
 import traceback
-from train_from_feedback import main as retrain_feedback
-from train_model import train_main_model
-from train_multi_asset_model import train_multi_asset_model
-from utils import log
+from backend.train_from_feedback import main as retrain_model
 
-RETRAIN_INTERVAL_SECONDS = 1800  # 30 minutes
-
-def background_retrain_loop():
+def loop_forever(interval=3600):
+    print("[retrain_worker] 🔁 Starting background retrain loop...")
     while True:
         try:
-            log("🔁 Retraining all models from feedback data...")
-            retrain_feedback()  # Feedback-based sentiment model
-            train_main_model()  # Belief direction / asset class
-            train_multi_asset_model()  # Multi-asset strategy model
-            log("✅ All models retrained and saved.")
+            retrain_model()
+            print("[retrain_worker] ✅ Model retrained successfully.")
         except Exception as e:
-            log(f"❌ Retrain loop failed: {e}")
+            print(f"[retrain_worker] ❌ Error during retraining: {e}")
             traceback.print_exc()
-        time.sleep(RETRAIN_INTERVAL_SECONDS)
+        time.sleep(interval)
 
 if __name__ == "__main__":
-    background_retrain_loop()
+    loop_forever()
