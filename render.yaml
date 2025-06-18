@@ -3,19 +3,15 @@ services:
     name: marketplayground-backend
     env: python
     plan: starter
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn backend.app:app --host 0.0.0.0 --port 10000
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn backend.app:app --host 0.0.0.0 --port 10000"
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
+      - key: PORT
+        value: 10000
 
-workers:
   - type: worker
     name: retrain-worker
     env: python
     plan: starter
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: python backend/retrain_worker.py
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "python backend/retrain_worker.py"
