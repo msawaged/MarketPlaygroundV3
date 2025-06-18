@@ -1,34 +1,82 @@
-import re
+# backend/belief_parser.py
+
+"""
+This module parses user beliefs into:
+1. Cleaned belief text.
+2. Detected asset class & directional sentiment (e.g., bullish/bearish).
+3. Vectorized representation for model prediction (via TF-IDF).
+"""
+
 import os
+import re
 import joblib
 
-# ✅ Load the vectorizer using a path relative to this file's directory
-# This ensures compatibility with both local and cloud environments (e.g., Render)
-belief_vectorizer = joblib.load(os.path.join(os.path.dirname(__file__), "belief_vectorizer.joblib"))
+# ✅ Load the vectorizer from the same directory (safe for local + Render)
+belief_vectorizer = joblib.load(
+    os.path.join(os.path.dirname(__file__), "belief_vectorizer.joblib")
+)
 
-# ✅ Clean up the user's belief string (remove special characters, lowercase, etc.)
-def clean_belief(belief: str) -> str:
-    belief = belief.lower()
-    belief = re.sub(r'[^a-zA-Z0-9\s]', '', belief)  # Remove punctuation/symbols
-    belief = re.sub(r'\s+', ' ', belief).strip()    # Normalize whitespace
-    return belief
+def clean_belief(text: str) -> str:
+    """
+    Cleans user belief text by lowercasing, removing special characters, etc.
 
-# ✅ Dummy asset/direction detection for now (upgradeable)
-# Extracts rough direction from user's text belief
-def detect_asset_and_direction(belief: str) -> tuple:
-    cleaned = clean_belief(belief)
+    Args:
+        text (str): Raw belief input like "TSLA will tank Monday"
+
+    Returns:
+        str: Cleaned and normalized belief string
+    """
+    text = text.lower()
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    return text.strip()
+
+
+def detect_asset_and_direction(text: str) -> dict:
+    """
+    Very simple hardcoded logic to classify direction and asset class.
+    (To be replaced later with ML classifier)
+
+    Args:
+        text (str): Cleaned belief string
+
+    Returns:
+        dict: {
+            "direction": "bullish" | "bearish" | "neutral",
+            "asset_class": "stocks" | "etfs" | "bonds" | "crypto" | "currencies"
+        }
+    """
+    text = text.lower()
 
     direction = "neutral"
-    if any(word in cleaned for word in ["up", "rise", "bull", "increase", "moon"]):
+    if any(word in text for word in ["rise", "up", "bull", "moon", "go higher"]):
         direction = "bullish"
-    elif any(word in cleaned for word in ["down", "fall", "bear", "drop", "crash"]):
+    elif any(word in text for word in ["drop", "down", "tank", "bear", "crash"]):
         direction = "bearish"
 
-    # Default to SPY if no specific asset mentioned
-    asset = "SPY"
-    for symbol in ["AAPL", "TSLA", "NVDA", "QQQ", "SPY", "AMZN", "MSFT", "META"]:
-        if symbol.lower() in cleaned:
-            asset = symbol
-            break
+    asset_class = "stocks"
+    if any(word in text for word in ["etf", "index", "spy", "qqq"]):
+        asset_class = "etfs"
+    elif any(word in text for word in ["bond", "treasury", "yield"]):
+        asset_class = "bonds"
+    elif any(word in text for word in ["bitcoin", "crypto", "eth", "ethereum"]):
+        asset_class = "crypto"
+    elif any(word in text for word in ["currency", "usd", "euro", "yen", "forex"]):
+        asset_class = "currencies"
 
-    return asset, direction
+    return {
+        "direction": direction,
+        "asset_class": asset_class,
+    }
+
+
+def vectorize_belief(text: str):
+    """
+    Converts belief string into numerical vector using pre-trained TF-IDF vectorizer.
+
+    Args:
+        text (str): Cleaned belief string
+
+    Returns:
+        sparse matrix: Vectorized belief input
+    """
+    return belief_vectorizer.transform([text])
