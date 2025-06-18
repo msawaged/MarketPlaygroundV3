@@ -1,19 +1,13 @@
 # backend/routes/strategy_router.py
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-
-from ai_engine.main_engine import process_belief
+from fastapi import APIRouter, Request
+from backend.ai_engine.ai_engine import run_ai_engine
 
 router = APIRouter()
 
-class BeliefRequest(BaseModel):
-    belief: str
-
 @router.post("/process_belief")
-async def process_user_belief(request: BeliefRequest):
-    try:
-        result = process_belief(request.belief)
-        return {"success": True, "result": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def process_belief(request: Request):
+    data = await request.json()
+    belief = data.get("belief", "")
+    result = run_ai_engine(belief)
+    return result
