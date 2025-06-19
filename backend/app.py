@@ -1,24 +1,46 @@
-# backend/app.py
-
+# app.py
 from fastapi import FastAPI
-from backend.routes.strategy_router import router as strategy_router
-from backend.routes.feedback_predictor import router as feedback_router  # ✅ Handles /predict_feedback
-from backend.background_tasks import background_retrain_loop  # 🔁 Background model retrainer
-import asyncio
+from pydantic import BaseModel
+from ai_engine import run_ai_engine
+from feedback_handler import submit_feedback, predict_feedback
 
-# ✅ Initialize FastAPI app
 app = FastAPI()
 
-# ✅ Root health check route
+# Request model for /process_belief
+class BeliefRequest(BaseModel):
+    belief: str
+
+# Request model for /submit_feedback
+class FeedbackRequest(BaseModel):
+    belief: str
+    feedback: str
+
+# Request model for /predict_feedback
+class FeedbackPredictionRequest(BaseModel):
+    belief: str
+
 @app.get("/")
 def root():
-    return {"message": "MarketPlayground API is running."}
+    return {"message": "MarketPlayground AI Backend is live!"}
 
-# ✅ Include all feature routers
-app.include_router(strategy_router)       # 🎯 Handles /process_belief
-app.include_router(feedback_router)       # 🧠 Predicts feedback from new strategy
+@app.post("/process_belief")
+def process_belief(data: BeliefRequest):
+    """
+    Process a user belief and return parsed strategy, asset, etc.
+    """
+    result = run_ai_engine(data.belief)
+    return result
 
-# ✅ Run background training loop on startup
-@app.on_event("startup")
-async def start_background_tasks():
-    asyncio.create_task(background_retrain_loop())
+@app.post("/submit_feedback")
+def submit_user_feedback(data: FeedbackRequest):
+    """
+    Store user feedback to improve model accuracy.
+    """
+    return submit_feedback(data.belief, data.feedback)
+
+@app.post("/predict_feedback")
+def predict_feedback_label(data: FeedbackPredictionRequest):
+    """
+    Predict feedback label for a belief using the feedback model.
+    """
+    return predict_feedback(data.belief)
