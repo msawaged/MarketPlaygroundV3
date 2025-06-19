@@ -1,55 +1,43 @@
+# feedback_trainer.py
+# ✅ This module reads user feedback and retrains all relevant models
+
+import os
 import pandas as pd
+from joblib import dump
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
-import joblib
-import os
 
-def train_model_from_feedback(feedback_csv_path: str = "backend/feedback.csv"):
-    """
-    Reads user feedback from a CSV file and retrains the strategy classification model.
-    Expects the CSV to have two columns: 'belief' and 'strategy_label'.
-
-    Parameters:
-    - feedback_csv_path (str): Path to the CSV file with feedback data.
-    """
-
+# ✅ This function is imported by retrain_worker.py and run on startup
+def train_from_feedback():
     print("🔁 Starting model retraining from feedback.csv...")
 
-    # Ensure we are using absolute path in Render (or fallback for local)
-    csv_path = os.path.abspath(feedback_csv_path)
+    # 🔍 Detect full path to feedback.csv relative to this file
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(base_dir, "feedback.csv")
     print(f"📂 Reading feedback data from: {csv_path}")
 
     try:
-        # Read CSV into DataFrame
         df = pd.read_csv(csv_path)
-
-        # ✅ Validate required columns
-        expected_columns = ['belief', 'strategy_label']
-        if not all(col in df.columns for col in expected_columns):
-            print(f"❌ CSV missing required columns: {expected_columns}")
-            return
-
-        print(f"📊 Loaded {len(df)} feedback records. Starting training...")
-        print(f"[train_model_from_feedback] 📂 Reading feedback data from: {df[['belief', 'strategy_label']]}")
-
-        # Split data into features and labels
-        X = df['belief']
-        y = df['strategy_label']
-
-        # Build a text classification pipeline
-        model = make_pipeline(TfidfVectorizer(), LogisticRegression(max_iter=1000))
-
-        # Train model on feedback
-        model.fit(X, y)
-
-        # Save the updated model and vectorizer
-        joblib.dump(model, "backend/feedback_model.joblib")
-        print("✅ Feedback model updated successfully.")
-
-    except FileNotFoundError:
-        print("❌ feedback.csv file not found.")
     except Exception as e:
-        print(f"[train_model_from_feedback] ❌ Unexpected error: {e}")
+        print(f"[train_from_feedback] ❌ Failed to read CSV: {e}")
+        return
+
+    required_cols = {"belief", "label"}
+    if not required_cols.issubset(df.columns):
+        print(f"[train_from_feedback] ❌ Missing required columns: {required_cols - set(df.columns)}")
+        return
+
+    # 🧠 Vectorize beliefs
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(df["belief"])
+    y = df["label"]
+
+    # 🏋️ Train simple logistic model
+    model = LogisticRegression()
+    model.fit(X, y)
+
+    # 💾 Save updated model and vectorizer
+    dump(model, os.path.join(base_dir, "feedback_model.joblib"))
+    dump(vectorizer, os.path.join(base_dir, "vectorizer.joblib"))
 
     print("✅ Retraining complete.")
