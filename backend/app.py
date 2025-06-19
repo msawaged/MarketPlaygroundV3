@@ -1,40 +1,36 @@
+# backend/app.py
+
 from fastapi import FastAPI
-from pydantic import BaseModel
-from ai_engine.ai_engine import run_ai_engine
-from feedback_handler import submit_feedback, predict_feedback
+from schemas import BeliefRequest  # Import the request body model
+from ai_engine.ai_engine import run_ai_engine  # Main strategy generation engine
+from feedback_handler import submit_feedback, predict_feedback  # Feedback endpoints
 
 app = FastAPI()
 
-# ✅ Define the request model for processing a belief
-class BeliefRequest(BaseModel):
-    belief: str
-
-# ✅ Define the request model for feedback submission
-class FeedbackRequest(BaseModel):
-    belief: str
-    feedback: str
-
-# ✅ Define the request model for feedback prediction
-class FeedbackPredictionRequest(BaseModel):
-    belief: str
-
-# ✅ Root endpoint
 @app.get("/")
-def read_root():
-    return {"message": "MarketPlayground AI Backend is live!"}
+def root():
+    # Basic health check endpoint
+    return {"message": "MarketPlayground API is live."}
 
-# ✅ Process belief and return strategy
 @app.post("/process_belief")
-def process_belief(data: BeliefRequest):
-    result = run_ai_engine(data.belief)
+def process_belief(request: BeliefRequest):
+    """
+    Takes a user belief (e.g., "TSLA will go up this week")
+    and returns the recommended strategy output as JSON.
+    """
+    result = run_ai_engine(request.belief)
     return result
 
-# ✅ Submit feedback from the user
 @app.post("/submit_feedback")
-def submit_user_feedback(data: FeedbackRequest):
-    return submit_feedback(data.belief, data.feedback)
+def submit_feedback_endpoint(feedback: dict):
+    """
+    Accepts feedback from the frontend to log user input on strategies.
+    """
+    return submit_feedback(feedback)
 
-# ✅ Predict feedback based on belief
 @app.post("/predict_feedback")
-def predict_user_feedback(data: FeedbackPredictionRequest):
-    return predict_feedback(data.belief)
+def predict_feedback_endpoint(request: dict):
+    """
+    Returns predicted label for given feedback-style input.
+    """
+    return predict_feedback(request)
