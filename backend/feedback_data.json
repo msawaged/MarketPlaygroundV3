@@ -48,5 +48,15 @@
       "suggested_allocation": "25% of trade capital"
     },
     "feedback": "good"
+  },
+  {
+    "belief": "AAPL will rise after product launch",
+    "strategy": {
+      "type": "Call Spread",
+      "description": "Buy AAPL 200c / Sell 210c",
+      "risk_level": "medium",
+      "suggested_allocation": "40% of trade capital"
+    },
+    "feedback": "good"
   }
 ]
