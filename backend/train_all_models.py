@@ -10,7 +10,7 @@ This script retrains ALL major models in the backend:
 import os
 from train_model import train_belief_model
 from train_multi_asset_model import train_asset_and_strategy_model
-from train_from_feedback import train_feedback_model
+from train_model import train_feedback_model
 
 
 def train_all_models():
