@@ -1,5 +1,6 @@
-belief,strategy_label
-TSLA will go up,bull_call_spread
-AAPL is going down,bear_put_spread
-The market will crash,put_option
-NVDA will rally hard,buy_call
+belief,label
+TSLA will go up,bullish
+AAPL might fall soon,bearish
+The market will crash,bearish
+MSFT looks strong,bullish
+QQQ is going to dip,bearish
