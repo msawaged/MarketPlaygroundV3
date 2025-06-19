@@ -1,20 +1,18 @@
+# retrain_worker.py
+# 🔁 Background worker to retrain model using new feedback data
+
 import os
-import pandas as pd
-from train_from_feedback import train_from_feedback
+from feedback_trainer import train_from_feedback  # ✅ Renamed import (was: train_from_feedback.py)
 
 if __name__ == "__main__":
     print("🔁 Starting model retraining from feedback.csv...")
 
-    # ✅ Dynamically determine the full path to feedback.csv
-    # This ensures compatibility with local runs AND Render, regardless of root directory
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(backend_dir, "feedback.csv")
+    # ✅ Resolve full path to feedback.csv for compatibility with both local and Render environments
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    feedback_path = os.path.join(current_dir, "feedback.csv")
+    print(f"📂 Reading feedback data from: {feedback_path}")
 
-    try:
-        # 🔁 Attempt to run the training pipeline using the feedback CSV
-        train_from_feedback(csv_path)
-        print("✅ Retraining complete.")
-    except FileNotFoundError as fnf_error:
-        print(f"[train_from_feedback] ❌ File not found: {csv_path}")
-    except Exception as e:
-        print(f"[train_from_feedback] ❌ Unexpected error: {e}")
+    # ✅ Call training function with full path
+    train_from_feedback(feedback_path)
+
+    print("✅ Retraining complete.")
