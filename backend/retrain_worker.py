@@ -1,45 +1,20 @@
-# backend/retrain_worker.py
+import os
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from joblib import dump
-import time
+from train_from_feedback import train_from_feedback
 
-CSV_PATH = "backend/feedback.csv"
-MODEL_PATH = "backend/feedback_model.joblib"
-
-def train_from_feedback():
+if __name__ == "__main__":
     print("🔁 Starting model retraining from feedback.csv...")
 
+    # ✅ Dynamically determine the full path to feedback.csv
+    # This ensures compatibility with local runs AND Render, regardless of root directory
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(backend_dir, "feedback.csv")
+
     try:
-        df = pd.read_csv(CSV_PATH)
-        print(f"[train_from_feedback] ✅ Loaded {len(df)} feedback entries.")
+        # 🔁 Attempt to run the training pipeline using the feedback CSV
+        train_from_feedback(csv_path)
+        print("✅ Retraining complete.")
+    except FileNotFoundError as fnf_error:
+        print(f"[train_from_feedback] ❌ File not found: {csv_path}")
     except Exception as e:
-        print(f"[train_from_feedback] ❌ Failed to read CSV: {e}")
-        return
-
-    # ✅ Check for required columns
-    if not {'strategy', 'label'}.issubset(df.columns):
-        print("[train_from_feedback] ❌ Missing 'strategy' or 'label' column.")
-        print(f"Columns found: {df.columns.tolist()}")
-        return
-
-    X = df["strategy"]
-    y = df["label"]
-
-    vectorizer = TfidfVectorizer()
-    X_vec = vectorizer.fit_transform(X)
-
-    model = LogisticRegression()
-    model.fit(X_vec, y)
-
-    dump((model, vectorizer), MODEL_PATH)
-    print("[train_from_feedback] ✅ Model trained and saved.")
-
-# Run once immediately
-train_from_feedback()
-
-# Optional: loop retrain every 30s (comment out if not needed)
-# while True:
-#     train_from_feedback()
-#     time.sleep(30)
+        print(f"[train_from_feedback] ❌ Unexpected error: {e}")
