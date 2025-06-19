@@ -1,23 +1,15 @@
-# backend/retrain_worker.py
+# retrain_worker.py
+# Background worker to retrain models periodically
 
-"""
-✅ FINAL: Auto-retrainer for all models on Render
-Fixes ModuleNotFoundError by using absolute import path from backend package.
-"""
-
-import os
-import sys
-
-# Add backend directory to system path for reliable imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Safe import from same folder
+import time
 from train_all_models import train_all_models
 
-print("🔁 Starting full backend model retraining...")
+def run_retraining_loop(interval=3600):
+    while True:
+        print("🔄 Running scheduled retraining...")
+        train_all_models()
+        print("⏲️ Waiting for next retraining cycle...")
+        time.sleep(interval)
 
-try:
-    train_all_models()
-    print("✅ All models retrained successfully.")
-except Exception as e:
-    print(f"❌ Error during model retraining: {e}")
+if __name__ == "__main__":
+    run_retraining_loop(interval=3600)  # Retrain every hour
