@@ -1,18 +1,20 @@
-# retrain_worker.py
-# 🔁 Background worker to retrain model using new feedback data
+# backend/retrain_worker.py
+
+"""
+This worker runs on Render to automatically retrain all models using feedback.csv
+and regenerate belief, asset, strategy, and feedback models.
+"""
 
 import os
-from feedback_trainer import train_from_feedback  # ✅ Renamed import (was: train_from_feedback.py)
+from train_all_models import train_all_models
 
-if __name__ == "__main__":
-    print("🔁 Starting model retraining from feedback.csv...")
+# Dynamic path resolution for cloud compatibility
+backend_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # ✅ Resolve full path to feedback.csv for compatibility with both local and Render environments
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    feedback_path = os.path.join(current_dir, "feedback.csv")
-    print(f"📂 Reading feedback data from: {feedback_path}")
+print("🔁 Starting full backend model retraining...")
 
-    # ✅ Call training function with full path
-    train_from_feedback(feedback_path)
-
-    print("✅ Retraining complete.")
+try:
+    train_all_models()
+    print("✅ All models retrained successfully.")
+except Exception as e:
+    print(f"❌ Error during model retraining: {e}")
