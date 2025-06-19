@@ -1,6 +1,11 @@
-belief,label
-TSLA will go up,bullish
-AAPL might fall soon,bearish
-The market will crash,bearish
-MSFT looks strong,bullish
-QQQ is going to dip,bearish
+belief,asset_class
+TSLA will go up,stocks
+AAPL is going to fall,stocks
+Bitcoin is crashing,crypto
+Ethereum will rebound,crypto
+The bond market is rallying,bonds
+Rates are going lower,bonds
+SPY will tank,etf
+QQQ is ready to bounce,etf
+Gold is a safe haven,commodities
+The yen is weakening,currencies
