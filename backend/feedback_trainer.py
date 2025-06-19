@@ -1,5 +1,5 @@
 # feedback_trainer.py
-# ✅ This module reads user feedback and retrains all relevant models
+# ✅ Handles retraining of models based on feedback.csv
 
 import os
 import pandas as pd
@@ -7,17 +7,13 @@ from joblib import dump
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-# ✅ This function is imported by retrain_worker.py and run on startup
-def train_from_feedback():
+# ✅ Accepts a custom path to the feedback CSV
+def train_from_feedback(feedback_path):
     print("🔁 Starting model retraining from feedback.csv...")
-
-    # 🔍 Detect full path to feedback.csv relative to this file
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(base_dir, "feedback.csv")
-    print(f"📂 Reading feedback data from: {csv_path}")
+    print(f"📂 Reading feedback data from: {feedback_path}")
 
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(feedback_path)
     except Exception as e:
         print(f"[train_from_feedback] ❌ Failed to read CSV: {e}")
         return
@@ -32,11 +28,12 @@ def train_from_feedback():
     X = vectorizer.fit_transform(df["belief"])
     y = df["label"]
 
-    # 🏋️ Train simple logistic model
+    # 🏋️ Train model
     model = LogisticRegression()
     model.fit(X, y)
 
-    # 💾 Save updated model and vectorizer
+    # 💾 Save updated files
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     dump(model, os.path.join(base_dir, "feedback_model.joblib"))
     dump(vectorizer, os.path.join(base_dir, "vectorizer.joblib"))
 
