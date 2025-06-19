@@ -1,23 +1,19 @@
-# render.yaml
-# ✅ This file configures both the web app and the background retraining worker for Render
-# ✅ We are using runtime.txt to specify the Python version, so we DO NOT include `pythonVersion` here
-
 services:
   - type: web
-    name: marketplayground-backend           # 🌐 Main FastAPI web app
+    name: marketplayground-backend
     env: python
-    plan: starter                            # 💸 Starter plan ($7/mo)
+    plan: starter
     buildCommand: "pip install -r requirements.txt"
     startCommand: "uvicorn app:app --host 0.0.0.0 --port 10000"
     envVars:
       - key: PORT
         value: 10000
-    rootDir: backend                         # 📁 Tells Render to run this from /backend
+    rootDir: backend
 
   - type: worker
-    name: retrain-worker                     # 🧠 Background worker for retraining model
+    name: retrain-worker
     env: python
-    plan: starter                            # 💸 Starter plan ($7/mo)
+    plan: starter
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python retrain_worker.py"
-    rootDir: backend                         # 📁 Also runs from /backend
+    rootDir: backend
