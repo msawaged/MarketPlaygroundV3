@@ -1,46 +1,50 @@
-# app.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from ai_engine import run_ai_engine
+from ai_engine.ai_engine import process_belief
 from feedback_handler import submit_feedback, predict_feedback
 
+# Initialize the FastAPI application
 app = FastAPI()
 
-# Request model for /process_belief
+# === Request Models ===
+
 class BeliefRequest(BaseModel):
     belief: str
 
-# Request model for /submit_feedback
 class FeedbackRequest(BaseModel):
     belief: str
-    feedback: str
+    feedback: str  # e.g., "good", "bad", "wrong", "accurate"
 
-# Request model for /predict_feedback
 class FeedbackPredictionRequest(BaseModel):
     belief: str
 
+# === Routes ===
+
 @app.get("/")
 def root():
-    return {"message": "MarketPlayground AI Backend is live!"}
+    return {"message": "MarketPlayground AI Backend is running ✅"}
 
 @app.post("/process_belief")
-def process_belief(data: BeliefRequest):
+def process_belief_endpoint(request: BeliefRequest):
     """
-    Process a user belief and return parsed strategy, asset, etc.
+    Process a market belief and return a strategy.
+    Input: {"belief": "TSLA will go up this week"}
+    Output: Cleaned belief, detected asset class, strategy suggestion, etc.
     """
-    result = run_ai_engine(data.belief)
-    return result
+    return process_belief(request.belief)
 
 @app.post("/submit_feedback")
-def submit_user_feedback(data: FeedbackRequest):
+def submit_feedback_endpoint(request: FeedbackRequest):
     """
-    Store user feedback to improve model accuracy.
+    Save user feedback to the feedback.csv file.
+    Input: {"belief": "...", "feedback": "..."}
     """
-    return submit_feedback(data.belief, data.feedback)
+    return submit_feedback(request.belief, request.feedback)
 
 @app.post("/predict_feedback")
-def predict_feedback_label(data: FeedbackPredictionRequest):
+def predict_feedback_endpoint(request: FeedbackPredictionRequest):
     """
-    Predict feedback label for a belief using the feedback model.
+    Predict whether a given belief is likely to receive positive or negative feedback.
+    Input: {"belief": "..."}
     """
-    return predict_feedback(data.belief)
+    return predict_feedback(request.belief)
