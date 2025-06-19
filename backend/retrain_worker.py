@@ -1,18 +1,17 @@
 # backend/retrain_worker.py
 
 """
-✅ FINAL: Render-compatible retraining script
-This automatically retrains all models using the train_all_models() pipeline.
+✅ FINAL: Auto-retrainer for all models on Render
+Fixes ModuleNotFoundError by using absolute import path from backend package.
 """
 
 import os
 import sys
 
-# Ensure the backend directory is in the path (important for cloud)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
+# Add backend directory to system path for reliable imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Now we can import from local file
+# Safe import from same folder
 from train_all_models import train_all_models
 
 print("🔁 Starting full backend model retraining...")
