@@ -1,46 +1,33 @@
 # train_multi_asset_model.py
 
-"""
-This module trains and saves models for asset class and strategy prediction.
-Used during auto-retraining from feedback data.
-"""
-
-import pandas as pd
 import joblib
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from pathlib import Path
 
-def train_asset_and_strategy_model(feedback_path="feedback.csv"):
+def train_multi_asset_model():
     """
-    Trains multi-asset and strategy models from the feedback.csv file.
-    Saves models and vectorizer to .joblib files.
+    Trains a multi-asset classifier from feedback.csv using 'belief' → 'asset_class'.
+    Saves the model and vectorizer.
     """
-    # Load feedback CSV
-    df = pd.read_csv(feedback_path)
+    df = pd.read_csv("feedback.csv")
 
-    if "belief" not in df.columns or "label" not in df.columns:
-        raise ValueError("feedback.csv must contain 'belief' and 'label' columns")
+    if "belief" not in df.columns or "asset_class" not in df.columns:
+        raise ValueError("feedback.csv must contain 'belief' and 'asset_class' columns.")
 
-    # Basic preprocessing
-    df["belief"] = df["belief"].astype(str).str.lower()
-    df["label"] = df["label"].astype(str)
+    X = df["belief"].astype(str)
+    y = df["asset_class"].astype(str)
 
-    # Initialize TF-IDF vectorizer
-    vectorizer = TfidfVectorizer(ngram_range=(1, 2), max_features=500)
-    X = vectorizer.fit_transform(df["belief"])
-    y = df["label"]
+    vectorizer = TfidfVectorizer()
+    X_vec = vectorizer.fit_transform(X)
 
-    # Train classifier
-    clf = LogisticRegression()
-    clf.fit(X, y)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_vec, y)
 
-    # Save models
-    joblib.dump(clf, "multi_asset_model.joblib")
+    joblib.dump(model, "multi_asset_model.joblib")
     joblib.dump(vectorizer, "multi_vectorizer.joblib")
+    print("✅ Multi-asset model trained and saved.")
 
-    print("✅ Multi-asset models trained and saved.")
-
-# Optional local test
+# Optional: run directly for testing
 if __name__ == "__main__":
-    train_asset_and_strategy_model()
+    train_multi_asset_model()
