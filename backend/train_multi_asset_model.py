@@ -1,40 +1,46 @@
 # train_multi_asset_model.py
-# This script trains a classifier to map beliefs to strategies across multiple asset types.
+
+"""
+This module trains and saves models for asset class and strategy prediction.
+Used during auto-retraining from feedback data.
+"""
 
 import pandas as pd
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from joblib import dump
+from pathlib import Path
 
-# Sample multi-asset belief-strategy training data
-data = [
-    {"belief": "I think NVDA will rise", "strategy": "Buy Call Option", "asset": "Options"},
-    {"belief": "TSLA will drop next week", "strategy": "Buy Put Option", "asset": "Options"},
-    {"belief": "I want stable income", "strategy": "Buy Treasury Bonds", "asset": "Bonds"},
-    {"belief": "The US dollar is falling", "strategy": "Short UUP", "asset": "ETF"},
-    {"belief": "Bitcoin is going to explode", "strategy": "Long BTC", "asset": "Crypto"},
-    {"belief": "I expect QQQ to crash", "strategy": "Buy QQQ Puts", "asset": "Options"},
-    {"belief": "The market is bullish", "strategy": "Buy SPY", "asset": "ETF"},
-    {"belief": "Gold is a safe bet now", "strategy": "Buy GLD", "asset": "ETF"},
-]
+def train_asset_and_strategy_model(feedback_path="feedback.csv"):
+    """
+    Trains multi-asset and strategy models from the feedback.csv file.
+    Saves models and vectorizer to .joblib files.
+    """
+    # Load feedback CSV
+    df = pd.read_csv(feedback_path)
 
-df = pd.DataFrame(data)
+    if "belief" not in df.columns or "label" not in df.columns:
+        raise ValueError("feedback.csv must contain 'belief' and 'label' columns")
 
-# Step 1: Vectorize beliefs
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(df["belief"])
+    # Basic preprocessing
+    df["belief"] = df["belief"].astype(str).str.lower()
+    df["label"] = df["label"].astype(str)
 
-# Step 2: Train strategy model
-strategy_model = LogisticRegression()
-strategy_model.fit(X, df["strategy"])
+    # Initialize TF-IDF vectorizer
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2), max_features=500)
+    X = vectorizer.fit_transform(df["belief"])
+    y = df["label"]
 
-# Step 3: Train asset type model
-asset_model = LogisticRegression()
-asset_model.fit(X, df["asset"])
+    # Train classifier
+    clf = LogisticRegression()
+    clf.fit(X, y)
 
-# Save models
-dump(vectorizer, "multi_vectorizer.joblib")
-dump(strategy_model, "multi_strategy_model.joblib")
-dump(asset_model, "multi_asset_model.joblib")
+    # Save models
+    joblib.dump(clf, "multi_asset_model.joblib")
+    joblib.dump(vectorizer, "multi_vectorizer.joblib")
 
-print("✅ Multi-asset models trained and saved.")
+    print("✅ Multi-asset models trained and saved.")
+
+# Optional local test
+if __name__ == "__main__":
+    train_asset_and_strategy_model()
