@@ -1,49 +1,32 @@
-# backend/train_model.py
+# train_model.py
 
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import joblib
-import os
 
-def train_model_from_feedback(csv_path="backend/feedback.csv"):
+def train_belief_model():
     """
-    Trains a logistic regression model from labeled strategy feedback.
-
-    Parameters:
-        csv_path (str): Path to the CSV file containing 'strategy' and 'label' columns.
-
-    Returns:
-        None. Saves updated model and vectorizer to disk.
+    Train a logistic regression model on belief text to classify tags.
+    Saves model as 'feedback_model.joblib' and vectorizer as 'vectorizer.joblib'
     """
-    print(f"[train_model_from_feedback] 📂 Reading feedback data from: {csv_path}")
-    
-    try:
-        df = pd.read_csv(csv_path)
+    df = pd.read_csv("feedback.csv")
+    if 'belief' not in df.columns or 'label' not in df.columns:
+        raise ValueError("CSV must contain 'belief' and 'label' columns.")
 
-        # Sanity check
-        if df.empty or 'strategy' not in df.columns or 'label' not in df.columns:
-            print("[train_model_from_feedback] ❌ Invalid or empty CSV structure.")
-            return
+    X = df["belief"]
+    y = df["label"]
 
-        print(f"[train_model_from_feedback] 📊 Loaded {len(df)} feedback records. Starting training...")
+    vectorizer = TfidfVectorizer()
+    X_vectorized = vectorizer.fit_transform(X)
 
-        # Vectorize strategy text
-        vectorizer = TfidfVectorizer()
-        X = vectorizer.fit_transform(df['strategy'])
-        y = df['label']
+    model = LogisticRegression()
+    model.fit(X_vectorized, y)
 
-        # Train logistic regression model
-        model = LogisticRegression()
-        model.fit(X, y)
+    joblib.dump(model, "feedback_model.joblib")
+    joblib.dump(vectorizer, "vectorizer.joblib")
+    print("✅ Belief model and vectorizer retrained and saved.")
 
-        # Save updated model + vectorizer
-        joblib.dump(model, os.path.join("backend", "feedback_model.joblib"))
-        joblib.dump(vectorizer, os.path.join("backend", "vectorizer.joblib"))
-
-        print("[train_model_from_feedback] ✅ Feedback model updated successfully.")
-
-    except FileNotFoundError:
-        print(f"[train_model_from_feedback] ❌ CSV file not found: {csv_path}")
-    except Exception as e:
-        print(f"[train_model_from_feedback] ❌ Unexpected error: {e}")
+# Optional CLI test runner
+if __name__ == "__main__":
+    train_belief_model()
