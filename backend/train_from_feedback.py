@@ -1,62 +1,49 @@
 # train_from_feedback.py
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-import joblib
+# Handles model retraining from logged feedback stored in feedback.csv
+
 import os
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+import joblib
 
-def main():
-    print("🔁 Starting model retraining from feedback.csv...")
-
-    # Load feedback data
-    filepath = os.path.join(os.path.dirname(__file__), "feedback_data.json")
-    if not os.path.exists(filepath):
-        print("[train_from_feedback] ❌ feedback_data.json not found.")
-        return
-
+def train_from_feedback():
+    """
+    Trains a feedback classifier using feedback.csv.
+    Safely handles dynamic file path resolution across local and cloud environments.
+    """
     try:
-        df = pd.read_json(filepath)
-        print(f"[train_from_feedback] ✅ Loaded {len(df)} feedback entries.")
+        # 🔍 Get the absolute path to this script
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # ✅ Locate feedback.csv relative to this script
+        csv_path = os.path.join(base_dir, 'feedback.csv')
+
+        print(f"[train_from_feedback] 📄 Attempting to load CSV at: {csv_path}")
+
+        # 📥 Load feedback data
+        df = pd.read_csv(csv_path)
+
+        # ✅ Make sure required columns exist
+        if 'belief' not in df.columns or 'label' not in df.columns:
+            raise ValueError("CSV must contain 'belief' and 'label' columns.")
+
+        # 🎯 Extract inputs and labels
+        X = df['belief']
+        y = df['label']
+
+        # 🔧 Convert text to features
+        vectorizer = TfidfVectorizer()
+        X_vec = vectorizer.fit_transform(X)
+
+        # 🧠 Train classifier
+        clf = LogisticRegression()
+        clf.fit(X_vec, y)
+
+        # 💾 Save model and vectorizer
+        joblib.dump((vectorizer, clf), os.path.join(base_dir, 'feedback_model.joblib'))
+
+        print(f"[train_from_feedback] ✅ Model retrained on {len(df)} entries and saved to feedback_model.joblib")
+
     except Exception as e:
-        print(f"[train_from_feedback] ❌ Failed to load feedback_data.json: {e}")
-        return
-
-    if "strategy" not in df.columns or "label" not in df.columns:
-        print("[train_from_feedback] ❌ Missing 'strategy' or 'label' column.")
-        return
-
-    # Preprocess: turn strategy names into features
-    X = df["strategy"]
-    y = df["label"]
-
-    if len(set(y)) < 2:
-        print("[train_from_feedback] ⚠️ Not enough label classes to train. Need both 0 and 1.")
-        return
-
-    X_encoded = pd.get_dummies(X)
-
-    try:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_encoded, y, test_size=0.2, random_state=42, stratify=y
-        )
-    except ValueError as e:
-        print(f"[train_from_feedback] ❌ train_test_split error: {e}")
-        return
-
-    model = LogisticRegression(max_iter=1000)
-    model.fit(X_train, y_train)
-    print("[train_from_feedback] ✅ Model trained.")
-
-    # Evaluate and report accuracy
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"[train_from_feedback] 🧠 Model accuracy: {accuracy:.2f}")
-
-    # Save model
-    model_path = os.path.join(os.path.dirname(__file__), "feedback_model.joblib")
-    joblib.dump(model, model_path)
-    print(f"[train_from_feedback] 💾 Saved model to {model_path}")
-
-if __name__ == "__main__":
-    main()
+        print(f"[train_from_feedback] ❌ Failed to read or train from feedback.csv: {e}")
