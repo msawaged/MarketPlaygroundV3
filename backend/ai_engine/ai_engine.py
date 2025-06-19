@@ -2,6 +2,8 @@
 
 from backend.belief_parser import clean_belief, detect_asset_and_direction
 from backend.strategy_selector import select_strategy
+from market_data import get_latest_price, get_weekly_high_low
+
 
 def run_ai_engine(belief: str) -> dict:
     print(f"[AI ENGINE] Received belief: {belief}")
