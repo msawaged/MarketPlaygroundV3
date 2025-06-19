@@ -1,15 +1,19 @@
 # backend/retrain_worker.py
 
 """
-This worker runs on Render to automatically retrain all models using feedback.csv
-and regenerate belief, asset, strategy, and feedback models.
+✅ FINAL: Render-compatible retraining script
+This automatically retrains all models using the train_all_models() pipeline.
 """
 
 import os
-from train_all_models import train_all_models
+import sys
 
-# Dynamic path resolution for cloud compatibility
-backend_dir = os.path.dirname(os.path.abspath(__file__))
+# Ensure the backend directory is in the path (important for cloud)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+
+# Now we can import from local file
+from train_all_models import train_all_models
 
 print("🔁 Starting full backend model retraining...")
 
