@@ -1,9 +1,9 @@
 # backend/app.py
 
 from fastapi import FastAPI
-from schemas import BeliefRequest  # ✅ CORRECT for Render
-from ai_engine.ai_engine import run_ai_engine
-from feedback_handler import submit_feedback, predict_feedback
+from backend.schemas import BeliefRequest  # ✅ FIXED for Render context
+from backend.ai_engine.ai_engine import run_ai_engine
+from backend.feedback_handler import submit_feedback, predict_feedback
 
 app = FastAPI()
 
