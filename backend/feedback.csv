@@ -1,11 +1,4 @@
-belief,asset_class
-TSLA will go up,stocks
-AAPL is going to fall,stocks
-Bitcoin is crashing,crypto
-Ethereum will rebound,crypto
-The bond market is rallying,bonds
-Rates are going lower,bonds
-SPY will tank,etf
-QQQ is ready to bounce,etf
-Gold is a safe haven,commodities
-The yen is weakening,currencies
+belief,label,asset_class
+AAPL will go up,bullish,stocks
+TSLA will crash,bearish,stocks
+I believe the market will recover,bullish,etf
