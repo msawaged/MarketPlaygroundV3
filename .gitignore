@@ -20,19 +20,20 @@ build/
 # Logs and metadata
 *.log
 
-# Model and cache files (ignore all by default)
-*.joblib
+# Model and cache files
+# Ignore models *outside* backend, but allow inside backend
 *.pkl
 *.h5
 *.pt
 
-# ✅ Allow feedback model to be tracked for deployment
-!backend/feedback_model.joblib
+# ✅ Allow all .joblib models in backend folder
+!backend/*.joblib
+
+# ✅ Allow feedback data to be tracked
+!backend/feedback.csv
 
 # ✅ Allow runtime.txt to be tracked for Render
 !runtime.txt
 
 # VS Code settings
 .vscode/
-
-!backend/feedback.csv
