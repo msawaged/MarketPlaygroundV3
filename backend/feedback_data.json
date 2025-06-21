@@ -58,5 +58,15 @@
       "suggested_allocation": "40% of trade capital"
     },
     "feedback": "good"
+  },
+  {
+    "belief": "Apple will drop tomorrow",
+    "strategy": {
+      "type": "Simple Put",
+      "description": "Buy Put on SPY near $-1.00",
+      "risk_level": "high",
+      "suggested_allocation": "25% of trade capital"
+    },
+    "feedback": "bad"
   }
 ]
