@@ -1,46 +1,42 @@
-# backend/market_data.py
-# 🔁 Real-time market data fetching using yfinance
+# market_data.py
+# Safely updated to include all price-related functions needed by the backend.
 
 import yfinance as yf
-from datetime import datetime
 
-def get_live_price(ticker: str) -> float:
+def get_price(ticker):
     """
-    Returns the latest price for a given ticker symbol.
+    Fetch latest 1-minute close price (fast intraday lookup).
     """
     try:
-        data = yf.Ticker(ticker)
-        price = data.history(period="1d")["Close"].iloc[-1]
-        print(f"[market_data] ✅ Live price for {ticker}: {price}")
-        return price
+        data = yf.download(ticker, period="1d", interval="1m")
+        if not data.empty:
+            return round(data["Close"].iloc[-1], 2)
+        return None
     except Exception as e:
-        print(f"[market_data] ❌ Error fetching live price for {ticker}: {e}")
-        return -1
+        print(f"[ERROR] get_price() failed for {ticker}: {e}")
+        return None
 
-def get_expiry_dates(ticker: str, max_dates: int = 3) -> list:
+def get_latest_price(ticker: str) -> float:
     """
-    Returns a list of upcoming option expiration dates.
+    Fetch latest closing price using yfinance (daily close).
     """
     try:
-        data = yf.Ticker(ticker)
-        expiries = data.options[:max_dates]
-        print(f"[market_data] ✅ Expiry dates for {ticker}: {expiries}")
-        return expiries
+        data = yf.Ticker(ticker).history(period="1d")
+        latest_price = data["Close"].iloc[-1]
+        return round(float(latest_price), 2)
     except Exception as e:
-        print(f"[market_data] ❌ Error fetching expiries for {ticker}: {e}")
-        return []
+        print(f"[ERROR] get_latest_price() failed for {ticker}: {e}")
+        return -1.0
 
-def get_option_strikes(ticker: str, expiry: str) -> list:
+def get_weekly_high_low(ticker: str) -> tuple:
     """
-    Returns available option strike prices for a given ticker and expiry.
+    Fetch weekly high/low prices using yfinance.
     """
     try:
-        option_chain = yf.Ticker(ticker).option_chain(expiry)
-        calls = option_chain.calls['strike'].tolist()
-        puts = option_chain.puts['strike'].tolist()
-        strikes = sorted(set(calls + puts))
-        print(f"[market_data] ✅ Option strikes for {ticker} on {expiry}: {strikes[:5]}...")
-        return strikes
+        data = yf.Ticker(ticker).history(period="7d")
+        high = data["High"].max()
+        low = data["Low"].min()
+        return round(float(high), 2), round(float(low), 2)
     except Exception as e:
-        print(f"[market_data] ❌ Error fetching option strikes: {e}")
-        return []
+        print(f"[ERROR] get_weekly_high_low() failed for {ticker}: {e}")
+        return (-1.0, -1.0)

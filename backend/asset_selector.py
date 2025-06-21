@@ -1,31 +1,26 @@
-# backend/asset_selector.py
+# asset_selector.py
+# Updated to accept tags and optional ticker (instead of full belief string)
 
-"""
-This module detects which asset class (stocks, ETFs, bonds, crypto, etc.)
-is most relevant based on the user's belief or strategy goal.
-"""
-
-def detect_asset_class(belief: str) -> str:
+def select_asset_class(tags: list, ticker: str = "") -> str:
     """
-    Infers asset class from the belief text.
+    Determines the most relevant asset class based on parsed tags and optional ticker.
 
-    Parameters:
-        belief (str): User's belief input (e.g., "the market will tank")
+    Args:
+        tags (list): Keywords extracted from belief
+        ticker (str): Optional ticker symbol for override logic
 
     Returns:
-        str: One of ['stocks', 'etfs', 'bonds', 'crypto', 'currencies']
+        str: One of ['stocks', 'options', 'etf', 'bonds', 'crypto']
     """
-    belief = belief.lower()
+    tags = [t.lower() for t in tags]
 
-    if any(term in belief for term in ['stock', 'equity', 'company', 'share']):
-        return 'stocks'
-    elif any(term in belief for term in ['etf', 'index fund', 'spy', 'qqq', 'iwm']):
-        return 'etfs'
-    elif any(term in belief for term in ['bond', 'yield', 'treasury']):
-        return 'bonds'
-    elif any(term in belief for term in ['bitcoin', 'crypto', 'ethereum', 'altcoin']):
-        return 'crypto'
-    elif any(term in belief for term in ['forex', 'currency', 'dollar', 'euro', 'yen']):
-        return 'currencies'
+    if any(x in tags for x in ["bond", "treasury", "yield", "interest", "fixed income"]):
+        return "bonds"
+    elif any(x in tags for x in ["stock", "equity", "share"]):
+        return "stocks"
+    elif any(x in tags for x in ["etf", "fund", "index", "spy", "qqq"]):
+        return "etf"
+    elif any(x in tags for x in ["crypto", "bitcoin", "btc", "eth", "ethereum", "solana"]):
+        return "crypto"
     else:
-        return 'stocks'  # default fallback
+        return "options"

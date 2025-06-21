@@ -1,40 +1,57 @@
-# backend/strategy_selector.py
-# 📊 Strategy selection based on direction, confidence, and market data
+# strategy_selector.py
+# Selects a trading strategy based on parsed belief and optional price info
 
-def select_strategy(direction: str, confidence: str, ticker: str, live_price: float, expiries: list) -> dict:
+def select_strategy(
+    belief: str,
+    direction: str,
+    confidence: str,
+    asset_class: str,
+    ticker: str = "",
+    price_info=None  # can be dict or float
+) -> str:
     """
-    Picks a basic spread or directional option strategy based on market data.
-    """
-    try:
-        price = round(live_price, 2)
-        expiry = expiries[0] if expiries else "N/A"
+    Selects the most appropriate trading strategy.
 
-        if direction == "bullish":
-            return {
-                "type": "Bull Call Spread",
-                "legs": f"Buy {ticker} {price - 5}c / Sell {ticker} {price + 5}c",
-                "expiry": expiry,
-                "payout": "2x"
-            }
-        elif direction == "bearish":
-            return {
-                "type": "Bear Put Spread",
-                "legs": f"Buy {ticker} {price + 5}p / Sell {ticker} {price - 5}p",
-                "expiry": expiry,
-                "payout": "1.8x"
-            }
-        else:
-            return {
-                "type": "Neutral Strategy",
-                "legs": f"Sell {ticker} {price}c / Sell {ticker} {price}p",
-                "expiry": expiry,
-                "payout": "1.5x"
-            }
-    except Exception as e:
-        print(f"[strategy_selector] ❌ Strategy selection error: {e}")
-        return {
-            "type": "Fallback",
-            "legs": f"Buy {ticker} {price}c",
-            "expiry": "N/A",
-            "payout": "1x"
-        }
+    Args:
+        belief (str): Natural language belief.
+        direction (str): 'bullish', 'bearish', or 'neutral'.
+        confidence (str): 'high', 'medium', or 'low'.
+        asset_class (str): 'stocks', 'options', 'crypto', 'bonds', 'etf'.
+        ticker (str): Optional ticker for strategy context.
+        price_info: Can be a dict like {'latest': 123.4} or a float like 123.4
+
+    Returns:
+        str: A simple strategy recommendation string.
+    """
+
+    # Format the price intelligently
+    if isinstance(price_info, dict) and 'latest' in price_info:
+        price_str = f" near ${price_info['latest']:.2f}"
+    elif isinstance(price_info, float):
+        price_str = f" near ${price_info:.2f}"
+    else:
+        price_str = ""
+
+    # Crypto logic
+    if asset_class == "crypto":
+        return f"Buy {ticker or 'BTC'} if confidence is high{price_str}, otherwise wait"
+
+    # Bonds logic
+    if asset_class == "bonds":
+        return "Long-duration bond ETF if expecting rate cuts"
+
+    # ETF logic
+    if asset_class == "etf":
+        return f"Buy call options on {ticker} if bullish{price_str}, or protective puts if bearish"
+
+    # Stocks/options logic
+    if direction == "bullish" and confidence == "high":
+        return f"Bull Call Spread on {ticker}{price_str}"
+    elif direction == "bearish" and confidence == "high":
+        return f"Bear Put Spread on {ticker}{price_str}"
+    elif direction == "bullish":
+        return f"Buy Call on {ticker}{price_str}"
+    elif direction == "bearish":
+        return f"Buy Put on {ticker}{price_str}"
+    else:
+        return f"Iron Condor on {ticker or 'underlying asset'}"
