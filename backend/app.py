@@ -1,23 +1,44 @@
-# ✅ FastAPI app main entry point
+# backend/app.py
+
 from fastapi import FastAPI
 from pydantic import BaseModel
-
-# ✅ Import the AI processing engine
+from typing import Optional
 from backend.ai_engine.ai_engine import run_ai_engine
+from backend.feedback_handler import save_feedback, predict_feedback
 
-# ✅ Create FastAPI instance
 app = FastAPI()
 
-# ✅ Define input schema using Pydantic so Swagger UI displays an input box
-class BeliefRequest(BaseModel):
+
+# ✅ Request body models
+class BeliefInput(BaseModel):
     belief: str
 
-# ✅ Endpoint to process natural-language belief and return AI-generated strategy
+class FeedbackInput(BaseModel):
+    belief: str
+    category: str
+    feedback: str
+
+class PredictFeedbackInput(BaseModel):
+    belief: str
+    strategy: str
+
+
+@app.get("/")
+def read_root():
+    return {"message": "MarketPlayground AI backend is live."}
+
+
+# ✅ Properly defined POST route with input model
 @app.post("/process_belief")
-def process_belief(request: BeliefRequest):
-    """
-    Accepts a JSON object like {"belief": "TSLA will go up this week"}
-    and returns a trading strategy recommendation.
-    """
-    result = run_ai_engine(request.belief)
-    return result
+def process_belief(input_data: BeliefInput):
+    return run_ai_engine(input_data.belief)
+
+
+@app.post("/submit_feedback")
+def submit_feedback(feedback: FeedbackInput):
+    return save_feedback(feedback.dict())
+
+
+@app.post("/predict_feedback")
+def predict_feedback_endpoint(data: PredictFeedbackInput):
+    return predict_feedback(data.dict())
