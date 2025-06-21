@@ -1,81 +1,70 @@
 # backend/app.py
+# Main FastAPI app that processes market beliefs and handles feedback.
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from backend.ai_engine.ai_engine import run_ai_engine
-from backend.feedback_handler import log_feedback
-from backend.feedback_trainer import train_from_feedback
-from backend.utils.model_utils import load_model
-import subprocess
+from typing import Dict, Any
+from ai_engine.ai_engine import run_ai_engine
+import json
+import os
+from datetime import datetime
 
-app = FastAPI(title="MarketPlayground AI API 🚀")
+# Initialize the FastAPI app
+app = FastAPI()
 
+# Load feedback model once at startup (not currently used in this file, but ready for prediction features)
+print("✅ Loading feedback model...")
 
-# ==== REQUEST SCHEMAS ====
-
+# Define request body schema for /process_belief endpoint
 class BeliefRequest(BaseModel):
     belief: str
 
-
+# Define request body schema for /submit_feedback endpoint
 class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
-    feedback: str  # e.g., "positive" or "negative"
+    feedback: str
 
-
-# ==== MAIN ENDPOINT ====
-
+# === POST /process_belief ===
+# Input: natural language belief string
+# Output: strategy dict based on interpreted AI processing
 @app.post("/process_belief")
-def process_belief(request: BeliefRequest):
-    """
-    🔍 Interpret a belief and return a strategy.
-    """
-    result = run_ai_engine(request.belief)
-    return result
-
-
-# ==== FEEDBACK ENDPOINT ====
-
-@app.post("/feedback")
-def feedback_endpoint(request: FeedbackRequest):
-    """
-    💬 Log user feedback for model learning.
-    """
-    log_feedback(request.belief, request.strategy, request.feedback)
-    return {"message": "✅ Feedback recorded successfully."}
-
-
-# ==== TRAINING ENDPOINT ====
-
-@app.post("/train_from_feedback")
-def train_endpoint():
-    """
-    🧠 Retrain model from collected feedback.
-    """
-    train_from_feedback()
-    return {"message": "🔁 Model retrained from feedback."}
-
-
-# ==== TEMPORARY BELIEF MODEL RETRAIN ENDPOINT ====
-
-@app.post("/retrain-belief-model")
-def retrain_belief_model():
-    """
-    🔧 TEMP: Manually retrain the belief model (runs train_belief_model.py).
-    """
+def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
-        result = subprocess.run(
-            ["python", "train_belief_model.py"],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        return {
-            "message": "✅ Belief model retrained.",
-            "output": result.stdout
+        result = run_ai_engine(request.belief)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# === POST /submit_feedback ===
+# Input: user feedback on AI's selected strategy
+# Appends structured record to feedback_data.json for ML learning
+@app.post("/submit_feedback")
+def submit_feedback(request: FeedbackRequest):
+    try:
+        feedback_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "belief": request.belief,
+            "strategy": request.strategy,
+            "result": request.feedback
         }
-    except subprocess.CalledProcessError as e:
-        return {
-            "error": "❌ Training failed.",
-            "details": e.stderr
-        }
+
+        # Path to the feedback file
+        feedback_file = os.path.join(os.path.dirname(__file__), "feedback_data.json")
+
+        # Load existing feedback
+        if os.path.exists(feedback_file):
+            with open(feedback_file, "r") as f:
+                feedback_list = json.load(f)
+        else:
+            feedback_list = []
+
+        # Append and save updated list
+        feedback_list.append(feedback_entry)
+        with open(feedback_file, "w") as f:
+            json.dump(feedback_list, f, indent=2)
+
+        return {"message": "✅ Feedback saved successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
