@@ -1,12 +1,22 @@
 # backend/schemas.py
+# ✅ Defines data models used for request validation across the app
 
 from pydantic import BaseModel
+from typing import Optional
 
-# This model defines the expected input schema for the /process_belief endpoint
+# --- User Authentication ---
+class UserAuth(BaseModel):
+    username: str
+    password: str
+
+# --- Belief Input ---
 class BeliefRequest(BaseModel):
-    belief: str  # Natural language market belief, e.g., "TSLA will go up this week"
+    belief: str
+    user_id: Optional[str] = None  # Optional field for identifying user sessions
 
-    class FeedbackInput(BaseModel):
+# --- Feedback Submission ---
+class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
-    result: str  # e.g., "positive", "negative", "missed"
+    feedback: str
+    user_id: Optional[str] = None  # Optional field for personalized feedback

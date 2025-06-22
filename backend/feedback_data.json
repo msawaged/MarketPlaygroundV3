@@ -204,5 +204,51 @@
     "belief": "COIN will soar if BTC hits $100k",
     "strategy": "Buy COIN 250c",
     "result": "good"
+  },
+  {
+    "timestamp": "2025-06-22T01:47:08.753357",
+    "user_id": "murad_test",
+    "belief": "TSLA will go up this week",
+    "strategy": {
+      "strategy": "Buy Call on TSLA near $-1.00",
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bullish",
+      "price_info": -1.0,
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.62,
+      "user_id": "murad_test"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T01:48:17.908464",
+    "user_id": "murad_test",
+    "belief": "TSLA will go up this week",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "legs": [
+        {
+          "action": "Buy",
+          "ticker": "TSLA",
+          "strike": 250,
+          "type": "call"
+        },
+        {
+          "action": "Sell",
+          "ticker": "TSLA",
+          "strike": 260,
+          "type": "call"
+        }
+      ],
+      "expiry": "2025-07-19"
+    },
+    "result": "good"
   }
 ]
