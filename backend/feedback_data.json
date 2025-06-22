@@ -2,10 +2,10 @@
   {
     "belief": "TSLA will go up this week",
     "strategy": {
-      "type": "Default Strategy",
-      "description": "Buy diversified ETF or broad market asset.",
-      "risk_level": "moderate",
-      "suggested_allocation": "50% of trade capital"
+      "type": "Call Spread",
+      "description": "Buy TSLA 250c / Sell 270c",
+      "risk_level": "medium",
+      "suggested_allocation": "30% of trade capital"
     },
     "feedback": "good"
   },
@@ -13,9 +13,9 @@
     "belief": "NVDA will fall after earnings",
     "strategy": {
       "type": "Put Spread",
-      "description": "Buy NVDA put 400 / Sell 390 put",
+      "description": "Buy NVDA 400p / Sell 390p",
       "risk_level": "high",
-      "suggested_allocation": "25% of trade capital"
+      "suggested_allocation": "20% of trade capital"
     },
     "feedback": "bad"
   },
@@ -25,7 +25,7 @@
       "type": "Call Spread",
       "description": "Buy AAPL 180c / Sell 190c",
       "risk_level": "medium",
-      "suggested_allocation": "30% of trade capital"
+      "suggested_allocation": "25% of trade capital"
     },
     "feedback": "good"
   },
@@ -40,33 +40,169 @@
     "feedback": "bad"
   },
   {
-    "belief": "TSLA will go up this week",
+    "belief": "MSFT will soar after new AI announcement",
     "strategy": {
-      "type": "Put Spread",
-      "description": "Buy TSLA put 300 / Sell 290 put",
+      "type": "Call Option",
+      "description": "Buy MSFT 350c",
+      "risk_level": "medium",
+      "suggested_allocation": "30% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "AMZN will struggle this quarter",
+    "strategy": {
+      "type": "Put Option",
+      "description": "Buy AMZN 110p",
+      "risk_level": "medium",
+      "suggested_allocation": "25% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "GOOGL will rise after cloud earnings",
+    "strategy": {
+      "type": "Call Spread",
+      "description": "Buy GOOGL 140c / Sell 150c",
+      "risk_level": "low",
+      "suggested_allocation": "35% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "TSLA will fall due to poor delivery numbers",
+    "strategy": {
+      "type": "Put Option",
+      "description": "Buy TSLA 220p",
       "risk_level": "high",
+      "suggested_allocation": "15% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "NFLX will rebound from recent drop",
+    "strategy": {
+      "type": "Call Spread",
+      "description": "Buy NFLX 420c / Sell 440c",
+      "risk_level": "medium",
       "suggested_allocation": "25% of trade capital"
     },
     "feedback": "good"
   },
   {
-    "belief": "AAPL will rise after product launch",
+    "belief": "BA will tank after FAA ruling",
     "strategy": {
-      "type": "Call Spread",
-      "description": "Buy AAPL 200c / Sell 210c",
-      "risk_level": "medium",
+      "type": "Put Spread",
+      "description": "Buy BA 190p / Sell 180p",
+      "risk_level": "high",
+      "suggested_allocation": "20% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "SPY will climb steadily next month",
+    "strategy": {
+      "type": "Call Option",
+      "description": "Buy SPY 450c",
+      "risk_level": "low",
       "suggested_allocation": "40% of trade capital"
     },
     "feedback": "good"
   },
   {
-    "belief": "Apple will drop tomorrow",
+    "belief": "QQQ will drop during tech pullback",
     "strategy": {
-      "type": "Simple Put",
-      "description": "Buy Put on SPY near $-1.00",
+      "type": "Put Option",
+      "description": "Buy QQQ 360p",
+      "risk_level": "medium",
+      "suggested_allocation": "20% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "NVDA will continue to rally",
+    "strategy": {
+      "type": "Call Spread",
+      "description": "Buy NVDA 460c / Sell 470c",
+      "risk_level": "medium",
+      "suggested_allocation": "30% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "Intel will miss earnings",
+    "strategy": {
+      "type": "Put Option",
+      "description": "Buy INTC 32p",
+      "risk_level": "low",
+      "suggested_allocation": "15% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "AMD will jump after GPU release",
+    "strategy": {
+      "type": "Call Option",
+      "description": "Buy AMD 130c",
+      "risk_level": "medium",
+      "suggested_allocation": "30% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "ARKK will decline with inflation fears",
+    "strategy": {
+      "type": "Put Option",
+      "description": "Buy ARKK 40p",
+      "risk_level": "medium",
+      "suggested_allocation": "20% of trade capital"
+    },
+    "feedback": "bad"
+  },
+  {
+    "belief": "AAPL will stay flat this week",
+    "strategy": {
+      "type": "Iron Condor",
+      "description": "Sell AAPL 190c / Buy 195c | Sell 180p / Buy 175p",
+      "risk_level": "low",
+      "suggested_allocation": "20% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "belief": "TSLA will spike after Cybertruck delivery",
+    "strategy": {
+      "type": "Call Option",
+      "description": "Buy TSLA 270c",
       "risk_level": "high",
       "suggested_allocation": "25% of trade capital"
     },
+    "feedback": "good"
+  },
+  {
+    "belief": "BABA will tank from China news",
+    "strategy": {
+      "type": "Put Spread",
+      "description": "Buy BABA 90p / Sell 85p",
+      "risk_level": "medium",
+      "suggested_allocation": "20% of trade capital"
+    },
     "feedback": "bad"
+  },
+  {
+    "belief": "COIN will soar if BTC hits $100k",
+    "strategy": {
+      "type": "Call Option",
+      "description": "Buy COIN 250c",
+      "risk_level": "high",
+      "suggested_allocation": "30% of trade capital"
+    },
+    "feedback": "good"
+  },
+  {
+    "timestamp": "2025-06-22T00:19:19.919162",
+    "belief": "COIN will soar if BTC hits $100k",
+    "strategy": "Buy COIN 250c",
+    "result": "good"
   }
 ]

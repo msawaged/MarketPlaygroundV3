@@ -1,40 +1,68 @@
-# feedback_trainer.py
-# ✅ Handles retraining of models based on feedback.csv
-
-import os
+import json
 import pandas as pd
-from joblib import dump
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+import os
 
-# ✅ Accepts a custom path to the feedback CSV
-def train_from_feedback(feedback_path):
-    print("🔁 Starting model retraining from feedback.csv...")
-    print(f"📂 Reading feedback data from: {feedback_path}")
+# ✅ Define dynamic path to JSON and output model
+base_dir = os.path.dirname(os.path.abspath(__file__))
+feedback_file = os.path.join(base_dir, "feedback_data.json")
+model_output = os.path.join(base_dir, "feedback_model.joblib")
 
-    try:
-        df = pd.read_csv(feedback_path)
-    except Exception as e:
-        print(f"[train_from_feedback] ❌ Failed to read CSV: {e}")
-        return
+# ✅ Load and normalize feedback data
+with open(feedback_file, "r") as f:
+    raw_data = json.load(f)
 
-    required_cols = {"belief", "label"}
-    if not required_cols.issubset(df.columns):
-        print(f"[train_from_feedback] ❌ Missing required columns: {required_cols - set(df.columns)}")
-        return
+clean_data = []
 
-    # 🧠 Vectorize beliefs
-    vectorizer = TfidfVectorizer()
-    X = vectorizer.fit_transform(df["belief"])
-    y = df["label"]
+for entry in raw_data:
+    belief = entry.get("belief", "")
+    feedback = entry.get("feedback") or entry.get("result")
+    strategy = entry.get("strategy", {})
 
-    # 🏋️ Train model
-    model = LogisticRegression()
-    model.fit(X, y)
+    # Normalize strategy into text
+    if isinstance(strategy, dict):
+        strategy_text = f"{strategy.get('type', '')} {strategy.get('description', '')} {strategy.get('risk_level', '')} {strategy.get('suggested_allocation', '')}"
+    else:
+        strategy_text = str(strategy)
 
-    # 💾 Save updated files
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    dump(model, os.path.join(base_dir, "feedback_model.joblib"))
-    dump(vectorizer, os.path.join(base_dir, "vectorizer.joblib"))
+    if belief and feedback and strategy_text:
+        clean_data.append({
+            "text": f"{belief} => {strategy_text}",
+            "label": 1 if feedback.lower() == "good" else 0
+        })
 
-    print("✅ Retraining complete.")
+# ✅ Check data quality
+if not clean_data:
+    print("❌ No valid data found in feedback_data.json.")
+    exit()
+
+# ✅ Convert to DataFrame
+df = pd.DataFrame(clean_data)
+print("✅ Loaded training data:")
+print(df.head())
+
+# ✅ Train/test split
+X_train, X_test, y_train, y_test = train_test_split(df["text"], df["label"], test_size=0.2, random_state=42)
+
+# ✅ Build pipeline: TF-IDF + Logistic Regression
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer()),
+    ('clf', LogisticRegression())
+])
+
+pipeline.fit(X_train, y_train)
+print("✅ Model trained.")
+
+# ✅ Evaluate and show results
+y_pred = pipeline.predict(X_test)
+print("📊 Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# ✅ Save the model
+joblib.dump(pipeline, model_output)
+print(f"✅ Feedback model saved to {model_output}")
