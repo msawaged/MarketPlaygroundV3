@@ -425,5 +425,75 @@
       "user_id": "anonymous"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T17:57:49.606512",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting AAPL will pop this week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Straddle",
+        "description": "Buy AAPL 190c + Buy AAPL 190p",
+        "risk_level": "high",
+        "suggested_allocation": "20%",
+        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        192.75,
+        186.8
+      ],
+      "confidence": 0.63,
+      "goal_type": "double_money",
+      "multiplier": 2.0,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T19:52:25.575129",
+    "user_id": "anonymous",
+    "belief": "I believe AAPL will go up this week",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 201.0
+      },
+      "high_low": [
+        201.7,
+        196.85
+      ],
+      "confidence": 0.72,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I believe AAPL will go up this week', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
   }
 ]
