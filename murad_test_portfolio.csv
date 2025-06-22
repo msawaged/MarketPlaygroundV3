@@ -1,4 +1,0 @@
-timestamp,belief,strategy
-2025-06-22T01:58:55.475771,TSLA will moon,"{""type"": ""Call"", ""ticker"": ""TSLA""}"
-2025-06-22T03:15:51.676298,TSLA will moon,"{""type"": ""Call"", ""ticker"": ""TSLA""}"
-2025-06-22T03:33:40.492520,AAPL will go up next week,"{""type"": ""Call Spread"", ""description"": ""Buy 190c / Sell 195c"", ""risk_level"": ""medium"", ""suggested_allocation"": ""25%""}"

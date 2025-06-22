@@ -36,3 +36,11 @@ build/
 # VS Code settings
 .vscode/
 .DS_Store
+
+# Ignore output charts and user-generated files
+*.png
+*.csv
+user_portfolios.json
+
+# Ignore test scripts unless needed
+test_api.py
