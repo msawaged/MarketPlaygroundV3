@@ -4,7 +4,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
-from ai_engine.ai_engine import run_ai_engine
+from backend.ai_engine.ai_engine import run_ai_engine
 import json
 import os
 from datetime import datetime
