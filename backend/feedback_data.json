@@ -250,5 +250,180 @@
       "expiry": "2025-07-19"
     },
     "result": "good"
+  },
+  {
+    "timestamp": "2025-06-22T17:39:59.434630",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting AAPL will pop this week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Straddle",
+        "description": "Buy AAPL -1c + Buy AAPL -1p",
+        "risk_level": "high",
+        "suggested_allocation": "20%",
+        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.63,
+      "goal_type": "double_money",
+      "multiplier": 2.0,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T17:42:13.677084",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting AAPL will pop this week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Straddle",
+        "description": "Buy AAPL -1c + Buy AAPL -1p",
+        "risk_level": "high",
+        "suggested_allocation": "20%",
+        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.63,
+      "goal_type": "double_money",
+      "multiplier": 2.0,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T17:42:49.645605",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting AAPL will pop this week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Straddle",
+        "description": "Buy AAPL -1c + Buy AAPL -1p",
+        "risk_level": "high",
+        "suggested_allocation": "20%",
+        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.63,
+      "goal_type": "double_money",
+      "multiplier": 2.0,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T17:43:09.162104",
+    "user_id": "anonymous",
+    "belief": "AAPL will move big this week but I\u2019m unsure on direction",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.53,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'AAPL will move big this week but I\u2019m unsure on direction', The system saw this as expecting volatility in AAPL. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T17:43:20.142745",
+    "user_id": "anonymous",
+    "belief": "TSLA will crash next week",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        -1.0,
+        -1.0
+      ],
+      "confidence": 0.51,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'TSLA will crash next week', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
   }
 ]
