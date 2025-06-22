@@ -1,57 +1,133 @@
-# strategy_selector.py
-# Selects a trading strategy based on parsed belief and optional price info
+# backend/strategy_selector.py
+
+"""
+Selects the best-fit trading strategy based on parsed belief, asset class,
+direction, confidence level, and user goal (e.g. 2x return, hedge, income).
+"""
 
 def select_strategy(
     belief: str,
     direction: str,
-    confidence: str,
+    ticker: str,
     asset_class: str,
-    ticker: str = "",
-    price_info=None  # can be dict or float
-) -> str:
+    price_info: dict,
+    confidence: float = 0.5,
+    goal_type: str = None,
+    multiplier: float = None,
+    timeframe: str = None
+) -> dict:
     """
-    Selects the most appropriate trading strategy.
+    Determine a recommended trading strategy based on all user inputs.
 
-    Args:
-        belief (str): Natural language belief.
-        direction (str): 'bullish', 'bearish', or 'neutral'.
-        confidence (str): 'high', 'medium', or 'low'.
-        asset_class (str): 'stocks', 'options', 'crypto', 'bonds', 'etf'.
-        ticker (str): Optional ticker for strategy context.
-        price_info: Can be a dict like {'latest': 123.4} or a float like 123.4
-
-    Returns:
-        str: A simple strategy recommendation string.
+    Returns a dict like:
+    {
+        "type": "Call Spread",
+        "description": "Buy AAPL 190c / Sell AAPL 195c",
+        "risk_level": "medium",
+        "suggested_allocation": "25%"
+    }
     """
+    # Make sure price_info is always a dict
+    latest_price = price_info["latest"] if isinstance(price_info, dict) else price_info
+    latest_price = round(float(latest_price), 2)
 
-    # Format the price intelligently
-    if isinstance(price_info, dict) and 'latest' in price_info:
-        price_str = f" near ${price_info['latest']:.2f}"
-    elif isinstance(price_info, float):
-        price_str = f" near ${price_info:.2f}"
-    else:
-        price_str = ""
+    print("\n[STRATEGY DEBUG]")
+    print("  Belief:", belief)
+    print("  Direction:", direction)
+    print("  Ticker:", ticker)
+    print("  Asset Class:", asset_class)
+    print("  Confidence:", confidence)
+    print("  Goal Type:", goal_type)
+    print("  Multiplier:", multiplier)
+    print("  Timeframe:", timeframe)
 
-    # Crypto logic
-    if asset_class == "crypto":
-        return f"Buy {ticker or 'BTC'} if confidence is high{price_str}, otherwise wait"
+    # === ✅ Goal-Based Strategy Logic ===
+    if goal_type == "double_money" and multiplier and multiplier >= 2.0:
+        if asset_class == "options":
+            if direction == "up":
+                return {
+                    "type": "Aggressive Call Spread",
+                    "description": f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c",
+                    "risk_level": "high",
+                    "suggested_allocation": "15%"
+                }
+            elif direction == "down":
+                return {
+                    "type": "Aggressive Put Spread",
+                    "description": f"Buy {ticker} {int(latest_price * 0.95)}p / Sell {ticker} {int(latest_price * 0.85)}p",
+                    "risk_level": "high",
+                    "suggested_allocation": "15%"
+                }
+            else:
+                # If direction is unclear, use straddle (volatility bet)
+                return {
+                    "type": "Long Straddle",
+                    "description": f"Buy {ticker} {int(latest_price)}c + Buy {ticker} {int(latest_price)}p",
+                    "risk_level": "high",
+                    "suggested_allocation": "20%"
+                }
 
-    # Bonds logic
-    if asset_class == "bonds":
-        return "Long-duration bond ETF if expecting rate cuts"
+        elif asset_class == "stock":
+            return {
+                "type": "Leveraged ETF",
+                "description": f"Buy 2x or 3x leveraged ETF related to {ticker}",
+                "risk_level": "high",
+                "suggested_allocation": "20%"
+            }
 
-    # ETF logic
-    if asset_class == "etf":
-        return f"Buy call options on {ticker} if bullish{price_str}, or protective puts if bearish"
+    elif goal_type == "hedge":
+        return {
+            "type": "Protective Put",
+            "description": f"Buy {ticker} {int(latest_price * 0.95)}p to hedge downside",
+            "risk_level": "low",
+            "suggested_allocation": "10%"
+        }
 
-    # Stocks/options logic
-    if direction == "bullish" and confidence == "high":
-        return f"Bull Call Spread on {ticker}{price_str}"
-    elif direction == "bearish" and confidence == "high":
-        return f"Bear Put Spread on {ticker}{price_str}"
-    elif direction == "bullish":
-        return f"Buy Call on {ticker}{price_str}"
-    elif direction == "bearish":
-        return f"Buy Put on {ticker}{price_str}"
-    else:
-        return f"Iron Condor on {ticker or 'underlying asset'}"
+    elif goal_type == "income":
+        return {
+            "type": "Cash-Secured Put",
+            "description": f"Sell {ticker} {int(latest_price * 0.95)}p for monthly income",
+            "risk_level": "medium",
+            "suggested_allocation": "20%"
+        }
+
+    # === ✅ Direction-Based Strategy Logic (Fallback) ===
+    if asset_class == "options":
+        if direction == "up":
+            return {
+                "type": "Call",
+                "description": f"Buy {ticker} {int(latest_price * 1.05)}c",
+                "risk_level": "medium",
+                "suggested_allocation": "25%"
+            }
+        elif direction == "down":
+            return {
+                "type": "Put",
+                "description": f"Buy {ticker} {int(latest_price * 0.95)}p",
+                "risk_level": "medium",
+                "suggested_allocation": "25%"
+            }
+
+    elif asset_class == "stock":
+        if direction == "up":
+            return {
+                "type": "Buy Stock",
+                "description": f"Buy {ticker} at market price",
+                "risk_level": "low",
+                "suggested_allocation": "30%"
+            }
+        elif direction == "down":
+            return {
+                "type": "Inverse ETF",
+                "description": f"Buy inverse ETF or short {ticker}",
+                "risk_level": "high",
+                "suggested_allocation": "10%"
+            }
+
+    # === ✅ Final Fallback ===
+    return {
+        "type": "Default Strategy",
+        "description": f"Analyze {ticker} manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%"
+    }
