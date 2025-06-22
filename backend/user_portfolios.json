@@ -7,6 +7,24 @@
         "type": "Call",
         "ticker": "TSLA"
       }
+    },
+    {
+      "timestamp": "2025-06-22T03:15:51.676298",
+      "belief": "TSLA will moon",
+      "strategy": {
+        "type": "Call",
+        "ticker": "TSLA"
+      }
+    },
+    {
+      "timestamp": "2025-06-22T03:33:40.492520",
+      "belief": "AAPL will go up next week",
+      "strategy": {
+        "type": "Call Spread",
+        "description": "Buy 190c / Sell 195c",
+        "risk_level": "medium",
+        "suggested_allocation": "25%"
+      }
     }
   ]
 }
