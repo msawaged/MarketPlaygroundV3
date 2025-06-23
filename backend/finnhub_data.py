@@ -1,11 +1,15 @@
-# finnhub_data.py
-# ✅ Finnhub price fetching module (for dev usage only — up to 60 requests/min).
-# Docs: https://finnhub.io/docs/api
+# backend/finnhub_data.py
+# ✅ Finnhub price fetching module (secure .env-based version)
 
 import requests
+import os
+from dotenv import load_dotenv
 
-# 🔐 Replace with your real Finnhub API key
-FINNHUB_API_KEY = "d1c51a9r01qre5ajo99gd1c51a9r01qre5ajo9a0"
+# ✅ Load environment variables from .env
+load_dotenv()
+
+# 🔐 Get the API key from .env
+FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
 
 def get_latest_price_finnhub(ticker: str) -> float:
     """
