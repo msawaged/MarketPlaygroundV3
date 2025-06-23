@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2025-06-23T22:39:17.492626",
+    "user_id": "test_user",
+    "trade": {
+      "belief": "AAPL will double next month",
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      }
+    }
+  }
+]

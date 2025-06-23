@@ -25,11 +25,11 @@ app = FastAPI(title="MarketPlayground AI Backend")
 # === Run DB setup for user authentication tables ===
 init_db()
 
-# === Register routers (explicitly and safely) ===
+# === Register routers (modular + clear prefixes) ===
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(feedback_router, prefix="/feedback", tags=["Feedback"])
 app.include_router(feedback_predictor, prefix="/predict", tags=["Predictor"])
-app.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])
+app.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])  # ✅ Handles /portfolio/save_trade etc
 app.include_router(strategy_router, prefix="/strategy", tags=["Strategy"])
 app.include_router(strategy_logger_router, prefix="/strategy-log", tags=["Strategy Logger"])
 
@@ -43,8 +43,6 @@ class FeedbackRequest(BaseModel):
     feedback: str
 
 # === POST /process_belief ===
-# → Input: user belief
-# → Output: AI-generated strategy + metadata
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
@@ -54,7 +52,6 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 # === POST /submit_feedback ===
-# → Appends feedback entry to feedback_data.json for model learning
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     try:
@@ -67,14 +64,12 @@ def submit_feedback(request: FeedbackRequest):
 
         feedback_file = os.path.join(os.path.dirname(__file__), "feedback_data.json")
 
-        # 📥 Load existing feedback or start new list
         if os.path.exists(feedback_file):
             with open(feedback_file, "r") as f:
                 feedback_list = json.load(f)
         else:
             feedback_list = []
 
-        # 📤 Append and persist updated list
         feedback_list.append(feedback_entry)
         with open(feedback_file, "w") as f:
             json.dump(feedback_list, f, indent=2)
@@ -83,12 +78,10 @@ def submit_feedback(request: FeedbackRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# 👇 Add this block at the bottom of backend/app.py
+# === Optional: Show registered routes if run directly ===
 if __name__ == "__main__":
     import uvicorn
-
     print("\n🔍 ROUTES LOADED:")
     for route in app.routes:
         print(f"{route.path} -> {route.name}")
-
     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
