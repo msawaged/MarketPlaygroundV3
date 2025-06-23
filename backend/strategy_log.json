@@ -22,5 +22,11 @@
     "user_id": "test_user",
     "belief": "TSLA will go up",
     "strategy": "Default Strategy"
+  },
+  {
+    "timestamp": "2025-06-23T22:39:17.490570",
+    "user_id": "anonymous",
+    "belief": "AAPL will double next month",
+    "strategy": "Based on your belief: 'AAPL will double next month', The system expects volatility in AAPL. Thus, the 'Default Strategy' strategy was chosen to match your objective."
   }
 ]
