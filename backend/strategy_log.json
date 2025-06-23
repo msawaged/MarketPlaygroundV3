@@ -28,5 +28,11 @@
     "user_id": "anonymous",
     "belief": "AAPL will double next month",
     "strategy": "Based on your belief: 'AAPL will double next month', The system expects volatility in AAPL. Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-23T22:53:56.371601",
+    "user_id": "anonymous",
+    "belief": "MSFT will rise this week",
+    "strategy": "Based on your belief: 'MSFT will rise this week', Thus, the 'Default Strategy' strategy was chosen to match your objective."
   }
 ]

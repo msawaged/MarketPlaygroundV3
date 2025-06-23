@@ -12,5 +12,19 @@
         "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
       }
     }
+  },
+  {
+    "timestamp": "2025-06-23T22:53:56.376052",
+    "user_id": "finnhub_test",
+    "trade": {
+      "belief": "MSFT will rise this week",
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze MSFT manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      }
+    }
   }
 ]
