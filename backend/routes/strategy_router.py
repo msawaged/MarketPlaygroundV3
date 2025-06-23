@@ -6,6 +6,7 @@ from typing import Optional, Dict, Any
 
 from backend.ai_engine.ai_engine import run_ai_engine  # 🧠 Belief → strategy engine
 from backend.feedback_handler import save_feedback_entry  # 💾 Feedback logger
+from backend.logger.strategy_logger import log_strategy  # 📝 Strategy history logger
 
 router = APIRouter()
 
@@ -32,8 +33,11 @@ def process_belief(request: BeliefRequest):
     result = run_ai_engine(request.belief)
     result["user_id"] = request.user_id
 
-    # Optionally save to history or logs here
+    # ✅ Save to feedback log
     save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
+
+    # ✅ Save to strategy history log
+    log_strategy(request.belief, result["strategy"]["type"], request.user_id)
 
     return result
 

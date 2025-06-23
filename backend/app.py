@@ -82,3 +82,13 @@ def submit_feedback(request: FeedbackRequest):
         return {"message": "✅ Feedback saved successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# 👇 Add this block at the bottom of backend/app.py
+if __name__ == "__main__":
+    import uvicorn
+
+    print("\n🔍 ROUTES LOADED:")
+    for route in app.routes:
+        print(f"{route.path} -> {route.name}")
+
+    uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
