@@ -16,6 +16,7 @@ def select_strategy(
     goal_type: str = None,
     multiplier: float = None,
     timeframe: str = None,
+    expiry_date: str = None,  # ✅ Added to avoid TypeError from extra input
     risk_profile: str = "moderate"
 ) -> dict:
     """
@@ -43,9 +44,10 @@ def select_strategy(
     print("  Goal Type:", goal_type)
     print("  Multiplier:", multiplier)
     print("  Timeframe:", timeframe)
+    print("  Expiry Date:", expiry_date)  # for future use
     print("  Risk Profile:", risk_profile)
 
-    # ✅ Adjust portfolio allocation based on user risk profile
+    # ✅ Risk-based allocation adjustment
     def adjust_allocation(base_percent):
         if risk_profile == "conservative":
             return f"{int(base_percent * 0.6)}%"
@@ -117,7 +119,7 @@ def select_strategy(
             "explanation": "Covered calls generate extra yield while holding stock—ideal for steady growth."
         }
 
-    # === 🧭 DIRECTION-BASED STRATEGIES (fallback) ===
+    # === 🧭 FALLBACK: DIRECTION-BASED STRATEGIES ===
 
     if asset_class == "options":
         if direction == "up":
@@ -155,7 +157,7 @@ def select_strategy(
                 "explanation": "Inverse ETFs mirror declines—best when confident the asset will fall."
             }
 
-    # === 🛑 No Strategy Detected ===
+    # === 🛑 DEFAULT STRATEGY ===
 
     return {
         "type": "Default Strategy",
