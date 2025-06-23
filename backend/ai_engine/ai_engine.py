@@ -9,11 +9,8 @@ from backend.belief_parser import parse_belief               # ✅ Belief → di
 from backend.strategy_selector import select_strategy        # ✅ Chooses strategy based on all inputs
 from backend.asset_selector import select_asset_class        # ✅ Infers appropriate asset class
 from backend.market_data import get_latest_price, get_weekly_high_low  # ✅ Price info
-from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal  # ✅ New: advanced goal parsing  
-
-
-
-                                                             
+from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal  # ✅ Goal parsing
+from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry  # ✅ New: timeframe → expiry
 
 def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
     """
@@ -40,10 +37,15 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
 
-    # ✅ Step 3: Choose asset class (e.g. options, stock, ETF) based on tags and ticker
+    # ✅ Step 3: Convert natural-language timeframe to real expiry date
+    expiry_date = None
+    if timeframe:
+        expiry_date = parse_timeframe_to_expiry(timeframe)
+
+    # ✅ Step 4: Choose asset class (e.g. options, stock, ETF)
     asset_class = select_asset_class(tags, ticker)
 
-    # ✅ Step 4: Get current price and recent high/low for strategy calculation
+    # ✅ Step 5: Get market data (price + high/low)
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -58,7 +60,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
 
     price_info = {"latest": latest}
 
-    # ✅ Debug Print All Parsed Data for Diagnosis
+    # ✅ Debug Info
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}")
@@ -68,13 +70,14 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
     print(f"→ Goal Type: {goal_type}")
     print(f"→ Multiplier: {multiplier}")
     print(f"→ Timeframe: {timeframe}")
+    print(f"→ Expiry Date: {expiry_date}")
     print(f"→ Asset Class: {asset_class}")
     print(f"→ Risk Profile: {risk_profile}")
     print(f"→ Price Info: {price_info['latest']}")
     print(f"→ High/Low Info: {high_low_info}")
     print("🧠 Selecting best strategy...\n")
 
-    # ✅ Step 5: Generate strategy based on all available info
+    # ✅ Step 6: Strategy selection
     strategy = select_strategy(
         belief=belief,
         direction=direction,
@@ -85,15 +88,16 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
         goal_type=goal_type,
         multiplier=multiplier,
         timeframe=timeframe,
+        expiry_date=expiry_date,  # ✅ Newly added
         risk_profile=risk_profile
     )
 
-    # ✅ Step 6: Generate user-friendly explanation for the strategy
+    # ✅ Step 7: Natural explanation
     explanation = generate_strategy_explainer(
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 7: Return full response object
+    # ✅ Step 8: Return final output
     return {
         "strategy": strategy,
         "ticker": ticker,
@@ -106,6 +110,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
         "goal_type": goal_type,
         "multiplier": multiplier,
         "timeframe": timeframe,
+        "expiry_date": expiry_date,  # ✅ Newly added
         "risk_profile": risk_profile,
         "explanation": explanation
     }
