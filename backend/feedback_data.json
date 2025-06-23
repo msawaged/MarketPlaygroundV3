@@ -679,5 +679,113 @@
       "user_id": "anonymous"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T19:08:29.608982",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting TSLA will explode next week",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 350.09
+      },
+      "high_low": [
+        357.54,
+        327.48
+      ],
+      "confidence": 0.52,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": "next week",
+      "expiry_date": "2025-07-04",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will explode next week', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T19:08:42.444758",
+    "user_id": "anonymous",
+    "belief": "The market will tank next month and I want to hedge",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze SPY manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 598.92
+      },
+      "high_low": [
+        599.44,
+        591.89
+      ],
+      "confidence": 0.54,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-07-04",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'The market will tank next month and I want to hedge', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T19:44:17.710413",
+    "user_id": "anonymous",
+    "belief": "I want passive income from AAPL",
+    "strategy": {
+      "strategy": {
+        "type": "Cash-Secured Put",
+        "description": "Sell AAPL 191p",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "You collect income while potentially buying stock cheaper\u2014great for passive returns."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 201.16
+      },
+      "high_low": [
+        202.3,
+        198.96
+      ],
+      "confidence": 0.52,
+      "goal_type": "income",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want passive income from AAPL', The system expects volatility in AAPL. Thus, the 'Cash-Secured Put' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
   }
 ]
