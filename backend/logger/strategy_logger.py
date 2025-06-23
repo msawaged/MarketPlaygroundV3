@@ -4,31 +4,34 @@
 import os
 import json
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Any
 
-# 📁 Path to store the strategy logs (placed one level up from logger/)
+# 📁 Path to store the strategy logs
 STRATEGY_LOG_FILE = os.path.join(os.path.dirname(__file__), "..", "strategy_log.json")
 
-def log_strategy(belief: str, strategy: str, user_id: str = "anonymous"):
+def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymous"):
     """
     Appends a strategy entry to strategy_log.json.
-    
-    Args:
-        belief (str): The original user belief.
-        strategy (str): The strategy string returned by the AI engine.
-        user_id (str): User identifier (default is 'anonymous').
+
+    Parameters:
+    - belief (str): The original user belief string.
+    - strategy (dict): The strategy object to log.
+    - user_id (str): User identifier.
     """
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
         "belief": belief,
-        "strategy": strategy
+        "strategy": strategy  # keep as dictionary, not str
     }
 
-    # Load existing log or start a new list
+    # Load existing logs or initialize a new list
     if os.path.exists(STRATEGY_LOG_FILE):
         with open(STRATEGY_LOG_FILE, "r") as f:
-            logs = json.load(f)
+            try:
+                logs = json.load(f)
+            except json.JSONDecodeError:
+                logs = []
     else:
         logs = []
 
@@ -37,21 +40,23 @@ def log_strategy(belief: str, strategy: str, user_id: str = "anonymous"):
     with open(STRATEGY_LOG_FILE, "w") as f:
         json.dump(logs, f, indent=2)
 
-def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict]:
+def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict[str, Any]]:
     """
     Returns all saved strategies for a given user.
-    
-    Args:
-        user_id (str): User identifier to filter logs.
-    
+
+    Parameters:
+    - user_id (str): User identifier
+
     Returns:
-        List[Dict]: List of strategy log entries for the user.
+    - List of strategy log entries for the user
     """
     if not os.path.exists(STRATEGY_LOG_FILE):
         return []
 
     with open(STRATEGY_LOG_FILE, "r") as f:
-        logs = json.load(f)
+        try:
+            logs = json.load(f)
+        except json.JSONDecodeError:
+            return []
 
-    # Filter by user ID
     return [entry for entry in logs if entry.get("user_id") == user_id]

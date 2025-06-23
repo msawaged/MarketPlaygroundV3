@@ -11,14 +11,17 @@ from backend.asset_selector import select_asset_class
 from backend.market_data import get_latest_price, get_weekly_high_low
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
+from backend.logger.strategy_logger import log_strategy  # ✅ Added logging import
 
-def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
+
+def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
     Converts a user belief into a complete trade strategy suggestion.
 
     Args:
         belief (str): e.g. "I want to 2x my money betting TSLA will pop next week"
         risk_profile (str): e.g. "conservative", "moderate", "aggressive"
+        user_id (str): optional user ID for logging
 
     Returns:
         dict: Structured trade recommendation
@@ -113,7 +116,10 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 8: Output response object
+    # ✅ Step 8: Log strategy
+    log_strategy(belief, explanation, user_id)
+
+    # ✅ Step 9: Output response object
     return {
         "strategy": strategy,
         "ticker": ticker,

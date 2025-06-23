@@ -1039,5 +1039,149 @@
       "user_id": "test_user"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T21:38:22.224856",
+    "user_id": "test_user",
+    "belief": "I want to double my money on NVDA",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze NVDA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 144.17
+      },
+      "high_low": [
+        144.78,
+        142.03
+      ],
+      "confidence": 0.53,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to double my money on NVDA', The system expects volatility in NVDA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "test_user"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T21:55:43.722271",
+    "user_id": "test_user",
+    "belief": "I want to double my money on NVDA",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze NVDA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 144.17
+      },
+      "high_low": [
+        144.78,
+        142.03
+      ],
+      "confidence": 0.53,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to double my money on NVDA', The system expects volatility in NVDA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "test_user"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T21:59:51.743917",
+    "user_id": "test_user",
+    "belief": "I want to 2x my money on TSLA",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 348.68
+      },
+      "high_low": [
+        357.54,
+        327.48
+      ],
+      "confidence": 0.64,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money on TSLA', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "test_user"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-23T22:17:54.840670",
+    "user_id": "test_user",
+    "belief": "TSLA will go up",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 348.68
+      },
+      "high_low": [
+        357.54,
+        327.48
+      ],
+      "confidence": 0.58,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'TSLA will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "test_user"
+    },
+    "result": "auto_generated"
   }
 ]
