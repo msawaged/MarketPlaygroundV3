@@ -1,0 +1,70 @@
+.
+├── #
+├── .DS_Store
+├── .gitignore
+├── backend
+│   ├── .DS_Store
+│   ├── __init__.py
+│   ├── ai_engine
+│   │   ├── __init__.py
+│   │   └── ai_engine.py
+│   ├── analytics.py
+│   ├── app.py
+│   ├── asset_selector.py
+│   ├── auth_handler.py
+│   ├── background_tasks.py
+│   ├── belief_classifier.joblib
+│   ├── belief_model.joblib
+│   ├── belief_model_old.joblib
+│   ├── belief_parser.py
+│   ├── belief_vectorizer.joblib
+│   ├── best_model.joblib
+│   ├── data
+│   │   └── users.json
+│   ├── deploy_trigger.py
+│   ├── feedback.csv
+│   ├── feedback_data.json
+│   ├── feedback_handler.py
+│   ├── feedback_model.joblib
+│   ├── feedback_trainer.py
+│   ├── finnhub_data.py
+│   ├── goal_parser.py
+│   ├── historic_data.csv
+│   ├── market_data.py
+│   ├── multi_asset_model.joblib
+│   ├── multi_strategy_model.joblib
+│   ├── multi_vectorizer.joblib
+│   ├── pnl.json
+│   ├── portfolio_handler.py
+│   ├── requirements.txt
+│   ├── retrain_worker.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── auth_routes.py
+│   │   ├── feedback_predictor.py
+│   │   ├── portfolio_router.py
+│   │   └── strategy_router.py
+│   ├── schemas.py
+│   ├── strategy_selector.py
+│   ├── ticker_model.joblib
+│   ├── train_all_models.py
+│   ├── train_belief_model.py
+│   ├── train_model.py
+│   ├── train_multi_asset_model.py
+│   ├── user_models.py
+│   ├── user_portfolios.json
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── json_to_csv.py
+│   │   ├── model_utils.py
+│   │   └── ticker_list.py
+│   └── vectorizer.joblib
+├── finnhub_client.py
+├── murad_test_chart.png
+├── murad_trades_chart.png
+├── project_tree.txt
+├── render.yaml
+├── runtime.txt
+└── test_api.py
+
+6 directories, 62 files

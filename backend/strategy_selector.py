@@ -16,12 +16,12 @@ def select_strategy(
     goal_type: str = None,
     multiplier: float = None,
     timeframe: str = None,
-    risk_profile: str = "moderate"  # ✅ NEW: user-defined risk profile
+    risk_profile: str = "moderate"
 ) -> dict:
     """
-    Determine a recommended trading strategy based on all user inputs.
+    Returns a complete recommendation based on belief analysis.
 
-    Returns a dict like:
+    Example Output:
     {
         "type": "Call Spread",
         "description": "Buy AAPL 190c / Sell AAPL 195c",
@@ -30,11 +30,10 @@ def select_strategy(
         "explanation": "Rationale behind this recommendation"
     }
     """
-    # ✅ Ensure valid and rounded price
     latest_price = price_info["latest"] if isinstance(price_info, dict) else price_info
     latest_price = round(float(latest_price), 2)
 
-    # ✅ Debug information
+    # ✅ Debug logging
     print("\n[STRATEGY DEBUG]")
     print("  Belief:", belief)
     print("  Direction:", direction)
@@ -46,7 +45,7 @@ def select_strategy(
     print("  Timeframe:", timeframe)
     print("  Risk Profile:", risk_profile)
 
-    # ✅ Adjust suggested allocation based on risk profile
+    # ✅ Adjust portfolio allocation based on user risk profile
     def adjust_allocation(base_percent):
         if risk_profile == "conservative":
             return f"{int(base_percent * 0.6)}%"
@@ -54,7 +53,8 @@ def select_strategy(
             return f"{int(base_percent * 1.4)}%"
         return f"{base_percent}%"
 
-    # === 🎯 Goal-Based Strategy Logic ===
+    # === 🎯 GOAL-BASED STRATEGIES ===
+
     if goal_type == "double_money" and multiplier and multiplier >= 2.0:
         if asset_class == "options":
             if direction == "up":
@@ -63,7 +63,7 @@ def select_strategy(
                     "description": f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c",
                     "risk_level": "high",
                     "suggested_allocation": adjust_allocation(15),
-                    "explanation": "This bullish spread offers high upside while managing cost—ideal for targeting 2x returns."
+                    "explanation": "Targeting 2x return? This bullish spread offers upside with controlled risk."
                 }
             elif direction == "down":
                 return {
@@ -71,7 +71,7 @@ def select_strategy(
                     "description": f"Buy {ticker} {int(latest_price * 0.95)}p / Sell {ticker} {int(latest_price * 0.85)}p",
                     "risk_level": "high",
                     "suggested_allocation": adjust_allocation(15),
-                    "explanation": "This bearish spread limits risk while leveraging downside—aligned with your doubling goal."
+                    "explanation": "A bearish spread offers capped risk while maximizing downside reward—aligned with your 2x goal."
                 }
             else:
                 return {
@@ -79,37 +79,46 @@ def select_strategy(
                     "description": f"Buy {ticker} {int(latest_price)}c + Buy {ticker} {int(latest_price)}p",
                     "risk_level": "high",
                     "suggested_allocation": adjust_allocation(20),
-                    "explanation": "Straddles profit from large moves in any direction—best when direction is unclear but goal is high return."
+                    "explanation": "Uncertain direction? Straddles profit from big moves either way—suitable for bold 2x targets."
                 }
-
         elif asset_class == "stock":
             return {
                 "type": "Leveraged ETF",
-                "description": f"Buy 2x or 3x leveraged ETF related to {ticker}",
+                "description": f"Buy a 2x or 3x leveraged ETF tracking {ticker}",
                 "risk_level": "high",
                 "suggested_allocation": adjust_allocation(20),
-                "explanation": "Leveraged ETFs offer magnified exposure—ideal if you're targeting aggressive returns."
+                "explanation": "Leverage boosts exposure—best used short-term when aiming for large gains."
             }
 
     elif goal_type == "hedge":
         return {
             "type": "Protective Put",
-            "description": f"Buy {ticker} {int(latest_price * 0.95)}p to hedge downside",
+            "description": f"Buy {ticker} {int(latest_price * 0.95)}p",
             "risk_level": "low",
             "suggested_allocation": adjust_allocation(10),
-            "explanation": "Protective puts cap your downside—perfect for hedging an existing position."
+            "explanation": "This strategy acts like insurance—ideal if you want to limit downside on current holdings."
         }
 
     elif goal_type == "income":
         return {
             "type": "Cash-Secured Put",
-            "description": f"Sell {ticker} {int(latest_price * 0.95)}p for monthly income",
+            "description": f"Sell {ticker} {int(latest_price * 0.95)}p",
             "risk_level": "medium",
             "suggested_allocation": adjust_allocation(20),
-            "explanation": "Selling puts generates income—works best for neutral-to-bullish views with capital to cover."
+            "explanation": "You collect income while potentially buying stock cheaper—great for passive returns."
         }
 
-    # === 🧭 Direction-Based Strategy Logic (Fallback) ===
+    elif goal_type == "safe_growth":
+        return {
+            "type": "Covered Call",
+            "description": f"Buy {ticker} + Sell {ticker} {int(latest_price * 1.05)}c",
+            "risk_level": "low",
+            "suggested_allocation": adjust_allocation(30),
+            "explanation": "Covered calls generate extra yield while holding stock—ideal for steady growth."
+        }
+
+    # === 🧭 DIRECTION-BASED STRATEGIES (fallback) ===
+
     if asset_class == "options":
         if direction == "up":
             return {
@@ -117,7 +126,7 @@ def select_strategy(
                 "description": f"Buy {ticker} {int(latest_price * 1.05)}c",
                 "risk_level": "medium",
                 "suggested_allocation": adjust_allocation(25),
-                "explanation": "Buying a call is a straightforward bullish bet with defined risk."
+                "explanation": "Simple bullish bet—defined risk with potential for high reward."
             }
         elif direction == "down":
             return {
@@ -125,7 +134,7 @@ def select_strategy(
                 "description": f"Buy {ticker} {int(latest_price * 0.95)}p",
                 "risk_level": "medium",
                 "suggested_allocation": adjust_allocation(25),
-                "explanation": "Buying a put gives you direct downside exposure—good for bearish views."
+                "explanation": "Put options profit from price drops—clear match for bearish views."
             }
 
     elif asset_class == "stock":
@@ -135,7 +144,7 @@ def select_strategy(
                 "description": f"Buy {ticker} at market price",
                 "risk_level": "low",
                 "suggested_allocation": adjust_allocation(30),
-                "explanation": "Buying stock directly is the most straightforward long strategy with low risk."
+                "explanation": "Direct ownership of stock—best for long-term bullish beliefs."
             }
         elif direction == "down":
             return {
@@ -143,14 +152,15 @@ def select_strategy(
                 "description": f"Buy inverse ETF or short {ticker}",
                 "risk_level": "high",
                 "suggested_allocation": adjust_allocation(10),
-                "explanation": "Inverse ETFs or shorting can capture downside moves—best for high conviction bearish beliefs."
+                "explanation": "Inverse ETFs mirror declines—best when confident the asset will fall."
             }
 
-    # === 🛑 Final Fallback ===
+    # === 🛑 No Strategy Detected ===
+
     return {
         "type": "Default Strategy",
         "description": f"Analyze {ticker} manually",
         "risk_level": "unknown",
         "suggested_allocation": adjust_allocation(10),
-        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
     }
