@@ -4,12 +4,11 @@ from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from backend.portfolio_handler import save_trade, get_portfolio
 from backend.analytics import summarize_user_portfolio, generate_portfolio_chart
-from backend.ai_engine.ai_engine import run_ai_engine  # ✅ New: import AI engine
-import tempfile
+from backend.ai_engine.ai_engine import run_ai_engine
 import json
 import csv
-from datetime import datetime
 import os
+from datetime import datetime
 
 router = APIRouter()
 
@@ -19,31 +18,69 @@ async def save_trade_endpoint(request: Request):
     """
     Accepts a user belief and user_id, generates a strategy using the AI engine,
     and logs the resulting strategy to the user's portfolio.
-
-    Input Example:
-    {
-        "user_id": "murad_test",
-        "belief": "I want to 2x my money on AAPL this month"
-    }
-
-    Output:
-    {
-        "status": "✅ Trade saved for user murad_test"
-    }
     """
     data = await request.json()
     user_id = data.get("user_id", "anonymous")
     belief = data.get("belief", "")
-
-    # ✅ Run belief through AI engine
     result = run_ai_engine(belief)
     strategy = result.get("strategy", {})
 
-    # === 🔍 Debug print: See what the AI actually returned
     print("\n🚨 [SAVE_TRADE DEBUG OUTPUT]")
     print(json.dumps(result, indent=2))
 
-    # ✅ Save the trade
     save_trade(user_id, belief, strategy)
-
     return {"status": f"✅ Trade saved for user {user_id}"}
+
+
+# ✅ 2. Get a user's saved portfolio/trade history
+@router.post("/get_portfolio")
+async def fetch_user_portfolio(request: Request):
+    """
+    Fetches the full portfolio/trade history for a user.
+    """
+    data = await request.json()
+    user_id = data.get("user_id", "anonymous")
+    portfolio = get_portfolio(user_id)
+    return {"user_id": user_id, "portfolio": portfolio}
+
+
+# ✅ 3. Return portfolio summary as stats
+@router.get("/portfolio_summary")
+def portfolio_summary(user_id: str):
+    """
+    Returns summary statistics for the user's portfolio.
+    """
+    return summarize_user_portfolio(user_id)
+
+
+# ✅ 4. Export portfolio to CSV (macOS-safe)
+@router.get("/export_portfolio")
+def export_portfolio(user_id: str):
+    """
+    Exports the user's portfolio to a downloadable CSV file.
+    Safer version for macOS curl -OJ.
+    """
+    portfolio = get_portfolio(user_id)
+    filename = f"{user_id}_portfolio.csv"
+    filepath = os.path.join(os.getcwd(), filename)
+
+    with open(filepath, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Timestamp", "Belief", "Strategy JSON"])
+        for entry in portfolio:
+            writer.writerow([
+                entry.get("timestamp", ""),
+                entry.get("belief", ""),
+                json.dumps(entry.get("strategy", {}))
+            ])
+
+    return FileResponse(path=filepath, filename=filename, media_type="text/csv")
+
+
+# ✅ 5. Generate and return PNG portfolio chart
+@router.get("/portfolio_chart")
+def portfolio_chart(user_id: str):
+    """
+    Returns a PNG chart image of the user's portfolio history.
+    """
+    return generate_portfolio_chart(user_id)

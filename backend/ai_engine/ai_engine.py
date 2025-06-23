@@ -9,7 +9,11 @@ from backend.belief_parser import parse_belief               # ✅ Belief → di
 from backend.strategy_selector import select_strategy        # ✅ Chooses strategy based on all inputs
 from backend.asset_selector import select_asset_class        # ✅ Infers appropriate asset class
 from backend.market_data import get_latest_price, get_weekly_high_low  # ✅ Price info
-from backend.goal_parser import parse_goal                   # ✅ Parses prompts like "2x my money"
+from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal  # ✅ New: advanced goal parsing  
+
+
+
+                                                             
 
 def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
     """
@@ -30,8 +34,8 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
     tags = parsed.get("tags", [])
     confidence = parsed.get("confidence", 0.5)
 
-    # ✅ Step 2: Parse user goal from belief (e.g. double money, hedge, etc.)
-    goal = parse_goal(belief)
+    # ✅ Step 2: Evaluate user goal (e.g. multiplier, timeframe, goal type)
+    goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
@@ -81,7 +85,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
         goal_type=goal_type,
         multiplier=multiplier,
         timeframe=timeframe,
-        risk_profile=risk_profile   # ✅ New argument
+        risk_profile=risk_profile
     )
 
     # ✅ Step 6: Generate user-friendly explanation for the strategy
@@ -103,7 +107,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate") -> dict:
         "multiplier": multiplier,
         "timeframe": timeframe,
         "risk_profile": risk_profile,
-        "explanation": explanation  # ✅ Human-readable rationale
+        "explanation": explanation
     }
 
 

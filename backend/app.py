@@ -1,26 +1,26 @@
 # backend/app.py
-# ✅ Final version: combines route-based logic and direct endpoints like /process_belief
+# ✅ Master entry point for FastAPI app — includes routers and direct endpoints
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
-from backend.routes import router  # includes strategy, feedback predictor, auth
-from backend.user_models import init_db
-from backend.ai_engine.ai_engine import run_ai_engine
-import json
+from backend.routes import router  # 🔗 Main router: includes all submodules
+from backend.user_models import init_db  # 🛠️ User model setup
+from backend.ai_engine.ai_engine import run_ai_engine  # 🧠 Core AI strategy engine
 import os
+import json
 from datetime import datetime
 
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# === Create user DB tables ===
+# === One-time database initialization for user tables ===
 init_db()
 
-# === Include route-based APIs ===
+# === Mount all modular route groups (strategy, feedback, auth, portfolio) ===
 app.include_router(router)
 
-# === Define request schemas ===
+# === Request body schemas for endpoints ===
 class BeliefRequest(BaseModel):
     belief: str
 
@@ -30,7 +30,8 @@ class FeedbackRequest(BaseModel):
     feedback: str
 
 # === POST /process_belief ===
-# Input: belief string → Output: AI-generated strategy
+# → Input: user belief
+# → Output: parsed belief, strategy, price data, goal, etc.
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
@@ -40,7 +41,7 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 # === POST /submit_feedback ===
-# Appends structured feedback to feedback_data.json
+# → Logs user feedback into feedback_data.json
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     try:
@@ -51,16 +52,18 @@ def submit_feedback(request: FeedbackRequest):
             "result": request.feedback
         }
 
+        # ✅ Save path (same directory as app.py)
         feedback_file = os.path.join(os.path.dirname(__file__), "feedback_data.json")
 
+        # 📥 Load existing feedback
         if os.path.exists(feedback_file):
             with open(feedback_file, "r") as f:
                 feedback_list = json.load(f)
         else:
             feedback_list = []
 
+        # 📤 Append and save updated list
         feedback_list.append(feedback_entry)
-
         with open(feedback_file, "w") as f:
             json.dump(feedback_list, f, indent=2)
 

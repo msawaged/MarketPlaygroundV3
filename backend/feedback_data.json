@@ -495,5 +495,82 @@
       "user_id": "anonymous"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T21:11:46.712478",
+    "user_id": "anonymous",
+    "belief": "I want to double my money on TSLA this week",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 322.16
+      },
+      "high_low": [
+        332.36,
+        317.78
+      ],
+      "confidence": 0.59,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this week",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to double my money on TSLA this week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-22T21:12:09.006168",
+    "user_id": "anonymous",
+    "belief": "TSLA will go up",
+    "strategy": "buy TSLA 180c",
+    "result": "good call"
+  },
+  {
+    "timestamp": "2025-06-23T06:35:28.694199",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money betting TSLA will pop next week",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 322.16
+      },
+      "high_low": [
+        332.36,
+        317.78
+      ],
+      "confidence": 0.52,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will pop next week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
   }
 ]
