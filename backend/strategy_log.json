@@ -34,5 +34,17 @@
     "user_id": "anonymous",
     "belief": "MSFT will rise this week",
     "strategy": "Based on your belief: 'MSFT will rise this week', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T01:31:35.884062",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up next week",
+    "strategy": "Based on your belief: 'AAPL will go up next week', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T16:40:38.608736",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up next week",
+    "strategy": "Based on your belief: 'AAPL will go up next week', Thus, the 'Default Strategy' strategy was chosen to match your objective."
   }
 ]
