@@ -1183,5 +1183,77 @@
       "user_id": "test_user"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-24T20:30:22.264252",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 200.3
+      },
+      "high_low": [
+        203.44,
+        200.2
+      ],
+      "confidence": 0.71,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'AAPL will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-24T21:00:02.126095",
+    "user_id": "anonymous",
+    "belief": "tsla is going up",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 340.47
+      },
+      "high_low": [
+        356.26,
+        340.44
+      ],
+      "confidence": 0.68,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'tsla is going up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
   }
 ]

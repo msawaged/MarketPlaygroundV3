@@ -58,5 +58,29 @@
     "user_id": "anonymous",
     "belief": "I think AAPL will go up",
     "strategy": "Based on your belief: 'I think AAPL will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T20:30:22.253587",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up",
+    "strategy": "Based on your belief: 'AAPL will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T20:30:22.270240",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up",
+    "strategy": "Default Strategy"
+  },
+  {
+    "timestamp": "2025-06-24T21:00:02.120409",
+    "user_id": "anonymous",
+    "belief": "tsla is going up",
+    "strategy": "Based on your belief: 'tsla is going up', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T21:00:02.128589",
+    "user_id": "anonymous",
+    "belief": "tsla is going up",
+    "strategy": "Default Strategy"
   }
 ]
