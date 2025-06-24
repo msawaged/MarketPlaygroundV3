@@ -2,6 +2,7 @@
 # ✅ Main entry point for the FastAPI app — handles routers, AI engine, feedback, and brokerage features
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware  # ✅ Step 1: Import CORS middleware
 from pydantic import BaseModel
 from typing import Dict, Any
 import os
@@ -26,6 +27,15 @@ from backend.routes.market_router import router as market_router  # ✅ NEW: Mar
 
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
+
+# ✅ Step 1: Enable CORS so frontend (React on localhost:3000) can talk to backend (FastAPI on 8000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # === Run DB setup ===
 init_db()
@@ -54,6 +64,10 @@ class FeedbackRequest(BaseModel):
 # === AI Strategy Generator Endpoint ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
+    """
+    Accepts a user belief and returns an AI-generated strategy from the engine.
+    Used by the frontend via proxy.
+    """
     try:
         result = run_ai_engine(request.belief)
         return result
@@ -63,6 +77,9 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
 # === Feedback Logging Endpoint ===
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
+    """
+    Saves structured feedback for training. Logs into feedback_data.json.
+    """
     try:
         feedback_entry = {
             "timestamp": datetime.utcnow().isoformat(),
