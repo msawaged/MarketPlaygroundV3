@@ -2,13 +2,14 @@
 
 """
 Router for Alpaca-related endpoints:
-- GET /live_positions → returns current open trades
-- GET /account        → returns account info (cash, buying power, etc.)
+- GET /live_positions         → returns current open positions
+- GET /account                → returns account info (cash, equity, etc.)
+- GET /order_status/{order_id} → checks order status by ID
 """
 
 from fastapi import APIRouter
 from backend.alpaca_portfolio import get_live_positions
-from backend.alpaca_client import get_account_info  # ✅ New: account info function
+from backend.alpaca_client import get_account_info, get_order_status  # ✅ Added get_order_status
 
 router = APIRouter()
 
@@ -27,3 +28,11 @@ def fetch_account_info():
     """
     account = get_account_info()
     return {"account": account}
+
+@router.get("/order_status/{order_id}")
+def fetch_order_status(order_id: str):
+    """
+    Returns the status of a specific Alpaca order by its ID.
+    """
+    status = get_order_status(order_id)
+    return {"order_id": order_id, "status": status}
