@@ -2,14 +2,17 @@
 
 """
 Router for Alpaca-related endpoints:
-- GET /live_positions         → returns current open positions
-- GET /account                → returns account info (cash, equity, etc.)
+- GET /live_positions          → returns current open positions
+- GET /account                 → returns account info (cash, equity, etc.)
 - GET /order_status/{order_id} → checks order status by ID
+- GET /orders                  → returns full order history
+- GET /orders/filled           → returns only filled (executed) trades
 """
 
 from fastapi import APIRouter
 from backend.alpaca_portfolio import get_live_positions
-from backend.alpaca_client import get_account_info, get_order_status  # ✅ Added get_order_status
+from backend.alpaca_client import get_account_info, get_order_status
+from backend.alpaca_orders import get_all_orders, get_filled_orders  # ✅ New: order history
 
 router = APIRouter()
 
@@ -36,3 +39,19 @@ def fetch_order_status(order_id: str):
     """
     status = get_order_status(order_id)
     return {"order_id": order_id, "status": status}
+
+@router.get("/orders")
+def fetch_all_orders():
+    """
+    Returns the full Alpaca order history (limit 100).
+    """
+    orders = get_all_orders()
+    return {"orders": orders}
+
+@router.get("/orders/filled")
+def fetch_filled_orders():
+    """
+    Returns only filled Alpaca orders (executed trades).
+    """
+    orders = get_filled_orders()
+    return {"filled_orders": orders}
