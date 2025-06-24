@@ -19,9 +19,10 @@ from backend.routes.feedback_predictor import router as feedback_predictor
 from backend.routes.portfolio_router import router as portfolio_router
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
-from backend.routes.alpaca_router import router as alpaca_router                 # ✅ Alpaca account/positions/orders
-from backend.routes.execution_router import router as execution_router           # ✅ Trade execution
-from backend.routes.pnl_router import router as pnl_router                       # ✅ PnL tracking + equity logging
+from backend.routes.alpaca_router import router as alpaca_router
+from backend.routes.execution_router import router as execution_router
+from backend.routes.pnl_router import router as pnl_router
+from backend.routes.market_router import router as market_router  # ✅ NEW: Market data routes
 
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
@@ -38,7 +39,8 @@ app.include_router(strategy_router, prefix="/strategy", tags=["Strategy"])
 app.include_router(strategy_logger_router, prefix="/strategy-log", tags=["Strategy Logger"])
 app.include_router(alpaca_router, prefix="/alpaca", tags=["Alpaca"])
 app.include_router(execution_router, prefix="/alpaca", tags=["Execution"])
-app.include_router(pnl_router, prefix="/pnl", tags=["PnL"])                      # ✅ New: PnL endpoints
+app.include_router(pnl_router, prefix="/pnl", tags=["PnL"])
+app.include_router(market_router, prefix="/market", tags=["Market"])  # ✅ NEW: Market endpoints
 
 # === Request Schemas ===
 class BeliefRequest(BaseModel):

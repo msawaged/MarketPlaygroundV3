@@ -54,5 +54,19 @@
         "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
       }
     }
+  },
+  {
+    "timestamp": "2025-06-24T18:58:37.932691",
+    "user_id": "1",
+    "trade": {
+      "belief": "I think AAPL will go up",
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      }
+    }
   }
 ]

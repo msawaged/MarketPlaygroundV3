@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from backend.portfolio_handler import save_trade, get_portfolio
-from backend.analytics import summarize_user_portfolio, generate_portfolio_chart
+from backend.analytics.portfolio_summary import summarize_user_portfolio, generate_portfolio_chart
 from backend.ai_engine.ai_engine import run_ai_engine
 import json
 import csv
