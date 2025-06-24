@@ -3,20 +3,21 @@
 import React, { useState } from 'react';
 
 function App() {
-  const [belief, setBelief] = useState('');
-  const [response, setResponse] = useState(null);
+  const [belief, setBelief] = useState('');         // Holds user input
+  const [response, setResponse] = useState(null);   // Holds backend response
 
-  // Function to handle belief submission
+  // Handles submission of belief to backend
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form refresh
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/strategy/process_belief', {
+      // Use relative URL — assumes proxy is set to backend in package.json
+      const res = await fetch('/strategy/process_belief', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ belief }), // Send { "belief": "..." }
+        body: JSON.stringify({ belief }), // Send: { "belief": "..." }
       });
 
       if (!res.ok) {
@@ -25,32 +26,67 @@ function App() {
         return;
       }
 
-      const data = await res.json();
+      const data = await res.json(); // Extract response data
       setResponse(data);
     } catch (err) {
-      setResponse({ error: 'Failed to fetch' });
+      setResponse({ error: 'Failed to fetch (backend unreachable)' });
     }
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'monospace' }}>
-      <h1>MarketPlayground 🧠</h1>
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+      <h1>🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span></h1>
+      <p>Enter your belief and watch the strategy unfold</p>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Enter Your Belief:
-          <input
-            type="text"
-            value={belief}
-            onChange={(e) => setBelief(e.target.value)}
-            style={{ marginLeft: '0.5rem', width: '300px' }}
-          />
+      <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
+        <label htmlFor="beliefInput" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+          🎯 Enter a Market Belief
         </label>
-        <button type="submit" style={{ marginLeft: '0.5rem' }}>Submit</button>
+        <br />
+        <input
+          id="beliefInput"
+          type="text"
+          value={belief}
+          onChange={(e) => setBelief(e.target.value)}
+          placeholder="e.g. TSLA will go up"
+          style={{
+            padding: '0.5rem',
+            width: '300px',
+            marginTop: '0.5rem',
+            marginRight: '0.5rem',
+            fontSize: '1rem',
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '0.5rem 1rem',
+            fontSize: '1rem',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Submit
+        </button>
       </form>
 
-      <h3 style={{ marginTop: '2rem' }}>Test Response from Backend:</h3>
-      <pre>{response ? JSON.stringify(response, null, 2) : 'No response yet'}</pre>
+      {response && (
+        <div>
+          <h3>📡 Response from Backend:</h3>
+          <pre
+            style={{
+              background: '#f4f4f4',
+              padding: '1rem',
+              borderRadius: '5px',
+              maxWidth: '600px',
+            }}
+          >
+            {JSON.stringify(response, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
