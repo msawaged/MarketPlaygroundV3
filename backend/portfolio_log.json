@@ -26,5 +26,33 @@
         "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
       }
     }
+  },
+  {
+    "timestamp": "2025-06-24T01:31:35.888475",
+    "user_id": "murad123",
+    "trade": {
+      "belief": "AAPL will go up next week",
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      }
+    }
+  },
+  {
+    "timestamp": "2025-06-24T16:40:38.614750",
+    "user_id": "murad123",
+    "trade": {
+      "belief": "AAPL will go up next week",
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze AAPL manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      }
+    }
   }
 ]
