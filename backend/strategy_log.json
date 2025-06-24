@@ -52,5 +52,11 @@
     "user_id": "anonymous",
     "belief": "AAPL will go up next week",
     "strategy": "Based on your belief: 'AAPL will go up next week', Thus, the 'Default Strategy' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-24T18:58:37.930091",
+    "user_id": "anonymous",
+    "belief": "I think AAPL will go up",
+    "strategy": "Based on your belief: 'I think AAPL will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective."
   }
 ]
