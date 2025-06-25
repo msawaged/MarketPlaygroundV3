@@ -1,10 +1,61 @@
 # backend/strategy_selector.py
 
 """
-Selects the best-fit trading strategy based on parsed belief, asset class,
-direction, confidence level, user goal (e.g. 2x return, hedge, income),
-and user risk profile (conservative, moderate, aggressive).
+Dynamic Strategy Selector using trained ML model (multi_asset_model.joblib).
+This version learns from belief, asset class, direction, goal, and other signals.
+Includes manual override logic for known phrases like 'bond ladder'.
 """
+
+import joblib
+import os
+
+# Load model and vectorizer (only once)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "multi_asset_model.joblib")
+VECTORIZER_PATH = os.path.join(BASE_DIR, "multi_vectorizer.joblib")
+
+model = joblib.load(MODEL_PATH)
+vectorizer = joblib.load(VECTORIZER_PATH)
+
+# Metadata for common strategies
+STRATEGY_DETAILS = {
+    "Bond Ladder": {
+        "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
+        "risk_level": "low",
+        "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
+    },
+    "Iron Condor": {
+        "description": "Sell call & put spreads on same expiry",
+        "risk_level": "medium",
+        "explanation": "Neutral volatility play; good when expecting sideways markets."
+    },
+    "Bull Call Spread": {
+        "description": "Buy call / Sell higher call",
+        "risk_level": "high",
+        "explanation": "Bullish spread to profit on upward moves with limited risk."
+    },
+    "Buy Stock": {
+        "description": "Buy underlying shares of the company",
+        "risk_level": "low",
+        "explanation": "Simple long-term position with ownership."
+    },
+    "Default Strategy": {
+        "description": "Fallback plan",
+        "risk_level": "unknown",
+        "explanation": "Model confidence too low — manual review recommended."
+    },
+    # Add more strategy metadata as needed
+}
+
+def adjust_allocation(base_percent, risk_profile):
+    """
+    Adjust allocation percentage based on risk profile.
+    """
+    if risk_profile == "conservative":
+        return f"{int(base_percent * 0.6)}%"
+    elif risk_profile == "aggressive":
+        return f"{int(base_percent * 1.4)}%"
+    return f"{base_percent}%"
 
 def select_strategy(
     belief: str,
@@ -16,153 +67,45 @@ def select_strategy(
     goal_type: str = None,
     multiplier: float = None,
     timeframe: str = None,
-    expiry_date: str = None,  # ✅ Added to avoid TypeError from extra input
+    expiry_date: str = None,
     risk_profile: str = "moderate"
 ) -> dict:
     """
-    Returns a complete recommendation based on belief analysis.
-
-    Example Output:
-    {
-        "type": "Call Spread",
-        "description": "Buy AAPL 190c / Sell AAPL 195c",
-        "risk_level": "medium",
-        "suggested_allocation": "25%",
-        "explanation": "Rationale behind this recommendation"
-    }
+    Predicts or selects a trading strategy based on user belief and ML model.
+    Falls back to manual rules when applicable.
     """
-    latest_price = price_info["latest"] if isinstance(price_info, dict) else price_info
-    latest_price = round(float(latest_price), 2)
+    latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
 
-    # ✅ Debug logging
-    print("\n[STRATEGY DEBUG]")
-    print("  Belief:", belief)
-    print("  Direction:", direction)
-    print("  Ticker:", ticker)
-    print("  Asset Class:", asset_class)
-    print("  Confidence:", confidence)
-    print("  Goal Type:", goal_type)
-    print("  Multiplier:", multiplier)
-    print("  Timeframe:", timeframe)
-    print("  Expiry Date:", expiry_date)  # for future use
-    print("  Risk Profile:", risk_profile)
-
-    # ✅ Ri***REMOVED***based allocation adjustment
-    def adjust_allocation(base_percent):
-        if risk_profile == "conservative":
-            return f"{int(base_percent * 0.6)}%"
-        elif risk_profile == "aggressive":
-            return f"{int(base_percent * 1.4)}%"
-        return f"{base_percent}%"
-
-    # === 🎯 GOAL-BASED STRATEGIES ===
-
-    if goal_type == "double_money" and multiplier and multiplier >= 2.0:
-        if asset_class == "options":
-            if direction == "up":
-                return {
-                    "type": "Aggressive Call Spread",
-                    "description": f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c",
-                    "risk_level": "high",
-                    "suggested_allocation": adjust_allocation(15),
-                    "explanation": "Targeting 2x return? This bullish spread offers upside with controlled risk."
-                }
-            elif direction == "down":
-                return {
-                    "type": "Aggressive Put Spread",
-                    "description": f"Buy {ticker} {int(latest_price * 0.95)}p / Sell {ticker} {int(latest_price * 0.85)}p",
-                    "risk_level": "high",
-                    "suggested_allocation": adjust_allocation(15),
-                    "explanation": "A bearish spread offers capped risk while maximizing downside reward—aligned with your 2x goal."
-                }
-            else:
-                return {
-                    "type": "Long Straddle",
-                    "description": f"Buy {ticker} {int(latest_price)}c + Buy {ticker} {int(latest_price)}p",
-                    "risk_level": "high",
-                    "suggested_allocation": adjust_allocation(20),
-                    "explanation": "Uncertain direction? Straddles profit from big moves either way—suitable for bold 2x targets."
-                }
-        elif asset_class == "stock":
-            return {
-                "type": "Leveraged ETF",
-                "description": f"Buy a 2x or 3x leveraged ETF tracking {ticker}",
-                "risk_level": "high",
-                "suggested_allocation": adjust_allocation(20),
-                "explanation": "Leverage boosts exposure—best used short-term when aiming for large gains."
-            }
-
-    elif goal_type == "hedge":
+    # ✅ MANUAL OVERRIDE for bond ladder
+    if "bond ladder" in belief.lower() or "laddered bonds" in belief.lower():
+        details = STRATEGY_DETAILS["Bond Ladder"]
         return {
-            "type": "Protective Put",
-            "description": f"Buy {ticker} {int(latest_price * 0.95)}p",
-            "risk_level": "low",
-            "suggested_allocation": adjust_allocation(10),
-            "explanation": "This strategy acts like insurance—ideal if you want to limit downside on current holdings."
+            "type": "Bond Ladder",
+            "description": details["description"],
+            "risk_level": details["risk_level"],
+            "suggested_allocation": adjust_allocation(25, risk_profile),
+            "explanation": details["explanation"]
         }
 
-    elif goal_type == "income":
-        return {
-            "type": "Cash-Secured Put",
-            "description": f"Sell {ticker} {int(latest_price * 0.95)}p",
-            "risk_level": "medium",
-            "suggested_allocation": adjust_allocation(20),
-            "explanation": "You collect income while potentially buying stock cheaper—great for passive returns."
-        }
+    # ✅ ML Prediction Path
+    input_text = f"{belief} | {asset_class} | {direction} | {goal_type} | risk: {risk_profile}"
+    X = vectorizer.transform([input_text])
+    predicted_type = model.predict(X)[0]
 
-    elif goal_type == "safe_growth":
-        return {
-            "type": "Covered Call",
-            "description": f"Buy {ticker} + Sell {ticker} {int(latest_price * 1.05)}c",
-            "risk_level": "low",
-            "suggested_allocation": adjust_allocation(30),
-            "explanation": "Covered calls generate extra yield while holding stock—ideal for steady growth."
-        }
+    # Use default if unrecognized
+    details = STRATEGY_DETAILS.get(predicted_type, STRATEGY_DETAILS["Default Strategy"])
 
-    # === 🧭 FALLBACK: DIRECTION-BASED STRATEGIES ===
-
-    if asset_class == "options":
-        if direction == "up":
-            return {
-                "type": "Call",
-                "description": f"Buy {ticker} {int(latest_price * 1.05)}c",
-                "risk_level": "medium",
-                "suggested_allocation": adjust_allocation(25),
-                "explanation": "Simple bullish bet—defined risk with potential for high reward."
-            }
-        elif direction == "down":
-            return {
-                "type": "Put",
-                "description": f"Buy {ticker} {int(latest_price * 0.95)}p",
-                "risk_level": "medium",
-                "suggested_allocation": adjust_allocation(25),
-                "explanation": "Put options profit from price drops—clear match for bearish views."
-            }
-
-    elif asset_class == "stock":
-        if direction == "up":
-            return {
-                "type": "Buy Stock",
-                "description": f"Buy {ticker} at market price",
-                "risk_level": "low",
-                "suggested_allocation": adjust_allocation(30),
-                "explanation": "Direct ownership of stock—best for long-term bullish beliefs."
-            }
-        elif direction == "down":
-            return {
-                "type": "Inverse ETF",
-                "description": f"Buy inverse ETF or short {ticker}",
-                "risk_level": "high",
-                "suggested_allocation": adjust_allocation(10),
-                "explanation": "Inverse ETFs mirror declines—best when confident the asset will fall."
-            }
-
-    # === 🛑 DEFAULT STRATEGY ===
+    # Dynamically format option descriptions
+    description = details["description"]
+    if "call" in predicted_type.lower():
+        description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
+    elif "put" in predicted_type.lower():
+        description = f"Buy {ticker} {int(latest_price * 0.95)}p / Sell {ticker} {int(latest_price * 0.85)}p"
 
     return {
-        "type": "Default Strategy",
-        "description": f"Analyze {ticker} manually",
-        "risk_level": "unknown",
-        "suggested_allocation": adjust_allocation(10),
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": predicted_type,
+        "description": description,
+        "risk_level": details["risk_level"],
+        "suggested_allocation": adjust_allocation(20, risk_profile),
+        "explanation": details["explanation"]
     }
