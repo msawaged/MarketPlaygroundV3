@@ -1,797 +1,8 @@
 [
   {
-    "belief": "TSLA will go up this week",
-    "strategy": {
-      "type": "Call Spread",
-      "description": "Buy TSLA 250c / Sell 270c",
-      "risk_level": "medium",
-      "suggested_allocation": "30% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "NVDA will fall after earnings",
-    "strategy": {
-      "type": "Put Spread",
-      "description": "Buy NVDA 400p / Sell 390p",
-      "risk_level": "high",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "AAPL will outperform this month",
-    "strategy": {
-      "type": "Call Spread",
-      "description": "Buy AAPL 180c / Sell 190c",
-      "risk_level": "medium",
-      "suggested_allocation": "25% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "META will crash after ad revenue report",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy META 250p",
-      "risk_level": "high",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "MSFT will soar after new AI announcement",
-    "strategy": {
-      "type": "Call Option",
-      "description": "Buy MSFT 350c",
-      "risk_level": "medium",
-      "suggested_allocation": "30% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "AMZN will struggle this quarter",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy AMZN 110p",
-      "risk_level": "medium",
-      "suggested_allocation": "25% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "GOOGL will rise after cloud earnings",
-    "strategy": {
-      "type": "Call Spread",
-      "description": "Buy GOOGL 140c / Sell 150c",
-      "risk_level": "low",
-      "suggested_allocation": "35% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "TSLA will fall due to poor delivery numbers",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy TSLA 220p",
-      "risk_level": "high",
-      "suggested_allocation": "15% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "NFLX will rebound from recent drop",
-    "strategy": {
-      "type": "Call Spread",
-      "description": "Buy NFLX 420c / Sell 440c",
-      "risk_level": "medium",
-      "suggested_allocation": "25% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "BA will tank after FAA ruling",
-    "strategy": {
-      "type": "Put Spread",
-      "description": "Buy BA 190p / Sell 180p",
-      "risk_level": "high",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "SPY will climb steadily next month",
-    "strategy": {
-      "type": "Call Option",
-      "description": "Buy SPY 450c",
-      "risk_level": "low",
-      "suggested_allocation": "40% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "QQQ will drop during tech pullback",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy QQQ 360p",
-      "risk_level": "medium",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "NVDA will continue to rally",
-    "strategy": {
-      "type": "Call Spread",
-      "description": "Buy NVDA 460c / Sell 470c",
-      "risk_level": "medium",
-      "suggested_allocation": "30% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "Intel will miss earnings",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy INTC 32p",
-      "risk_level": "low",
-      "suggested_allocation": "15% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "AMD will jump after GPU release",
-    "strategy": {
-      "type": "Call Option",
-      "description": "Buy AMD 130c",
-      "risk_level": "medium",
-      "suggested_allocation": "30% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "ARKK will decline with inflation fears",
-    "strategy": {
-      "type": "Put Option",
-      "description": "Buy ARKK 40p",
-      "risk_level": "medium",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "AAPL will stay flat this week",
-    "strategy": {
-      "type": "Iron Condor",
-      "description": "Sell AAPL 190c / Buy 195c | Sell 180p / Buy 175p",
-      "risk_level": "low",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "TSLA will spike after Cybertruck delivery",
-    "strategy": {
-      "type": "Call Option",
-      "description": "Buy TSLA 270c",
-      "risk_level": "high",
-      "suggested_allocation": "25% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "belief": "BABA will tank from China news",
-    "strategy": {
-      "type": "Put Spread",
-      "description": "Buy BABA 90p / Sell 85p",
-      "risk_level": "medium",
-      "suggested_allocation": "20% of trade capital"
-    },
-    "feedback": "bad"
-  },
-  {
-    "belief": "COIN will soar if BTC hits $100k",
-    "strategy": {
-      "type": "Call Option",
-      "description": "Buy COIN 250c",
-      "risk_level": "high",
-      "suggested_allocation": "30% of trade capital"
-    },
-    "feedback": "good"
-  },
-  {
-    "timestamp": "2025-06-22T00:19:19.919162",
-    "belief": "COIN will soar if BTC hits $100k",
-    "strategy": "Buy COIN 250c",
-    "result": "good"
-  },
-  {
-    "timestamp": "2025-06-22T01:47:08.753357",
-    "user_id": "murad_test",
-    "belief": "TSLA will go up this week",
-    "strategy": {
-      "strategy": "Buy Call on TSLA near $-1.00",
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": -1.0,
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.62,
-      "user_id": "murad_test"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T01:48:17.908464",
-    "user_id": "murad_test",
-    "belief": "TSLA will go up this week",
-    "strategy": {
-      "type": "Bull Call Spread",
-      "legs": [
-        {
-          "action": "Buy",
-          "ticker": "TSLA",
-          "strike": 250,
-          "type": "call"
-        },
-        {
-          "action": "Sell",
-          "ticker": "TSLA",
-          "strike": 260,
-          "type": "call"
-        }
-      ],
-      "expiry": "2025-07-19"
-    },
-    "result": "good"
-  },
-  {
-    "timestamp": "2025-06-22T17:39:59.434630",
+    "timestamp": "2025-06-25T07:19:56.623305",
     "user_id": "anonymous",
-    "belief": "I want to 2x my money betting AAPL will pop this week",
-    "strategy": {
-      "strategy": {
-        "type": "Long Straddle",
-        "description": "Buy AAPL -1c + Buy AAPL -1p",
-        "risk_level": "high",
-        "suggested_allocation": "20%",
-        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": -1.0
-      },
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.63,
-      "goal_type": "double_money",
-      "multiplier": 2.0,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T17:42:13.677084",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting AAPL will pop this week",
-    "strategy": {
-      "strategy": {
-        "type": "Long Straddle",
-        "description": "Buy AAPL -1c + Buy AAPL -1p",
-        "risk_level": "high",
-        "suggested_allocation": "20%",
-        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": -1.0
-      },
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.63,
-      "goal_type": "double_money",
-      "multiplier": 2.0,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T17:42:49.645605",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting AAPL will pop this week",
-    "strategy": {
-      "strategy": {
-        "type": "Long Straddle",
-        "description": "Buy AAPL -1c + Buy AAPL -1p",
-        "risk_level": "high",
-        "suggested_allocation": "20%",
-        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": -1.0
-      },
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.63,
-      "goal_type": "double_money",
-      "multiplier": 2.0,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T17:43:09.162104",
-    "user_id": "anonymous",
-    "belief": "AAPL will move big this week but I\u2019m unsure on direction",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze AAPL manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bearish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": -1.0
-      },
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.53,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'AAPL will move big this week but I\u2019m unsure on direction', The system saw this as expecting volatility in AAPL. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T17:43:20.142745",
-    "user_id": "anonymous",
-    "belief": "TSLA will crash next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bearish"
-      ],
-      "direction": "bearish",
-      "price_info": {
-        "latest": -1.0
-      },
-      "high_low": [
-        -1.0,
-        -1.0
-      ],
-      "confidence": 0.51,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "next week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'TSLA will crash next week', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T17:57:49.606512",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting AAPL will pop this week",
-    "strategy": {
-      "strategy": {
-        "type": "Long Straddle",
-        "description": "Buy AAPL 190c + Buy AAPL 190p",
-        "risk_level": "high",
-        "suggested_allocation": "20%",
-        "explanation": "Straddles profit from large moves in any direction\u2014best when direction is unclear but goal is high return."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 190.25
-      },
-      "high_low": [
-        192.75,
-        186.8
-      ],
-      "confidence": 0.63,
-      "goal_type": "double_money",
-      "multiplier": 2.0,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting AAPL will pop this week', you want to double your money within this week. The system saw this as expecting volatility in AAPL. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T19:52:25.575129",
-    "user_id": "anonymous",
-    "belief": "I believe AAPL will go up this week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze AAPL manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 201.0
-      },
-      "high_low": [
-        201.7,
-        196.85
-      ],
-      "confidence": 0.72,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe AAPL will go up this week', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T21:11:46.712478",
-    "user_id": "anonymous",
-    "belief": "I want to double my money on TSLA this week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "No clear strategy detected. Consider refining your belief or reviewing manually."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bearish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 322.16
-      },
-      "high_low": [
-        332.36,
-        317.78
-      ],
-      "confidence": 0.59,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "this week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to double my money on TSLA this week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-22T21:12:09.006168",
-    "user_id": "anonymous",
-    "belief": "TSLA will go up",
-    "strategy": "buy TSLA 180c",
-    "result": "good call"
-  },
-  {
-    "timestamp": "2025-06-23T06:35:28.694199",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting TSLA will pop next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 322.16
-      },
-      "high_low": [
-        332.36,
-        317.78
-      ],
-      "confidence": 0.52,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": null,
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will pop next week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T07:27:34.487146",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting TSLA will pop next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 322.16
-      },
-      "high_low": [
-        332.36,
-        317.78
-      ],
-      "confidence": 0.52,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": "next week",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will pop next week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T18:10:18.983613",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting TSLA will pop next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 352.52
-      },
-      "high_low": [
-        357.54,
-        327.48
-      ],
-      "confidence": 0.52,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": "next week",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will pop next week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T18:11:40.460274",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting TSLA will pop next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 352.38
-      },
-      "high_low": [
-        357.54,
-        327.48
-      ],
-      "confidence": 0.52,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": "next week",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will pop next week', The system saw this as expecting volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T19:08:29.608982",
-    "user_id": "anonymous",
-    "belief": "I want to 2x my money betting TSLA will explode next week",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 350.09
-      },
-      "high_low": [
-        357.54,
-        327.48
-      ],
-      "confidence": 0.52,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": "next week",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money betting TSLA will explode next week', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T19:08:42.444758",
-    "user_id": "anonymous",
-    "belief": "The market will tank next month and I want to hedge",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze SPY manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "SPY",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bearish",
-      "price_info": {
-        "latest": 598.92
-      },
-      "high_low": [
-        599.44,
-        591.89
-      ],
-      "confidence": 0.54,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "next month",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'The market will tank next month and I want to hedge', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T19:44:17.710413",
-    "user_id": "anonymous",
-    "belief": "I want passive income from AAPL",
-    "strategy": {
-      "strategy": {
-        "type": "Cash-Secured Put",
-        "description": "Sell AAPL 191p",
-        "risk_level": "medium",
-        "suggested_allocation": "20%",
-        "explanation": "You collect income while potentially buying stock cheaper\u2014great for passive returns."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bearish"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": 201.16
-      },
-      "high_low": [
-        202.3,
-        198.96
-      ],
-      "confidence": 0.52,
-      "goal_type": "income",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": null,
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want passive income from AAPL', The system expects volatility in AAPL. Thus, the 'Cash-Secured Put' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T21:12:01.938616",
-    "user_id": "anonymous",
-    "belief": "oill is going to get high in the coming months",
+    "belief": "options strategy that leverages oil futures",
     "strategy": {
       "strategy": {
         "type": "Default Strategy",
@@ -807,27 +18,27 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 600.15
+        "latest": 606.78
       },
       "high_low": [
-        600.54,
-        591.89
+        607.85,
+        603.41
       ],
-      "confidence": 0.46,
+      "confidence": 0.61,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'oill is going to get high in the coming months', The system expects volatility in SPY. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'options strategy that leverages oil futures', The system expects volatility in SPY. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:19:10.668731",
-    "user_id": "test_user",
-    "belief": "I think TSLA will rally hard this week",
+    "timestamp": "2025-06-25T07:23:44.769386",
+    "user_id": "anonymous",
+    "belief": "tsla will go up by 25 dollars by friday",
     "strategy": {
       "strategy": {
         "type": "Default Strategy",
@@ -841,108 +52,216 @@
       "tags": [
         "bullish"
       ],
-      "direction": "neutral",
+      "direction": "bullish",
       "price_info": {
-        "latest": 348.68
+        "latest": 340.47
       },
       "high_low": [
-        357.54,
-        327.48
+        356.26,
+        340.44
       ],
-      "confidence": 0.5,
+      "confidence": 0.58,
       "goal_type": "unspecified",
       "multiplier": null,
-      "timeframe": "this week",
+      "timeframe": "by friday",
       "expiry_date": "2025-06-27",
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I think TSLA will rally hard this week', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'tsla will go up by 25 dollars by friday', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:19:44.160747",
-    "user_id": "test_user",
-    "belief": "Tech stocks will crash next quarter",
+    "timestamp": "2025-06-25T08:12:09.369240",
+    "user_id": "anonymous",
+    "belief": "give me an 2x options strategy on tsla",
+    "strategy": {
+      "strategy": {
+        "type": "Default Strategy",
+        "description": "Analyze TSLA manually",
+        "risk_level": "unknown",
+        "suggested_allocation": "10%",
+        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 340.47
+      },
+      "high_low": [
+        356.26,
+        340.44
+      ],
+      "confidence": 0.73,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'give me an 2x options strategy on tsla', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T16:44:46.335724",
+    "user_id": "anonymous",
+    "belief": "the us economy will be bullish",
     "strategy": {
       "strategy": {
         "type": "Default Strategy",
         "description": "Analyze SPY manually",
         "risk_level": "unknown",
         "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "explanation": "Unable to generate a confident strategy. Try refining your belief or goal."
       },
       "ticker": "SPY",
       "asset_class": "options",
       "tags": [
         "bullish"
       ],
-      "direction": "bearish",
+      "direction": "bullish",
       "price_info": {
-        "latest": 600.15
+        "latest": 606.89
       },
       "high_low": [
-        600.54,
-        591.89
+        608.61,
+        606.48
       ],
       "confidence": 0.55,
       "goal_type": "unspecified",
       "multiplier": null,
-      "timeframe": "next quarter",
-      "expiry_date": "2025-06-27",
+      "timeframe": null,
+      "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'Tech stocks will crash next quarter', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'the us economy will be bullish', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:19:51.063318",
-    "user_id": "test_user",
-    "belief": "I want to double my money this month",
+    "timestamp": "2025-06-25T16:45:32.510945",
+    "user_id": "anonymous",
+    "belief": "I Want to buy the highest volitale etfs",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze SPY manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
       },
       "ticker": "SPY",
       "asset_class": "options",
       "tags": [
-        "bearish"
+        "bullish"
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 600.15
+        "latest": 606.75
       },
       "high_low": [
-        600.54,
-        591.89
+        608.61,
+        606.48
+      ],
+      "confidence": 0.61,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I Want to buy the highest volitale etfs', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T16:46:30.858938",
+    "user_id": "anonymous",
+    "belief": "tsla will explode next week",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "description": "Sell TSLA 341c & 309p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 325.46
+      },
+      "high_low": [
+        343.0,
+        320.4
       ],
       "confidence": 0.5,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": "this month",
-      "expiry_date": "2025-06-27",
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-07-04",
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to double my money this month', The system expects volatility in SPY. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'tsla will explode next week', The system expects volatility in TSLA. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:19:58.992058",
-    "user_id": "test_user",
-    "belief": "The entire market is going to collapse on Monday",
+    "timestamp": "2025-06-25T20:27:28.416631",
+    "user_id": "anonymous",
+    "belief": "give me an 2x options strategy on tsla",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze SPY manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Long Straddle",
+        "description": "Buy TSLA 327c + 327p",
+        "risk_level": "high",
+        "suggested_allocation": "20%",
+        "explanation": "Uncertain direction? Straddles profit from big moves either way\u2014great for volatile bets."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 327.55
+      },
+      "high_low": [
+        343.0,
+        320.4
+      ],
+      "confidence": 0.73,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'give me an 2x options strategy on tsla', The system expects volatility in TSLA. Thus, the 'Long Straddle' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T21:00:58.721140",
+    "user_id": "anonymous",
+    "belief": "I want to invest in oil ETFs",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -951,34 +270,34 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 600.15
+        "latest": 607.12
       },
       "high_low": [
-        600.54,
-        591.89
+        608.61,
+        605.54
       ],
-      "confidence": 0.41,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'The entire market is going to collapse on Monday', The system expects volatility in SPY. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'I want to invest in oil ETFs', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:20:09.997824",
-    "user_id": "test_user",
-    "belief": "The entire market is going to collapse on Monday",
+    "timestamp": "2025-06-25T21:01:45.819442",
+    "user_id": "anonymous",
+    "belief": "I want to invest in oil ETFs",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze SPY manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -987,379 +306,451 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 600.15
+        "latest": 607.12
       },
       "high_low": [
-        600.54,
-        591.89
+        608.61,
+        605.54
       ],
-      "confidence": 0.41,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'The entire market is going to collapse on Monday', The system expects volatility in SPY. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'I want to invest in oil ETFs', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:20:17.769300",
-    "user_id": "test_user",
-    "belief": "ETH is going to $4000 by the end of the year",
+    "timestamp": "2025-06-25T21:05:27.207181",
+    "user_id": "anonymous",
+    "belief": "I want to invest in oil ETFs",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze ETH manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
       },
-      "ticker": "ETH",
+      "ticker": "SPY",
       "asset_class": "options",
       "tags": [
         "bearish"
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 21.81
+        "latest": 607.12
       },
       "high_low": [
-        21.92,
-        20.62
+        608.61,
+        605.54
       ],
-      "confidence": 0.51,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'ETH is going to $4000 by the end of the year', The system expects volatility in ETH. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'I want to invest in oil ETFs', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:38:22.224856",
-    "user_id": "test_user",
-    "belief": "I want to double my money on NVDA",
+    "timestamp": "2025-06-25T21:16:16.627175",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze NVDA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
       },
-      "ticker": "NVDA",
+      "ticker": "SPY",
       "asset_class": "options",
       "tags": [
         "bearish"
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 144.17
+        "latest": 607.12
       },
       "high_low": [
-        144.78,
-        142.03
+        608.61,
+        605.54
       ],
-      "confidence": 0.53,
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T21:31:17.841004",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T21:47:22.207342",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T21:57:25.900023",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "description": "Sell SPY 637c & 576p; Buy wings",
+        "risk_level": "medium",
+        "suggested_allocation": "20%",
+        "explanation": "Expecting sideways movement? Iron condors profit from lack of volatility."
+      },
+      "ticker": "SPY",
+      "asset_class": "bonds",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Iron Condor' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T22:11:40.271641",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "bonds",
+        "description": "Fallback plan",
+        "risk_level": "unknown",
+        "suggested_allocation": "20%",
+        "explanation": "Model confidence too low \u2014 manual review recommended."
+      },
+      "ticker": "SPY",
+      "asset_class": "bonds",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'bonds' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T22:15:46.952361",
+    "user_id": "anonymous",
+    "belief": "\"I want 5x returns betting crypto will explode\"",
+    "strategy": {
+      "strategy": {
+        "type": "options",
+        "description": "Fallback plan",
+        "risk_level": "unknown",
+        "suggested_allocation": "20%",
+        "explanation": "Model confidence too low \u2014 manual review recommended."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "bearish"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.55,
       "goal_type": "multiply",
-      "multiplier": 2.0,
+      "multiplier": 5.0,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to double my money on NVDA', The system expects volatility in NVDA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: '\"I want 5x returns betting crypto will explode\"', Thus, the 'options' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:55:43.722271",
-    "user_id": "test_user",
-    "belief": "I want to double my money on NVDA",
+    "timestamp": "2025-06-25T22:16:22.801584",
+    "user_id": "anonymous",
+    "belief": "\"How can I profit if the market crashes?\"",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze NVDA manually",
+        "type": "options",
+        "description": "Fallback plan",
         "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "suggested_allocation": "20%",
+        "explanation": "Model confidence too low \u2014 manual review recommended."
       },
-      "ticker": "NVDA",
+      "ticker": "SPY",
       "asset_class": "options",
+      "tags": [
+        "bullish"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 607.12
+      },
+      "high_low": [
+        608.61,
+        605.54
+      ],
+      "confidence": 0.4,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: '\"How can I profit if the market crashes?\"', Thus, the 'options' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-25T22:35:14.250278",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Bond Ladder",
+        "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
+        "risk_level": "low",
+        "suggested_allocation": "25%",
+        "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
+      },
+      "ticker": "SPY",
+      "asset_class": "bonds",
       "tags": [
         "bearish"
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 144.17
+        "latest": 607.12
       },
       "high_low": [
-        144.78,
-        142.03
+        608.61,
+        605.54
       ],
-      "confidence": 0.53,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to double my money on NVDA', The system expects volatility in NVDA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Bond Ladder' strategy was chosen to match your objective.",
+      "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-23T21:59:51.743917",
-    "user_id": "test_user",
-    "belief": "I want to 2x my money on TSLA",
+    "timestamp": "2025-06-25T22:39:37.898435",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Bond Ladder",
+        "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
+        "risk_level": "low",
+        "suggested_allocation": "25%",
+        "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
       },
-      "ticker": "TSLA",
-      "asset_class": "options",
+      "ticker": "SPY",
+      "asset_class": "bonds",
       "tags": [
         "bearish"
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 348.68
+        "latest": 607.12
       },
       "high_low": [
-        357.54,
-        327.48
+        608.61,
+        605.54
       ],
-      "confidence": 0.64,
-      "goal_type": "multiply",
-      "multiplier": 2.0,
-      "timeframe": null,
-      "expiry_date": null,
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I want to 2x my money on TSLA', The system expects volatility in TSLA. Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-23T22:17:54.840670",
-    "user_id": "test_user",
-    "belief": "TSLA will go up",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 348.68
-      },
-      "high_low": [
-        357.54,
-        327.48
-      ],
-      "confidence": 0.58,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'TSLA will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "test_user"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-24T20:30:22.264252",
-    "user_id": "anonymous",
-    "belief": "AAPL will go up",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze AAPL manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "AAPL",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 200.3
-      },
-      "high_low": [
-        203.44,
-        200.2
-      ],
-      "confidence": 0.71,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": null,
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'AAPL will go up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Bond Ladder' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-24T21:00:02.126095",
+    "timestamp": "2025-06-25T22:39:42.050448",
     "user_id": "anonymous",
-    "belief": "tsla is going up",
+    "belief": "I want to build a bond ladder for income",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Bond Ladder",
+        "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
+        "risk_level": "low",
+        "suggested_allocation": "25%",
+        "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
       },
-      "ticker": "TSLA",
-      "asset_class": "options",
+      "ticker": "SPY",
+      "asset_class": "bonds",
       "tags": [
         "bearish"
       ],
-      "direction": "bullish",
+      "direction": "neutral",
       "price_info": {
-        "latest": 340.47
+        "latest": 607.12
       },
       "high_low": [
-        356.26,
-        340.44
+        608.61,
+        605.54
       ],
-      "confidence": 0.68,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'tsla is going up', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Bond Ladder' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-06-24T22:43:47.082728",
+    "timestamp": "2025-06-25T22:40:07.464513",
     "user_id": "anonymous",
-    "belief": "TSLA WILL GO UP",
+    "belief": "I want to build a bond ladder for income",
     "strategy": {
       "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
+        "type": "Bond Ladder",
+        "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
+        "risk_level": "low",
+        "suggested_allocation": "25%",
+        "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
       },
-      "ticker": "TSLA",
-      "asset_class": "options",
+      "ticker": "SPY",
+      "asset_class": "bonds",
       "tags": [
-        "bullish"
+        "bearish"
       ],
-      "direction": "bullish",
+      "direction": "neutral",
       "price_info": {
-        "latest": 340.47
+        "latest": 607.12
       },
       "high_low": [
-        356.26,
-        340.44
+        608.61,
+        605.54
       ],
-      "confidence": 0.58,
+      "confidence": 0.5,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'TSLA WILL GO UP', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-24T22:43:54.285887",
-    "user_id": "anonymous",
-    "belief": "TSLA WILL GO UP NEXT WEEK",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 340.47
-      },
-      "high_low": [
-        356.26,
-        340.44
-      ],
-      "confidence": 0.67,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "next week",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'TSLA WILL GO UP NEXT WEEK', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
-      "user_id": "anonymous"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-06-24T22:44:04.204276",
-    "user_id": "anonymous",
-    "belief": "TSLA WILL GO UP NEXT WEEK HOW DO I MAKE AS MUCH AS POSSIBLE",
-    "strategy": {
-      "strategy": {
-        "type": "Default Strategy",
-        "description": "Analyze TSLA manually",
-        "risk_level": "unknown",
-        "suggested_allocation": "10%",
-        "explanation": "Unable to determine a clear match. Try adjusting your belief or goal."
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "bullish"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 340.47
-      },
-      "high_low": [
-        356.26,
-        340.44
-      ],
-      "confidence": 0.67,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": "next week",
-      "expiry_date": "2025-07-04",
-      "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'TSLA WILL GO UP NEXT WEEK HOW DO I MAKE AS MUCH AS POSSIBLE', Thus, the 'Default Strategy' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects volatility in SPY. Thus, the 'Bond Ladder' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "auto_generated"

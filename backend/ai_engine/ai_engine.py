@@ -17,14 +17,6 @@ from backend.logger.strategy_logger import log_strategy  # ✅ Added logging imp
 def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
     Converts a user belief into a complete trade strategy suggestion.
-
-    Args:
-        belief (str): e.g. "I want to 2x my money betting TSLA will pop next week"
-        risk_profile (str): e.g. "conservative", "moderate", "aggressive"
-        user_id (str): optional user ID for logging
-
-    Returns:
-        dict: Structured trade recommendation
     """
 
     # ✅ Step 1: Parse belief into components
@@ -33,6 +25,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     ticker = parsed.get("ticker")
     tags = parsed.get("tags", [])
     confidence = parsed.get("confidence", 0.5)
+    parsed_asset_class = parsed.get("asset_class", "options")  # from ML
 
     # ✅ Step 2: Parse goal intent (multiplier, timeframe, goal_type)
     goal = evaluate_goal(belief)
@@ -43,19 +36,22 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     # ✅ Step 3: Convert to expiry date
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # ✅ Step 4: Infer asset class
-    asset_class = select_asset_class(tags, ticker)
+    # ✅ Step 4: Use ML-detected asset class unless override needed
+    if parsed_asset_class and parsed_asset_class != "options":
+        asset_class = parsed_asset_class
+    else:
+        asset_class = select_asset_class(tags, ticker)
 
-    # 🧠 Optional: Fallback logic if ticker is missing
+    # 🧠 Optional: Fallback if ticker missing
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
         elif "spy" in tags or "s&p" in tags:
             ticker = "SPY"
         else:
-            ticker = "AAPL"  # hard fallback
+            ticker = "AAPL"
 
-    # 🧠 Optional: Smart direction override based on goal
+    # 🧠 Optional: Override direction based on goal
     if not direction:
         if goal_type in ["double_money", "safe_growth"]:
             direction = "up"
@@ -79,7 +75,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
 
     price_info = {"latest": latest}
 
-    # 🔍 Debugging Log
+    # 🔍 Debug Info
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}")
@@ -111,15 +107,15 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         risk_profile=risk_profile
     )
 
-    # ✅ Step 7: Strategy explanation for UI
+    # ✅ Step 7: Explanation for UI
     explanation = generate_strategy_explainer(
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 8: Log strategy
+    # ✅ Step 8: Log for tracking
     log_strategy(belief, explanation, user_id)
 
-    # ✅ Step 9: Output response object
+    # ✅ Step 9: Return response
     return {
         "strategy": strategy,
         "ticker": ticker,
