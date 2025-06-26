@@ -2416,5 +2416,953 @@
     "user_id": "anonymous",
     "belief": "I want income. I think TSLA will go up due to strong deliveries.",
     "strategy": "Based on your belief: 'I want income. I think TSLA will go up due to strong deliveries.', Thus, the 'Buy Stock for Income' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:35:33.915939",
+    "user_id": "anonymous",
+    "belief": "TSLA will surge this quarter after record deliveries",
+    "strategy": "Based on your belief: 'TSLA will surge this quarter after record deliveries', The system expects volatility in TSLA. Thus, the 'Buy Stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:36:07.575061",
+    "user_id": "anonymous",
+    "belief": "I want to protect my portfolio against a recession",
+    "strategy": "Based on your belief: 'I want to protect my portfolio against a recession', Thus, the 'Long Put' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:51:08.615615",
+    "user_id": "anonymous",
+    "belief": "TSLA will rally this quarter due to strong EV demand",
+    "strategy": "Based on your belief: 'TSLA will rally this quarter due to strong EV demand', Thus, the 'Buy Stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:08.425042",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:09.860954",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:11.260891",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:12.712861",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:14.176953",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:15.754753",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:17.243276",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:18.676997",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:20.082739",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:21.653095",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:23.115798",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:24.705751",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:26.118772",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:27.586600",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:28.993832",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:30.490982",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:31.951393",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:33.391024",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:34.829002",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:36.355218",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:37.805319",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:39.389902",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:40.853769",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:42.342801",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T20:55:43.949620",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:15.544105",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:17.191486",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:18.670115",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:20.273932",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:21.875255",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:23.394710",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:24.949527",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:26.588470",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:28.005429",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:29.544932",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:31.172142",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:32.689549",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:34.147088",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:35.801245",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:37.272011",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:38.713721",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:40.299261",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:41.877689",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:43.390217",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:44.900214",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:46.760579",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:48.278913",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:50.104923",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:51.541597",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:26:53.104185",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:28.425075",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:29.856647",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:31.416331",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:32.936777",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:34.494325",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:36.047780",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:37.466963",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:38.989848",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:40.827342",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:42.409843",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:43.994859",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:45.624005",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:47.175383",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:48.592233",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:50.046284",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:51.481781",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:52.892134",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:54.315740",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:55.932104",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:57.453623",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:57:58.973874",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:58:00.456649",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:58:01.877702",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:58:03.392962",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T21:58:04.853232",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:30.325733",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:31.895011",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:33.742113",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:35.399338",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:36.986203",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:38.490903",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:40.027033",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:41.517217",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:43.148322",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:44.801537",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:46.299289",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:47.873282",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:49.498972",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:50.989502",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:52.557697",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:54.023851",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:55.457334",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:57.016061",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:28:58.654930",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:00.132725",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:01.789945",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:03.286514",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:04.706874",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:06.201518",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:29:07.584727",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:32.248187",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:33.842257",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:35.311076",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:36.914964",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:38.334435",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:39.763272",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:41.477835",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:42.940739",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:44.393575",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:45.856609",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:47.312660",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:48.948323",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:50.602682",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:52.193993",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:53.706631",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:55.144011",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:56.561906",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:58.156684",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T22:59:59.865220",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:01.429297",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:03.100011",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:04.560427",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:06.031856",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:07.557126",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:00:08.998433",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:06:33.006099",
+    "user_id": "anonymous",
+    "belief": "TSLA will surge this quarter after record deliveries",
+    "strategy": "Based on your belief: 'TSLA will surge this quarter after record deliveries', The system expects volatility in TSLA. Thus, the 'Buy Stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:11:11.544724",
+    "user_id": "anonymous",
+    "belief": "I expect QQQ to rise sharply after the Fed holds rates",
+    "strategy": "Based on your belief: 'I expect QQQ to rise sharply after the Fed holds rates', Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:11:18.750160",
+    "user_id": "anonymous",
+    "belief": "I want to hedge against market crash",
+    "strategy": "Based on your belief: 'I want to hedge against market crash', Thus, the 'Long Put' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:20:50.904948",
+    "user_id": "anonymous",
+    "belief": "I think QQQ will rip after the Fed pauses hikes",
+    "strategy": "Based on your belief: 'I think QQQ will rip after the Fed pauses hikes', The system expects volatility in QQQ. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:24:07.556988",
+    "user_id": "anonymous",
+    "belief": "I think QQQ will rip after the Fed pauses hikes",
+    "strategy": "Based on your belief: 'I think QQQ will rip after the Fed pauses hikes', The system expects volatility in QQQ. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:32.125321",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:33.608652",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:35.243726",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:36.807734",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:38.219774",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:39.650523",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:41.170452",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:42.666724",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:44.207328",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:46.009168",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:47.776581",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:49.369984",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "strategy": "Based on your belief: 'Go all in on crypto this week', The system expects volatility in SPY. Thus, the 'crypto' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:50.849235",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "strategy": "Based on your belief: 'Slow and steady with dividend stocks', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:52.494309",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:53.926887",
+    "user_id": "anonymous",
+    "belief": "Bet big if Elon tweets anything about Mars",
+    "strategy": "Based on your belief: 'Bet big if Elon tweets anything about Mars', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:55.449908",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "strategy": "Based on your belief: 'I want to 5x my money fast', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:56.925270",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:30:58.552565",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "strategy": "Based on your belief: 'Diversify into energy and healthcare', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:00.060823",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:01.865709",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "strategy": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects volatility in AAPL. Thus, the 'options' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:03.417041",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:05.193076",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:06.747559",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "strategy": "Based on your belief: 'If gold and bitcoin rise together, what happens?', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:08.246757",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "strategy": "Based on your belief: 'Short tech hard, it's about to crash', Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-26T23:31:09.957021",
+    "user_id": "anonymous",
+    "belief": "What\u2019s a stable ETF for retirement?",
+    "strategy": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
   }
 ]

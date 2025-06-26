@@ -1,0 +1,93 @@
+[
+    {
+      "belief": "AAPL will rise due to strong iPhone sales",
+      "strategy": "Bull Call Spread",
+      "feedback": "good",
+      "user_id": "seed_user_1",
+      "risk_profile": "moderate",
+      "timestamp": "2025-06-26T21:53:45.868710",
+      "ip": "192.168.1.136"
+    },
+    {
+      "belief": "SPY will fall because of rate hikes",
+      "strategy": "Long Put",
+      "feedback": "good",
+      "user_id": "seed_user_2",
+      "risk_profile": "conservative",
+      "timestamp": "2025-06-26T21:53:45.868725",
+      "ip": "192.168.1.198"
+    },
+    {
+      "belief": "QQQ will go up from strong tech earnings",
+      "strategy": "Buy Stock",
+      "feedback": "good",
+      "user_id": "seed_user_3",
+      "risk_profile": "aggressive",
+      "timestamp": "2025-06-26T21:53:45.868728",
+      "ip": "192.168.1.169"
+    },
+    {
+      "belief": "I want to generate steady income from bonds",
+      "strategy": "Bond Ladder",
+      "feedback": "good",
+      "user_id": "seed_user_4",
+      "risk_profile": "conservative",
+      "timestamp": "2025-06-26T21:53:45.868731",
+      "ip": "192.168.1.237"
+    },
+    {
+      "belief": "TSLA might drop after poor delivery numbers",
+      "strategy": "Long Put",
+      "feedback": "good",
+      "user_id": "seed_user_5",
+      "risk_profile": "moderate",
+      "timestamp": "2025-06-26T21:53:45.868735",
+      "ip": "192.168.1.141"
+    },
+    {
+      "belief": "The market will be flat this month",
+      "strategy": "Iron Condor",
+      "feedback": "good",
+      "user_id": "seed_user_6",
+      "risk_profile": "moderate",
+      "timestamp": "2025-06-26T21:53:45.868738",
+      "ip": "192.168.1.83"
+    },
+    {
+      "belief": "NVDA will surge with AI hype",
+      "strategy": "Bull Call Spread",
+      "feedback": "good",
+      "user_id": "seed_user_7",
+      "risk_profile": "aggressive",
+      "timestamp": "2025-06-26T21:53:45.868740",
+      "ip": "192.168.1.90"
+    },
+    {
+      "belief": "I want to hedge my portfolio",
+      "strategy": "Long Put",
+      "feedback": "good",
+      "user_id": "seed_user_8",
+      "risk_profile": "conservative",
+      "timestamp": "2025-06-26T21:53:45.868744",
+      "ip": "192.168.1.9"
+    },
+    {
+      "belief": "Looking to invest long-term in TSLA",
+      "strategy": "Buy Stock",
+      "feedback": "good",
+      "user_id": "seed_user_9",
+      "risk_profile": "moderate",
+      "timestamp": "2025-06-26T21:53:45.868751",
+      "ip": "192.168.1.156"
+    },
+    {
+      "belief": "TQQQ will explode next quarter",
+      "strategy": "Bull Call Spread",
+      "feedback": "good",
+      "user_id": "seed_user_10",
+      "risk_profile": "aggressive",
+      "timestamp": "2025-06-26T21:53:45.868755",
+      "ip": "192.168.1.175"
+    }
+  ]
+  

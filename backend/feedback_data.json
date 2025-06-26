@@ -98,7 +98,7 @@
       ],
       "confidence": 0.73,
       "goal_type": "multiply",
-      "multiplier": 2.0,
+      "multiplier": 2,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -201,7 +201,7 @@
         "latest": 325.46
       },
       "high_low": [
-        343.0,
+        343,
         320.4
       ],
       "confidence": 0.5,
@@ -225,7 +225,7 @@
         "description": "Buy TSLA 327c + 327p",
         "risk_level": "high",
         "suggested_allocation": "20%",
-        "explanation": "Uncertain direction? Straddles profit from big moves either way\u2014great for volatile bets."
+        "explanation": "Uncertain direction? Straddles profit from big moves either way—great for volatile bets."
       },
       "ticker": "TSLA",
       "asset_class": "options",
@@ -237,12 +237,12 @@
         "latest": 327.55
       },
       "high_low": [
-        343.0,
+        343,
         320.4
       ],
       "confidence": 0.73,
       "goal_type": "multiply",
-      "multiplier": 2.0,
+      "multiplier": 2,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -513,7 +513,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "bonds",
@@ -549,7 +549,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -566,7 +566,7 @@
       ],
       "confidence": 0.55,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -585,7 +585,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -1035,7 +1035,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1068,7 +1068,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1094,14 +1094,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -1122,7 +1122,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -1134,7 +1134,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1167,7 +1167,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1200,7 +1200,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1233,7 +1233,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -1266,7 +1266,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1283,7 +1283,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -1299,7 +1299,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1332,7 +1332,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1365,7 +1365,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1398,7 +1398,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -1431,7 +1431,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -1464,7 +1464,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -1497,7 +1497,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1530,7 +1530,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1563,7 +1563,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1580,7 +1580,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -1596,7 +1596,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1629,7 +1629,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1646,7 +1646,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -1655,14 +1655,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -1683,7 +1683,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -1695,7 +1695,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1728,7 +1728,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -1761,7 +1761,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1794,7 +1794,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1811,7 +1811,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -1827,7 +1827,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1860,7 +1860,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -1893,7 +1893,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -1919,14 +1919,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -1947,7 +1947,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -1959,7 +1959,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -1992,7 +1992,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2025,7 +2025,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -2058,7 +2058,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2091,7 +2091,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2124,7 +2124,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2157,7 +2157,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2190,7 +2190,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -2223,7 +2223,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2256,7 +2256,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2273,7 +2273,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -2282,14 +2282,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -2310,7 +2310,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -2322,7 +2322,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2355,7 +2355,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2388,7 +2388,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2421,7 +2421,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2454,7 +2454,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2487,7 +2487,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2520,7 +2520,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2553,7 +2553,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2586,7 +2586,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -2619,7 +2619,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -2645,14 +2645,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -2673,7 +2673,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -2685,7 +2685,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2718,7 +2718,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2751,7 +2751,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2784,7 +2784,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2817,7 +2817,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2850,7 +2850,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -2883,7 +2883,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2916,7 +2916,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2949,7 +2949,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -2982,7 +2982,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3015,7 +3015,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3041,14 +3041,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -3069,7 +3069,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -3081,7 +3081,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3114,7 +3114,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -3147,7 +3147,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -3180,7 +3180,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3213,7 +3213,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -3246,7 +3246,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3279,7 +3279,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3312,7 +3312,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3345,7 +3345,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -3378,7 +3378,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3395,7 +3395,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -3411,7 +3411,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3444,7 +3444,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3477,7 +3477,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3494,7 +3494,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -3510,7 +3510,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3543,7 +3543,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -3576,7 +3576,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3609,7 +3609,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3642,7 +3642,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3659,7 +3659,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -3675,7 +3675,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3708,7 +3708,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3741,7 +3741,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3774,7 +3774,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3807,7 +3807,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3840,7 +3840,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3873,7 +3873,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3906,7 +3906,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -3939,7 +3939,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -3956,7 +3956,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -3972,7 +3972,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -4005,7 +4005,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -4031,14 +4031,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -4059,7 +4059,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -4071,7 +4071,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -4104,7 +4104,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4137,7 +4137,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4154,7 +4154,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -4170,7 +4170,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4203,7 +4203,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -4229,14 +4229,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -4257,7 +4257,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -4269,7 +4269,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4302,7 +4302,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -4335,7 +4335,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "DIA",
       "asset_class": "stock",
@@ -4368,7 +4368,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4394,14 +4394,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.",
+    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -4422,7 +4422,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -4434,7 +4434,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -4460,14 +4460,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.",
+    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -4488,7 +4488,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -4500,7 +4500,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4533,7 +4533,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -4566,7 +4566,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "bonds",
@@ -4599,7 +4599,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -4625,14 +4625,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -4653,7 +4653,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -4665,7 +4665,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -4698,7 +4698,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4724,14 +4724,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -4752,7 +4752,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -4764,7 +4764,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -4797,7 +4797,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4830,7 +4830,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4863,7 +4863,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4896,7 +4896,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4913,7 +4913,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -4929,7 +4929,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -4962,7 +4962,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -4979,7 +4979,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -4995,7 +4995,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5012,7 +5012,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -5028,7 +5028,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -5061,7 +5061,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5094,7 +5094,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5120,14 +5120,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.",
+    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.",
     "strategy": {
       "strategy": {
         "type": "stock",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5148,7 +5148,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -5160,7 +5160,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -5193,7 +5193,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5226,7 +5226,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5252,14 +5252,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.",
+    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5280,7 +5280,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -5292,7 +5292,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5325,7 +5325,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "bonds",
@@ -5358,7 +5358,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5391,7 +5391,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5417,14 +5417,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.",
+    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.",
     "strategy": {
       "strategy": {
         "type": "stock",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5445,19 +5445,19 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
     },
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -5478,7 +5478,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -5490,7 +5490,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5523,7 +5523,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5556,7 +5556,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5589,7 +5589,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -5622,7 +5622,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5639,7 +5639,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -5655,7 +5655,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5688,7 +5688,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -5721,7 +5721,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5754,7 +5754,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5787,7 +5787,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -5804,7 +5804,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -5820,7 +5820,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5853,7 +5853,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "DIA",
       "asset_class": "stock",
@@ -5879,14 +5879,14 @@
     "result": "bad"
   },
   {
-    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.",
+    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -5907,19 +5907,19 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -5940,7 +5940,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -5952,7 +5952,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -5978,14 +5978,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.",
+    "belief": "I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6006,7 +6006,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek\u2019s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because swiss franc, japanese yen rise as deepseek news boosts safe havens. the yen and swiss franc were stronger against the dollar as investors sought safe havens after chinese start-up deepseek’s new ai model hit u.s. tech stocks.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -6018,7 +6018,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -6051,7 +6051,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6084,7 +6084,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -6117,7 +6117,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -6150,7 +6150,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6176,14 +6176,14 @@
     "result": "good"
   },
   {
-    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.",
+    "belief": "I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.",
     "strategy": {
       "strategy": {
         "type": "options",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6204,19 +6204,19 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven\u2019t had a significant impact on the country\u2019s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the market will go up because russia's crude exports fairly stable despite u.s. sanctions, goldman says. oil edged lower in early trade as goldman sachs said the latest round of u.s. sanctions against russia haven’t had a significant impact on the country’s oil exports.', Thus, the 'options' strategy was chosen to match your objective."
     },
     "result": "good"
   },
   {
-    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.",
+    "belief": "I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.",
     "strategy": {
       "strategy": {
         "type": "stock",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6237,7 +6237,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn\u2019t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'I believe the stock market is changing because u.s. treasury yields fall but direction for long-end yields still seen upward. the 10-year u.s. treasury yield fell and ing said the the long end of the treasury curve will continue trading at higher yields even as trump hasn’t delivered anything to shock markets so far.', Thus, the 'stock' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -6249,7 +6249,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -6282,7 +6282,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6315,7 +6315,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -6348,7 +6348,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "bonds",
@@ -6374,14 +6374,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -6402,7 +6402,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -6414,7 +6414,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6431,7 +6431,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -6447,7 +6447,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -6480,7 +6480,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6513,7 +6513,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6546,7 +6546,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -6555,7 +6555,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -6579,7 +6579,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "DIA",
       "asset_class": "stock",
@@ -6612,7 +6612,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6645,7 +6645,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6662,7 +6662,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -6678,7 +6678,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "options",
@@ -6711,7 +6711,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6744,7 +6744,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -6753,7 +6753,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -6777,7 +6777,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -6786,7 +6786,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -6810,7 +6810,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -6836,14 +6836,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -6864,7 +6864,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -6876,7 +6876,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6902,14 +6902,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -6930,7 +6930,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -6942,7 +6942,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -6975,7 +6975,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7008,7 +7008,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7041,7 +7041,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -7074,7 +7074,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -7107,7 +7107,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -7140,7 +7140,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7173,7 +7173,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7190,7 +7190,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7206,7 +7206,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7223,7 +7223,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7239,7 +7239,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7272,7 +7272,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -7305,7 +7305,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7338,7 +7338,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -7371,7 +7371,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7404,7 +7404,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -7437,7 +7437,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7470,7 +7470,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7503,7 +7503,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7536,7 +7536,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7553,7 +7553,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7569,7 +7569,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -7602,7 +7602,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7619,7 +7619,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7628,14 +7628,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -7656,7 +7656,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -7668,7 +7668,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7701,7 +7701,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -7734,7 +7734,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7767,7 +7767,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7800,7 +7800,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7817,7 +7817,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7833,7 +7833,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7850,7 +7850,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7866,7 +7866,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -7899,7 +7899,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -7925,14 +7925,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -7953,7 +7953,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "bad"
   },
@@ -7965,7 +7965,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -7982,7 +7982,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -7998,7 +7998,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8031,7 +8031,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8048,7 +8048,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -8064,7 +8064,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8097,7 +8097,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8114,7 +8114,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -8130,7 +8130,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -8163,7 +8163,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8196,7 +8196,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -8229,7 +8229,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8262,7 +8262,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8295,7 +8295,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8328,7 +8328,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -8361,7 +8361,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8394,7 +8394,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8427,7 +8427,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8462,7 +8462,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "TSLA",
       "asset_class": "etf",
@@ -8532,7 +8532,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8565,7 +8565,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -8598,7 +8598,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8631,7 +8631,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -8664,7 +8664,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -8697,7 +8697,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -8730,7 +8730,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -8763,7 +8763,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -8796,7 +8796,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -8829,7 +8829,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8862,7 +8862,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8895,7 +8895,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8928,7 +8928,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8961,7 +8961,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -8978,7 +8978,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -8994,7 +8994,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -9020,14 +9020,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -9048,7 +9048,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -9060,7 +9060,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -9093,7 +9093,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9119,14 +9119,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -9147,7 +9147,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective."
     },
     "result": "good"
   },
@@ -9159,7 +9159,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9192,7 +9192,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -9225,7 +9225,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9258,7 +9258,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9291,7 +9291,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -9324,7 +9324,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9458,14 +9458,14 @@
     "result": "auto_generated"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -9486,7 +9486,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "good"
@@ -9499,7 +9499,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9526,14 +9526,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -9554,20 +9554,20 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -9588,7 +9588,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "good"
@@ -9601,7 +9601,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9635,7 +9635,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9669,7 +9669,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -9703,7 +9703,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9737,7 +9737,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -9771,7 +9771,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9805,7 +9805,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9839,7 +9839,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9856,7 +9856,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -9873,7 +9873,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9907,7 +9907,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -9941,7 +9941,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -9975,7 +9975,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10009,7 +10009,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10026,7 +10026,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -10043,7 +10043,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10077,7 +10077,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10111,7 +10111,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10145,7 +10145,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10179,7 +10179,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10196,7 +10196,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -10213,7 +10213,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -10247,7 +10247,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10281,7 +10281,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10325,7 +10325,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "TSLA",
       "asset_class": "equity",
@@ -10360,7 +10360,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10394,7 +10394,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -10421,14 +10421,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -10449,7 +10449,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "good"
@@ -10462,7 +10462,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -10496,7 +10496,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10523,14 +10523,14 @@
     "result": "bad"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -10551,7 +10551,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "good"
@@ -10564,7 +10564,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -10598,7 +10598,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10632,7 +10632,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "crypto",
@@ -10666,7 +10666,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10700,7 +10700,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10734,7 +10734,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -10743,7 +10743,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -10768,7 +10768,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -10795,14 +10795,14 @@
     "result": "good"
   },
   {
-    "belief": "What\u2019s a stable ETF for retirement?",
+    "belief": "What’s a stable ETF for retirement?",
     "strategy": {
       "strategy": {
         "type": "etf",
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "etf",
@@ -10823,7 +10823,7 @@
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
-      "explanation": "Based on your belief: 'What\u2019s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
+      "explanation": "Based on your belief: 'What’s a stable ETF for retirement?', The system expects volatility in SPY. Thus, the 'etf' strategy was chosen to match your objective.",
       "user_id": "anonymous"
     },
     "result": "good"
@@ -10836,7 +10836,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10870,7 +10870,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10904,7 +10904,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10938,7 +10938,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10972,7 +10972,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -10989,7 +10989,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -11006,7 +11006,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -11040,7 +11040,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -11074,7 +11074,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "SPY",
       "asset_class": "stock",
@@ -11091,7 +11091,7 @@
       ],
       "confidence": 0.0011996279321009392,
       "goal_type": "multiply",
-      "multiplier": 5.0,
+      "multiplier": 5,
       "timeframe": null,
       "expiry_date": null,
       "risk_profile": "moderate",
@@ -11108,7 +11108,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "ETH",
       "asset_class": "stock",
@@ -11142,7 +11142,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -11151,7 +11151,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -11176,7 +11176,7 @@
         "description": "Fallback plan",
         "risk_level": "unknown",
         "suggested_allocation": "20%",
-        "explanation": "Model confidence too low \u2014 manual review recommended."
+        "explanation": "Model confidence too low — manual review recommended."
       },
       "ticker": "AAPL",
       "asset_class": "options",
@@ -11185,7 +11185,7 @@
       ],
       "direction": "neutral",
       "price_info": {
-        "latest": 201.0
+        "latest": 201
       },
       "high_low": [
         202.64,
@@ -11201,5 +11201,354 @@
       "user_id": "anonymous"
     },
     "result": "good"
+  },
+  {
+    "timestamp": "2025-06-26T20:35:55.815925",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "TSLA will surge this quarter after record deliveries",
+    "strategy": "Bull Call Spread",
+    "feedback": "good"
+  },
+  {
+    "timestamp": "2025-06-26T20:36:14.964548",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "I want to protect my portfolio against a recession",
+    "strategy": "Long Put",
+    "feedback": "good"
+  },
+  {
+    "timestamp": "2025-06-26T20:48:38.773284",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "I think TSLA will rally this quarter due to strong EV demand",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044063",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I believe NVDA will rise after earnings this month.",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "conservative"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044080",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "AAPL has a strong uptrend due to new product launches.",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044086",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I expect QQQ to stay flat over the next few weeks.",
+    "strategy": "Iron Condor",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044091",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "MSFT looks like it's consolidating at this level.",
+    "strategy": "Iron Condor",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044098",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I think SPY will drop sharply if interest rates rise.",
+    "strategy": "Long Put",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044103",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "AMZN is showing bearish signals amid market volatility.",
+    "strategy": "Long Put",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044109",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I want to invest long-term in TSLA.",
+    "strategy": "Buy Stock",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044114",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I'm bullish on META's future growth.",
+    "strategy": "Buy Stock",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044119",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I want low-risk income from government bonds.",
+    "strategy": "Bond Ladder",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T22:59:25.044129",
+    "user_id": "auto_test_user",
+    "ip": "127.0.0.1",
+    "belief": "Build me a bond ladder to preserve capital.",
+    "strategy": "Bond Ladder",
+    "feedback": "good",
+    "risk_profile": "conservative"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "curated",
+    "ip": "127.0.0.1",
+    "belief": "TSLA will surge this quarter after record deliveries",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:01Z",
+    "user_id": "curated",
+    "ip": "127.0.0.1",
+    "belief": "I expect QQQ to rise sharply after the Fed holds rates",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:02Z",
+    "user_id": "curated",
+    "ip": "127.0.0.1",
+    "belief": "I want to hedge against market crash",
+    "strategy": "Long Put",
+    "feedback": "good",
+    "risk_profile": "conservative"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:03Z",
+    "user_id": "curated",
+    "ip": "127.0.0.1",
+    "belief": "I believe SPY will trade sideways next month",
+    "strategy": "Iron Condor",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-06-26T23:21:40.594762",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "I think QQQ will rip after the Fed pauses hikes",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "QQQ will rip if the Fed pauses rate hikes",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "I expect QQQ to explode upward after the Fed pauses",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Rate pause from Fed should launch QQQ higher",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Fed pause could trigger massive QQQ rally",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Fed pausing hikes means bullish action for QQQ",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Fed pause could make QQQ skyrocket",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "If the Fed halts rate hikes, QQQ could soar",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Markets will cheer a Fed pause and push QQQ up",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "QQQ is primed to rip on dovish Fed news",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T00:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Strong tech rebound expected after Fed pause",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T16:00:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "QQQ will rip if the Fed pauses rate hikes",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T16:01:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "I expect QQQ to explode upward after the Fed pauses",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T16:02:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Rate pause from Fed should launch QQQ higher",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T16:03:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Fed pause could trigger massive QQQ rally",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T16:04:00Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "Fed pausing hikes means bullish action for QQQ",
+    "strategy": "Bull Call Spread",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:46:05Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "AAPL looks poised to breakout after earnings",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:46:05Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "If NVDA beats estimates, it's going to pop",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:46:05Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "GOOG might rip next week with positive AI news",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:49:25Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "AAPL looks poised to breakout after earnings",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:49:25Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "If NVDA beats estimates, it's going to pop",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
+  },
+  {
+    "timestamp": "2025-06-26T23:49:25Z",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "GOOG might rip next week with positive AI news",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "aggressive"
   }
 ]
