@@ -1,53 +1,52 @@
-# train_belief_model.py
-# ✅ Trains the belief model for interpreting user beliefs into sentiment tags
+# backend/train_belief_model.py
 
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import RandomForestClassifier
-import joblib
+"""
+Train belief classifier model to map user beliefs to high-level tags.
+This model helps predict intent (e.g. 'income', 'growth') based on natural-language beliefs.
+"""
+
 import os
+import pandas as pd
+import joblib
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 
-# ✅ 1. Load training data
-data = pd.DataFrame({
-    "belief": [
-        "I think AAPL will go up",
-        "TSLA is going to crash",
-        "The market is looking stable",
-        "NVDA will fly next week",
-        "I feel like SPY might dip soon",
-        "QQQ to the moon!",
-        "Interest rates will hurt TLT",
-        "Bitcoin is dead",
-        "I'm bearish on bonds",
-        "Energy stocks are on the rise"
-    ],
-    "label": [
-        "bullish",
-        "bearish",
-        "neutral",
-        "bullish",
-        "bearish",
-        "bullish",
-        "bearish",
-        "bearish",
-        "bearish",
-        "bullish"
-    ]
-})
+def train_belief_model(input_file, model_output_path, vectorizer_output_path):
+    # Load training data
+    df = pd.read_csv(input_file)
 
-# ✅ 2. Transform belief text using TF-IDF
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(data["belief"])
-y = data["label"]
+    # Verify required columns
+    if 'belief' not in df.columns or 'tags' not in df.columns:
+        raise ValueError("CSV must contain 'belief' and 'tags' columns")
 
-# ✅ 3. Train RandomForestClassifier
-model = RandomForestClassifier()
-model.fit(X, y)
+    # Clean and normalize tags (take first tag only)
+    df['tag'] = df['tags'].astype(str).apply(lambda x: x.split(',')[0].strip().lower())
 
-# ✅ 4. Save both the model and vectorizer
-save_dir = os.path.dirname(os.path.abspath(__file__))
+    # Prepare features and labels
+    X = df['belief']
+    y = df['tag']
 
-joblib.dump(model, os.path.join(os.path.dirname(__file__), "belief_model.joblib"))
-joblib.dump(vectorizer, os.path.join(os.path.dirname(__file__), "belief_vectorizer.joblib"))
+    # Vectorize belief text
+    vectorizer = TfidfVectorizer()
+    X_vec = vectorizer.fit_transform(X)
 
-print("✅ Belief model and vectorizer saved successfully.")
+    # Train classifier
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(X_vec, y)
+
+    # Save model and vectorizer to output paths
+    model_path = os.path.join(model_output_path, "belief_model.joblib")
+    vectorizer_path = os.path.join(vectorizer_output_path, "belief_vectorizer.joblib")
+    joblib.dump(clf, model_path)
+    joblib.dump(vectorizer, vectorizer_path)
+
+    print(f"✅ Belief model saved to: {model_path}")
+    print(f"✅ Vectorizer saved to: {vectorizer_path}")
+
+if __name__ == "__main__":
+    # Test run (optional)
+    train_belief_model(
+        input_file="backend/training_data/clean_belief_tags.csv",
+        model_output_path="backend",
+        vectorizer_output_path="backend"
+    )

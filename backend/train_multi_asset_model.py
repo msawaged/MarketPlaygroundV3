@@ -1,46 +1,55 @@
 # backend/train_multi_asset_model.py
 
 """
-Trains a multi-asset classifier using 'cleaned_belief' → 'asset_class' labels
-from the training dataset. Saves the trained model and vectorizer to disk
-for use in belief parsing.
+This trains a classification model to predict asset_class from belief text.
+Saves both the model and the vectorizer as joblib files.
 """
 
-import joblib
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+import joblib
 import os
 
-def train_multi_asset_model():
-    """
-    Loads data from training CSV, trains model to predict asset class
-    from cleaned beliefs, and saves the model/vectorizer to backend/.
-    """
-    # === Step 1: Load the correct dataset ===
-    csv_path = "backend/training_data/Training_Strategies.csv"
-    df = pd.read_csv(csv_path)
+def train_strategy_model(input_file: str, model_output_path: str, vectorizer_output_path: str):
+    # Load and validate data
+    df = pd.read_csv(input_file)
+    expected_cols = ['belief', 'asset_class']
+    actual_cols = list(df.columns)
+    print(f"🚨 Columns found: {actual_cols}")
 
-    if "cleaned_belief" not in df.columns or "asset_class" not in df.columns:
-        raise ValueError("Training_Strategies.csv must contain 'cleaned_belief' and 'asset_class' columns.")
+    if not all(col in actual_cols for col in expected_cols):
+        raise ValueError("CSV must contain 'belief' and 'asset_class' columns")
 
-    # === Step 2: Prepare features and labels ===
-    X = df["cleaned_belief"].astype(str)
-    y = df["asset_class"].astype(str)
+    # Filter down to the required columns
+    df = df[['belief', 'asset_class']].dropna()
 
-    # === Step 3: Vectorize belief text ===
-    vectorizer = TfidfVectorizer()
-    X_vec = vectorizer.fit_transform(X)
+    # Features and labels
+    X = df['belief'].astype(str)
+    y = df['asset_class'].astype(str).str.lower()  # Ensure consistency
 
-    # === Step 4: Train the model ===
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_vec, y)
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # === Step 5: Save model and vectorizer ===
-    joblib.dump(model, "backend/multi_asset_model.joblib")
-    joblib.dump(vectorizer, "backend/multi_vectorizer.joblib")
-    print("✅ Multi-asset model trained and saved to backend/")
+    # Pipeline: vectorizer + classifier
+    pipeline = Pipeline([
+        ('vectorizer', TfidfVectorizer(stop_words='english')),
+        ('classifier', LogisticRegression(max_iter=1000))
+    ])
 
-# === Run standalone if executed directly ===
-if __name__ == "__main__":
-    train_multi_asset_model()
+    # Fit the pipeline
+    pipeline.fit(X_train, y_train)
+    accuracy = pipeline.score(X_test, y_test)
+    print(f"✅ Trained LogisticRegression model (accuracy: {accuracy:.2f})")
+
+    # Save pipeline components
+    model_path = os.path.join(model_output_path, "multi_asset_model.joblib")
+    vectorizer_path = os.path.join(vectorizer_output_path, "multi_vectorizer.joblib")
+
+    joblib.dump(pipeline.named_steps['classifier'], model_path)
+    joblib.dump(pipeline.named_steps['vectorizer'], vectorizer_path)
+
+    print(f"✅ Saved model to {model_path}")
+    print(f"✅ Saved vectorizer to {vectorizer_path}")

@@ -1,3 +1,5 @@
+# backend/belief_parser.py
+
 """
 This module parses the user's belief into actionable components:
 - Extracts ticker (if possible)
@@ -11,20 +13,24 @@ from backend.utils.ticker_list import ALL_TICKERS
 from backend.utils.model_utils import load_model
 
 # === Load Required Models for Tagging ===
-belief_model = load_model("belief_model.joblib")
-vectorizer = load_model("belief_vectorizer.joblib")
+try:
+    belief_model = load_model("belief_model.joblib")
+    vectorizer = load_model("belief_vectorizer.joblib")
+except Exception as e:
+    print(f"[ERROR] Could not load belief/tag model: {e}")
+    belief_model = None
+    vectorizer = None
 
-# === Optionally Load Asset Class Model (if available) ===
+# === Optionally Load Asset Class Model ===
 try:
     asset_model = load_model("multi_asset_model.joblib")
     asset_vectorizer = load_model("multi_vectorizer.joblib")
 except Exception as e:
+    print(f"[WARNING] Asset class model not loaded: {e}")
     asset_model = None
     asset_vectorizer = None
-    print(f"[WARNING] Asset class model not loaded: {e}")
 
-# === Helpers ===
-
+# === Helper: Normalize user input ===
 def clean_belief(text: str) -> str:
     """
     Normalize the input belief text by removing punctuation and lowering case.
@@ -32,6 +38,7 @@ def clean_belief(text: str) -> str:
     """
     return re.sub(r"[^a-zA-Z0-9\s]", "", text.lower().strip())
 
+# === Helper: Detect ticker ===
 def detect_ticker(belief: str) -> str:
     """
     Detect a known stock/ETF ticker mentioned in the belief.
@@ -42,6 +49,7 @@ def detect_ticker(belief: str) -> str:
             return ticker.upper()
     return "SPY"  # fallback
 
+# === Helper: Infer direction from belief keywords ===
 def detect_direction(belief: str) -> str:
     """
     Infer sentiment direction from keywords in the belief text.
@@ -54,6 +62,7 @@ def detect_direction(belief: str) -> str:
         return "bullish"
     return "neutral"
 
+# === Helper: Predict asset class (ML or fallback) ===
 def detect_asset_class(raw_belief: str) -> str:
     """
     Predict the asset class using the trained ML model on the raw (uncleaned) belief.
@@ -70,14 +79,13 @@ def detect_asset_class(raw_belief: str) -> str:
     print("[ASSET CLASS FALLBACK] Defaulting asset class to 'options'")
     return "options"
 
-# === Main Parser ===
-
+# === Main Belief Parsing Function ===
 def parse_belief(belief: str) -> dict:
     """
     Converts a user belief string into structured components:
     - Ticker
     - Direction
-    - Tags (ML classified)
+    - Tags (ML classified and cleaned)
     - Confidence (ML probability)
     - Asset Class (ML or fallback)
 
@@ -86,15 +94,34 @@ def parse_belief(belief: str) -> dict:
     """
     cleaned = clean_belief(belief)
 
-    # Predict belief category (tag) and confidence
-    vectorized = vectorizer.transform([cleaned])
-    predicted_tag = belief_model.predict(vectorized)[0]
-    confidence = max(belief_model.predict_proba(vectorized)[0])
+    # Default empty tag list and confidence
+    tag_list = []
+    confidence = 0.0
+
+    # === Predict tag using ML model if loaded
+    if belief_model and vectorizer:
+        try:
+            vectorized = vectorizer.transform([cleaned])
+            predicted_tag = belief_model.predict(vectorized)[0]
+            confidence = max(belief_model.predict_proba(vectorized)[0])
+
+            # ✅ Split tags on commas/newlines
+            raw_tags = re.split(r"[\n,]+", predicted_tag)
+            tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
+
+            # ✅ Remove garbage tags: long phrases, belief contamination, etc.
+            tag_list = [
+                tag for tag in tag_list
+                if len(tag) <= 30 and len(tag.split()) <= 4
+            ]
+
+        except Exception as e:
+            print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
 
     return {
         "ticker": detect_ticker(belief),
         "direction": detect_direction(belief),
-        "tags": [predicted_tag],
+        "tags": tag_list,
         "confidence": float(confidence),
-        "asset_class": detect_asset_class(belief)  # use raw (uncleaned) belief
+        "asset_class": detect_asset_class(belief)
     }

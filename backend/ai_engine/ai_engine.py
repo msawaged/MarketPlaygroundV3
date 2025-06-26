@@ -11,8 +11,10 @@ from backend.asset_selector import select_asset_class
 from backend.market_data import get_latest_price, get_weekly_high_low
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
-from backend.logger.strategy_logger import log_strategy  # ✅ Added logging import
+from backend.logger.strategy_logger import log_strategy  # ✅ Strategy logging
 
+# ✅ Set of known equity tickers to override misclassification
+KNOWN_EQUITIES = {"AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"}
 
 def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
@@ -25,7 +27,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     ticker = parsed.get("ticker")
     tags = parsed.get("tags", [])
     confidence = parsed.get("confidence", 0.5)
-    parsed_asset_class = parsed.get("asset_class", "options")  # from ML
+    parsed_asset_class = parsed.get("asset_class", "options")  # fallback
 
     # ✅ Step 2: Parse goal intent (multiplier, timeframe, goal_type)
     goal = evaluate_goal(belief)
@@ -33,17 +35,12 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
 
-    # ✅ Step 3: Convert to expiry date
+    # ✅ Step 3: Convert to expiry
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # ✅ Step 4: Use ML-detected asset class unless override needed
-    if parsed_asset_class and parsed_asset_class != "options":
-        asset_class = parsed_asset_class
-    else:
-        asset_class = select_asset_class(tags, ticker)
-
-    # 🧠 Optional: Fallback if ticker missing
+    # ✅ Step 4: Asset class override logic
     if not ticker:
+        # Fallback if missing
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
         elif "spy" in tags or "s&p" in tags:
@@ -51,7 +48,15 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             ticker = "AAPL"
 
-    # 🧠 Optional: Override direction based on goal
+    # 🔧 Override: If ticker is a known equity and misclassified as ETF
+    if parsed_asset_class == "etf" and ticker.upper() in KNOWN_EQUITIES:
+        asset_class = "equity"
+    elif parsed_asset_class and parsed_asset_class != "options":
+        asset_class = parsed_asset_class
+    else:
+        asset_class = select_asset_class(tags, ticker)
+
+    # 🔁 Override direction if missing but goal implies direction
     if not direction:
         if goal_type in ["double_money", "safe_growth"]:
             direction = "up"
@@ -60,7 +65,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             direction = "neutral"
 
-    # ✅ Step 5: Market data lookup
+    # ✅ Step 5: Market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -75,7 +80,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
 
     price_info = {"latest": latest}
 
-    # 🔍 Debug Info
+    # 🧠 Debug Info
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}")
@@ -92,7 +97,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     print(f"→ High/Low Info: {high_low_info}")
     print("🧠 Selecting best strategy...\n")
 
-    # ✅ Step 6: Strategy selection
+    # ✅ Step 6: Select strategy
     strategy = select_strategy(
         belief=belief,
         direction=direction,
@@ -107,12 +112,12 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         risk_profile=risk_profile
     )
 
-    # ✅ Step 7: Explanation for UI
+    # ✅ Step 7: Generate explanation
     explanation = generate_strategy_explainer(
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 8: Log for tracking
+    # ✅ Step 8: Log strategy
     log_strategy(belief, explanation, user_id)
 
     # ✅ Step 9: Return response
@@ -130,9 +135,9 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         "timeframe": timeframe,
         "expiry_date": expiry_date,
         "risk_profile": risk_profile,
-        "explanation": explanation
+        "explanation": explanation,
+        "user_id": user_id
     }
-
 
 def generate_strategy_explainer(belief, strategy, direction, goal_type, multiplier, timeframe, ticker):
     """
