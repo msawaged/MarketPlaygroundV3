@@ -1,0 +1,339 @@
+.
+├── .DS_Store
+├── .env
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── index 2
+│   ├── info
+│   │   ├── exclude
+│   │   └── refs
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   ├── objects
+│   │   ├── 01
+│   │   ├── 03
+│   │   ├── 05
+│   │   ├── 06
+│   │   ├── 08
+│   │   ├── 09
+│   │   ├── 0a
+│   │   ├── 0f
+│   │   ├── 14
+│   │   ├── 24
+│   │   ├── 2a
+│   │   ├── 2c
+│   │   ├── 2e
+│   │   ├── 2f
+│   │   ├── 32
+│   │   ├── 34
+│   │   ├── 35
+│   │   ├── 36
+│   │   ├── 39
+│   │   ├── 3a
+│   │   ├── 47
+│   │   ├── 51
+│   │   ├── 52
+│   │   ├── 55
+│   │   ├── 62
+│   │   ├── 64
+│   │   ├── 67
+│   │   ├── 69
+│   │   ├── 6b
+│   │   ├── 6f
+│   │   ├── 71
+│   │   ├── 73
+│   │   ├── 77
+│   │   ├── 7b
+│   │   ├── 7e
+│   │   ├── 87
+│   │   ├── 8f
+│   │   ├── 93
+│   │   ├── 95
+│   │   ├── 9d
+│   │   ├── a0
+│   │   ├── a1
+│   │   ├── a5
+│   │   ├── a7
+│   │   ├── aa
+│   │   ├── ad
+│   │   ├── ae
+│   │   ├── af
+│   │   ├── b4
+│   │   ├── b5
+│   │   ├── b7
+│   │   ├── b8
+│   │   ├── ba
+│   │   ├── c0
+│   │   ├── c1
+│   │   ├── c2
+│   │   ├── c3
+│   │   ├── c7
+│   │   ├── ca
+│   │   ├── cb
+│   │   ├── cc
+│   │   ├── cd
+│   │   ├── cf
+│   │   ├── d0
+│   │   ├── d2
+│   │   ├── d4
+│   │   ├── d6
+│   │   ├── d7
+│   │   ├── d9
+│   │   ├── db
+│   │   ├── dc
+│   │   ├── de
+│   │   ├── df
+│   │   ├── e0
+│   │   ├── e2
+│   │   ├── e4
+│   │   ├── e9
+│   │   ├── ed
+│   │   ├── f1
+│   │   ├── f4
+│   │   ├── f6
+│   │   ├── fa
+│   │   ├── fb
+│   │   ├── fd
+│   │   ├── ff
+│   │   ├── info
+│   │   └── pack
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       ├── remotes
+│       └── tags
+├── .gitignore
+├── .vscode
+│   └── settings.json
+├── MarketPlaygroundV3_backups
+│   ├── .DS_Store
+│   ├── backend_backup
+│   │   ├── .DS_Store
+│   │   ├── __init__.py
+│   │   ├── ai_engine
+│   │   ├── analytics.py
+│   │   ├── app.py
+│   │   ├── asset_selector.py
+│   │   ├── auth_handler.py
+│   │   ├── backend_20250626_170747.zip
+│   │   ├── background_tasks.py
+│   │   ├── belief_classifier.joblib
+│   │   ├── belief_model.joblib
+│   │   ├── belief_model_old.joblib
+│   │   ├── belief_parser.py
+│   │   ├── belief_vectorizer.joblib
+│   │   ├── best_model.joblib
+│   │   ├── data
+│   │   ├── deploy_trigger.py
+│   │   ├── feedback.csv
+│   │   ├── feedback_data.json
+│   │   ├── feedback_handler.py
+│   │   ├── feedback_model.joblib
+│   │   ├── feedback_trainer.py
+│   │   ├── finnhub_data.py
+│   │   ├── goal_parser.py
+│   │   ├── historic_data.csv
+│   │   ├── logger
+│   │   ├── market_data.py
+│   │   ├── multi_asset_model.joblib
+│   │   ├── multi_strategy_model.joblib
+│   │   ├── multi_vectorizer.joblib
+│   │   ├── pnl.json
+│   │   ├── portfolio_handler.py
+│   │   ├── requirements.txt
+│   │   ├── retrain_worker.py
+│   │   ├── routes
+│   │   ├── schemas.py
+│   │   ├── strategy_selector.py
+│   │   ├── ticker_model.joblib
+│   │   ├── train_all_models.py
+│   │   ├── train_belief_model.py
+│   │   ├── train_model.py
+│   │   ├── train_multi_asset_model.py
+│   │   ├── user_models.py
+│   │   ├── user_portfolios.json
+│   │   ├── utils
+│   │   └── vectorizer.joblib
+│   └── frontend_backup
+│       ├── .gitignore
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── public
+│       └── src
+├── append_feedback.sh
+├── backend
+│   ├── .DS_Store
+│   ├── Training_Strategies.csv
+│   ├── __init__.py
+│   ├── ai_engine
+│   │   ├── __init__.py
+│   │   ├── ai_engine.py
+│   │   ├── expiry_utils.py
+│   │   ├── goal_evaluator.py
+│   │   ├── multi_asset_model.joblib
+│   │   └── multi_vectorizer.joblib
+│   ├── alpaca_client.py
+│   ├── alpaca_orders.py
+│   ├── alpaca_portfolio.py
+│   ├── analytics
+│   │   ├── __init__.py
+│   │   ├── portfolio_summary.py
+│   │   └── risk_engine.py
+│   ├── analytics.py
+│   ├── app.py
+│   ├── asset_selector.py
+│   ├── auth_handler.py
+│   ├── auto_retrain.py
+│   ├── background_tasks.py
+│   ├── belief_classifier.joblib
+│   ├── belief_model.joblib
+│   ├── belief_model_old.joblib
+│   ├── belief_parser.py
+│   ├── belief_vectorizer.joblib
+│   ├── best_model.joblib
+│   ├── clean_belief_asset.csv
+│   ├── clean_belief_strategy.csv
+│   ├── clean_belief_tags.csv
+│   ├── data
+│   │   └── users.json
+│   ├── deploy_trigger.py
+│   ├── equity_snapshots.json
+│   ├── feedback.csv
+│   ├── feedback_data.json
+│   ├── feedback_data_backup.json
+│   ├── feedback_handler.py
+│   ├── feedback_model.joblib
+│   ├── feedback_strategy_model.joblib
+│   ├── feedback_strategy_vectorizer.joblib
+│   ├── feedback_trainer.py
+│   ├── finnhub_data.py
+│   ├── goal_parser.py
+│   ├── historic_data.csv
+│   ├── logger
+│   │   ├── portfolio_logger.py
+│   │   ├── strategy_logger.py
+│   │   └── trade_execution_logger.py
+│   ├── logs
+│   │   ├── auto_loop_output.log
+│   │   └── executions
+│   ├── market_data.py
+│   ├── multi_asset_model.joblib
+│   ├── multi_strategy_model.joblib
+│   ├── multi_vectorizer.joblib
+│   ├── news_beliefs.json
+│   ├── news_entity_parser.py
+│   ├── news_ingestor.py
+│   ├── news_scraper.py
+│   ├── pnl.json
+│   ├── pnl_tracker.py
+│   ├── portfolio_handler.py
+│   ├── portfolio_log.json
+│   ├── requirements.txt
+│   ├── retrain_worker.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── alpaca_router.py
+│   │   ├── auth_router.py
+│   │   ├── auth_routes.py
+│   │   ├── execution_router.py
+│   │   ├── feedback_predictor.py
+│   │   ├── feedback_router.py
+│   │   ├── market_router.py
+│   │   ├── pnl_router.py
+│   │   ├── portfolio_router.py
+│   │   ├── strategy_logger_router.py
+│   │   └── strategy_router.py
+│   ├── schemas.py
+│   ├── strategy_log.json
+│   ├── strategy_outcome_logger.py
+│   ├── strategy_outcomes.csv
+│   ├── strategy_selector.py
+│   ├── ticker_model.joblib
+│   ├── trade_execution_logger.py
+│   ├── train_all_models.py
+│   ├── train_belief_model.py
+│   ├── train_from_feedback.py
+│   ├── train_multi_asset_model.py
+│   ├── training_data
+│   │   ├── Training_Strategies.csv
+│   │   ├── clean_belief_asset.csv
+│   │   ├── clean_belief_strategy.csv
+│   │   ├── clean_belief_tags.csv
+│   │   ├── strategy_training_data.csv
+│   │   ├── strategy_training_data_backup.csv
+│   │   └── strategy_training_data_clean.csv
+│   ├── user_models.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── json_to_csv.py
+│   │   ├── model_utils.py
+│   │   └── ticker_list.py
+│   └── vectorizer.joblib
+├── finnhub_client.py
+├── frontend
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   └── src
+│       ├── App.css
+│       ├── App.js
+│       ├── App.test.js
+│       ├── index.css
+│       ├── index.js
+│       ├── logo.svg
+│       ├── reportWebVitals.js
+│       ├── service-worker.js
+│       ├── serviceWorkerRegistration.js
+│       └── setupTests.js
+├── frontend_temp
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── public
+│   │   └── index.html
+│   ├── src
+│   │   ├── App.js
+│   │   ├── components
+│   │   ├── index.css
+│   │   └── index.js
+│   └── tailwind.config.js
+├── full_tree.txt
+├── marketplayground_frontend_final.zip
+├── new_feedback.json
+├── project_structure.txt
+├── render.yaml
+├── run_simulated_training_loop.py
+├── runtime.txt
+├── scripts
+│   ├── fix_feedback_json.py
+│   └── generate_clean_training_data.py
+├── test_api.py
+└── train_loop.sh
+
+127 directories, 210 files
