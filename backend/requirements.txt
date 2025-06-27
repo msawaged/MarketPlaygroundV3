@@ -57,3 +57,4 @@ python-dotenv==1.0.1       # 🔥 MISSING in your version — required for loadi
 # === Other Utilities ===
 appdirs==1.4.4             # Used by joblib
 frozendict==2.4.6          # Immutable dictionaries
+matplotlib>=3.7.1
