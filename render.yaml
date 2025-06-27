@@ -27,7 +27,7 @@ services:
     name: news-ingestor
     env: python
     plan: starter
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install -r backend/requirements-news.txt"
     startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
     rootDir: .
 
