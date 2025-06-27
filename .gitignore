@@ -1,9 +1,9 @@
-# Virtual environments
+# 🐍 Virtual environments
 venv/
 .env/
 __pycache__/
 
-# Python compiled files
+# 🐍 Python compiled files
 *.py[cod]
 *.so
 *.egg
@@ -11,38 +11,34 @@ __pycache__/
 dist/
 build/
 
-# Jupyter Notebook
+# 📓 Jupyter notebooks
 .ipynb_checkpoints/
 
-# Mac system files
+# 🍎 Mac system files
 .DS_Store
 
-# Logs and metadata
-*.log
-
-# Model and cache files — ignore globally except in backend/
+# 🧠 Model and cache files (except inside backend/)
 *.joblib
 *.pkl
 *.h5
 *.pt
 
-# ✅ Allow all .joblib models inside backend/
+# ✅ Allow model files inside backend/
 !backend/*.joblib
 
-# ✅ Allow feedback data and runtime info
-!backend/feedback.csv
-!runtime.txt
-
-# VS Code settings
-.vscode/
-.DS_Store
-
-# Ignore output charts and user-generated files
-*.png
+# 📊 Logs and CSVs (except critical training files)
+*.log
 *.csv
 
-# ✅ BUT allow training data CSVs in backend/training_data/
+# ✅ Allow essential data and runtime info
+!backend/feedback.csv
 !backend/training_data/*.csv
+!runtime.txt
 
-# Ignore test scripts unless needed
+# 💻 VS Code project settings
+.vscode/
+
+# 🧪 Test and user-generated output
+*.png
+user_portfolios.json
 test_api.py
