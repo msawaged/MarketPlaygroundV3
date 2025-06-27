@@ -3,6 +3,7 @@
 import joblib
 import os
 
+# 🔁 Load trained ML model and vectorizer for strategy classification
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "multi_asset_model.joblib")
 VECTORIZER_PATH = os.path.join(BASE_DIR, "multi_vectorizer.joblib")
@@ -10,52 +11,54 @@ VECTORIZER_PATH = os.path.join(BASE_DIR, "multi_vectorizer.joblib")
 model = joblib.load(MODEL_PATH)
 vectorizer = joblib.load(VECTORIZER_PATH)
 
-# ✅ Strategy Definitions
+# 📚 Human-readable metadata for each supported strategy
 STRATEGY_DETAILS = {
-    "Bond Ladder": {
+    "bond ladder": {
         "description": "Build a bond ladder by buying bonds with staggered maturities (e.g. 1Y, 3Y, 5Y)",
         "risk_level": "low",
         "explanation": "Bond ladders offer consistent income and reduce interest rate risk."
     },
-    "Iron Condor": {
+    "iron condor": {
         "description": "Sell call & put spreads on same expiry",
         "risk_level": "medium",
         "explanation": "Neutral volatility play; good when expecting sideways markets."
     },
-    "Bull Call Spread": {
+    "bull call spread": {
         "description": "Buy call / Sell higher call",
         "risk_level": "high",
         "explanation": "Bullish spread to profit on upward moves with limited risk."
     },
-    "Long Put": {
+    "long put": {
         "description": "Buy a put option to profit from a downward move",
         "risk_level": "high",
         "explanation": "Profit directly from sharp price declines; limited risk, high reward."
     },
-    "Buy Stock": {
+    "buy stock": {
         "description": "Buy underlying shares of the company",
         "risk_level": "low",
         "explanation": "Simple long-term position with ownership."
     },
-    "Buy Stock for Income": {
+    "buy stock for income": {
         "description": "Buy dividend-paying shares of the company",
         "risk_level": "low",
         "explanation": "Generates income through quarterly dividends while holding the stock."
     },
-    "Default Strategy": {
+    "default strategy": {
         "description": "Fallback plan",
         "risk_level": "unknown",
         "explanation": "Model confidence too low — manual review recommended."
-    },
+    }
 }
 
-def adjust_allocation(base_percent, risk_profile):
+# 🎯 Adjust suggested capital allocation based on user's risk profile
+def adjust_allocation(base_percent: int, risk_profile: str) -> str:
     if risk_profile == "conservative":
         return f"{int(base_percent * 0.6)}%"
     elif risk_profile == "aggressive":
         return f"{int(base_percent * 1.4)}%"
     return f"{base_percent}%"
 
+# 🧠 Core AI strategy selection logic
 def select_strategy(
     belief: str,
     direction: str,
@@ -69,65 +72,80 @@ def select_strategy(
     expiry_date: str = None,
     risk_profile: str = "moderate"
 ) -> dict:
+    """
+    Uses ML model to generate a strategy recommendation from user belief and parsed metadata.
+    Returns a structured dict describing the suggested strategy.
+    """
+
+    # ✅ Extract and round latest price
     latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
-    belief_lower = belief.lower()
 
-    # ✅ Manual override: Bond Ladder
-    if "bond ladder" in belief_lower or "laddered bonds" in belief_lower:
-        details = STRATEGY_DETAILS["Bond Ladder"]
-        return {
-            "type": "Bond Ladder",
-            "description": details["description"],
-            "risk_level": details["risk_level"],
-            "suggested_allocation": adjust_allocation(25, risk_profile),
-            "explanation": details["explanation"]
-        }
+    # 🧪 Construct formatted input string for vectorizer
+    model_input = f"{belief} | {asset_class} | {direction} | {goal_type or 'none'} | risk: {risk_profile}"
 
-    # ✅ Override: Long Put for Bearish Low Confidence
-    if direction == "bearish" and ticker and confidence < 0.01:
-        details = STRATEGY_DETAILS["Long Put"]
-        strike = int(latest_price * 0.9)
-        return {
-            "type": "Long Put",
-            "description": f"Buy {ticker} {strike}p",
-            "risk_level": details["risk_level"],
-            "suggested_allocation": adjust_allocation(20, risk_profile),
-            "explanation": details["explanation"]
-        }
-
-    # ✅ New: Income tag or belief mentions income, and asset is equity
-    if asset_class == "equity" and ("income" in belief_lower or "dividend" in belief_lower):
-        details = STRATEGY_DETAILS["Buy Stock for Income"]
-        return {
-            "type": "Buy Stock for Income",
-            "description": f"Buy {ticker} shares for dividend income",
-            "risk_level": details["risk_level"],
-            "suggested_allocation": adjust_allocation(20, risk_profile),
-            "explanation": details["explanation"]
-        }
-
-    # ✅ Run ML Strategy Classifier
-    input_text = f"{belief} | {asset_class} | {direction} | {goal_type} | risk: {risk_profile}"
-    X = vectorizer.transform([input_text])
+    # 🔍 Predict strategy using ML model
+    X = vectorizer.transform([model_input])
     predicted_type = model.predict(X)[0]
+    normalized = predicted_type.strip().lower()
 
-    # 🔧 Prevent ETF fallback if asset class is actually equity
-    if predicted_type.lower() == "etf" and asset_class == "equity":
-        predicted_type = "Buy Stock"
+    print(f"[ML MODEL PREDICTION] → {normalized}")
 
-    # ✅ Format Strategy Output
-    details = STRATEGY_DETAILS.get(predicted_type, STRATEGY_DETAILS["Default Strategy"])
-    description = details["description"]
+    # 🔁 Handle known prediction aliases (map to STRATEGY_DETAILS keys)
+    alias_map = {
+        "stock": "buy stock",
+        "equity": "buy stock",
+        "dividend stock": "buy stock for income"
+    }
+    if normalized in alias_map:
+        normalized = alias_map[normalized]
 
-    if "call" in predicted_type.lower():
+    # 🛑 Fallback if prediction not recognized
+    if normalized not in STRATEGY_DETAILS:
+        print(f"[WARN] Unknown prediction: {normalized} → using default strategy.")
+        normalized = "default strategy"
+
+    # 📚 Get metadata for the strategy
+    details = STRATEGY_DETAILS[normalized]
+
+    # 🧱 Dynamically build strategy description
+    if "call" in normalized:
         description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
-    elif "put" in predicted_type.lower():
+    elif "put" in normalized:
         description = f"Buy {ticker} {int(latest_price * 0.95)}p / Sell {ticker} {int(latest_price * 0.85)}p"
+    elif "income" in normalized:
+        description = f"Buy {ticker} shares for dividend income"
+    elif "stock" in normalized:
+        description = f"Buy {ticker} shares"
+    else:
+        description = details["description"]
 
+    # 📤 Return final strategy dict
     return {
-        "type": predicted_type,
+        "type": normalized,
         "description": description,
         "risk_level": details["risk_level"],
         "suggested_allocation": adjust_allocation(20, risk_profile),
         "explanation": details["explanation"]
     }
+
+# 🔧 Local test block to verify functionality when run directly
+if __name__ == "__main__":
+    print("🧪 Running strategy_selector test...")
+
+    test_belief = "I think AAPL will go up sharply after earnings"
+    strategy = select_strategy(
+        belief=test_belief,
+        direction="bullish",
+        ticker="AAPL",
+        asset_class="stock",
+        price_info={"latest": 195.60},
+        confidence=0.8,
+        goal_type="multiply",
+        multiplier=2.0,
+        timeframe="short",
+        risk_profile="moderate"
+    )
+
+    print("\n🎯 [TEST STRATEGY OUTPUT]")
+    for k, v in strategy.items():
+        print(f"{k.capitalize()}: {v}")

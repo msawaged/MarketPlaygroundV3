@@ -7,23 +7,24 @@ This module supports training and updating:
 3. Appending simulated or real feedback to feedback_data.json
 """
 
-import json
 import os
-import pandas as pd
+import json
 import joblib
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
-# === Paths ===
+# === Path Setup ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback_data.json")
-MODEL_FILE = os.path.join(BASE_DIR, "feedback_model.joblib")
-VECTORIZER_FILE = os.path.join(BASE_DIR, "vectorizer.joblib")
+FEEDBACK_MODEL_PATH = os.path.join(BASE_DIR, "feedback_model.joblib")
+FEEDBACK_VECTOR_PATH = os.path.join(BASE_DIR, "vectorizer.joblib")
+STRATEGY_MODEL_PATH = os.path.join(BASE_DIR, "feedback_strategy_model.joblib")
+STRATEGY_VECTOR_PATH = os.path.join(BASE_DIR, "feedback_strategy_vectorizer.joblib")
 
-
-# === Load and clean feedback (good/bad) data ===
+# === Load and clean feedback data ===
 def load_feedback_data():
     with open(FEEDBACK_FILE, "r") as f:
         raw_data = json.load(f)
@@ -34,12 +35,10 @@ def load_feedback_data():
         strategy = entry.get("strategy", {})
         result = entry.get("result") or entry.get("feedback")
 
-        if isinstance(strategy, dict):
-            strategy_text = json.dumps(strategy)
-        else:
-            strategy_text = str(strategy)
+        # Convert strategy dict to string for input vector
+        strategy_text = json.dumps(strategy) if isinstance(strategy, dict) else str(strategy)
 
-        if belief and result and strategy_text:
+        if belief and strategy_text and result:
             cleaned.append({
                 "text": f"{belief} => {strategy_text}",
                 "label": 1 if result.lower() == "good" else 0
@@ -47,8 +46,7 @@ def load_feedback_data():
 
     return pd.DataFrame(cleaned)
 
-
-# === Train Feedback Model (good vs bad) ===
+# === Train good vs bad feedback classifier ===
 def train_feedback_model():
     df = load_feedback_data()
     if df.empty:
@@ -59,25 +57,21 @@ def train_feedback_model():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     vectorizer = TfidfVectorizer()
-    clf = LogisticRegression()
+    classifier = LogisticRegression(max_iter=500)
 
     X_train_vec = vectorizer.fit_transform(X_train)
     X_test_vec = vectorizer.transform(X_test)
 
-    clf.fit(X_train_vec, y_train)
-    y_pred = clf.predict(X_test_vec)
+    classifier.fit(X_train_vec, y_train)
+    y_pred = classifier.predict(X_test_vec)
 
-    model_dict = {
-        "vectorizer": vectorizer,
-        "classifier": clf
-    }
-
-    joblib.dump(model_dict, MODEL_FILE)
-    print(f"✅ feedback_model.joblib saved. Accuracy:")
+    # Save model and vectorizer separately or as dict
+    joblib.dump({"vectorizer": vectorizer, "classifier": classifier}, FEEDBACK_MODEL_PATH)
+    print(f"✅ Saved feedback model to: {FEEDBACK_MODEL_PATH}")
+    print("📊 Classification Report (Feedback Good vs Bad):")
     print(classification_report(y_test, y_pred))
 
-
-# === Train Strategy Classifier (belief → strategy_type) ===
+# === Train belief-to-strategy-type model (supervised by feedback) ===
 def train_strategy_classifier_from_feedback():
     with open(FEEDBACK_FILE, "r") as f:
         raw_data = json.load(f)
@@ -86,16 +80,12 @@ def train_strategy_classifier_from_feedback():
     for entry in raw_data:
         belief = entry.get("belief", "")
         strategy = entry.get("strategy", {})
-        if isinstance(strategy, dict):
-            strategy_type = strategy.get("type")
-        else:
-            strategy_type = str(strategy)
+        strategy_type = strategy.get("type") if isinstance(strategy, dict) else str(strategy)
 
         if belief and strategy_type:
             records.append({"belief": belief, "strategy_type": strategy_type})
 
-    df = pd.DataFrame(records)
-    df = df[df["strategy_type"].notnull()]
+    df = pd.DataFrame(records).dropna()
 
     if df.empty:
         print("❌ No valid strategy training data found.")
@@ -104,26 +94,26 @@ def train_strategy_classifier_from_feedback():
     X = df["belief"]
     y = df["strategy_type"]
 
-    vec = TfidfVectorizer()
-    X_vec = vec.fit_transform(X)
+    vectorizer = TfidfVectorizer()
+    X_vec = vectorizer.fit_transform(X)
 
     model = LogisticRegression(max_iter=1000)
     model.fit(X_vec, y)
 
-    joblib.dump(model, os.path.join(BASE_DIR, "feedback_strategy_model.joblib"))
-    joblib.dump(vec, os.path.join(BASE_DIR, "feedback_strategy_vectorizer.joblib"))
+    joblib.dump(model, STRATEGY_MODEL_PATH)
+    joblib.dump(vectorizer, STRATEGY_VECTOR_PATH)
+
     print("✅ Trained and saved feedback_strategy_model + vectorizer")
 
-
-# === Append a new feedback entry ===
+# === Append new feedback entry to feedback_data.json ===
 def append_feedback_entry(belief, strategy, result):
     """
-    Appends a single feedback entry to feedback_data.json.
+    Appends a feedback record for learning.
 
     Params:
-    - belief (str): the original belief text
-    - strategy (dict): result from AI engine (or simulated)
-    - result (str): "good" or "bad" label
+    - belief (str): User belief input
+    - strategy (dict): Generated strategy object
+    - result (str): 'good' or 'bad'
     """
     entry = {
         "belief": belief,
@@ -135,17 +125,14 @@ def append_feedback_entry(belief, strategy, result):
     with open(FEEDBACK_FILE, "r") as f:
         existing = json.load(f)
 
-    # Append new entry
+    # Append and save
     existing.append(entry)
-
-    # Write back
     with open(FEEDBACK_FILE, "w") as f:
         json.dump(existing, f, indent=2)
 
-    print(f"📥 Appended feedback entry: {result.upper()} for belief → {belief}")
+    print(f"📥 Appended feedback entry: {result.upper()} → {belief}")
 
-
-# === Run both models if script is called directly ===
+# === Run both training routines directly from CLI ===
 if __name__ == "__main__":
     train_feedback_model()
     train_strategy_classifier_from_feedback()
