@@ -1,72 +1,68 @@
 # backend/belief_parser.py
 
 """
-This module parses the user's belief into actionable components:
-- Extracts ticker (if possible)
-- Determines market direction (bullish/bearish/neutral)
-- Classifies belief using ML model (tags + confidence)
-- Predicts asset class using ML (fallbacks to 'options' if error)
+This module parses the user's belief into structured components:
+- Extracts ticker from known list
+- Infers market direction from keywords
+- Classifies tags via ML (with confidence score)
+- Predicts asset class via ML (fallbacks gracefully)
 """
 
 import re
 from backend.utils.ticker_list import ALL_TICKERS
 from backend.utils.model_utils import load_model
 
-# === Load Required Models for Tagging ===
+# === Load ML Models ===
 try:
     belief_model = load_model("belief_model.joblib")
     vectorizer = load_model("belief_vectorizer.joblib")
 except Exception as e:
     print(f"[ERROR] Could not load belief/tag model: {e}")
-    belief_model = None
-    vectorizer = None
+    belief_model, vectorizer = None, None
 
-# === Optionally Load Asset Class Model ===
 try:
     asset_model = load_model("multi_asset_model.joblib")
     asset_vectorizer = load_model("multi_vectorizer.joblib")
 except Exception as e:
     print(f"[WARNING] Asset class model not loaded: {e}")
-    asset_model = None
-    asset_vectorizer = None
+    asset_model, asset_vectorizer = None, None
 
-# === Helper: Normalize user input ===
+# === Clean and Normalize Belief Text ===
 def clean_belief(text: str) -> str:
     """
-    Normalize the input belief text by removing punctuation and lowering case.
+    Lowercase and strip punctuation from input.
     Example: "TSLA will explode!" → "tsla will explode"
     """
     return re.sub(r"[^a-zA-Z0-9\s]", "", text.lower().strip())
 
-# === Helper: Detect ticker ===
+# === Ticker Detection ===
 def detect_ticker(belief: str) -> str:
     """
-    Detect a known stock/ETF ticker mentioned in the belief.
-    Defaults to SPY if none found.
+    Scans belief for any known tickers from master list.
+    Returns uppercase ticker or defaults to 'SPY'
     """
     for ticker in ALL_TICKERS:
         if ticker.lower() in belief.lower():
             return ticker.upper()
-    return "SPY"  # fallback
+    return "SPY"
 
-# === Helper: Infer direction from belief keywords ===
+# === Market Sentiment Detection ===
 def detect_direction(belief: str) -> str:
     """
-    Infer sentiment direction from keywords in the belief text.
-    Returns: 'bullish', 'bearish', or 'neutral'
+    Heuristically classify belief as bullish, bearish, or neutral.
     """
     text = belief.lower()
-    if any(word in text for word in ["down", "drop", "fall", "bear", "crash", "tank", "recession"]):
+    if any(w in text for w in ["down", "drop", "fall", "bear", "crash", "tank", "recession"]):
         return "bearish"
-    elif any(word in text for word in ["up", "rise", "bull", "skyrocket", "jump", "explode", "rally"]):
+    elif any(w in text for w in ["up", "rise", "bull", "skyrocket", "jump", "explode", "rally"]):
         return "bullish"
     return "neutral"
 
-# === Helper: Predict asset class (ML or fallback) ===
+# === Asset Class Prediction ===
 def detect_asset_class(raw_belief: str) -> str:
     """
-    Predict the asset class using the trained ML model on the raw (uncleaned) belief.
-    Falls back to 'options' if the model is missing or errors.
+    Use ML model to classify asset class (e.g., stock, options, bond).
+    Fallback to 'options' on failure.
     """
     if asset_model and asset_vectorizer:
         try:
@@ -75,46 +71,36 @@ def detect_asset_class(raw_belief: str) -> str:
             print(f"[ASSET CLASS DETECTED] → {prediction}")
             return prediction
         except Exception as e:
-            print(f"[ASSET CLASS ERROR] Failed to predict asset class: {e}")
-    print("[ASSET CLASS FALLBACK] Defaulting asset class to 'options'")
+            print(f"[ASSET CLASS ERROR] Failed to predict: {e}")
+    print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
     return "options"
 
-# === Main Belief Parsing Function ===
+# === Main Parser Function ===
 def parse_belief(belief: str) -> dict:
     """
-    Converts a user belief string into structured components:
-    - Ticker
-    - Direction
-    - Tags (ML classified and cleaned)
-    - Confidence (ML probability)
-    - Asset Class (ML or fallback)
-
-    Returns:
-        dict: parsed belief components
+    Full belief parser that extracts:
+    - ticker
+    - direction
+    - tags (via ML)
+    - confidence (via ML)
+    - asset_class (via ML or fallback)
     """
     cleaned = clean_belief(belief)
-
-    # Default empty tag list and confidence
     tag_list = []
     confidence = 0.0
 
-    # === Predict tag using ML model if loaded
     if belief_model and vectorizer:
         try:
-            vectorized = vectorizer.transform([cleaned])
-            predicted_tag = belief_model.predict(vectorized)[0]
-            confidence = max(belief_model.predict_proba(vectorized)[0])
+            vec = vectorizer.transform([cleaned])
+            prediction = belief_model.predict(vec)[0]
+            confidence = max(belief_model.predict_proba(vec)[0])
 
-            # ✅ Split tags on commas/newlines
-            raw_tags = re.split(r"[\n,]+", predicted_tag)
+            # Split tag predictions into list
+            raw_tags = re.split(r"[\n,]+", prediction)
             tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
 
-            # ✅ Remove garbage tags: long phrases, belief contamination, etc.
-            tag_list = [
-                tag for tag in tag_list
-                if len(tag) <= 30 and len(tag.split()) <= 4
-            ]
-
+            # Filter out overly long or malformed tags
+            tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
 
