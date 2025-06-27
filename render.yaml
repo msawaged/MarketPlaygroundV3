@@ -12,7 +12,7 @@ services:
       - key: PORT
         value: 10000
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.9
     rootDir: .
 
   # 🔁 Background retraining worker — runs train_all_models() on a loop
@@ -24,7 +24,7 @@ services:
     startCommand: "PYTHONPATH=./ python backend/retrain_worker.py"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.9
     rootDir: .
 
   # 📰 News Ingestor — pulls real headlines, converts to beliefs
@@ -36,7 +36,7 @@ services:
     startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.9
     rootDir: .
 
   # 🧠 Belief Feeder — sends fresh beliefs into training pipeline
@@ -44,9 +44,9 @@ services:
     name: belief-feeder
     env: python
     plan: starter
-    buildCommand: "pip install -r backend/requirements-news.txt"
+    buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "PYTHONPATH=./ python backend/belief_feeder.py"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.9
     rootDir: .
