@@ -1,59 +1,77 @@
 # backend/news_ingestor.py
 
 """
-Fetches financial news from multiple RSS feeds, cleans headlines,
-and transforms them into belief-style inputs for AI ingestion.
+This script fetches financial news from various RSS feeds,
+parses headline + summary, converts them to belief-style prompts,
+and sends them to the MarketPlayground backend for AI ingestion.
+Designed to run continuously as a Render background worker.
 """
 
 import feedparser
 import random
-from typing import List
+import requests
+import time
 
-# List of RSS feeds (you can add more!)
+# Backend endpoint (Render URL or localhost for dev)
+BACKEND_URL = "https://marketplayground-backend.onrender.com/process_belief"
+
+# RSS feeds to pull from
 RSS_FEEDS = [
-    "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",      # WSJ Markets
-    "https://www.investing.com/rss/news.rss",             # Investing.com
-    "https://www.marketwatch.com/rss/topstories",         # MarketWatch
-    "https://www.cnbc.com/id/100003114/device/rss/rss.html",  # CNBC Top News
+    "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",  # WSJ
+    "https://www.investing.com/rss/news.rss",         # Investing.com
+    "https://www.marketwatch.com/rss/topstories",     # MarketWatch
+    "https://www.cnbc.com/id/100003114/device/rss/rss.html",  # CNBC
 ]
 
-def fetch_rss_headlines() -> List[str]:
-    headlines = []
-    for url in RSS_FEEDS:
-        feed = feedparser.parse(url)
-        for entry in feed.entries[:10]:  # Limit per feed
-            title = entry.title.strip()
+# Convert RSS entry to structured belief prompt
+def generate_belief_prompt(title: str, summary: str = "") -> str:
+    templates = [
+        "I believe {headline}. Summary: {summary}",
+        "News just broke: {headline} — {summary}",
+        "What might happen after this? {headline}. Details: {summary}",
+        "Should I trade based on this? {headline}. Context: {summary}"
+    ]
+    return random.choice(templates).format(
+        headline=title.strip(),
+        summary=summary.strip()[:200]  # limit to 200 chars
+    )
+
+# Fetch headlines and summaries
+def fetch_news_entries(limit_per_feed: int = 5):
+    entries = []
+    for feed_url in RSS_FEEDS:
+        feed = feedparser.parse(feed_url)
+        for entry in feed.entries[:limit_per_feed]:
+            title = entry.get("title", "").strip()
+            summary = entry.get("summary", "").strip()
             if title and len(title) > 20:
-                headlines.append(title)
-    return headlines
+                entries.append((title, summary))
+    return entries
 
-def convert_headlines_to_beliefs(headlines: List[str]) -> List[str]:
-    """
-    Adds natural tone or context to turn headlines into AI beliefs.
-    """
-    belief_templates = [
-        "I think {headline}",
-        "Based on the news: {headline}",
-        "This just happened → {headline}",
-        "What does this mean for markets: {headline}",
-        "Should I act on this? {headline}"
-    ]
-    beliefs = [
-        random.choice(belief_templates).format(headline=headline)
-        for headline in headlines
-    ]
-    return beliefs
+# Send belief to backend
+def send_belief_to_backend(belief: str):
+    try:
+        response = requests.post(BACKEND_URL, json={"belief": belief})
+        if response.status_code == 200:
+            print(f"✅ Processed: {belief[:60]}...")
+        else:
+            print(f"⚠️ Failed ({response.status_code}): {belief[:60]}...")
+    except Exception as e:
+        print(f"❌ Error sending belief: {e}")
 
-def get_news_beliefs(n: int = 10) -> List[str]:
-    """
-    Returns a list of up to `n` belief-style statements from real news.
-    """
-    headlines = fetch_rss_headlines()
-    random.shuffle(headlines)
-    beliefs = convert_headlines_to_beliefs(headlines)
-    return beliefs[:n]
+# Main loop (runs forever, every 15 min)
+def run_news_ingestor(interval=900):
+    while True:
+        print("📰 Fetching fresh financial news...")
+        entries = fetch_news_entries()
+        print(f"🔍 Found {len(entries)} entries")
 
-# For testing directly
+        for title, summary in entries:
+            belief = generate_belief_prompt(title, summary)
+            send_belief_to_backend(belief)
+
+        print(f"⏲️ Sleeping for {interval} seconds...")
+        time.sleep(interval)
+
 if __name__ == "__main__":
-    for belief in get_news_beliefs():
-        print("📰", belief)
+    run_news_ingestor()
