@@ -40,7 +40,9 @@ build/
 # Ignore output charts and user-generated files
 *.png
 *.csv
-user_portfolios.json
+
+# ✅ BUT allow training data CSVs in backend/training_data/
+!backend/training_data/*.csv
 
 # Ignore test scripts unless needed
 test_api.py
