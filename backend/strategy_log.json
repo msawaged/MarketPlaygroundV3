@@ -3448,5 +3448,335 @@
     "user_id": "anonymous",
     "belief": "I think oil prices will surge in the second half",
     "strategy": "Based on your belief: 'I think oil prices will surge in the second half', The system expects volatility in SPY. Thus, the 'stock' strategy was chosen to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:07:27.368652",
+    "user_id": "anonymous",
+    "belief": "i need a options strategy that profits off tsla going above IF it goes over 350 next week",
+    "strategy": "Based on your belief: 'i need a options strategy that profits off tsla going above IF it goes over 350 next week', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:07:27.403860",
+    "user_id": "anonymous",
+    "belief": "i need a options strategy that profits off tsla going above IF it goes over 350 next week",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T12:07:40.861842",
+    "user_id": "anonymous",
+    "belief": "i need a options strategy that profits off tsla going above IF it goes over 350 next week",
+    "strategy": "Based on your belief: 'i need a options strategy that profits off tsla going above IF it goes over 350 next week', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:07:40.890765",
+    "user_id": "anonymous",
+    "belief": "i need a options strategy that profits off tsla going above IF it goes over 350 next week",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T12:26:27.947598",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA this month', you want to multiply your money by 2.0x within this month. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:26:27.980468",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T12:50:07.869001",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA this month', you want to multiply your money by 2.0x within this month. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:50:07.900499",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T12:56:16.420953",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA this month', you want to multiply your money by 2.0x within this month. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T12:56:16.451966",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:06:42.743472",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA this month', you want to multiply your money by 2.0x within this month. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:06:42.776229",
+    "user_id": "test_user",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:06:59.987468",
+    "user_id": "anonymous",
+    "belief": "Looking to generate monthly income from TLT",
+    "strategy": "Based on your belief: 'Looking to generate monthly income from TLT', The system expects neutral or sideways movement in TLT. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:07:00.018863",
+    "user_id": "income_test",
+    "belief": "Looking to generate monthly income from TLT",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:07:48.452185",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA this month', you want to multiply your money by 2.0x within this month. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:07:48.482052",
+    "user_id": "goal_test_multiply",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:07:55.650156",
+    "user_id": "anonymous",
+    "belief": "Looking to generate monthly income from TLT",
+    "strategy": "Based on your belief: 'Looking to generate monthly income from TLT', The system expects neutral or sideways movement in TLT. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:07:55.678309",
+    "user_id": "goal_test_income",
+    "belief": "Looking to generate monthly income from TLT",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:08:02.725323",
+    "user_id": "anonymous",
+    "belief": "I want to protect against a SPY crash",
+    "strategy": "Based on your belief: 'I want to protect against a SPY crash', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:08:02.753107",
+    "user_id": "goal_test_hedge",
+    "belief": "I want to protect against a SPY crash",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:08:10.569553",
+    "user_id": "anonymous",
+    "belief": "Try to maximize upside in QQQ this month",
+    "strategy": "Based on your belief: 'Try to maximize upside in QQQ this month', The system expects neutral or sideways movement in QQQ. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:08:10.597047",
+    "user_id": "goal_test_maximize",
+    "belief": "Try to maximize upside in QQQ this month",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T13:08:17.615706",
+    "user_id": "anonymous",
+    "belief": "I want to limit downside risk in this volatile market",
+    "strategy": "Based on your belief: 'I want to limit downside risk in this volatile market', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T13:08:17.646492",
+    "user_id": "goal_test_preserve",
+    "belief": "I want to limit downside risk in this volatile market",
+    "strategy": "buy stock"
+  },
+  {
+    "timestamp": "2025-06-28T20:51:43.950414",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Robinhood\u2019s Vlad Tenev has led a trading revolution to become a new Wall Street power. Details: Backed by an army of retail traders, Vlad Tenev is shaking up the financial order.",
+    "strategy": "Based on your belief: 'What might happen after this? Robinhood\u2019s Vlad Tenev has led a trading revolution to become a new Wall Street power. Details: Backed by an army of retail traders, Vlad Tenev is shaking up the financial order.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:44.390419",
+    "user_id": "anonymous",
+    "belief": "I believe Trump administration eyes cuts to student-loan forgiveness for public servants. Summary: The proposed regulatory text from the Education Department would ban certain employers from being eligible for Public Service Loan Forgiveness.",
+    "strategy": "Based on your belief: 'I believe Trump administration eyes cuts to student-loan forgiveness for public servants. Summary: The proposed regulatory text from the Education Department would ban certain employers from being eligible for Public Service Loan Forgiveness.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:44.822071",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Forget the \u2018Magnificent Seven\u2019 \u2014 these 7 cheap tech and AI stocks are better buys right now. Details: This mutual-fund manager stays calm through uncertainty \u2014 and significantly outperforms the stock market.",
+    "strategy": "Based on your belief: 'What might happen after this? Forget the \u2018Magnificent Seven\u2019 \u2014 these 7 cheap tech and AI stocks are better buys right now. Details: This mutual-fund manager stays calm through uncertainty \u2014 and significantly outperforms the stock market.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:45.285420",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? My job is offering me a payout. Should I take a $61,000 lump sum or $355 a month for life?. Details: \u201cMy S&amp;P 500 investments have roughly doubled every seven years.\u201d",
+    "strategy": "Based on your belief: 'What might happen after this? My job is offering me a payout. Should I take a $61,000 lump sum or $355 a month for life?. Details: \u201cMy S&amp;P 500 investments have roughly doubled every seven years.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:45.695013",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Why Republicans are defending this lucrative Medicaid scam. Context: Guess who\u2019s paying for the costs of hospitals and nursing homes in red states?",
+    "strategy": "Based on your belief: 'Should I trade based on this? Why Republicans are defending this lucrative Medicaid scam. Context: Guess who\u2019s paying for the costs of hospitals and nursing homes in red states?', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:46.111209",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? The Future of Social Security Just Went From Bad to Worse. Here's What Seniors Can Expect Next.. Details: Retirees could see even bigger benefit cuts in the near future if Congress doesn't act.",
+    "strategy": "Based on your belief: 'What might happen after this? The Future of Social Security Just Went From Bad to Worse. Here's What Seniors Can Expect Next.. Details: Retirees could see even bigger benefit cuts in the near future if Congress doesn't act.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:46.624174",
+    "user_id": "anonymous",
+    "belief": "News just broke: Should You Buy Roku Stock After Its Partnership With Amazon? \u2014 <p>On June 16, <strong>Roku</strong> <span class=\"ticker\">(NASDAQ: ROKU)</span> announced a partnership with <strong>Amazon</strong> <span class=\"ticker\">(NASDAQ: AMZN)</span> that will allow advertis",
+    "strategy": "Based on your belief: 'News just broke: Should You Buy Roku Stock After Its Partnership With Amazon? \u2014 <p>On June 16, <strong>Roku</strong> <span class=\"ticker\">(NASDAQ: ROKU)</span> announced a partnership with <strong>Amazon</strong> <span class=\"ticker\">(NASDAQ: AMZN)</span> that will allow advertis', The system expects neutral or sideways movement in AMZN. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:47.066289",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? 3 Brilliant Dividend Stocks to Buy Now and Hold for the Long Term. Details: <p><span>Investing in dividend stocks is a wise long-term investment strategy. According to data from Hartford Funds and Ned Davis Research, the average dividend-paying stock has outperformed nonpayer",
+    "strategy": "Based on your belief: 'What might happen after this? 3 Brilliant Dividend Stocks to Buy Now and Hold for the Long Term. Details: <p><span>Investing in dividend stocks is a wise long-term investment strategy. According to data from Hartford Funds and Ned Davis Research, the average dividend-paying stock has outperformed nonpayer', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:47.512466",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? IEFA Is a Great Choice for Most, but I Like VEA ETF Better. Details: <p>For investors in the United States, it's pretty easy to get overexposed to domestic stocks. These are the brands that you're most used to and the companies that you see every day. It's easy to load",
+    "strategy": "Based on your belief: 'What might happen after this? IEFA Is a Great Choice for Most, but I Like VEA ETF Better. Details: <p>For investors in the United States, it's pretty easy to get overexposed to domestic stocks. These are the brands that you're most used to and the companies that you see every day. It's easy to load', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T20:51:48.025889",
+    "user_id": "anonymous",
+    "belief": "I believe Where Will Nvidia Stock Be in 10 Years?. Summary: <p><span>Technology companies must constantly evolve to stay relevant. And </span><strong><span>Nvidia </span></strong><span><span class=\"ticker\">(NASDAQ: NVDA)</span> is no stranger to this phenomeno",
+    "strategy": "Based on your belief: 'I believe Where Will Nvidia Stock Be in 10 Years?. Summary: <p><span>Technology companies must constantly evolve to stay relevant. And </span><strong><span>Nvidia </span></strong><span><span class=\"ticker\">(NASDAQ: NVDA)</span> is no stranger to this phenomeno', The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:42:28.794199",
+    "user_id": "anonymous",
+    "belief": "I believe NVDA will rally because of the AI revolution and strong earnings",
+    "strategy": "Based on your belief: 'I believe NVDA will rally because of the AI revolution and strong earnings', The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:44:17.632421",
+    "user_id": "anonymous",
+    "belief": "I think AAPL is going to surge after their product launch next week",
+    "strategy": "Based on your belief: 'I think AAPL is going to surge after their product launch next week', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:46:53.903097",
+    "user_id": "anonymous",
+    "belief": "I'm worried TSLA will drop sharply due to delivery disappointments",
+    "strategy": "Based on your belief: 'I'm worried TSLA will drop sharply due to delivery disappointments', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:47:38.212094",
+    "user_id": "anonymous",
+    "belief": "I believe the market will crash this fall due to interest rates and war risk",
+    "strategy": "Based on your belief: 'I believe the market will crash this fall due to interest rates and war risk', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:47:46.810693",
+    "user_id": "anonymous",
+    "belief": "I want to shift into more defensive sectors during this recession",
+    "strategy": "Based on your belief: 'I want to shift into more defensive sectors during this recession', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:47:57.791770",
+    "user_id": "anonymous",
+    "belief": "A huge move is coming for NFLX \u2014 earnings are this week and could shock",
+    "strategy": "Based on your belief: 'A huge move is coming for NFLX \u2014 earnings are this week and could shock', The system expects neutral or sideways movement in NFLX. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:48:06.375188",
+    "user_id": "anonymous",
+    "belief": "I want to earn passive income with minimal risk",
+    "strategy": "Based on your belief: 'I want to earn passive income with minimal risk', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:48:13.690784",
+    "user_id": "anonymous",
+    "belief": "I want to invest in the whole market without picking individual stocks",
+    "strategy": "Based on your belief: 'I want to invest in the whole market without picking individual stocks', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:48:21.322432",
+    "user_id": "anonymous",
+    "belief": "AI and robotics are going to dominate the next decade",
+    "strategy": "Based on your belief: 'AI and robotics are going to dominate the next decade', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:48:31.379235",
+    "user_id": "anonymous",
+    "belief": "I\u2019m worried about inflation and want a safe haven",
+    "strategy": "Based on your belief: 'I\u2019m worried about inflation and want a safe haven', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T21:53:18.942469",
+    "user_id": "anonymous",
+    "belief": "I think AAPL is going to surge after their product launch next week",
+    "strategy": "Based on your belief: 'I think AAPL is going to surge after their product launch next week', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:33:47.254120",
+    "user_id": "anonymous",
+    "belief": "NVDA is poised to spike after this week's earnings",
+    "strategy": "Based on your belief: 'NVDA is poised to spike after this week's earnings', The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:33:53.192716",
+    "user_id": "anonymous",
+    "belief": "I want steady income and low risk during this recession",
+    "strategy": "Based on your belief: 'I want steady income and low risk during this recession', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:33:58.681515",
+    "user_id": "anonymous",
+    "belief": "I'm worried TSLA will crash if deliveries miss again",
+    "strategy": "Based on your belief: 'I'm worried TSLA will crash if deliveries miss again', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:18.488681",
+    "user_id": "anonymous",
+    "belief": "Tech will outperform everything over the next decade",
+    "strategy": "Based on your belief: 'Tech will outperform everything over the next decade', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:24.444323",
+    "user_id": "anonymous",
+    "belief": "I need passive income with minimal downside",
+    "strategy": "Based on your belief: 'I need passive income with minimal downside', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:31.119990",
+    "user_id": "anonymous",
+    "belief": "The market will crash this fall due to inflation and war",
+    "strategy": "Based on your belief: 'The market will crash this fall due to inflation and war', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:36.793009",
+    "user_id": "anonymous",
+    "belief": "AI and robotics will drive the next 10 years of market gains",
+    "strategy": "Based on your belief: 'AI and robotics will drive the next 10 years of market gains', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:46.323688",
+    "user_id": "anonymous",
+    "belief": "NFLX earnings this week could cause a massive move",
+    "strategy": "Based on your belief: 'NFLX earnings this week could cause a massive move', The system expects neutral or sideways movement in NFLX. Hence, the 'iron condor' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:51.716833",
+    "user_id": "anonymous",
+    "belief": "I want to hedge against inflation over the next few years",
+    "strategy": "Based on your belief: 'I want to hedge against inflation over the next few years', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T22:34:56.409680",
+    "user_id": "anonymous",
+    "belief": "I want exposure to the entire U.S. stock market without picking individual names",
+    "strategy": "Based on your belief: 'I want exposure to the entire U.S. stock market without picking individual names', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
   }
 ]
