@@ -3,6 +3,7 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from typing import Dict, Any
 import os
@@ -70,6 +71,19 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ✅ New Debug Endpoint for Monitoring Belief Feeder
+@app.get("/debug/last_training_status", response_class=PlainTextResponse)
+def get_last_training_log():
+    """
+    Returns the latest training log status written by belief_feeder.py.
+    Useful for live monitoring on Render or VS Code.
+    """
+    log_path = os.path.join("backend", "logs", "last_training_log.txt")
+    if not os.path.exists(log_path):
+        raise HTTPException(status_code=404, detail="No training log found.")
+    with open(log_path, "r") as f:
+        return f.read()
 
 # === Local Debug (optional)
 if __name__ == "__main__":
