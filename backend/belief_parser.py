@@ -111,3 +111,18 @@ def parse_belief(belief: str) -> dict:
         "confidence": float(confidence),
         "asset_class": detect_asset_class(belief)
     }
+
+# === Standalone Confidence Function ===
+def detect_confidence(belief: str) -> float:
+    """
+    Returns ML-predicted confidence score (0 to 1) from belief model.
+    Falls back to 0.5 if model unavailable.
+    """
+    cleaned = clean_belief(belief)
+    if belief_model and vectorizer:
+        try:
+            vec = vectorizer.transform([cleaned])
+            return float(max(belief_model.predict_proba(vec)[0]))
+        except Exception as e:
+            print(f"[CONFIDENCE ERROR] {e}")
+    return 0.5  # fallback

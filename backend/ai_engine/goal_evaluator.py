@@ -32,12 +32,10 @@ def evaluate_goal_from_belief(belief: str) -> Dict[str, Optional[Union[str, floa
     timeframe = None
 
     # === 🎯 MULTIPLIER GOALS ===
-
     match_x = re.search(r"(\d+(\.\d+)?)x", belief)
     if match_x:
         multiplier = float(match_x.group(1))
         goal_type = "multiply"
-
     elif "double my money" in belief:
         goal_type = "multiply"
         multiplier = 2.0
@@ -46,33 +44,26 @@ def evaluate_goal_from_belief(belief: str) -> Dict[str, Optional[Union[str, floa
         multiplier = 3.0
 
     # === 💰 PROFIT AMOUNT GOALS ===
-
-    elif re.search(r"(make|earn)\s*\$?(\d+(\.\d+)?)", belief):
-        match = re.search(r"(make|earn)\s*\$?(\d+(\.\d+)?)", belief)
-        if match:
-            goal_type = "profit_target"
-            multiplier = float(match.group(2))
+    match_profit = re.search(r"(make|earn)\s*\$?(\d+(\.\d+)?)", belief)
+    if match_profit:
+        goal_type = "profit_target"
+        multiplier = float(match_profit.group(2))
 
     # === 🛡️ HEDGE / PRESERVE GOALS ===
-
-    elif "hedge" in belief or "protect" in belief or "limit downside" in belief or "reduce losses" in belief:
+    elif any(kw in belief for kw in ["hedge", "protect", "limit downside", "reduce losses"]):
         goal_type = "hedge"
-
-    elif "preserve capital" in belief or "avoid losses" in belief:
+    elif any(kw in belief for kw in ["preserve capital", "avoid losses"]):
         goal_type = "preserve_capital"
 
     # === 💸 INCOME GOALS ===
-
-    elif "generate income" in belief or "passive income" in belief or "extra cash" in belief or "monthly income" in belief:
+    elif any(kw in belief for kw in ["generate income", "passive income", "monthly income", "extra cash"]):
         goal_type = "income"
 
     # === 🌱 SAFE GROWTH GOALS ===
-
-    elif "safe growth" in belief or "steady returns" in belief or "low risk returns" in belief or "grow slowly" in belief:
+    elif any(kw in belief for kw in ["safe growth", "steady returns", "low risk returns", "grow slowly"]):
         goal_type = "safe_growth"
 
     # === ⏳ TIMEFRAME DETECTION ===
-
     time_keywords = [
         r"next\s+(week|month|quarter|year)",
         r"in\s+\d+\s+(day|days|week|weeks|month|months|year|years)",
