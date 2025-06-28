@@ -1,11 +1,12 @@
 # backend/belief_feeder.py
 
 """
-This background worker:
-1. Pulls headlines + summaries from financial RSS feeds
-2. Converts them into natural-language beliefs
-3. Appends *only new* beliefs to clean_belief_tags.csv
-4. Retrains all models with updated beliefs
+Background worker that:
+1. Pulls financial headlines
+2. Converts them to beliefs
+3. Saves new beliefs to training_data
+4. Triggers model retraining (if needed)
+5. Logs status to backend/logs/last_training_log.txt
 """
 
 import time
@@ -18,28 +19,26 @@ import feedparser
 
 from backend.train_all_models import train_all_models
 
-# === RSS sources to pull market news from ===
+# === CONFIG ===
 RSS_FEEDS = [
     "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
     "https://www.marketwatch.com/rss/topstories",
     "https://www.cnbc.com/id/100003114/device/rss/rss.html",
 ]
-
-# === Tag pool for fast random labeling ===
 TAGS = ["bullish", "bearish", "neutral", "volatility", "rate_sensitive"]
-
-# === Where to save beliefs for training ===
 BELIEF_CSV_PATH = "backend/training_data/clean_belief_tags.csv"
-
-# === Keywords that qualify a headline as finance-relevant ===
+LOG_PATH = "backend/logs/last_training_log.txt"
 RELEVANT_KEYWORDS = [
     "stock", "stocks", "market", "markets", "fed", "interest", "inflation", "AI",
     "bond", "crypto", "bitcoin", "nasdaq", "dow", "s&p", "apple", "nvidia",
     "tesla", "google", "amazon", "earnings", "economy", "oil", "gold"
 ]
 
+# === SETUP ON STARTUP ===
+os.makedirs(os.path.dirname(BELIEF_CSV_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
 def fetch_headlines_with_summaries():
-    """Fetches (title + summary) pairs from RSS feeds, filters by keywords."""
     combined = []
     for url in RSS_FEEDS:
         try:
@@ -50,19 +49,14 @@ def fetch_headlines_with_summaries():
                 if not title or len(title) < 10:
                     continue
                 full_text = f"{title}. {summary}".strip()
-
-                # Filter only if any relevant keyword is in the full_text
                 if any(k.lower() in full_text.lower() for k in RELEVANT_KEYWORDS):
                     combined.append(full_text)
-
         except Exception as e:
             print(f"⚠️ Failed to parse feed: {url}\n{e}")
             continue
-
     return combined
 
 def convert_to_beliefs(lines):
-    """Converts parsed lines into natural-language belief-style prompts."""
     templates = [
         "I believe {line}",
         "This matters: {line}",
@@ -74,11 +68,9 @@ def convert_to_beliefs(lines):
     return [random.choice(templates).format(line=l) for l in lines]
 
 def hash_belief(belief: str) -> str:
-    """Returns an MD5 hash of a belief string."""
     return hashlib.md5(belief.encode("utf-8")).hexdigest()
 
 def load_existing_belief_hashes(path=BELIEF_CSV_PATH):
-    """Loads hashes of previously stored beliefs to avoid duplication."""
     if not os.path.exists(path):
         return set()
     with open(path, mode="r", newline='') as f:
@@ -86,7 +78,6 @@ def load_existing_belief_hashes(path=BELIEF_CSV_PATH):
         return set(hash_belief(row["belief"]) for row in reader if "belief" in row)
 
 def append_new_beliefs(beliefs, path=BELIEF_CSV_PATH):
-    """Appends only *new* belief strings to CSV with a random tag."""
     existing_hashes = load_existing_belief_hashes(path)
     new_entries = [(b, hash_belief(b)) for b in beliefs if hash_belief(b) not in existing_hashes]
 
@@ -102,40 +93,53 @@ def append_new_beliefs(beliefs, path=BELIEF_CSV_PATH):
         for belief, _ in new_entries:
             tag = random.choice(TAGS)
             writer.writerow([belief, tag])
-            print(f"➕ Saved belief: {belief[:80]}... [{tag}]")  # Optional debug log
-
-    print(f"[{datetime.now()}] ✅ Added {len(new_entries)} new beliefs to clean_belief_tags.csv")
+            print(f"➕ Saved: {belief[:80]}... [{tag}]")
+    print(f"[{datetime.now()}] ✅ Added {len(new_entries)} new beliefs.")
     return len(new_entries)
 
+def write_log(timestamp, fetched, generated, new_count, retrained):
+    with open(LOG_PATH, "w") as f:
+        f.write(f"🕒 {timestamp}\n")
+        f.write(f"📰 News fetched: {fetched}\n")
+        f.write(f"🧠 Beliefs generated: {generated}\n")
+        f.write(f"➕ New beliefs added: {new_count}\n")
+        f.write("✅ Models retrained.\n" if retrained else "⏩ Skipped retraining.\n")
+
 def run_feeder_loop(interval=3600):
-    """Runs the full belief ingestion + retraining loop."""
     while True:
-        print(f"\n📰 [News Feeder] Running at {datetime.now()}")
+        timestamp = datetime.now()
+        print(f"\n📰 [News Ingestor] {timestamp}")
 
         try:
             raw_lines = fetch_headlines_with_summaries()
-            print(f"🔍 Fetched {len(raw_lines)} relevant news items")
+            print(f"🔍 {len(raw_lines)} headlines fetched")
 
             beliefs = convert_to_beliefs(raw_lines)
-            print(f"🧠 Generated {len(beliefs)} belief candidates")
+            print(f"🧠 {len(beliefs)} belief prompts generated")
 
             if not beliefs:
-                print("⚠️ No beliefs generated, injecting dummy fallback for testing...")
-                beliefs = ["I believe the market will move soon due to global volatility."]
+                print("⚠️ No beliefs found. Using fallback.")
+                beliefs = ["I believe the market may react to rising uncertainty."]
 
             new_count = append_new_beliefs(beliefs)
+            retrained = False
 
             if new_count > 0:
-                print("🔁 Retraining models with updated belief data...")
-                train_all_models()
-                print("✅ Retraining complete")
-            else:
-                print("⏩ Skipping retraining (no new data)")
+                try:
+                    print("🔁 Starting retraining...")
+                    train_all_models()
+                    retrained = True
+                    print("✅ Retraining complete")
+                except Exception as e:
+                    print(f"❌ Model training failed: {e}")
+
+            write_log(timestamp, len(raw_lines), len(beliefs), new_count, retrained)
 
         except Exception as e:
-            print(f"❌ [Error] {e}")
+            print(f"❌ CRITICAL ERROR: {e}")
+            write_log(timestamp, 0, 0, 0, False)
 
-        print(f"😴 Sleeping for {interval} seconds...\n")
+        print(f"😴 Sleeping {interval} seconds...\n")
         time.sleep(interval)
 
 if __name__ == "__main__":
