@@ -21,9 +21,15 @@ def ensure_log_file_exists():
         except Exception as e:
             print(f"[LOGGER ERROR] Could not create log file: {e}")
 
-def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymous"):
+def log_strategy(belief: str, explanation: str, user_id: str = "anonymous", strategy: Dict[str, Any] = None):
     """
     Appends a strategy entry to strategy_log.json.
+
+    Now accepts:
+    - belief (str)
+    - explanation (str): explanation of strategy logic
+    - user_id (str)
+    - strategy (Dict): generated strategy
     """
     ensure_log_file_exists()
 
@@ -31,7 +37,8 @@ def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymou
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
         "belief": belief,
-        "strategy": strategy
+        "explanation": explanation,
+        "strategy": strategy or {}
     }
 
     try:
@@ -76,4 +83,3 @@ def get_latest_strategies(limit: int = 5) -> List[Dict[str, Any]]:
 
     sorted_logs = sorted(logs, key=lambda x: x.get("timestamp", ""), reverse=True)
     return sorted_logs[:limit]
-
