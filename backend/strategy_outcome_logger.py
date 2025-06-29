@@ -1,25 +1,29 @@
 # backend/strategy_outcome_logger.py
 
+"""
+Logs and tracks the performance of executed strategies (win/loss/PnL).
+"""
+
 import csv
 import os
 from datetime import datetime
+from typing import List, Dict
 
-# 📍 Path to the outcome CSV file
+# 📍 CSV log file path
 OUTCOME_LOG = os.path.join(os.path.dirname(__file__), "strategy_outcomes.csv")
 
 def log_strategy_outcome(strategy: dict, belief: str, ticker: str, pnl_percent: float, result: str, notes: str = ""):
     """
-    Logs the outcome of an executed strategy to a CSV file.
+    Appends a strategy outcome to the log file for future analysis and leaderboard generation.
 
-    Parameters:
-    - strategy (dict): The strategy dict returned by select_strategy()
-    - belief (str): Original belief text from user
-    - ticker (str): Ticker traded
-    - pnl_percent (float): Profit or loss as a percentage (e.g. 12.5 or -8.3)
-    - result (str): One of 'win', 'loss', or 'neutral'
-    - notes (str): Optional string to tag the entry (e.g. 'user-verified')
+    Args:
+        strategy (dict): Strategy returned by the AI engine
+        belief (str): Original user belief
+        ticker (str): Ticker traded
+        pnl_percent (float): Strategy return (e.g., 12.5 for +12.5%)
+        result (str): One of ['win', 'loss', 'neutral']
+        notes (str): Optional annotation (e.g., 'verified', 'auto-eval', etc.)
     """
-
     log_entry = {
         "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "belief": belief,
@@ -39,9 +43,22 @@ def log_strategy_outcome(strategy: dict, belief: str, ticker: str, pnl_percent: 
         writer.writerow(log_entry)
         print(f"✅ Strategy outcome logged:\n{log_entry}")
 
-# 🧪 Local test block — run this file directly to simulate a logged result
+def get_all_outcomes() -> List[Dict]:
+    """
+    Reads the full list of logged strategy outcomes from the CSV file.
+
+    Returns:
+        List[Dict]: Each entry is one strategy outcome log.
+    """
+    if not os.path.exists(OUTCOME_LOG):
+        return []
+
+    with open(OUTCOME_LOG, mode="r", newline="") as f:
+        reader = csv.DictReader(f)
+        return list(reader)
+
+# 🧪 Run directly to simulate a test log
 if __name__ == "__main__":
-    # Fake strategy for testing
     test_strategy = {
         "type": "bull call spread",
         "risk_level": "high",
@@ -50,7 +67,6 @@ if __name__ == "__main__":
         "explanation": "Bullish strategy"
     }
 
-    # Simulated logging call
     log_strategy_outcome(
         strategy=test_strategy,
         belief="I think AAPL will rise after earnings",
