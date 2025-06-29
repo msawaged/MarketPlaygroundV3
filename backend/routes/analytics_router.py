@@ -19,22 +19,38 @@ def strategy_summary(user_id: Optional[str] = None, ticker: Optional[str] = None
     Optional filters: user_id, ticker, days
     """
     file_path = os.path.join("backend", "strategy_outcomes.csv")
+    
     if not os.path.exists(file_path):
         return {"detail": "No outcomes logged yet."}
 
     df = pd.read_csv(file_path)
 
-    if user_id:
+    # Filter by user_id if provided
+    if user_id and "user_id" in df.columns:
         df = df[df["user_id"] == user_id]
-    if ticker:
+
+    # Filter by ticker if provided
+    if ticker and "ticker" in df.columns:
         df = df[df["ticker"].str.upper() == ticker.upper()]
-    if days:
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+    # Filter by date if provided
+    if days and "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
         df = df[df["timestamp"] >= pd.Timestamp.now() - pd.Timedelta(days=days)]
 
+    # Final defensive check
+    if df.empty or "pnl_percent" not in df.columns:
+        return {
+            "total_strategies": 0,
+            "average_pnl": 0,
+            "win_loss_ratio": 0,
+            "top_tickers": [],
+            "top_strategies": [],
+        }
+
     total = len(df)
-    avg_pnl = df["pnl"].mean() if not df.empty else 0
-    win_loss_ratio = round((df["pnl"] > 0).sum() / max((df["pnl"] <= 0).sum(), 1), 2)
+    avg_pnl = df["pnl_percent"].mean()
+    win_loss_ratio = round((df["pnl_percent"] > 0).sum() / max((df["pnl_percent"] <= 0).sum(), 1), 2)
     top_tickers = [t[0] for t in Counter(df["ticker"]).most_common(3)]
     top_strategies = [s[0] for s in Counter(df["strategy"]).most_common(3)]
 
