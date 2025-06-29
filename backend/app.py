@@ -1,7 +1,7 @@
 # backend/app.py
 # ✅ Main entry point for the FastAPI app — handles routers, AI engine, feedback, and brokerage features
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ from typing import Dict, Any
 import os
 import pandas as pd
 from datetime import datetime
-import traceback  # 👈 NEW: For full error visibility
+import traceback
 
 # === Initialization ===
 from backend.user_models import init_db
@@ -32,6 +32,7 @@ from backend.routes.analytics_router import router as analytics_router
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
+# ✅ Allow frontend (localhost:3000) to call backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -43,7 +44,7 @@ app.add_middleware(
 # === Run DB setup ===
 init_db()
 
-# ✅ Auto-create strategy_outcomes.csv (once)
+# ✅ Auto-create strategy_outcomes.csv if missing
 strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
 if not os.path.exists(strategy_csv_path):
     df = pd.DataFrame([{
@@ -82,7 +83,7 @@ class FeedbackRequest(BaseModel):
     strategy: str
     feedback: str
 
-# === AI Endpoint with crash logging ===
+# === AI Endpoint (standard, for backward compatibility) ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
@@ -90,10 +91,29 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         return result
     except Exception as e:
         print("\n❌ ERROR in /process_belief:")
-        traceback.print_exc()  # 👈 shows full stack trace in logs
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Training Monitor ===
+# === NEW: Strategy Endpoint with Full Trace Logging ===
+@app.post("/strategy/process_belief")
+async def strategy_process_belief(request: Request):
+    try:
+        body = await request.json()
+        belief = body.get("belief")
+        user_id = body.get("user_id", "anonymous")
+
+        if not belief:
+            raise HTTPException(status_code=400, detail="Belief is required")
+
+        result = run_ai_engine(belief, user_id=user_id)
+        return result
+
+    except Exception as e:
+        print("\n❌ ERROR in /strategy/process_belief:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# === Training Monitor Endpoint ===
 @app.get("/debug/last_training_status", response_class=PlainTextResponse)
 def get_last_training_log():
     log_path = os.path.join("backend", "logs", "last_training_log.txt")
@@ -107,7 +127,7 @@ def get_last_training_log():
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
-# === Optional Local Debug
+# === Local Debug (optional) ===
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")

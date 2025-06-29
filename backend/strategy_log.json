@@ -3886,5 +3886,125 @@
     "user_id": "murad_local",
     "belief": "I believe NVDA will skyrocket next quarter",
     "strategy": "buy stock for income"
+  },
+  {
+    "timestamp": "2025-06-29T09:34:55.980073",
+    "user_id": "anonymous",
+    "belief": "I believe TSLA will fall next week",
+    "explanation": "Based on your belief: 'I believe TSLA will fall next week', The system expects neutral or sideways movement in TSLA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy TSLA 307p / Sell TSLA 275p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:34:56.005292",
+    "user_id": "test_logger",
+    "belief": "I believe TSLA will fall next week",
+    "explanation": "long put",
+    "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-29T09:37:24.745666",
+    "user_id": "anonymous",
+    "belief": "I believe AAPL will rise next month",
+    "explanation": "Based on your belief: 'I believe AAPL will rise next month', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 211c / Sell AAPL 231c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:37:24.768617",
+    "user_id": "test_logger",
+    "belief": "I believe AAPL will rise next month",
+    "explanation": "bull call spread",
+    "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-29T09:37:31.623411",
+    "user_id": "anonymous",
+    "belief": "The S&P 500 is going to crash",
+    "explanation": "Based on your belief: 'The S&P 500 is going to crash', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:37:31.645285",
+    "user_id": "test_logger",
+    "belief": "The S&P 500 is going to crash",
+    "explanation": "long put",
+    "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-29T09:37:39.309499",
+    "user_id": "anonymous",
+    "belief": "I think NVDA will stay flat",
+    "explanation": "Based on your belief: 'I think NVDA will stay flat', The system expects neutral or sideways movement in NVDA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:37:39.330493",
+    "user_id": "test_logger",
+    "belief": "I think NVDA will stay flat",
+    "explanation": "iron condor",
+    "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-29T09:37:47.174120",
+    "user_id": "anonymous",
+    "belief": "Bitcoin will double in value",
+    "explanation": "Based on your belief: 'Bitcoin will double in value', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:37:47.307256",
+    "user_id": "test_logger",
+    "belief": "Bitcoin will double in value",
+    "explanation": "iron condor",
+    "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-29T09:38:04.534819",
+    "user_id": "anonymous",
+    "belief": "How can I 2x my money on AMZN?",
+    "explanation": "Based on your belief: 'How can I 2x my money on AMZN?', you want to multiply your money by 2.0x. The system expects neutral or sideways movement in AMZN. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-29T09:38:04.554274",
+    "user_id": "test_logger",
+    "belief": "How can I 2x my money on AMZN?",
+    "explanation": "iron condor",
+    "strategy": {}
   }
 ]
