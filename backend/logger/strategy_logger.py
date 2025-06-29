@@ -1,5 +1,5 @@
 # backend/logger/strategy_logger.py
-# ✅ Handles strategy logging and history retrieval per user
+# ✅ Handles strategy logging, retrieval, and hot trade display
 
 import os
 import json
@@ -22,10 +22,10 @@ def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymou
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
         "belief": belief,
-        "strategy": strategy  # keep as dictionary, not str
+        "strategy": strategy
     }
 
-    # Load existing logs or initialize a new list
+    # Load existing logs or initialize new
     if os.path.exists(STRATEGY_LOG_FILE):
         with open(STRATEGY_LOG_FILE, "r") as f:
             try:
@@ -35,20 +35,15 @@ def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymou
     else:
         logs = []
 
-    # Append and save
     logs.append(entry)
+
+    # Save
     with open(STRATEGY_LOG_FILE, "w") as f:
         json.dump(logs, f, indent=2)
 
 def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict[str, Any]]:
     """
     Returns all saved strategies for a given user.
-
-    Parameters:
-    - user_id (str): User identifier
-
-    Returns:
-    - List of strategy log entries for the user
     """
     if not os.path.exists(STRATEGY_LOG_FILE):
         return []
@@ -60,3 +55,26 @@ def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict[str, Any]
             return []
 
     return [entry for entry in logs if entry.get("user_id") == user_id]
+
+def get_latest_strategies(limit: int = 5) -> List[Dict[str, Any]]:
+    """
+    Returns the most recent N strategies regardless of user.
+
+    Parameters:
+    - limit (int): Number of recent strategies to return
+
+    Returns:
+    - List of strategy log entries (most recent first)
+    """
+    if not os.path.exists(STRATEGY_LOG_FILE):
+        return []
+
+    with open(STRATEGY_LOG_FILE, "r") as f:
+        try:
+            logs = json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+    # Sort by timestamp descending, return top N
+    sorted_logs = sorted(logs, key=lambda x: x.get("timestamp", ""), reverse=True)
+    return sorted_logs[:limit]
