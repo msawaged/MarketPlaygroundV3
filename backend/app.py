@@ -105,6 +105,11 @@ def get_last_training_log():
     with open(log_path, "r") as f:
         return f.read()
 
+# ✅ Root Welcome Route for Render Health Check
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to MarketPlayground AI Backend"}
+
 # === Local Debug (optional)
 if __name__ == "__main__":
     import uvicorn
