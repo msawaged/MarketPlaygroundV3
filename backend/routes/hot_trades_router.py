@@ -30,7 +30,19 @@ def get_hot_trades():
     examples = {}
 
     for entry in logs:
-        strat = entry.get("strategy", {})
+        raw_strat = entry.get("strategy", {})
+
+        # 👇 Safely parse if strategy is stringified JSON
+        if isinstance(raw_strat, str):
+            try:
+                strat = json.loads(raw_strat)
+            except json.JSONDecodeError:
+                continue  # skip malformed entries
+        elif isinstance(raw_strat, dict):
+            strat = raw_strat
+        else:
+            continue
+
         strat_type = strat.get("type", "unknown")
         strategy_counter[strat_type] += 1
         if strat_type not in examples:
