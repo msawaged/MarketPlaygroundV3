@@ -9,6 +9,7 @@ from typing import Dict, Any
 import os
 import pandas as pd
 from datetime import datetime
+import traceback  # 👈 NEW: For full error visibility
 
 # === Initialization ===
 from backend.user_models import init_db
@@ -21,7 +22,7 @@ from backend.routes.feedback_predictor import router as feedback_predictor
 from backend.routes.portfolio_router import router as portfolio_router
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
-from backend.routes.hot_trades_router import router as hot_trades_router  # ✅ ADDED
+from backend.routes.hot_trades_router import router as hot_trades_router
 from backend.routes.alpaca_router import router as alpaca_router
 from backend.routes.execution_router import router as execution_router
 from backend.routes.pnl_router import router as pnl_router
@@ -31,7 +32,6 @@ from backend.routes.analytics_router import router as analytics_router
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# ✅ Allow frontend (localhost:3000) to call backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -43,7 +43,7 @@ app.add_middleware(
 # === Run DB setup ===
 init_db()
 
-# ✅ Auto-create strategy_outcomes.csv with 1 test row (only if missing)
+# ✅ Auto-create strategy_outcomes.csv (once)
 strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
 if not os.path.exists(strategy_csv_path):
     df = pd.DataFrame([{
@@ -66,7 +66,7 @@ app.include_router(feedback_predictor, prefix="/predict", tags=["Predictor"])
 app.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])
 app.include_router(strategy_router, prefix="/strategy", tags=["Strategy"])
 app.include_router(strategy_logger_router, prefix="/strategy-log", tags=["Strategy Logger"])
-app.include_router(hot_trades_router, tags=["Hot Trades"])  # ✅ INCLUDED HOT TRADES
+app.include_router(hot_trades_router, tags=["Hot Trades"])
 app.include_router(alpaca_router, prefix="/alpaca", tags=["Alpaca"])
 app.include_router(execution_router, prefix="/alpaca", tags=["Execution"])
 app.include_router(pnl_router, prefix="/pnl", tags=["PnL"])
@@ -80,18 +80,20 @@ class BeliefRequest(BaseModel):
 class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
-    feedback: str  # "good" or "bad"
+    feedback: str
 
-# === AI Endpoint ===
+# === AI Endpoint with crash logging ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
         result = run_ai_engine(request.belief)
         return result
     except Exception as e:
+        print("\n❌ ERROR in /process_belief:")
+        traceback.print_exc()  # 👈 shows full stack trace in logs
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ Training Monitor Endpoint
+# === Training Monitor ===
 @app.get("/debug/last_training_status", response_class=PlainTextResponse)
 def get_last_training_log():
     log_path = os.path.join("backend", "logs", "last_training_log.txt")
@@ -100,7 +102,7 @@ def get_last_training_log():
     with open(log_path, "r") as f:
         return f.read()
 
-# ✅ Welcome Route
+# === Welcome Route ===
 @app.get("/")
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
