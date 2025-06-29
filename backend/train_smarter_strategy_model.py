@@ -1,53 +1,87 @@
 # backend/train_smarter_strategy_model.py
 
 """
-Trains a smarter strategy model using belief + metadata:
-- Inputs: dict-style rows (belief, ticker, direction, confidence, asset_class)
-- Output: strategy (e.g. 'bull call spread')
-- Model is saved as a full sklearn Pipeline using DictVectorizer
+Trains a smarter ML pipeline for strategy generation using XGBoost.
+Saves both the pipeline and label encoder for later inference and decoding.
 """
 
-import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-import joblib
 import os
+import pandas as pd
+import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, LabelEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score
 
-# === File Paths ===
-DATA_PATH = "backend/Training_Strategies_Enhanced.csv"
-PIPELINE_PATH = "backend/smart_strategy_pipeline.joblib"
+# ✅ Import reusable combine_features logic
+from backend.utils.feature_utils import combine_features
 
-def train_strategy_model():
-    """Main training entry point expected by train_all_models.py"""
-    # Load and clean data
-    df = pd.read_csv(DATA_PATH)
-    df = df.dropna(subset=['belief', 'strategy'])
+# === Step 1: Load and clean training data ===
+DATA_PATH = os.path.join("backend", "training_data", "cleaned_strategies.csv")
+if not os.path.exists(DATA_PATH):
+    raise RuntimeError(f"❌ File not found: {DATA_PATH}")
 
-    # Convert to list of dicts for DictVectorizer
-    X = df[['belief', 'ticker', 'direction', 'confidence', 'asset_class']].to_dict(orient="records")
-    y = df['strategy']
+df = pd.read_csv(DATA_PATH)
+df.dropna(subset=['belief', 'strategy'], inplace=True)
+df = df[df['belief'].str.strip() != '']
+df = df[df['strategy'].str.strip() != '']
 
-    # Split train/test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# === Step 2: Extract features and target labels ===
+X_raw = df[['belief', 'ticker', 'direction', 'confidence', 'asset_class']]
+y_raw = df['strategy']
 
-    # Define Pipeline with DictVectorizer and RandomForest
-    pipeline = Pipeline([
-        ('vectorizer', DictVectorizer(sparse=True)),
-        ('clf', RandomForestClassifier(n_estimators=150, random_state=42))
-    ])
+# === Step 3: Encode strategy labels ===
+encoder = LabelEncoder()
+y_encoded = encoder.fit_transform(y_raw)
 
-    # Fit pipeline
-    pipeline.fit(X_train, y_train)
+ENCODER_PATH = os.path.join("backend", "strategy_label_encoder.joblib")
+joblib.dump(encoder, ENCODER_PATH)
 
-    # Save full pipeline
-    joblib.dump(pipeline, PIPELINE_PATH)
-    print(f"✅ Model saved to {PIPELINE_PATH}")
+# === Step 4: Define ML pipeline using imported combine_features ===
+pipeline = Pipeline([
+    ("feature_combiner", FunctionTransformer(combine_features, validate=False)),
+    ("vectorizer", TfidfVectorizer(ngram_range=(1, 2))),
+    ("classifier", XGBClassifier(
+        use_label_encoder=False,
+        eval_metric="mlogloss",
+        n_estimators=100,
+        max_depth=4,
+        learning_rate=0.1
+    ))
+])
 
-    # Evaluate accuracy
-    score = pipeline.score(X_test, y_test)
-    print(f"🎯 Accuracy on test set: {score:.2f}")
+# === Step 5: Train/test split ===
+X_train, X_test, y_train, y_test = train_test_split(
+    X_raw, y_encoded, test_size=0.2, random_state=42
+)
 
-if __name__ == "__main__":
-    train_strategy_model()
+# === Step 6: Train the model ===
+pipeline.fit(X_train, y_train)
+
+# === Step 7: Save pipeline and encoder ===
+MODEL_PATH = os.path.join("backend", "smart_strategy_pipeline.joblib")
+joblib.dump(pipeline, MODEL_PATH)
+
+print(f"✅ Trained pipeline saved to {MODEL_PATH}")
+print(f"✅ Label encoder saved to {ENCODER_PATH}")
+
+# === Step 8: Evaluate test accuracy ===
+y_pred = pipeline.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"🎯 Accuracy on test set: {accuracy:.2f}")
+
+# === 🔬 Step 9: TEMP TEST CASE ===
+X_example = pd.DataFrame([{
+    'belief': 'I think TSLA will surge after earnings',
+    'ticker': 'TSLA',
+    'direction': 'bullish',
+    'confidence': 0.75,
+    'asset_class': 'stock'
+}])
+
+y_example_pred = pipeline.predict(X_example)[0]
+strategy_label = encoder.inverse_transform([y_example_pred])[0]
+print(f"\n🔬 Test Belief: {X_example.iloc[0]['belief']}")
+print(f"🔮 Predicted Strategy: {strategy_label}")

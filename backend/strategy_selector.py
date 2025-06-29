@@ -1,14 +1,22 @@
 # backend/strategy_selector.py
 
-import joblib
 import os
+import pandas as pd
+import joblib  # ✅ Correct loader for joblib-saved pipeline
 
-# ✅ Load smart ML pipeline (pretrained model + preprocessing)
+# ✅ Import custom feature combiner used in the model
+from backend.utils.feature_utils import combine_features
+
+# ✅ Define path to trained ML pipeline and encoder
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "smart_strategy_pipeline.joblib")
-pipeline = joblib.load(MODEL_PATH)
+ENCODER_PATH = os.path.join(BASE_DIR, "strategy_label_encoder.joblib")
 
-# 📚 Expanded strategy metadata — real-advisor grade coverage
+# ✅ Load pipeline and label encoder using joblib
+pipeline = joblib.load(MODEL_PATH)
+encoder = joblib.load(ENCODER_PATH)
+
+# 📚 Strategy metadata — advisor-grade strategy explanations
 STRATEGY_DETAILS = {
     "buy stock": {
         "description": "Buy shares of the underlying company",
@@ -122,15 +130,16 @@ STRATEGY_DETAILS = {
     }
 }
 
-# 🎯 Adjust allocation based on risk profile
 def adjust_allocation(base_percent: int, risk_profile: str) -> str:
+    """
+    Adjust strategy allocation based on user risk profile.
+    """
     if risk_profile == "conservative":
         return f"{int(base_percent * 0.6)}%"
     elif risk_profile == "aggressive":
         return f"{int(base_percent * 1.4)}%"
     return f"{base_percent}%"
 
-# 🧠 Strategy selection core
 def select_strategy(
     belief: str,
     direction: str,
@@ -144,35 +153,39 @@ def select_strategy(
     expiry_date: str = None,
     risk_profile: str = "moderate"
 ) -> dict:
+    """
+    Selects and returns the most appropriate trading strategy given the user's belief and metadata.
+    """
     latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
 
-    # 🛠️ Prepare input
-    input_row = [{
+    # 🧠 Create input features for the ML pipeline
+    input_row = pd.DataFrame([{
         "belief": belief,
         "ticker": ticker,
         "direction": direction,
         "confidence": confidence,
         "asset_class": asset_class
-    }]
+    }])
 
     try:
-        raw_prediction = pipeline.predict(input_row)[0]
-        # 🔍 Handle if model accidentally returns a dict or malformed object
-        normalized = raw_prediction if isinstance(raw_prediction, str) else str(raw_prediction.get("type", "default strategy"))
-        normalized = normalized.strip().lower()
+        # 🔮 Predict strategy using trained pipeline
+        prediction = pipeline.predict(input_row)
+
+        # ✅ Decode the strategy label from integer to string
+        normalized = encoder.inverse_transform([prediction[0]])[0].strip().lower()
+
         print(f"[SMART MODEL PREDICTION] → {normalized}")
     except Exception as e:
         print(f"[ERROR] Strategy prediction failed: {e}")
         normalized = "default strategy"
 
-    # 🧽 Clean up aliases
+    # 🔁 Map known aliases to canonical names
     alias_map = {
         "stock": "buy stock",
         "equity": "buy stock",
         "dividend stock": "buy stock for income"
     }
-    if normalized in alias_map:
-        normalized = alias_map[normalized]
+    normalized = alias_map.get(normalized, normalized)
 
     if normalized not in STRATEGY_DETAILS:
         print(f"[WARN] Unknown strategy '{normalized}', using fallback.")
@@ -180,7 +193,7 @@ def select_strategy(
 
     details = STRATEGY_DETAILS[normalized]
 
-    # ✨ Dynamic description logic
+    # 📈 Strategy description generation logic
     if "call" in normalized:
         description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
     elif "put" in normalized:
@@ -200,13 +213,12 @@ def select_strategy(
         "explanation": details["explanation"]
     }
 
-# 🧪 Test block (manual run)
+# ✅ CLI test block
 if __name__ == "__main__":
     print("🧪 Running strategy_selector test...")
 
-    test_belief = "I think AAPL will go up sharply after earnings"
     strategy = select_strategy(
-        belief=test_belief,
+        belief="I think AAPL will go up sharply after earnings",
         direction="bullish",
         ticker="AAPL",
         asset_class="stock",

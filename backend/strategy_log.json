@@ -3778,5 +3778,101 @@
     "user_id": "anonymous",
     "belief": "I want exposure to the entire U.S. stock market without picking individual names",
     "strategy": "Based on your belief: 'I want exposure to the entire U.S. stock market without picking individual names', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock for income' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:44:16.556179",
+    "user_id": "anonymous",
+    "belief": "AI chip demand will surge due to new regulations on China",
+    "strategy": "Based on your belief: 'AI chip demand will surge due to new regulations on China', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:46:27.795758",
+    "user_id": "anonymous",
+    "belief": "TSLA is going to skyrocket after the earnings report",
+    "strategy": "Based on your belief: 'TSLA is going to skyrocket after the earnings report', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:46:34.951060",
+    "user_id": "anonymous",
+    "belief": "AAPL will crash this quarter due to slowing iPhone sales",
+    "strategy": "Based on your belief: 'AAPL will crash this quarter due to slowing iPhone sales', The system expects neutral or sideways movement in AAPL. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:46:41.296516",
+    "user_id": "anonymous",
+    "belief": "MSFT will stay flat in the next month",
+    "strategy": "Based on your belief: 'MSFT will stay flat in the next month', The system expects neutral or sideways movement in MSFT. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:46:50.277573",
+    "user_id": "anonymous",
+    "belief": "MSFT will stay flat in the next month",
+    "strategy": "Based on your belief: 'MSFT will stay flat in the next month', The system expects neutral or sideways movement in MSFT. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:46:58.907064",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA",
+    "strategy": "Based on your belief: 'I want to 2x my money on NVDA', you want to multiply your money by 2.0x. The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:47:06.880917",
+    "user_id": "anonymous",
+    "belief": "Bond yields will fall and I want to invest defensively",
+    "strategy": "Based on your belief: 'Bond yields will fall and I want to invest defensively', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:47:14.111956",
+    "user_id": "anonymous",
+    "belief": "The overall market is going to tank this summer",
+    "strategy": "Based on your belief: 'The overall market is going to tank this summer', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-28T23:54:34.035756",
+    "user_id": "anonymous",
+    "belief": "TSLA is going to skyrocket after the earnings report",
+    "strategy": "Based on your belief: 'TSLA is going to skyrocket after the earnings report', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:11:43.494535",
+    "user_id": "anonymous",
+    "belief": "I think TSLA will surge next week after earnings",
+    "strategy": "Based on your belief: 'I think TSLA will surge next week after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:11:46.071677",
+    "user_id": "anonymous",
+    "belief": "The S&P will drop due to global recession fears",
+    "strategy": "Based on your belief: 'The S&P will drop due to global recession fears', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:11:54.298380",
+    "user_id": "anonymous",
+    "belief": "MSFT will stay flat this quarter",
+    "strategy": "Based on your belief: 'MSFT will stay flat this quarter', The system expects neutral or sideways movement in MSFT. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:12:01.922178",
+    "user_id": "anonymous",
+    "belief": "I want to 3x my money on NVDA this year",
+    "strategy": "Based on your belief: 'I want to 3x my money on NVDA this year', you want to multiply your money by 3.0x within this year. The system expects neutral or sideways movement in NVDA. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:12:16.307803",
+    "user_id": "anonymous",
+    "belief": "I want safe monthly income from bonds or ETFs",
+    "strategy": "Based on your belief: 'I want safe monthly income from bonds or ETFs', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:24:00.547564",
+    "user_id": "anonymous",
+    "belief": "I think TSLA will surge after earnings",
+    "strategy": "Based on your belief: 'I think TSLA will surge after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'buy stock' strategy was selected to match your objective."
+  },
+  {
+    "timestamp": "2025-06-29T00:24:10.312533",
+    "user_id": "anonymous",
+    "belief": "I want to build a laddered bond portfolio",
+    "strategy": "Based on your belief: 'I want to build a laddered bond portfolio', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective."
   }
 ]

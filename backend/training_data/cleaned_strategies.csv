@@ -1,0 +1,47 @@
+belief,ticker,direction,confidence,asset_class,strategy,strategy_cleaned
+Looking to build a laddered bond portfolio,SPY,neutral,0.1412,bond,bond ladder,bond ladder
+I want to reduce interest rate risk with bonds,SPY,neutral,0.1425,bond,bond ladder,bond ladder
+I need low-risk yield over time,SPY,neutral,0.184,bond,bond ladder,bond ladder
+I want steady income from bonds with staggered dates,SPY,neutral,0.1385,bond,bond ladder,bond ladder
+What's a good fixed-income plan for the next 5 years?,SPY,neutral,0.1497,bond,bond ladder,bond ladder
+AAPL might beat earnings and go up modestly,AAPL,bullish,0.1419,options,bull call spread,bull call spread
+NVIDIA should recover after recent dip,DIA,neutral,0.1595,options,bull call spread,bull call spread
+Looking for a leveraged bullish trade with limited risk,SPY,bullish,0.1595,options,bull call spread,bull call spread
+Expecting a moderate rise in TSLA next month,TSLA,bullish,0.1469,options,bull call spread,bull call spread
+"Optimistic on tech, want upside exposure with limits",SPY,bullish,0.1593,options,bull call spread,bull call spread
+I'm looking to park money in safe bond funds,SPY,neutral,0.1546,etf,buy bond etf,buy bond etf
+Thinking about rotating into bond ETFs,SPY,neutral,0.1457,etf,buy bond etf,buy bond etf
+Prefer TLT or IEF for yield right now,TLT,neutral,0.1756,etf,buy bond etf,buy bond etf
+Which bond ETFs are best in a recession?,SPY,bearish,0.1508,etf,buy bond etf,buy bond etf
+I want a liquid way to buy bonds,SPY,neutral,0.1311,etf,buy bond etf,buy bond etf
+What's a good way to play rising oil prices?,SPY,neutral,0.1606,etf,buy commodity etf,buy commodity etf
+Uranium ETFs like URA look promising,SPY,neutral,0.1459,etf,buy commodity etf,buy commodity etf
+Commodities may spike due to inflation,SPY,neutral,0.1651,etf,buy commodity etf,buy commodity etf
+I want to gain exposure to gold via ETF,SPY,neutral,0.1493,etf,buy commodity etf,buy commodity etf
+Looking to hedge inflation with GLD,SPY,neutral,0.1476,etf,buy commodity etf,buy commodity etf
+Should I trade based on this? Why Republicans are defending this lucrative Medicaid scam. Context: Guess who’s paying for the costs of hospitals and nursing homes in red states?,SPY,neutral,0.1816,stock,"{'type': 'buy stock', 'description': 'Buy SPY shares', 'risk_level': 'low', 'suggested_allocation': '20%', 'explanation': 'Simple long-term position with ownership.'}",buy stock
+"News just broke: Should You Buy Roku Stock After Its Partnership With Amazon? — <p>On June 16, <strong>Roku</strong> <span class=""ticker"">(NASDAQ: ROKU)</span> announced a partnership with <strong>Amazon</strong> <span class=""ticker"">(NASDAQ: AMZN)</span> that will allow advertis",AMZN,neutral,0.1586,stock,"{'type': 'buy stock', 'description': 'Buy AMZN shares', 'risk_level': 'low', 'suggested_allocation': '20%', 'explanation': 'Simple long-term position with ownership.'}",buy stock
+I believe AAPL will grow steadily over the next year,AAPL,neutral,0.153,stock,buy stock,buy stock
+"What might happen after this? IEFA Is a Great Choice for Most, but I Like VEA ETF Better. Details: <p>For investors in the United States, it's pretty easy to get overexposed to domestic stocks. These are the brands that you're most used to and the companies that you see every day. It's easy to load",SPY,neutral,0.1477,stock,"{'type': 'buy stock', 'description': 'Buy SPY shares', 'risk_level': 'low', 'suggested_allocation': '20%', 'explanation': 'Simple long-term position with ownership.'}",buy stock
+"What might happen after this? Robinhood’s Vlad Tenev has led a trading revolution to become a new Wall Street power. Details: Backed by an army of retail traders, Vlad Tenev is shaking up the financial order.",SPY,bullish,0.1545,stock,"{'type': 'buy stock', 'description': 'Buy SPY shares', 'risk_level': 'low', 'suggested_allocation': '20%', 'explanation': 'Simple long-term position with ownership.'}",buy stock
+"What might happen after this? My job is offering me a payout. Should I take a $61,000 lump sum or $355 a month for life?. Details: “My S&amp;P 500 investments have roughly doubled every seven years.”",SPY,neutral,0.1692,stock,"{'type': 'buy stock', 'description': 'Buy SPY shares', 'risk_level': 'low', 'suggested_allocation': '20%', 'explanation': 'Simple long-term position with ownership.'}",buy stock
+WMT and KO are good for income-focused investing,SPY,neutral,0.1701,stock,buy stock for income,buy stock for income
+What dividend stocks should I buy for passive income?,SPY,neutral,0.1508,stock,buy stock for income,buy stock for income
+I'm interested in stable dividend stocks,SPY,neutral,0.1493,stock,buy stock for income,buy stock for income
+I want to buy shares that pay reliable dividends,SPY,neutral,0.1308,stock,buy stock for income,buy stock for income
+Looking to earn quarterly dividends from blue chips,SPY,neutral,0.1426,stock,buy stock for income,buy stock for income
+QQQ is a long-term hold for me,QQQ,neutral,0.1675,etf,hold etf,hold etf
+Just holding S&P index over the next decade,SPY,neutral,0.1578,etf,hold etf,hold etf
+I'm investing in VTI and forgetting about it,VTI,neutral,0.1655,etf,hold etf,hold etf
+I want to hold SPY for passive growth,SPY,neutral,0.1305,etf,hold etf,hold etf
+My plan is to DCA into a total market ETF,SPY,neutral,0.1552,etf,hold etf,hold etf
+No strong move expected for SPY — neutral strategy?,SPY,neutral,0.1692,options,iron condor,iron condor
+Trying to profit from lack of movement,SPY,neutral,0.1534,options,iron condor,iron condor
+I expect low volatility in DIA this week,DIA,neutral,0.1612,options,iron condor,iron condor
+Market might chop sideways for a bit,SPY,neutral,0.1502,options,iron condor,iron condor
+QQQ seems stuck in a range,QQQ,neutral,0.1489,options,iron condor,iron condor
+SPY looks overbought and may pull back soon,SPY,neutral,0.1623,options,long put,long put
+Bearish on QQQ in the short term,QQQ,bearish,0.1491,options,long put,long put
+Markets seem too hot — expecting correction,SPY,neutral,0.1392,options,long put,long put
+I think NVDA will crash after earnings,NVDA,bearish,0.1425,options,long put,long put
+Downside risk is high on tech stocks,SPY,bearish,0.1841,options,long put,long put
