@@ -11,7 +11,8 @@ from backend.asset_selector import select_asset_class
 from backend.market_data import get_latest_price, get_weekly_high_low
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
-from backend.logger.strategy_logger import log_strategy
+from backend.logger.strategy_logger import log_strategy  # ✅ Logs strategy for session history
+from typing import Optional, Dict
 
 # ✅ Known equity tickers to override ETF classification errors
 KNOWN_EQUITIES = {
@@ -112,15 +113,15 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         risk_profile=risk_profile
     )
 
-    # ✅ Step 8: Generate human-readable explanation
+    # ✅ Step 8: Generate explanation
     explanation = generate_strategy_explainer(
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 9: Log strategy for session history
-    log_strategy(belief, explanation, user_id)
+    # ✅ Step 9: Log strategy for both session + hot_trades analysis
+    log_strategy(belief, explanation, user_id, strategy)  # ✅ Modified to include full strategy
 
-    # ✅ Step 10: Return full AI response
+    # ✅ Step 10: Return full response
     return {
         "strategy": strategy,
         "ticker": ticker,

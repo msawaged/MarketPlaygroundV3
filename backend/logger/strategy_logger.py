@@ -18,6 +18,10 @@ def log_strategy(belief: str, strategy: Dict[str, Any], user_id: str = "anonymou
     - strategy (dict): The strategy object to log.
     - user_id (str): User identifier.
     """
+    # ✅ Sanitize strategy type — ensure 'type' key exists
+    if "type" not in strategy:
+        strategy["type"] = "unknown"
+
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
