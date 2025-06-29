@@ -21,11 +21,12 @@ from backend.routes.feedback_predictor import router as feedback_predictor
 from backend.routes.portfolio_router import router as portfolio_router
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
+from backend.routes.hot_trades_router import router as hot_trades_router  # ✅ ADDED
 from backend.routes.alpaca_router import router as alpaca_router
 from backend.routes.execution_router import router as execution_router
 from backend.routes.pnl_router import router as pnl_router
 from backend.routes.market_router import router as market_router
-from backend.routes.analytics_router import router as analytics_router  # ✅ NEW: For /strategy_summary
+from backend.routes.analytics_router import router as analytics_router
 
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
@@ -65,17 +66,18 @@ app.include_router(feedback_predictor, prefix="/predict", tags=["Predictor"])
 app.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])
 app.include_router(strategy_router, prefix="/strategy", tags=["Strategy"])
 app.include_router(strategy_logger_router, prefix="/strategy-log", tags=["Strategy Logger"])
+app.include_router(hot_trades_router, tags=["Hot Trades"])  # ✅ INCLUDED HOT TRADES
 app.include_router(alpaca_router, prefix="/alpaca", tags=["Alpaca"])
 app.include_router(execution_router, prefix="/alpaca", tags=["Execution"])
 app.include_router(pnl_router, prefix="/pnl", tags=["PnL"])
 app.include_router(market_router, prefix="/market", tags=["Market"])
-app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])  # ✅ ADDED
+app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
 
 # === Schemas ===
 class BeliefRequest(BaseModel):
     belief: str
 
-class FeedbackRequest(BaseModel):  # ✅ Still useful for schema consistency
+class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
     feedback: str  # "good" or "bad"
@@ -83,34 +85,27 @@ class FeedbackRequest(BaseModel):  # ✅ Still useful for schema consistency
 # === AI Endpoint ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
-    """
-    Accepts a user belief and returns an AI-generated strategy.
-    """
     try:
         result = run_ai_engine(request.belief)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ New Debug Endpoint for Monitoring Belief Feeder
+# ✅ Training Monitor Endpoint
 @app.get("/debug/last_training_status", response_class=PlainTextResponse)
 def get_last_training_log():
-    """
-    Returns the latest training log status written by belief_feeder.py.
-    Useful for live monitoring on Render or VS Code.
-    """
     log_path = os.path.join("backend", "logs", "last_training_log.txt")
     if not os.path.exists(log_path):
         raise HTTPException(status_code=404, detail="No training log found.")
     with open(log_path, "r") as f:
         return f.read()
 
-# ✅ Root Welcome Route for Render Health Check
+# ✅ Welcome Route
 @app.get("/")
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
-# === Local Debug (optional)
+# === Optional Local Debug
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")
