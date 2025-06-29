@@ -7,6 +7,8 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from typing import Dict, Any
 import os
+import pandas as pd
+from datetime import datetime
 
 # === Initialization ===
 from backend.user_models import init_db
@@ -39,6 +41,22 @@ app.add_middleware(
 
 # === Run DB setup ===
 init_db()
+
+# ✅ Auto-create strategy_outcomes.csv with 1 test row (only if missing)
+strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
+if not os.path.exists(strategy_csv_path):
+    df = pd.DataFrame([{
+        "timestamp": datetime.utcnow().isoformat(),
+        "belief": "I believe AAPL will go up",
+        "strategy": "bull call spread",
+        "ticker": "AAPL",
+        "pnl_percent": 18.25,
+        "result": "win",
+        "risk": "moderate",
+        "notes": "initial placeholder row"
+    }])
+    df.to_csv(strategy_csv_path, index=False)
+    print("✅ Created starter strategy_outcomes.csv")
 
 # === Register Routes ===
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
