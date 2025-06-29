@@ -2,21 +2,16 @@
 
 import os
 import pandas as pd
-import joblib  # ✅ Correct loader for joblib-saved pipeline
+import joblib
 
-# ✅ Import custom feature combiner used in the model
-from backend.utils.feature_utils import combine_features
+# ✅ Load trained model + vectorizer (no encoder needed)
+MODEL_PATH = os.path.join("backend", "multi_strategy_model.joblib")
+VEC_PATH = os.path.join("backend", "multi_vectorizer.joblib")
 
-# ✅ Define path to trained ML pipeline and encoder
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "smart_strategy_pipeline.joblib")
-ENCODER_PATH = os.path.join(BASE_DIR, "strategy_label_encoder.joblib")
+model = joblib.load(MODEL_PATH)
+vectorizer = joblib.load(VEC_PATH)
 
-# ✅ Load pipeline and label encoder using joblib
-pipeline = joblib.load(MODEL_PATH)
-encoder = joblib.load(ENCODER_PATH)
-
-# 📚 Strategy metadata — advisor-grade strategy explanations
+# ✅ Strategy metadata
 STRATEGY_DETAILS = {
     "buy stock": {
         "description": "Buy shares of the underlying company",
@@ -131,14 +126,18 @@ STRATEGY_DETAILS = {
 }
 
 def adjust_allocation(base_percent: int, risk_profile: str) -> str:
-    """
-    Adjust strategy allocation based on user risk profile.
-    """
     if risk_profile == "conservative":
         return f"{int(base_percent * 0.6)}%"
     elif risk_profile == "aggressive":
         return f"{int(base_percent * 1.4)}%"
     return f"{base_percent}%"
+
+def is_earnings_play(belief: str) -> bool:
+    """
+    Detect if belief is an earnings-related play
+    """
+    keywords = ["earnings", "report", "announcement", "quarter", "after earnings", "post-earnings"]
+    return any(kw in belief.lower() for kw in keywords)
 
 def select_strategy(
     belief: str,
@@ -153,39 +152,35 @@ def select_strategy(
     expiry_date: str = None,
     risk_profile: str = "moderate"
 ) -> dict:
-    """
-    Selects and returns the most appropriate trading strategy given the user's belief and metadata.
-    """
     latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
 
-    # 🧠 Create input features for the ML pipeline
-    input_row = pd.DataFrame([{
-        "belief": belief,
-        "ticker": ticker,
-        "direction": direction,
-        "confidence": confidence,
-        "asset_class": asset_class
-    }])
+    # ✨ Earnings override logic
+    if is_earnings_play(belief):
+        if direction == "bullish":
+            predicted_strategy = "bull call spread"
+        elif direction == "bearish":
+            predicted_strategy = "bear put spread"
+        else:
+            predicted_strategy = "straddle"
+        print(f"[EARNINGS OVERRIDE] → {predicted_strategy}")
+    else:
+        # 🔢 Format input and predict via ML
+        input_text = f"{belief} | {ticker} | {asset_class} | {direction}"
+        try:
+            X_vectorized = vectorizer.transform([input_text])
+            predicted_strategy = model.predict(X_vectorized)[0].strip().lower()
+            print(f"[ML STRATEGY PREDICTION] → {predicted_strategy}")
+        except Exception as e:
+            print(f"[ERROR] Prediction failed: {e}")
+            predicted_strategy = "default strategy"
 
-    try:
-        # 🔮 Predict strategy using trained pipeline
-        prediction = pipeline.predict(input_row)
-
-        # ✅ Decode the strategy label from integer to string
-        normalized = encoder.inverse_transform([prediction[0]])[0].strip().lower()
-
-        print(f"[SMART MODEL PREDICTION] → {normalized}")
-    except Exception as e:
-        print(f"[ERROR] Strategy prediction failed: {e}")
-        normalized = "default strategy"
-
-    # 🔁 Map known aliases to canonical names
+    # 🧽 Normalize label
     alias_map = {
         "stock": "buy stock",
         "equity": "buy stock",
         "dividend stock": "buy stock for income"
     }
-    normalized = alias_map.get(normalized, normalized)
+    normalized = alias_map.get(predicted_strategy, predicted_strategy)
 
     if normalized not in STRATEGY_DETAILS:
         print(f"[WARN] Unknown strategy '{normalized}', using fallback.")
@@ -193,7 +188,7 @@ def select_strategy(
 
     details = STRATEGY_DETAILS[normalized]
 
-    # 📈 Strategy description generation logic
+    # 📝 Description formatter
     if "call" in normalized:
         description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
     elif "put" in normalized:
@@ -213,10 +208,8 @@ def select_strategy(
         "explanation": details["explanation"]
     }
 
-# ✅ CLI test block
+# ✅ CLI test
 if __name__ == "__main__":
-    print("🧪 Running strategy_selector test...")
-
     strategy = select_strategy(
         belief="I think AAPL will go up sharply after earnings",
         direction="bullish",

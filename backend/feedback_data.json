@@ -12555,5 +12555,41 @@
       "user_id": "goal_test_preserve"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-06-29T06:18:28.625941",
+    "user_id": "murad_local",
+    "belief": "I believe NVDA will skyrocket next quarter",
+    "strategy": {
+      "strategy": {
+        "type": "buy stock for income",
+        "description": "Buy NVDA shares for dividend income",
+        "risk_level": "low",
+        "suggested_allocation": "20%",
+        "explanation": "Ideal for income-focused investors seeking stability and passive cash flow."
+      },
+      "ticker": "NVDA",
+      "asset_class": "stock",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 157.75
+      },
+      "high_low": [
+        158.71,
+        155.25
+      ],
+      "confidence": 0.7273853116610354,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next quarter",
+      "expiry_date": "2025-07-04",
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I believe NVDA will skyrocket next quarter', The system expects neutral or sideways movement in NVDA. Hence, the 'buy stock for income' strategy was selected to match your objective.",
+      "user_id": "murad_local"
+    },
+    "result": "auto_generated"
   }
 ]
