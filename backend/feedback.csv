@@ -9,3 +9,4 @@ belief,label,confidence,ticker,asset_class,strategy
 "Amazon could rally into earnings",bullish,0.88,AMZN,equity,buy_call_spread
 "The whole market is going to collapse",bearish,0.9,SPY,etf,buy_put
 "Gold will rise steadily",bullish,0.85,GLD,commodity,buy
+"AI chip demand will surge due to new regulations on China",good
