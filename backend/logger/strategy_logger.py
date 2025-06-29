@@ -76,3 +76,4 @@ def get_latest_strategies(limit: int = 5) -> List[Dict[str, Any]]:
 
     sorted_logs = sorted(logs, key=lambda x: x.get("timestamp", ""), reverse=True)
     return sorted_logs[:limit]
+
