@@ -12,16 +12,19 @@ import datetime
 import os
 import csv
 
+# === Config ===
 BACKEND_URL = "http://127.0.0.1:8000/process_belief"  # Use localhost for testing
 RAW_LOG_PATH = "backend/logs/news_beliefs.csv"
 TRAINING_PATH = "backend/Training_Strategies.csv"
 
+# === RSS Feed Sources ===
 RSS_FEEDS = [
     "https://www.marketwatch.com/rss/topstories",
     "https://www.fool.com/feeds/index.aspx",
     "https://www.zerohedge.com/fullrss.xml"
 ]
 
+# === Templates to Turn News into Beliefs ===
 TEMPLATES = [
     "I believe {headline}. Summary: {summary}",
     "News just broke: {headline} — {summary}",
@@ -29,6 +32,7 @@ TEMPLATES = [
     "Should I trade based on this? {headline}. Context: {summary}"
 ]
 
+# === Fallback Beliefs in Case News Fails ===
 FALLBACK_BELIEFS = [
     "I believe the market may react to rising uncertainty.",
     "Should I buy energy stocks due to inflation?",
@@ -37,18 +41,22 @@ FALLBACK_BELIEFS = [
     "Is gold a safe haven again in this climate?"
 ]
 
+# === Convert Title + Summary into Belief Prompt ===
 def generate_belief_prompt(title, summary=""):
     return random.choice(TEMPLATES).format(
         headline=title.strip(),
         summary=summary.strip()[:200] or "No summary provided"
     )
 
+# === Fetch News from Each RSS Feed ===
 def fetch_news_entries(limit_per_feed=5):
     entries = []
     for url in RSS_FEEDS:
         try:
             print(f"🔗 Fetching from: {url}")
-            feed = feedparser.parse(url)
+            feed = feedparser.parse(url)  # ❌ Do NOT pass timeout here
+            if not feed.entries:
+                raise ValueError("No entries returned")
             print(f"✅ Parsed {len(feed.entries)} entries from {url}")
             for entry in feed.entries[:limit_per_feed]:
                 title = entry.get("title", "").strip()
@@ -59,6 +67,7 @@ def fetch_news_entries(limit_per_feed=5):
             print(f"⚠️ Feed error: {url} → {e}")
     return entries
 
+# === Save Belief for Model Review ===
 def log_raw_belief(title, summary, belief):
     os.makedirs(os.path.dirname(RAW_LOG_PATH), exist_ok=True)
     try:
@@ -68,6 +77,7 @@ def log_raw_belief(title, summary, belief):
     except Exception as e:
         print(f"❌ Logging raw belief error: {e}")
 
+# === Save to Training Data if Strategy is Returned ===
 def log_training_row(belief, strategy, asset_class):
     try:
         with open(TRAINING_PATH, mode="a", newline="", encoding="utf-8") as csvfile:
@@ -76,6 +86,7 @@ def log_training_row(belief, strategy, asset_class):
     except Exception as e:
         print(f"❌ Training log error: {e}")
 
+# === Send Belief to FastAPI Backend ===
 def send_belief_to_backend(belief, title="", summary=""):
     try:
         r = requests.post(BACKEND_URL, json={"belief": belief})
@@ -91,6 +102,7 @@ def send_belief_to_backend(belief, title="", summary=""):
     except Exception as e:
         print(f"❌ Request error: {e}")
 
+# === Main Loop ===
 def run_news_ingestor(interval=300):
     while True:
         print(f"\n📰 [{datetime.datetime.now()}] News Ingestor Running")
@@ -109,5 +121,6 @@ def run_news_ingestor(interval=300):
         print(f"⏲️ Sleeping {interval} sec...\n")
         time.sleep(interval)
 
+# === Run Directly ===
 if __name__ == "__main__":
     run_news_ingestor()
