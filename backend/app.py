@@ -122,6 +122,17 @@ def get_last_training_log():
     with open(log_path, "r") as f:
         return f.read()
 
+# ✅ NEW: Force retraining regardless of feedback count
+@app.post("/force_retrain", response_class=PlainTextResponse)
+def force_retrain_now():
+    try:
+        from backend.train_all_models import train_all_models
+        train_all_models()
+        return "✅ Forced model retraining completed."
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
+
 # === Welcome Route ===
 @app.get("/")
 def read_root():
