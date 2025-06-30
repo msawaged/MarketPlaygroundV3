@@ -4903,5 +4903,278 @@
       "suggested_allocation": "20%",
       "explanation": "Speculative bearish trade with large profit potential on sharp drops."
     }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:40.921468",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "explanation": "Based on your belief: 'Short tech hard, it's about to crash', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:42.351198",
+    "user_id": "anonymous",
+    "belief": "DeepSeek Won't Sink U.S. AI Titans",
+    "explanation": "Based on your belief: 'DeepSeek Won't Sink U.S. AI Titans', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:43.768064",
+    "user_id": "anonymous",
+    "belief": "Go all in on crypto this week",
+    "explanation": "Based on your belief: 'Go all in on crypto this week', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:45.203328",
+    "user_id": "anonymous",
+    "belief": "Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat",
+    "explanation": "Based on your belief: 'Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:46.612613",
+    "user_id": "anonymous",
+    "belief": "Short tech hard, it's about to crash",
+    "explanation": "Based on your belief: 'Short tech hard, it's about to crash', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:48.025191",
+    "user_id": "anonymous",
+    "belief": "Stocks Sink in Broad AI Rout Sparked by China's DeepSeek",
+    "explanation": "Based on your belief: 'Stocks Sink in Broad AI Rout Sparked by China's DeepSeek', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:49.421847",
+    "user_id": "anonymous",
+    "belief": "Financial Services Roundup: Market Talk",
+    "explanation": "Based on your belief: 'Financial Services Roundup: Market Talk', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:50.824929",
+    "user_id": "anonymous",
+    "belief": "Comex Gold, Silver Settle Lower",
+    "explanation": "Based on your belief: 'Comex Gold, Silver Settle Lower', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:52.248581",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "explanation": "Based on your belief: 'If gold and bitcoin rise together, what happens?', The system expects neutral or sideways movement in ETH. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy ETH 23c / Sell ETH 26c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:44:53.671459",
+    "user_id": "anonymous",
+    "belief": "If gold and bitcoin rise together, what happens?",
+    "explanation": "Based on your belief: 'If gold and bitcoin rise together, what happens?', The system expects neutral or sideways movement in ETH. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy ETH 23c / Sell ETH 26c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:11.444567",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "explanation": "Based on your belief: 'Slow and steady with dividend stocks', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:12.840523",
+    "user_id": "anonymous",
+    "belief": "Diversify into energy and healthcare",
+    "explanation": "Based on your belief: 'Diversify into energy and healthcare', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:14.232924",
+    "user_id": "anonymous",
+    "belief": "Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat",
+    "explanation": "Based on your belief: 'Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:15.626566",
+    "user_id": "anonymous",
+    "belief": "Comex Gold, Silver Settle Lower",
+    "explanation": "Based on your belief: 'Comex Gold, Silver Settle Lower', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:16.997874",
+    "user_id": "anonymous",
+    "belief": "Financial Services Roundup: Market Talk",
+    "explanation": "Based on your belief: 'Financial Services Roundup: Market Talk', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:18.369471",
+    "user_id": "anonymous",
+    "belief": "Stocks Sink in Broad AI Rout Sparked by China's DeepSeek",
+    "explanation": "Based on your belief: 'Stocks Sink in Broad AI Rout Sparked by China's DeepSeek', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:19.760498",
+    "user_id": "anonymous",
+    "belief": "I want to 5x my money fast",
+    "explanation": "Based on your belief: 'I want to 5x my money fast', you want to multiply your money by 5.0x. The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:21.151917",
+    "user_id": "anonymous",
+    "belief": "Slow and steady with dividend stocks",
+    "explanation": "Based on your belief: 'Slow and steady with dividend stocks', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:22.571191",
+    "user_id": "anonymous",
+    "belief": "DeepSeek Won't Sink U.S. AI Titans",
+    "explanation": "Based on your belief: 'DeepSeek Won't Sink U.S. AI Titans', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T07:47:23.975634",
+    "user_id": "anonymous",
+    "belief": "What if AAPL merges with Netflix next year?",
+    "explanation": "Based on your belief: 'What if AAPL merges with Netflix next year?', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:06:07.882650",
+    "user_id": "anonymous",
+    "belief": "I want to build a steady bond ladder for income",
+    "explanation": "Based on your belief: 'I want to build a steady bond ladder for income', The system expects neutral or sideways movement in SPY. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
   }
 ]

@@ -1,0 +1,120 @@
+.
+├── RealTime_CNBC_Transcription_Guide.docx
+├── __pycache__
+│   ├── finnhub_client.cpython-311.pyc
+│   └── finnhub_client.cpython-39.pyc
+├── append_feedback.sh
+├── backend
+│   ├── Training_Strategies.csv
+│   ├── Training_Strategies_Enhanced.csv
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── ai_engine
+│   ├── alpaca_client.py
+│   ├── alpaca_orders.py
+│   ├── alpaca_portfolio.py
+│   ├── analytics
+│   ├── analytics.py
+│   ├── app.py
+│   ├── asset_selector.py
+│   ├── auth_handler.py
+│   ├── auto_retrain.py
+│   ├── backend
+│   ├── background_tasks.py
+│   ├── belief_classifier.joblib
+│   ├── belief_feeder.py
+│   ├── belief_model.joblib
+│   ├── belief_model_old.joblib
+│   ├── belief_parser.py
+│   ├── belief_vectorizer.joblib
+│   ├── best_model.joblib
+│   ├── clean_belief_asset.csv
+│   ├── clean_belief_tags.csv
+│   ├── data
+│   ├── deploy_trigger.py
+│   ├── equity_snapshots.json
+│   ├── feedback.csv
+│   ├── feedback_data.json
+│   ├── feedback_data_backup.json
+│   ├── feedback_handler.py
+│   ├── feedback_model.joblib
+│   ├── feedback_strategy_model.joblib
+│   ├── feedback_strategy_vectorizer.joblib
+│   ├── feedback_trainer.py
+│   ├── finnhub_data.py
+│   ├── fix_strategy_column.py
+│   ├── fix_training_csv.py
+│   ├── generate_enhanced_training_data.py
+│   ├── historic_data.csv
+│   ├── logger
+│   ├── logs
+│   ├── market_data.py
+│   ├── multi_asset_model.joblib
+│   ├── multi_strategy_model.joblib
+│   ├── multi_vectorizer.joblib
+│   ├── news_beliefs.json
+│   ├── news_entity_parser.py
+│   ├── news_ingestor.py
+│   ├── news_scraper.py
+│   ├── pnl.json
+│   ├── pnl_tracker.py
+│   ├── portfolio_handler.py
+│   ├── portfolio_log.json
+│   ├── requirements-news.txt
+│   ├── requirements-worker.txt
+│   ├── requirements.txt
+│   ├── retrain_worker.py
+│   ├── routes
+│   ├── schemas.py
+│   ├── smart_strategy_pipeline.joblib
+│   ├── strategy_distribution.png
+│   ├── strategy_distribution_chart.png
+│   ├── strategy_label_encoder.joblib
+│   ├── strategy_log.json
+│   ├── strategy_outcome_logger.py
+│   ├── strategy_outcome_summary.py
+│   ├── strategy_outcomes.csv
+│   ├── strategy_selector.py
+│   ├── test_ai_engine.py
+│   ├── ticker_model.joblib
+│   ├── trade_execution_logger.py
+│   ├── train_all_models.py
+│   ├── train_belief_model.py
+│   ├── train_from_feedback.py
+│   ├── train_multi_asset_model.py
+│   ├── train_smarter_strategy_model.py
+│   ├── training_data
+│   ├── user_models.py
+│   ├── utils
+│   ├── vectorizer.joblib
+│   ├── visualize_strategy_accuracy.py
+│   └── visualize_strategy_distribution.py
+├── finnhub_client.py
+├── frontend
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   └── src
+├── full_tree.txt
+├── marketplayground_frontend_final.zip
+├── new_feedback.json
+├── project_structure.txt
+├── render.yaml
+├── run_simulated_training_loop.py
+├── runtime.txt
+├── scripts
+│   ├── fix_feedback_json.py
+│   └── generate_clean_training_data.py
+├── test_api.py
+├── train_loop.sh
+├── tree_output.txt
+├── trigger.txt
+└── venv
+    ├── bin
+    ├── include
+    ├── lib
+    ├── pyvenv.cfg
+    └── share
+
+23 directories, 95 files
