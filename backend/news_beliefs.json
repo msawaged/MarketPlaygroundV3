@@ -1,1 +1,746 @@
-[]
+[
+  {
+    "belief": "Stocks Sink in Broad AI Rout Sparked by China's DeepSeek",
+    "published": "Mon, 27 Jan 2025 14:26:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Comex Gold, Silver Settle Lower",
+    "published": "Mon, 27 Jan 2025 14:01:00 -0500",
+    "entities": {
+      "companies": [
+        "Comex Gold"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "DeepSeek Won't Sink U.S. AI Titans",
+    "published": "Mon, 27 Jan 2025 13:12:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Financial Services Roundup: Market Talk",
+    "published": "Mon, 27 Jan 2025 12:27:00 -0500",
+    "entities": {
+      "companies": [
+        "Financial Services Roundup"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat",
+    "published": "Mon, 27 Jan 2025 12:20:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "U.S."
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Swiss franc, Japanese yen Rise as DeepSeek News Boosts Safe Havens",
+    "published": "Mon, 27 Jan 2025 09:55:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bullish"
+    }
+  },
+  {
+    "belief": "Natural Gas Falls on Shifting Weather Forecasts",
+    "published": "Mon, 27 Jan 2025 09:05:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Building-Products Distributor QXO Launches Hostile Bid for Beacon",
+    "published": "Mon, 27 Jan 2025 08:28:00 -0500",
+    "entities": {
+      "companies": [
+        "Building-Products"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Natural-Gas Firm Diversified Energy Strikes Deal for Permian Basin Player",
+    "published": "Mon, 27 Jan 2025 06:57:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "What's New This Tax Season That Can Save You Money",
+    "published": "Mon, 27 Jan 2025 05:30:00 -0500",
+    "entities": {
+      "companies": [
+        "New This Tax Season That Can Save You Money"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Chinese Investors With Few Options Turn to Dividends",
+    "published": "Mon, 27 Jan 2025 05:30:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "U.S. Treasury Yields Fall But Direction for Long-End Yields Still Seen Upward",
+    "published": "Mon, 27 Jan 2025 05:02:00 -0500",
+    "entities": {
+      "companies": [
+        "U.S. Treasury"
+      ],
+      "countries": [],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Russia's Crude Exports Fairly Stable Despite U.S. Sanctions, Goldman Says",
+    "published": "Mon, 27 Jan 2025 04:46:00 -0500",
+    "entities": {
+      "companies": [
+        "Crude Exports Fairly",
+        "Goldman"
+      ],
+      "countries": [
+        "Russia"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "The Extra Reward for Owning Stocks Over Bonds Has Disappeared",
+    "published": "Mon, 27 Jan 2025 01:05:00 -0500",
+    "entities": {
+      "companies": [
+        "The Extra Reward for Owning Stocks"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Heard on the Street's Stock-Picking Series",
+    "published": "Sun, 26 Jan 2025 22:33:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "What Will It Take for Home Buyers to Start Asking for a Disaster Discount?",
+    "published": "Sun, 26 Jan 2025 06:00:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Now Wanted in Silicon Valley: Ho-Hum Businesses With Thin Profit Margins",
+    "published": "Sun, 26 Jan 2025 05:30:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "Ho-Hum Businesses"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "In China, a Cat-and-Mouse Game to Rein In Crypto",
+    "published": "Sun, 26 Jan 2025 00:01:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "One House, Three Owners: The Ballooning Cost of the American Dream",
+    "published": "Sat, 25 Jan 2025 21:00:00 -0500",
+    "entities": {
+      "companies": [
+        "House"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Trump Adds Fuel to Claims That Big Banks Discriminate Against Conservatives",
+    "published": "Sat, 25 Jan 2025 05:30:00 -0500",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bullish"
+    }
+  },
+  {
+    "belief": "Canada rescinds Digital Services Tax after Trump cuts off U.S. trade talks",
+    "published": "Mon, 30 Jun 2025 04:02:38 GMT",
+    "entities": {
+      "companies": [
+        "Digital Services Tax"
+      ],
+      "countries": [
+        "Canada",
+        "U.S."
+      ],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Trump says he has group of \u2018very wealthy people\u2019 ready to buy TikTok",
+    "published": "Mon, 30 Jun 2025 05:22:57 GMT",
+    "entities": {
+      "companies": [
+        "TikTok",
+        "Trump"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Trump's 'big, beautiful bill' clears key Senate hurdle after high drama",
+    "published": "Sun, 29 Jun 2025 15:33:28 GMT",
+    "entities": {
+      "companies": [
+        "Senate",
+        "Trump"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "How BP became a potential takeover target",
+    "published": "Mon, 30 Jun 2025 05:28:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Sen. Thom Tillis says he won't seek re-election after opposing Trump megabill",
+    "published": "Sun, 29 Jun 2025 18:08:54 GMT",
+    "entities": {
+      "companies": [
+        "Trump"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "How much Americans have in their 401(k)s at every income level",
+    "published": "Sun, 29 Jun 2025 13:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Look inside: Couple bought a chateau in France for $835,000, spent over $300,000 turning it into a bed and breakfast",
+    "published": "Sun, 29 Jun 2025 12:49:57 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "France"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "How China could shut down auto factories around the world",
+    "published": "Sat, 28 Jun 2025 12:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "China's manufacturing activity contracts for a third month amid deflation woes",
+    "published": "Mon, 30 Jun 2025 04:17:52 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Bigger bitcoin HODL: Time for 10% to 40% of portfolio in crypto, says financial advisor Ric Edelman",
+    "published": "Fri, 27 Jun 2025 21:22:28 GMT",
+    "entities": {
+      "companies": [
+        "HODL"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Here are the 2 big things we're watching in the stock market in the week ahead",
+    "published": "Sun, 29 Jun 2025 14:19:34 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Tesla's IPO was 15 years ago. The stock is up almost 300-fold since then",
+    "published": "Sun, 29 Jun 2025 11:00:01 GMT",
+    "entities": {
+      "companies": [
+        "Tesla",
+        "IPO"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "An Energy Star inside U.S. homes is under attack from Trump, with the cost to homeowners uncertain",
+    "published": "Sun, 29 Jun 2025 15:17:03 GMT",
+    "entities": {
+      "companies": [
+        "Trump"
+      ],
+      "countries": [
+        "U.S."
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Nvidia insiders dump more than $1 billion in stock, according to report",
+    "published": "Sun, 29 Jun 2025 18:07:32 GMT",
+    "entities": {
+      "companies": [
+        "Nvidia"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Elon Musk rips into 'utterly insane' Trump-backed megabill",
+    "published": "Sun, 29 Jun 2025 00:21:39 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "China's biggest public AI drop since DeepSeek, Baidu's open source Ernie, is about to hit the market",
+    "published": "Sun, 29 Jun 2025 16:35:06 GMT",
+    "entities": {
+      "companies": [
+        "AI",
+        "Ernie",
+        "Baidu"
+      ],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Trump says Mamdani must 'do the right thing' if elected mayor of New York City \u2014 or risk losing funding",
+    "published": "Sun, 29 Jun 2025 16:44:42 GMT",
+    "entities": {
+      "companies": [
+        "Trump"
+      ],
+      "countries": [
+        "New York City"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Tesla says it made its first driverless delivery of a new car to a customer",
+    "published": "Sun, 29 Jun 2025 16:26:17 GMT",
+    "entities": {
+      "companies": [
+        "Tesla"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "At 20 years old, Reddit is defending its data and fighting AI with AI",
+    "published": "Sat, 28 Jun 2025 12:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "Reddit",
+        "AI"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Top Wall Street analysts like these 3 dividend stocks for enhanced returns",
+    "published": "Sun, 29 Jun 2025 11:17:52 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Op-ed: U.S. is losing rare earth metals war to China, and running out of time to win it back",
+    "published": "Sun, 29 Jun 2025 17:15:32 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China",
+        "U.S."
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Use the \u201880-10-10\u2019 rule to know if you\u2019ve found the right house, says real estate agent of 10 years",
+    "published": "Sat, 28 Jun 2025 14:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "I'm a psychologist who studies couples\u2014people who are miserable in their relationships say 'no' to these 4 questions",
+    "published": "Sun, 29 Jun 2025 13:27:39 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Stablecoins go mainstream: Why banks and credit card firms are issuing their own crypto tokens",
+    "published": "Sat, 28 Jun 2025 12:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "The No. 1 trait this CEO looks for in a candidate: It can be \u2018concerning\u2019 if they don\u2019t have it",
+    "published": "Sun, 29 Jun 2025 13:00:01 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "France is betting Eutelsat can become Europe's answer to Starlink \u2014 but experts aren't convinced",
+    "published": "Sun, 29 Jun 2025 06:08:36 GMT",
+    "entities": {
+      "companies": [
+        "Starlink",
+        "Eutelsat"
+      ],
+      "countries": [
+        "France"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "The global week ahead: A hectic half first heralds a volatile second",
+    "published": "Sun, 29 Jun 2025 06:06:28 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Trump loses latest bid to get Central Park Five defamation lawsuit tossed",
+    "published": "Sat, 28 Jun 2025 21:14:43 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "GOP Rep. Don Bacon to retire, Omaha swing district now a top target for Dems",
+    "published": "Sat, 28 Jun 2025 15:50:31 GMT",
+    "entities": {
+      "companies": [
+        "GOP"
+      ],
+      "countries": [
+        "Omaha"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Deep inside U.S. economy, more sticker prices start going up due to tariffs, and inventory is headed down",
+    "published": "Fri, 27 Jun 2025 16:52:37 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "U.S."
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "U.S. stock futures rise after S&P 500\u2019s latest record high",
+    "published": "Mon, 30 Jun 2025 02:54:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "U.S."
+      ],
+      "sentiment": "bullish"
+    }
+  },
+  {
+    "belief": "A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July",
+    "published": "Mon, 30 Jun 2025 00:34:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bullish"
+    }
+  },
+  {
+    "belief": "Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce",
+    "published": "Sun, 29 Jun 2025 19:59:00 GMT",
+    "entities": {
+      "companies": [
+        "Social Security"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet",
+    "published": "Sun, 29 Jun 2025 19:44:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "\u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?",
+    "published": "Sun, 29 Jun 2025 19:44:00 GMT",
+    "entities": {
+      "companies": [
+        "Ubers"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Tech stocks are powering this record-setting rally on Wall Street \u2014 but how long can it last?",
+    "published": "Sun, 29 Jun 2025 19:30:00 GMT",
+    "entities": {
+      "companies": [
+        "Tech"
+      ],
+      "countries": [],
+      "sentiment": "bullish"
+    }
+  },
+  {
+    "belief": "Why more people are going into pet debt \u2014 even when it causes \u2018a great deal of anxiety\u2019",
+    "published": "Sun, 29 Jun 2025 19:00:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "I\u2019m a stay-at-home. Do I take a part-time job to spend more time with my kids \u2014 or get a job for six figures?",
+    "published": "Sun, 29 Jun 2025 14:19:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "My job is offering me a payout. Should I take a $61,000 lump sum or $355 a month for life?",
+    "published": "Sun, 29 Jun 2025 13:19:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "My brother stole $100K from my mom to buy bitcoin. Do I convince her to sue him?",
+    "published": "Sun, 29 Jun 2025 11:09:00 GMT",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Exclusive-Nissan seeks to delay supplier payments to free up cash, company emails show",
+    "published": "2025-06-30 07:45:49",
+    "entities": {
+      "companies": [
+        "Exclusive-Nissan"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "TomTom to cut 300 jobs in restructuring tied to product-led strategy shift",
+    "published": "2025-06-30 07:41:14",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bearish"
+    }
+  },
+  {
+    "belief": "Factbox-Airlines suspend Middle East flights",
+    "published": "2025-06-30 07:32:33",
+    "entities": {
+      "companies": [
+        "Factbox-Airlines"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "European shares edge up as investors eye progress on U.S. trade talks",
+    "published": "2025-06-30 07:31:39",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "U.S."
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Analysis-Investors flock to Europe as bloc's stability contrasts with concerns over US",
+    "published": "2025-06-30 07:31:14",
+    "entities": {
+      "companies": [
+        "Analysis-Investors"
+      ],
+      "countries": [
+        "US"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Deutsche Bank retains positive view on European utilities, upgrades 2 stocks",
+    "published": "2025-06-30 07:30:27",
+    "entities": {
+      "companies": [
+        "Deutsche Bank"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Tesla Begins Operation of V4 Superchargers in China",
+    "published": "2025-06-30 07:29:44",
+    "entities": {
+      "companies": [],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Tesla's V4 superchargers begin operation in China",
+    "published": "2025-06-30 07:20:33",
+    "entities": {
+      "companies": [
+        "Tesla"
+      ],
+      "countries": [
+        "China"
+      ],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "Goldman Sachs downgrades Moncler to \u201cneutral\u201d on weak retail outlook",
+    "published": "2025-06-30 07:12:28",
+    "entities": {
+      "companies": [
+        "Goldman Sachs"
+      ],
+      "countries": [],
+      "sentiment": "neutral"
+    }
+  },
+  {
+    "belief": "European stocks rise on trade optimism; German retail sales slump",
+    "published": "2025-06-30 07:06:14",
+    "entities": {
+      "companies": [],
+      "countries": [],
+      "sentiment": "bullish"
+    }
+  }
+]

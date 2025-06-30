@@ -1,20 +1,23 @@
 # run_simulated_training_loop.py
 
 """
-Main loop for AI/ML continuous training:
-- Pulls beliefs from real news or generates synthetic ones
-- Feeds them into the AI engine for strategy generation
-- Simulates good/bad feedback
-- Logs the feedback for training
-- Retrains all models in one cycle
+🔁 AI/ML Continuous Training Loop
+- Pulls real or synthetic beliefs
+- Feeds them into the AI engine
+- Simulates feedback
+- Logs results
+- Retrains models in one cycle
 """
 
 import random
 import time
 import subprocess
+import argparse
+import json
+from datetime import datetime
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.feedback_trainer import append_feedback_entry
-from backend.news_scraper import fetch_news_beliefs  # ⬅️ Use working version
+from backend.news_scraper import fetch_news_beliefs
 
 # === Templates for synthetic belief generation ===
 belief_templates = {
@@ -36,62 +39,68 @@ belief_templates = {
 }
 
 def generate_synthetic_belief():
-    """
-    Randomly select a belief from templates
-    Returns: Tuple of (belief text, tone type)
-    """
     tone = random.choice(list(belief_templates.keys()))
     belief = random.choice(belief_templates[tone])
     return belief, tone
 
 def simulate_feedback(result):
-    """
-    Fake feedback generator based on whether a strategy was produced.
-    Replace with real user data later.
-    """
     if result and result.get("strategy") and result.get("asset_class"):
         return "good" if random.random() > 0.3 else "bad"
     return "bad"
 
-def run_loop(n=25, include_news=True):
-    """
-    Run the full belief-to-feedback-to-training loop.
-    Params:
-    - n: total number of beliefs to run
-    - include_news: whether to include real financial news beliefs
-    """
+def run_loop(n=25, include_news=True, retrain=True, log_output=True):
     beliefs = []
 
-    # ✅ Use real news beliefs
     if include_news:
         news_data = fetch_news_beliefs()
         news_beliefs = [b["belief"] for b in news_data][:n // 2]
         beliefs += [(b, "news") for b in news_beliefs]
 
-    # ✅ Fill in with synthetic beliefs
     for _ in range(n - len(beliefs)):
         beliefs.append(generate_synthetic_belief())
 
-    # ✅ Shuffle to mix types
     random.shuffle(beliefs)
+    results = []
 
-    # 🚀 Run each belief through AI
     for i, (belief, tone) in enumerate(beliefs):
         print(f"\n🧠 [{i+1}/{n}] Belief: {belief} (Tone: {tone})")
-
         try:
             result = run_ai_engine(belief)
             label = simulate_feedback(result)
             append_feedback_entry(belief, result, label)
             print(f"✅ Logged belief as {label.upper()}")
+            results.append({
+                "belief": belief,
+                "tone": tone,
+                "strategy": result,
+                "feedback": label
+            })
         except Exception as e:
             print(f"❌ Error: {e}")
 
         time.sleep(1)
 
-    # 🔁 Final step: retrain all models
-    print("\n🔁 Retraining models after simulation...\n")
-    subprocess.run(["python", "backend/train_all_models.py"])
+    if log_output:
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        with open(f"backend/logs/simulation_{timestamp}.json", "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"\n📁 Saved simulation log: simulation_{timestamp}.json")
+
+    if retrain:
+        print("\n🔁 Retraining models after simulation...\n")
+        subprocess.run(["python", "-m", "backend.train_all_models"])
 
 if __name__ == "__main__":
-    run_loop(25)
+    parser = argparse.ArgumentParser(description="Run simulated belief training loop.")
+    parser.add_argument("--n", type=int, default=25, help="Number of beliefs to simulate")
+    parser.add_argument("--include_news", action="store_true", help="Include real news beliefs")
+    parser.add_argument("--no_retrain", action="store_true", help="Skip model retraining")
+    parser.add_argument("--no_log", action="store_true", help="Skip saving output log")
+    args = parser.parse_args()
+
+    run_loop(
+        n=args.n,
+        include_news=args.include_news,
+        retrain=not args.no_retrain,
+        log_output=not args.no_log
+    )

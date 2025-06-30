@@ -5,14 +5,14 @@ This module parses the user's belief into structured components:
 - Extracts ticker from known list
 - Infers market direction from keywords
 - Classifies tags via ML (with confidence score)
-- Predicts asset class via ML (fallbacks gracefully)
+- Predicts asset class via trained ML model (with fallback)
 """
 
 import re
 from backend.utils.ticker_list import ALL_TICKERS
 from backend.utils.model_utils import load_model
 
-# === Load ML Models ===
+# === Load Belief Tag Classifier ===
 try:
     belief_model = load_model("belief_model.joblib")
     vectorizer = load_model("belief_vectorizer.joblib")
@@ -20,9 +20,10 @@ except Exception as e:
     print(f"[ERROR] Could not load belief/tag model: {e}")
     belief_model, vectorizer = None, None
 
+# === Load Asset Class Classifier ===
 try:
-    asset_model = load_model("multi_asset_model.joblib")
-    asset_vectorizer = load_model("multi_vectorizer.joblib")
+    asset_model = load_model("asset_class_model.joblib")
+    asset_vectorizer = load_model("asset_vectorizer.joblib")
 except Exception as e:
     print(f"[WARNING] Asset class model not loaded: {e}")
     asset_model, asset_vectorizer = None, None
@@ -58,11 +59,11 @@ def detect_direction(belief: str) -> str:
         return "bullish"
     return "neutral"
 
-# === Asset Class Prediction ===
+# === ML Asset Class Prediction ===
 def detect_asset_class(raw_belief: str) -> str:
     """
-    Use ML model to classify asset class (e.g., stock, options, bond).
-    Fallback to 'options' on failure.
+    Uses trained ML model to predict asset class from belief text.
+    Falls back to 'options' if model fails.
     """
     if asset_model and asset_vectorizer:
         try:
@@ -75,7 +76,7 @@ def detect_asset_class(raw_belief: str) -> str:
     print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
     return "options"
 
-# === Main Parser Function ===
+# === Full Belief Parser ===
 def parse_belief(belief: str) -> dict:
     """
     Full belief parser that extracts:
@@ -99,7 +100,7 @@ def parse_belief(belief: str) -> dict:
             raw_tags = re.split(r"[\n,]+", prediction)
             tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
 
-            # Filter out overly long or malformed tags
+            # Filter malformed tags
             tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
@@ -112,7 +113,7 @@ def parse_belief(belief: str) -> dict:
         "asset_class": detect_asset_class(belief)
     }
 
-# === Standalone Confidence Function ===
+# === Confidence Score Only ===
 def detect_confidence(belief: str) -> float:
     """
     Returns ML-predicted confidence score (0 to 1) from belief model.
