@@ -13,15 +13,18 @@ import os
 import csv
 
 # === Config ===
-BACKEND_URL = "http://127.0.0.1:8000/process_belief"  # Use localhost for testing
+# IMPORTANT: Switch this to your Render URL when deploying
+BACKEND_URL = "http://127.0.0.1:8000/process_belief"  # use localhost for local testing
 RAW_LOG_PATH = "backend/logs/news_beliefs.csv"
 TRAINING_PATH = "backend/Training_Strategies.csv"
 
-# === RSS Feed Sources ===
+# === RSS Feed Sources (more reliable feeds added)
 RSS_FEEDS = [
-    "https://www.marketwatch.com/rss/topstories",
-    "https://www.fool.com/feeds/index.aspx",
-    "https://www.zerohedge.com/fullrss.xml"
+    "https://feeds.reuters.com/reuters/topNews",                    # ✅ Reliable
+    "https://www.cnbc.com/id/100003114/device/rss/rss.html",        # ✅ CNBC US Top News
+    "https://www.marketwatch.com/rss/topstories",                  # ✅ Existing
+    "https://www.fool.com/feeds/index.aspx",                       # ✅ Existing
+    "https://www.zerohedge.com/fullrss.xml"                        # ✅ Existing
 ]
 
 # === Templates to Turn News into Beliefs ===
@@ -54,7 +57,7 @@ def fetch_news_entries(limit_per_feed=5):
     for url in RSS_FEEDS:
         try:
             print(f"🔗 Fetching from: {url}")
-            feed = feedparser.parse(url)  # ❌ Do NOT pass timeout here
+            feed = feedparser.parse(url)
             if not feed.entries:
                 raise ValueError("No entries returned")
             print(f"✅ Parsed {len(feed.entries)} entries from {url}")
@@ -63,6 +66,8 @@ def fetch_news_entries(limit_per_feed=5):
                 summary = entry.get("summary", entry.get("description", "")).strip()
                 if title and len(title) > 20:
                     entries.append((title, summary))
+            # Debug: print actual headlines found
+            print(f"📥 Titles: {[e.get('title') for e in feed.entries[:limit_per_feed]]}")
         except Exception as e:
             print(f"⚠️ Feed error: {url} → {e}")
     return entries
@@ -102,7 +107,7 @@ def send_belief_to_backend(belief, title="", summary=""):
     except Exception as e:
         print(f"❌ Request error: {e}")
 
-# === Main Loop ===
+# === Main Loop: Fetches → Converts → Sends to Backend ===
 def run_news_ingestor(interval=300):
     while True:
         print(f"\n📰 [{datetime.datetime.now()}] News Ingestor Running")
@@ -114,6 +119,7 @@ def run_news_ingestor(interval=300):
             print("⚠️ No headlines, using fallback")
             send_belief_to_backend(fallback, "Fallback", "")
         else:
+            print(f"✅ Proceeding with {len(entries)} fresh headlines.")
             for title, summary in entries:
                 belief = generate_belief_prompt(title, summary)
                 send_belief_to_backend(belief, title, summary)
@@ -121,6 +127,6 @@ def run_news_ingestor(interval=300):
         print(f"⏲️ Sleeping {interval} sec...\n")
         time.sleep(interval)
 
-# === Run Directly ===
+# === Run When Executed Directly ===
 if __name__ == "__main__":
     run_news_ingestor()
