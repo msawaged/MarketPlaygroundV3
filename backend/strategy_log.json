@@ -4006,5 +4006,902 @@
     "belief": "How can I 2x my money on AMZN?",
     "explanation": "iron condor",
     "strategy": {}
+  },
+  {
+    "timestamp": "2025-06-30T00:52:55.246159",
+    "user_id": "anonymous",
+    "belief": "News just broke: A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July \u2014 July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'News just broke: A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July \u2014 July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:55.711432",
+    "user_id": "anonymous",
+    "belief": "I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:56.124179",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:56.519857",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:56.915176",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Details: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'What might happen after this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Details: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:57.303419",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:57.687446",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Context: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'Should I trade based on this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Context: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:58.060101",
+    "user_id": "anonymous",
+    "belief": "News just broke: Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks \u2014 The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'News just broke: Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks \u2014 The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:58.441864",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy NVDA 149p / Sell NVDA 134p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:52:58.819736",
+    "user_id": "anonymous",
+    "belief": "I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:01.151319",
+    "user_id": "anonymous",
+    "belief": "News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:01.555504",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Details: July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'What might happen after this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Details: July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:01.945052",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:02.380206",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:03.607882",
+    "user_id": "anonymous",
+    "belief": "News just broke: \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver? \u2014 \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'News just broke: \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver? \u2014 \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:04.038605",
+    "user_id": "anonymous",
+    "belief": "News just broke: 2 Tax Rules New Retirees Need to Know \u2014 Don't let these rules come as a surprise.",
+    "explanation": "Based on your belief: 'News just broke: 2 Tax Rules New Retirees Need to Know \u2014 Don't let these rules come as a surprise.', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:04.445511",
+    "user_id": "anonymous",
+    "belief": "I believe Stop Basing Your Retirement Savings on This Outdated Assumption. Summary: You could end up regretting it.",
+    "explanation": "Based on your belief: 'I believe Stop Basing Your Retirement Savings on This Outdated Assumption. Summary: You could end up regretting it.', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T00:58:04.836056",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Tax Season Is Open. Here's How to Get a Faster Refund.. Context: Want your money sooner? Here's how to make that happen.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Tax Season Is Open. Here's How to Get a Faster Refund.. Context: Want your money sooner? Here's how to make that happen.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:08.999786",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? U.S. stock futures rise after S&P 500\u2019s latest record high. Context: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'Should I trade based on this? U.S. stock futures rise after S&P 500\u2019s latest record high. Context: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:09.468424",
+    "user_id": "anonymous",
+    "belief": "News just broke: A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July \u2014 July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'News just broke: A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July \u2014 July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 645c / Sell SPY 707c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:09.867762",
+    "user_id": "anonymous",
+    "belief": "I believe Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Summary: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'I believe Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Summary: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:10.258407",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'Should I trade based on this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Context: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:10.734363",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Details: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'What might happen after this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Details: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:11.155441",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:11.583624",
+    "user_id": "anonymous",
+    "belief": "I believe If I Could Only Buy and Hold a Single Stock, This Would Be It.. Summary: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'I believe If I Could Only Buy and Hold a Single Stock, This Would Be It.. Summary: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:12.031126",
+    "user_id": "anonymous",
+    "belief": "News just broke: Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks \u2014 The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'News just broke: Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks \u2014 The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:12.470919",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy NVDA 149p / Sell NVDA 134p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:03:12.858627",
+    "user_id": "anonymous",
+    "belief": "News just broke: Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold? \u2014 <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'News just broke: Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold? \u2014 <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:15.253505",
+    "user_id": "anonymous",
+    "belief": "News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:15.657343",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Details: July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'What might happen after this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Details: July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:16.041389",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Context: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Context: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:16.492722",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Details: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'What might happen after this? This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Details: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:16.898165",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Context: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'Should I trade based on this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Context: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:17.307590",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:17.701881",
+    "user_id": "anonymous",
+    "belief": "I believe If I Could Only Buy and Hold a Single Stock, This Would Be It.. Summary: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'I believe If I Could Only Buy and Hold a Single Stock, This Would Be It.. Summary: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:18.125256",
+    "user_id": "anonymous",
+    "belief": "I believe Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Summary: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'I believe Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Summary: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:18.551186",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Where Will Nvidia Be in the Next 3 Years?. Details: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'What might happen after this? Where Will Nvidia Be in the Next 3 Years?. Details: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T01:08:18.943908",
+    "user_id": "anonymous",
+    "belief": "I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:54.764289",
+    "user_id": "anonymous",
+    "belief": "News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'News just broke: U.S. stock futures rise after S&P 500\u2019s latest record high \u2014 U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:55.179486",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:55.574751",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'What might happen after this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Details: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:55.979201",
+    "user_id": "anonymous",
+    "belief": "I believe This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Summary: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'I believe This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Summary: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:56.361321",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Context: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'Should I trade based on this? \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Context: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:56.755542",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'What might happen after this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Details: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:57.189588",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Details: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'What might happen after this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Details: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:57.576909",
+    "user_id": "anonymous",
+    "belief": "I believe Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Summary: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'I believe Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Summary: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:57.957632",
+    "user_id": "anonymous",
+    "belief": "News just broke: Where Will Nvidia Be in the Next 3 Years? \u2014 <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'News just broke: Where Will Nvidia Be in the Next 3 Years? \u2014 <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy NVDA 149p / Sell NVDA 134p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:44:58.357882",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Context: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'Should I trade based on this? Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Context: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:00.775864",
+    "user_id": "anonymous",
+    "belief": "I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:01.167692",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:01.551760",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Context: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Context: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:01.942402",
+    "user_id": "anonymous",
+    "belief": "News just broke: This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet \u2014 Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'News just broke: This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet \u2014 Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:02.637253",
+    "user_id": "anonymous",
+    "belief": "I believe \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Summary: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'I believe \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Summary: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:03.078612",
+    "user_id": "anonymous",
+    "belief": "News just broke: 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock \u2014 <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'News just broke: 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock \u2014 <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:03.463236",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Context: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'Should I trade based on this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Context: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:03.831386",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Context: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Context: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:04.217545",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'Should I trade based on this? Where Will Nvidia Be in the Next 3 Years?. Context: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy NVDA 149p / Sell NVDA 134p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:50:04.589648",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Details: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'What might happen after this? Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Details: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:52:56.748405",
+    "user_id": "anonymous",
+    "belief": "Is the AI bubble bursting this quarter?",
+    "explanation": "Based on your belief: 'Is the AI bubble bursting this quarter?', The system expects neutral or sideways movement in SPY. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:45.990678",
+    "user_id": "anonymous",
+    "belief": "I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.",
+    "explanation": "Based on your belief: 'I believe U.S. stock futures rise after S&P 500\u2019s latest record high. Summary: U.S. stock-market futures rose Sunday, after the S&amp;P 500 and Nasdaq finished last week at record highs.', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:46.378765",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.",
+    "explanation": "Based on your belief: 'Should I trade based on this? A 2-month rally pushed the stock market to record highs \u2014 but watch for these risks in July. Context: July is historically a strong month for stocks, but macroeconomic updates loom.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:46.759671",
+    "user_id": "anonymous",
+    "belief": "I believe Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Summary: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.",
+    "explanation": "Based on your belief: 'I believe Why your Social Security check could shrink by nearly 20% \u2014 and more if jobs are scarce. Summary: America\u2019s retirement trust fund is expected to run dry by 2034. A U.S. economic downturn would only make a bad situation worse.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:47.163362",
+    "user_id": "anonymous",
+    "belief": "I believe This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Summary: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.",
+    "explanation": "Based on your belief: 'I believe This cryptocurrency is bitcoin\u2019s biggest challenger yet \u2014 and it just might take over your wallet. Summary: Stablecoins are testing the foundation of the financial system. The problem? How to regulate them.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:47.559268",
+    "user_id": "anonymous",
+    "belief": "I believe \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Summary: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d",
+    "explanation": "Based on your belief: 'I believe \u2018I am horrified\u2019: My company won\u2019t allow me to tip more than 15% for Ubers. Do I explain this to the driver?. Summary: \u201cI would never even consider tipping less than 20% if it were a personal ride.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:47.937097",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Context: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit",
+    "explanation": "Based on your belief: 'Should I trade based on this? 3 Reasons IonQ Could Be a Millionaire-Maker Quantum Computing Stock. Context: <p>In the fledgling field of quantum computing,<strong> IonQ </strong><span class=\"ticker\">(NYSE: IONQ)</span> has emerged as one of the leading start-up investment options. It holds key contracts wit', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:48.367663",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Details: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ",
+    "explanation": "Based on your belief: 'What might happen after this? If I Could Only Buy and Hold a Single Stock, This Would Be It.. Details: <p>I own a couple dozen stocks. I like each and every one of them, given that I chose them out of the thousands of potential stocks available on Wall Street. Picking just one would be difficult. Yet, ', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:48.758040",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Context: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Billionaire Bill Gates Has 66% of His Foundation's $45 Billion Portfolio Invested in 3 Outstanding Stocks. Context: The Gates Foundation portfolio is a mix of Gates' tech background and influence from one of the greatest investors of all time.', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:49.181493",
+    "user_id": "anonymous",
+    "belief": "I believe Where Will Nvidia Be in the Next 3 Years?. Summary: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged",
+    "explanation": "Based on your belief: 'I believe Where Will Nvidia Be in the Next 3 Years?. Summary: <p>Rewind to early 2023 -- few believed that <strong>Nvidia</strong> <span class=\"ticker\">(NASDAQ: NVDA)</span> could climb any higher. It already felt expensive and fully priced.</p><p>Then it surged', The system expects neutral or sideways movement in NVDA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy NVDA 149p / Sell NVDA 134p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T05:55:49.554837",
+    "user_id": "anonymous",
+    "belief": "I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa",
+    "explanation": "Based on your belief: 'I believe Is It Time to Just Buy Nike Stock as a Turnaround Takes Hold?. Summary: <p>It's been frustrating to be a <strong>Nike</strong> <span class=\"ticker\">(NYSE: NKE)</span> investor the past few years, but investors cheered after new CEO Elliott Hill indicated that the worst wa', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
   }
 ]
