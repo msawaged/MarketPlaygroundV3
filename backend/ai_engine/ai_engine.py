@@ -1,18 +1,15 @@
-# backend/ai_engine/ai_engine.py
-
 """
 Main AI Engine — Translates natural language beliefs into trading strategies.
 Integrates belief parsing, goal evaluation, asset class selection, and strategy logic.
 """
 
+import os
 from backend.belief_parser import parse_belief
 from backend.strategy_selector import select_strategy
-from backend.asset_selector import select_asset_class
 from backend.market_data import get_latest_price, get_weekly_high_low
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
-from backend.logger.strategy_logger import log_strategy  # ✅ Logs strategy for session history
-from typing import Optional, Dict
+from backend.logger.strategy_logger import log_strategy
 
 # ✅ Known equity tickers to override ETF classification errors
 KNOWN_EQUITIES = {
@@ -24,24 +21,24 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     Converts a user belief into a complete trade strategy suggestion.
     """
 
-    # ✅ Step 1: Parse core belief
+    # ✅ Step 1: Parse belief into components
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
     tags = parsed.get("tags", [])
     confidence = parsed.get("confidence", 0.5)
-    parsed_asset_class = parsed.get("asset_class", "options")
+    parsed_asset = parsed.get("asset_class", "options")
 
-    # ✅ Step 2: Evaluate user goal from belief
+    # ✅ Step 2: Goal evaluation
     goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
 
-    # ✅ Step 3: Convert timeframe to expiry date
+    # ✅ Step 3: Parse expiry date from timeframe
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # ✅ Step 4: Ticker fallback and asset class override
+    # ✅ Step 4: Fallback for missing ticker
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
@@ -50,14 +47,17 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             ticker = "AAPL"
 
-    if parsed_asset_class == "etf" and ticker.upper() in KNOWN_EQUITIES:
+    # ✅ Step 5: Use parsed asset class — with manual override
+    if parsed_asset == "etf" and ticker.upper() in KNOWN_EQUITIES:
         asset_class = "equity"
-    elif parsed_asset_class and parsed_asset_class != "options":
-        asset_class = parsed_asset_class
     else:
-        asset_class = select_asset_class(tags, ticker)
+        asset_class = parsed_asset
 
-    # ✅ Step 5: Infer direction if not found
+    # ✅ Step 6: Smart override for bond asset class
+    if asset_class == "bond" and ticker.upper() == "SPY":
+        ticker = "TLT"  # You could also use "BND" depending on your use case
+
+    # ✅ Step 7: Fallback direction if missing
     if not direction:
         if goal_type in ["double_money", "multiply", "safe_growth"]:
             direction = "up"
@@ -66,7 +66,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             direction = "neutral"
 
-    # ✅ Step 6: Market data lookups
+    # ✅ Step 8: Market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -81,7 +81,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
 
     price_info = {"latest": latest}
 
-    # 🧠 Debug Info
+    # 🧠 Debug info
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}")
@@ -92,13 +92,13 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     print(f"→ Multiplier: {multiplier}")
     print(f"→ Timeframe: {timeframe}")
     print(f"→ Expiry Date: {expiry_date}")
-    print(f"→ Asset Class: {asset_class}")
+    print(f"→ Asset Class (Parsed): {asset_class}")
     print(f"→ Risk Profile: {risk_profile}")
-    print(f"→ Price Info: {price_info['latest']}")
+    print(f"→ Price Info: {latest}")
     print(f"→ High/Low Info: {high_low}")
     print("🧠 Selecting best strategy...\n")
 
-    # ✅ Step 7: ML-powered strategy generation
+    # ✅ Step 9: Strategy generation
     strategy = select_strategy(
         belief=belief,
         direction=direction,
@@ -113,15 +113,14 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         risk_profile=risk_profile
     )
 
-    # ✅ Step 8: Generate explanation
+    # ✅ Step 10: Explanation
     explanation = generate_strategy_explainer(
         belief, strategy, direction, goal_type, multiplier, timeframe, ticker
     )
 
-    # ✅ Step 9: Log strategy for both session + hot_trades analysis
-    log_strategy(belief, explanation, user_id, strategy)  # ✅ Modified to include full strategy
+    # ✅ Step 11: Log strategy
+    log_strategy(belief, explanation, user_id, strategy)
 
-    # ✅ Step 10: Return full response
     return {
         "strategy": strategy,
         "ticker": ticker,
@@ -146,7 +145,7 @@ def generate_strategy_explainer(belief, strategy, direction, goal_type, multipli
     """
     base = f"Based on your belief: '{belief}', "
 
-    if goal_type == "double_money" or goal_type == "multiply":
+    if goal_type in ["double_money", "multiply"]:
         base += "you want to multiply your money"
         if multiplier:
             base += f" by {multiplier}x"

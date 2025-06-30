@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import os
 import pandas as pd
 from datetime import datetime
@@ -77,17 +77,18 @@ app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
 # === Schemas ===
 class BeliefRequest(BaseModel):
     belief: str
+    risk_profile: Optional[str] = "moderate"
 
 class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
     feedback: str
 
-# === AI Endpoint (standard, for backward compatibility) ===
+# === AI Endpoint (standard, backward compatible) ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
-        result = run_ai_engine(request.belief)
+        result = run_ai_engine(request.belief, risk_profile=request.risk_profile)
         return result
     except Exception as e:
         print("\n❌ ERROR in /process_belief:")
@@ -101,11 +102,12 @@ async def strategy_process_belief(request: Request):
         body = await request.json()
         belief = body.get("belief")
         user_id = body.get("user_id", "anonymous")
+        risk_profile = body.get("risk_profile", "moderate")
 
         if not belief:
             raise HTTPException(status_code=400, detail="Belief is required")
 
-        result = run_ai_engine(belief, user_id=user_id)
+        result = run_ai_engine(belief, risk_profile=risk_profile, user_id=user_id)
         return result
 
     except Exception as e:

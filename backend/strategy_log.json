@@ -5176,5 +5176,252 @@
       "suggested_allocation": "20%",
       "explanation": "Generates predictable income while minimizing interest rate risk."
     }
+  },
+  {
+    "timestamp": "2025-06-30T08:25:57.049670",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:28:00.128443",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:30:10.606236",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:35:29.545498",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:39:15.501400",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:41:29.465546",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:46:28.423163",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:48:21.981675",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:48:39.266675",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "20%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:51:02.462393",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in SPY. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:54:23.687045",
+    "user_id": "anonymous",
+    "belief": "I want low-risk income from government bonds.",
+    "explanation": "Based on your belief: 'I want low-risk income from government bonds.', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:57:38.956105",
+    "user_id": "anonymous",
+    "belief": "I want a stable return from dividend stocks",
+    "explanation": "Based on your belief: 'I want a stable return from dividend stocks', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T08:59:58.171983",
+    "user_id": "anonymous",
+    "belief": "I want stable income from dividend stocks",
+    "explanation": "Based on your belief: 'I want stable income from dividend stocks', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:02:29.429082",
+    "user_id": "anonymous",
+    "belief": "I want stable income from dividend stocks",
+    "explanation": "Based on your belief: 'I want stable income from dividend stocks', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:03:39.823845",
+    "user_id": "anonymous",
+    "belief": "I think NVDA will skyrocket after earnings",
+    "explanation": "Based on your belief: 'I think NVDA will skyrocket after earnings', The system expects neutral or sideways movement in NVDA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy NVDA 165c / Sell NVDA 181c",
+      "risk_level": "high",
+      "suggested_allocation": "20%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:03:47.765850",
+    "user_id": "anonymous",
+    "belief": "I want a stable return from dividend stocks",
+    "explanation": "Based on your belief: 'I want a stable return from dividend stocks', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:03:55.490369",
+    "user_id": "anonymous",
+    "belief": "I think the market will drop sharply next week",
+    "explanation": "Based on your belief: 'I think the market will drop sharply next week', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 584p / Sell SPY 522p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:04:02.502929",
+    "user_id": "anonymous",
+    "belief": "I want to invest in artificial intelligence and EVs",
+    "explanation": "Based on your belief: 'I want to invest in artificial intelligence and EVs', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T09:05:53.137693",
+    "user_id": "anonymous",
+    "belief": "I'm retiring in a few years and want safe returns",
+    "explanation": "Based on your belief: 'I'm retiring in a few years and want safe returns', The system expects neutral or sideways movement in SPY. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "10%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
   }
 ]

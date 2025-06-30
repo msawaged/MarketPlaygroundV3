@@ -5,7 +5,7 @@ This module parses the user's belief into structured components:
 - Extracts ticker from known list
 - Infers market direction from keywords
 - Classifies tags via ML (with confidence score)
-- Predicts asset class via trained ML model (with fallback)
+- Predicts asset class via trained ML model (with fallback and manual overrides)
 """
 
 import re
@@ -28,30 +28,16 @@ except Exception as e:
     print(f"[WARNING] Asset class model not loaded: {e}")
     asset_model, asset_vectorizer = None, None
 
-# === Clean and Normalize Belief Text ===
 def clean_belief(text: str) -> str:
-    """
-    Lowercase and strip punctuation from input.
-    Example: "TSLA will explode!" → "tsla will explode"
-    """
     return re.sub(r"[^a-zA-Z0-9\s]", "", text.lower().strip())
 
-# === Ticker Detection ===
 def detect_ticker(belief: str) -> str:
-    """
-    Scans belief for any known tickers from master list.
-    Returns uppercase ticker or defaults to 'SPY'
-    """
     for ticker in ALL_TICKERS:
         if ticker.lower() in belief.lower():
             return ticker.upper()
     return "SPY"
 
-# === Market Sentiment Detection ===
 def detect_direction(belief: str) -> str:
-    """
-    Heuristically classify belief as bullish, bearish, or neutral.
-    """
     text = belief.lower()
     if any(w in text for w in ["down", "drop", "fall", "bear", "crash", "tank", "recession"]):
         return "bearish"
@@ -59,12 +45,7 @@ def detect_direction(belief: str) -> str:
         return "bullish"
     return "neutral"
 
-# === ML Asset Class Prediction ===
 def detect_asset_class(raw_belief: str) -> str:
-    """
-    Uses trained ML model to predict asset class from belief text.
-    Falls back to 'options' if model fails.
-    """
     if asset_model and asset_vectorizer:
         try:
             vec = asset_vectorizer.transform([raw_belief])
@@ -76,16 +57,21 @@ def detect_asset_class(raw_belief: str) -> str:
     print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
     return "options"
 
-# === Full Belief Parser ===
+def inject_keyword_tags(belief: str, tags: list) -> list:
+    belief_lower = belief.lower()
+    keyword_map = {
+        "bond": ["bond", "bonds", "treasury", "fixed income", "government bond"],
+        "income": ["income", "yield", "dividend"],
+        "crypto": ["bitcoin", "btc", "eth", "ethereum", "solana"],
+        "etf": ["spy", "qqq", "index fund", "etf"],
+        "safe": ["low risk", "safe", "stable", "preserve"],
+    }
+    for key, phrases in keyword_map.items():
+        if any(p in belief_lower for p in phrases) and key not in tags:
+            tags.append(key)
+    return tags
+
 def parse_belief(belief: str) -> dict:
-    """
-    Full belief parser that extracts:
-    - ticker
-    - direction
-    - tags (via ML)
-    - confidence (via ML)
-    - asset_class (via ML or fallback)
-    """
     cleaned = clean_belief(belief)
     tag_list = []
     confidence = 0.0
@@ -95,30 +81,36 @@ def parse_belief(belief: str) -> dict:
             vec = vectorizer.transform([cleaned])
             prediction = belief_model.predict(vec)[0]
             confidence = max(belief_model.predict_proba(vec)[0])
-
-            # Split tag predictions into list
             raw_tags = re.split(r"[\n,]+", prediction)
             tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
-
-            # Filter malformed tags
             tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
+
+    # ✅ Keyword fallback tag injection
+    tag_list = inject_keyword_tags(belief, tag_list)
+
+    # ✅ Asset class prediction via ML
+    predicted_asset_class = detect_asset_class(belief)
+
+    # ✅ Final override: hardcode bond if belief clearly implies it
+    lower_belief = belief.lower()
+    if any(kw in lower_belief for kw in ["government bond", "treasury", "fixed income", "bond fund", "low-risk income"]):
+        asset_class = "bond"
+    elif "bond" in tag_list or "income" in tag_list:
+        asset_class = "bond"
+    else:
+        asset_class = predicted_asset_class
 
     return {
         "ticker": detect_ticker(belief),
         "direction": detect_direction(belief),
         "tags": tag_list,
         "confidence": float(confidence),
-        "asset_class": detect_asset_class(belief)
+        "asset_class": asset_class
     }
 
-# === Confidence Score Only ===
 def detect_confidence(belief: str) -> float:
-    """
-    Returns ML-predicted confidence score (0 to 1) from belief model.
-    Falls back to 0.5 if model unavailable.
-    """
     cleaned = clean_belief(belief)
     if belief_model and vectorizer:
         try:

@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import joblib
 
-# ✅ Load trained model + vectorizer (no encoder needed)
+# ✅ Load trained model + vectorizer
 MODEL_PATH = os.path.join("backend", "multi_strategy_model.joblib")
 VEC_PATH = os.path.join("backend", "multi_vectorizer.joblib")
 
@@ -125,17 +125,22 @@ STRATEGY_DETAILS = {
     }
 }
 
-def adjust_allocation(base_percent: int, risk_profile: str) -> str:
-    if risk_profile == "conservative":
-        return f"{int(base_percent * 0.6)}%"
-    elif risk_profile == "aggressive":
-        return f"{int(base_percent * 1.4)}%"
-    return f"{base_percent}%"
+def get_dynamic_allocation(risk_level: str, risk_profile: str) -> str:
+    """
+    Returns a % allocation based on user profile and strategy risk level.
+    """
+    matrix = {
+        "conservative": {"low": 20, "medium": 10, "high": 5},
+        "moderate": {"low": 20, "medium": 15, "high": 10},
+        "aggressive": {"low": 25, "medium": 20, "high": 20},
+    }
+
+    try:
+        return f"{matrix[risk_profile][risk_level]}%"
+    except KeyError:
+        return "20%"
 
 def is_earnings_play(belief: str) -> bool:
-    """
-    Detect if belief is an earnings-related play
-    """
     keywords = ["earnings", "report", "announcement", "quarter", "after earnings", "post-earnings"]
     return any(kw in belief.lower() for kw in keywords)
 
@@ -154,7 +159,7 @@ def select_strategy(
 ) -> dict:
     latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
 
-    # ✨ Earnings override logic
+    # ✅ Override for earnings-related beliefs
     if is_earnings_play(belief):
         if direction == "bullish":
             predicted_strategy = "bull call spread"
@@ -164,7 +169,7 @@ def select_strategy(
             predicted_strategy = "straddle"
         print(f"[EARNINGS OVERRIDE] → {predicted_strategy}")
     else:
-        # 🔢 Format input and predict via ML
+        # ✅ ML Prediction
         input_text = f"{belief} | {ticker} | {asset_class} | {direction}"
         try:
             X_vectorized = vectorizer.transform([input_text])
@@ -174,7 +179,7 @@ def select_strategy(
             print(f"[ERROR] Prediction failed: {e}")
             predicted_strategy = "default strategy"
 
-    # 🧽 Normalize label
+    # ✅ Normalize alias labels
     alias_map = {
         "stock": "buy stock",
         "equity": "buy stock",
@@ -182,13 +187,15 @@ def select_strategy(
     }
     normalized = alias_map.get(predicted_strategy, predicted_strategy)
 
+    # ✅ Fallback if unknown
     if normalized not in STRATEGY_DETAILS:
         print(f"[WARN] Unknown strategy '{normalized}', using fallback.")
         normalized = "default strategy"
 
     details = STRATEGY_DETAILS[normalized]
+    risk_level = details["risk_level"]
 
-    # 📝 Description formatter
+    # ✅ Custom description formatting
     if "call" in normalized:
         description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
     elif "put" in normalized:
@@ -203,26 +210,7 @@ def select_strategy(
     return {
         "type": normalized,
         "description": description,
-        "risk_level": details["risk_level"],
-        "suggested_allocation": adjust_allocation(20, risk_profile),
+        "risk_level": risk_level,
+        "suggested_allocation": get_dynamic_allocation(risk_level, risk_profile),
         "explanation": details["explanation"]
     }
-
-# ✅ CLI test
-if __name__ == "__main__":
-    strategy = select_strategy(
-        belief="I think AAPL will go up sharply after earnings",
-        direction="bullish",
-        ticker="AAPL",
-        asset_class="stock",
-        price_info={"latest": 195.60},
-        confidence=0.8,
-        goal_type="multiply",
-        multiplier=2.0,
-        timeframe="short",
-        risk_profile="moderate"
-    )
-
-    print("\n🎯 [TEST STRATEGY OUTPUT]")
-    for k, v in strategy.items():
-        print(f"{k.capitalize()}: {v}")
