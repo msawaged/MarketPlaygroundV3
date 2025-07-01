@@ -28,6 +28,7 @@ from backend.routes.execution_router import router as execution_router
 from backend.routes.pnl_router import router as pnl_router
 from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
+from backend.routes.debug_router import router as debug_router  # ✅ NEW
 
 # === Initialize FastAPI app ===
 app = FastAPI(title="MarketPlayground AI Backend")
@@ -73,6 +74,7 @@ app.include_router(execution_router, prefix="/alpaca", tags=["Execution"])
 app.include_router(pnl_router, prefix="/pnl", tags=["PnL"])
 app.include_router(market_router, prefix="/market", tags=["Market"])
 app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
+app.include_router(debug_router, tags=["Debug"])  # ✅ NEW
 
 # === Schemas ===
 class BeliefRequest(BaseModel):
