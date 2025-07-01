@@ -86,4 +86,6 @@ def run_retraining_loop(interval: int = 3600):
 
 # === ENTRY POINT ===
 if __name__ == "__main__":
+    log_to_file("🚨 Retrain worker started (Render test)")
     run_retraining_loop()
+
