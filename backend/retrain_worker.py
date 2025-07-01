@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 from backend.train_all_models import train_all_models  # ✅ Main training function
-from backend.utils.logger import write_training_log     # ✅ Training log file writer
+from backend.utils.logger import write_training_log     # ✅ Correctly placed import
 
 # === Paths & Config ===
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
