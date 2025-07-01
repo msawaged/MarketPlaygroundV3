@@ -1,4 +1,11 @@
 
-🕒 2025-07-01 22:21:29 — retrain_worker
-⏳ Sleeping 3600 seconds until next check...
+🕒 2025-07-01 22:38:25 — unknown
 
+🧠 Starting full model retraining pipeline...
+✅ Belief tag model retrained
+✅ Asset class model retrained
+✅ Smart strategy model retrained
+✅ Feedback quality model retrained
+✅ Strategy-from-feedback classifier retrained
+
+✅ All models retrained successfully.

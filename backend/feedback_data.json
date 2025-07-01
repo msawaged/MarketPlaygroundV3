@@ -13487,5 +13487,12 @@
       "user_id": "anonymous"
     },
     "result": "bad"
+  },
+  {
+    "timestamp": "2025-07-01T22:38:03.173667",
+    "user_id": "anonymous",
+    "belief": "NVDA will crash this week after terrible earnings report",
+    "strategy": "bear put spread",
+    "result": "good"
   }
 ]

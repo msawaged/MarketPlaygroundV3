@@ -15,6 +15,7 @@ import pandas as pd
 from backend.user_models import init_db
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.alpaca_orders import AlpacaExecutor
+from backend.feedback_handler import save_feedback_entry  # ✅ Needed for /submit_feedback
 
 # === Routers (modularized routes) ===
 from backend.routes.auth_router import router as auth_router
@@ -131,6 +132,17 @@ async def strategy_process_belief(request: Request):
         print("\n❌ ERROR in /strategy/process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+# ✅ NEW: POST /submit_feedback (for manual feedback injection)
+@app.post("/submit_feedback")
+def submit_feedback(request: FeedbackRequest):
+    try:
+        save_feedback_entry(request.belief, request.strategy, request.feedback)
+        return {"message": "✅ Feedback saved"}
+    except Exception as e:
+        print("\n❌ ERROR in /submit_feedback:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to save feedback")
 
 # === POST /force_retrain — Manually triggers full model training ===
 @app.post("/force_retrain", response_class=PlainTextResponse)

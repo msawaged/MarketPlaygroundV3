@@ -5644,5 +5644,18 @@
       "suggested_allocation": "10%",
       "explanation": "Limited-risk bullish strategy with a defined reward range."
     }
+  },
+  {
+    "timestamp": "2025-07-01T22:37:40.932318",
+    "user_id": "anonymous",
+    "belief": "NVDA will crash this week after terrible earnings report",
+    "explanation": "Based on your belief: 'NVDA will crash this week after terrible earnings report', The system expects neutral or sideways movement in NVDA. Hence, the 'bear put spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bear put spread",
+      "description": "Buy NVDA 145p / Sell NVDA 130p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bearish strategy to profit from modest declines."
+    }
   }
 ]
