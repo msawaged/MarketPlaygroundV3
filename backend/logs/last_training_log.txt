@@ -1,5 +1,4 @@
 
-🕒 2025-07-01 04:43:14
-📰 News fetched: 15
-🧠 Beliefs generated: 15
-➕ New beliefs added: 15
+🕒 2025-07-01 22:21:29 — retrain_worker
+⏳ Sleeping 3600 seconds until next check...
+

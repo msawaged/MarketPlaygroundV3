@@ -1,5 +1,6 @@
 # backend/retrain_worker.py
 # ✅ Background worker: Auto-retrains models when enough new feedback is collected
+# ✅ Now also logs to Supabase via write_training_log()
 
 import time
 import os
@@ -8,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 
 from backend.train_all_models import train_all_models  # Full model retraining pipeline
-from backend.utils.logger import write_training_log     # Writes summary log for frontend visibility
+from backend.utils.logger import write_training_log     # Unified logger (Supabase + local)
 
 # === Path Setup ===
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -23,7 +24,7 @@ FEEDBACK_THRESHOLD = 25  # 🔁 Retrain only if this many new feedback rows appe
 
 # === Logging Helper ===
 def log_to_file(message: str):
-    """Logs message to both file and console with UTC timestamp."""
+    """Logs message to local file, console, and Supabase table."""
     timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     line = f"[{timestamp}] {message}"
     try:
@@ -32,6 +33,9 @@ def log_to_file(message: str):
     except Exception as e:
         print(f"❌ Logging failed: {str(e)}")
     print(line)
+
+    # ✅ Supabase + JSON + plain text log in unified logger
+    write_training_log(message, source="retrain_worker")
 
 # === Feedback Count Tracking ===
 def get_feedback_count() -> int:
@@ -66,7 +70,7 @@ def run_retraining_loop(interval: int = 3600):
     Main worker loop:
     - Checks feedback.csv row count
     - Retrains models if threshold is met
-    - Logs every step
+    - Logs every step (Render log + Supabase + /debug visibility)
     """
     log_to_file("🚨 Retrain worker started (Render background process)")
     while True:
@@ -82,7 +86,6 @@ def run_retraining_loop(interval: int = 3600):
                 train_all_models()
                 save_retrain_state(current_count)
                 log_to_file("✅ Model retraining completed")
-                write_training_log("✅ Auto-retrained by retrain_worker.py")
 
             else:
                 log_to_file(f"⏭️  Skipped — Need {FEEDBACK_THRESHOLD}, got {new_entries}")
