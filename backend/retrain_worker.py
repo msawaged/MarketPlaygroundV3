@@ -10,14 +10,14 @@ from datetime import datetime
 from backend.train_all_models import train_all_models  # Master training function
 from backend.utils.logger import write_training_log     # Log summary for frontend
 
-# === Paths & Config ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# === FIXED: Global path to backend/logs to match FastAPI ===
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
-LOG_PATH = os.path.join(LOG_DIR, "retrain_worker.log")  # Full retrain history
+LOG_PATH = os.path.join(LOG_DIR, "retrain_worker.log")           # Full retrain history
 LAST_RETRAIN_PATH = os.path.join(LOG_DIR, "last_retrain.json")  # Tracks last retrain state
-FEEDBACK_PATH = os.path.join(BASE_DIR, "feedback.csv")  # Global feedback log
+FEEDBACK_PATH = os.path.join(BASE_DIR, "backend", "feedback.csv")  # Global feedback log
 
 FEEDBACK_THRESHOLD = 25  # Minimum new feedback entries before retraining
 
@@ -88,4 +88,3 @@ def run_retraining_loop(interval: int = 3600):
 if __name__ == "__main__":
     log_to_file("🚨 Retrain worker started (Render test)")
     run_retraining_loop()
-
