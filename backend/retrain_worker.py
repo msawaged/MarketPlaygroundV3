@@ -76,6 +76,14 @@ def run_retraining_loop(interval: int = 3600):
 
                 save_retrain_state(current_count)
                 log_to_file(f"✅ Retraining complete. Updated count saved.\n")
+                        from backend.utils.logger import write_training_log  # ✅ Add at the top of the file
+
+...
+
+save_retrain_state(current_count)
+log_to_file(f"✅ Retraining complete. Updated count saved.\n")
+write_training_log("✅ Models retrained from background worker.")
+
             else:
                 log_to_file(f"⏭️  Not enough new feedback to retrain (need {FEEDBACK_THRESHOLD}, have {new_entries}).\n")
 

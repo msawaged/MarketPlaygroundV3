@@ -5423,5 +5423,200 @@
       "suggested_allocation": "10%",
       "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
     }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:27.616728",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? Meta shares hit all-time high as Mark Zuckerberg goes on AI hiring blitz. Context: Meta shares hit a record high on Monday, underscoring investor interest in the company's new AI superintelligence group.",
+    "explanation": "Based on your belief: 'Should I trade based on this? Meta shares hit all-time high as Mark Zuckerberg goes on AI hiring blitz. Context: Meta shares hit a record high on Monday, underscoring investor interest in the company's new AI superintelligence group.', The system expects neutral or sideways movement in META. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy META 701p / Sell META 627p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:28.250609",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Trump rips AT&T service weeks after Trump Mobile licensing deal announced. Details: President Donald Trump criticized AT&amp;T weeks after the Trump Organization announced a wireless mobile licensing deal, Trump Mobile.",
+    "explanation": "Based on your belief: 'What might happen after this? Trump rips AT&T service weeks after Trump Mobile licensing deal announced. Details: President Donald Trump criticized AT&amp;T weeks after the Trump Organization announced a wireless mobile licensing deal, Trump Mobile.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:28.642600",
+    "user_id": "anonymous",
+    "belief": "I believe Solar and wind industry faces up to $7 billion tax hike under Trump's big bill, trade group says. Summary: Republicans are racing to pass Trump's domestic spending legislation by a self-imposed Friday deadline.",
+    "explanation": "Based on your belief: 'I believe Solar and wind industry faces up to $7 billion tax hike under Trump's big bill, trade group says. Summary: Republicans are racing to pass Trump's domestic spending legislation by a self-imposed Friday deadline.', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 648c / Sell SPY 710c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:29.192019",
+    "user_id": "anonymous",
+    "belief": "News just broke: White House says Canada 'caved' to Trump over digital services tax \u2014 Canadian Prime Minister Mark Carney called President Donald Trump last night to let him know that he would drop the tax, the White House press secretary said.",
+    "explanation": "Based on your belief: 'News just broke: White House says Canada 'caved' to Trump over digital services tax \u2014 Canadian Prime Minister Mark Carney called President Donald Trump last night to let him know that he would drop the tax, the White House press secretary said.', The system expects neutral or sideways movement in DIA. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy DIA 418p / Sell DIA 374p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:29.667227",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Oracle stock jumps after $30 billion annual cloud deal revealed in filing. Details: Oracle shares have jumped more than 33% this year, benefiting from cloud growth and the rise of artificial intelligence models.",
+    "explanation": "Based on your belief: 'What might happen after this? Oracle stock jumps after $30 billion annual cloud deal revealed in filing. Details: Oracle shares have jumped more than 33% this year, benefiting from cloud growth and the rise of artificial intelligence models.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:30.163881",
+    "user_id": "anonymous",
+    "belief": "News just broke: Gold and platinum are proven stock market predictors. Here\u2019s what they\u2019re saying now. \u2014 The gold-platinum ratio has plunged. If this market-timing indicator is correct, stock prices will follow.",
+    "explanation": "Based on your belief: 'News just broke: Gold and platinum are proven stock market predictors. Here\u2019s what they\u2019re saying now. \u2014 The gold-platinum ratio has plunged. If this market-timing indicator is correct, stock prices will follow.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:30.615870",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Trump sends handwritten note to Powell pushing for dramatically lower interest rates. Details: President Donald Trump has continued to put pressure on Federal Reserve Chair Jerome Powell to dramatically lower interest rates.",
+    "explanation": "Based on your belief: 'What might happen after this? Trump sends handwritten note to Powell pushing for dramatically lower interest rates. Details: President Donald Trump has continued to put pressure on Federal Reserve Chair Jerome Powell to dramatically lower interest rates.', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:31.093442",
+    "user_id": "anonymous",
+    "belief": "I believe How June\u2019s bond rally might give way to a round of volatility in Treasury bills. Summary: June\u2019s bond-market rally could give way to a different trading dynamic in July that results in a fresh round of volatility in the government\u2019s shortest-term debt obligations, known as Treasury bills.",
+    "explanation": "Based on your belief: 'I believe How June\u2019s bond rally might give way to a round of volatility in Treasury bills. Summary: June\u2019s bond-market rally could give way to a different trading dynamic in July that results in a fresh round of volatility in the government\u2019s shortest-term debt obligations, known as Treasury bills.', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:31.565930",
+    "user_id": "anonymous",
+    "belief": "Should I trade based on this? \u2018Finance makes me break out in hives\u2019: I inherited $240K from my parents. Do I pay off my $258K mortgage and give up my job?. Context: \u201cI inherited $240K. Do I pay off my $258K mortgage and downsize my house and job?\u201d",
+    "explanation": "Based on your belief: 'Should I trade based on this? \u2018Finance makes me break out in hives\u2019: I inherited $240K from my parents. Do I pay off my $258K mortgage and give up my job?. Context: \u201cI inherited $240K. Do I pay off my $258K mortgage and downsize my house and job?\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 586p / Sell SPY 525p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:32.010676",
+    "user_id": "anonymous",
+    "belief": "I believe \u2018We have $247,000 in our portfolio\u2019: I\u2019m 51, \u2018medically retired\u2019 and planning to move to a cheaper state. Can we do it?. Summary: \u201cWe have $247,000 in our portfolio, $105,000 in a 403(b), $61,000 in another stock account and $15,000 in a traditional IRA.\u201d",
+    "explanation": "Based on your belief: 'I believe \u2018We have $247,000 in our portfolio\u2019: I\u2019m 51, \u2018medically retired\u2019 and planning to move to a cheaper state. Can we do it?. Summary: \u201cWe have $247,000 in our portfolio, $105,000 in a 403(b), $61,000 in another stock account and $15,000 in a traditional IRA.\u201d', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:32.548766",
+    "user_id": "anonymous",
+    "belief": "I believe Prediction: These Will Be the Two Best-Performing \"Magnificent Seven\" Stocks Over the Next 5 Years. Summary: <p>The \"Magnificent Seven\" is a group of technology stocks that includes <strong>Nvidia</strong>, <strong>Microsoft</strong>, <strong>Apple</strong>, <strong>Amazon </strong><span class=\"ticker\">(NASD",
+    "explanation": "Based on your belief: 'I believe Prediction: These Will Be the Two Best-Performing \"Magnificent Seven\" Stocks Over the Next 5 Years. Summary: <p>The \"Magnificent Seven\" is a group of technology stocks that includes <strong>Nvidia</strong>, <strong>Microsoft</strong>, <strong>Apple</strong>, <strong>Amazon </strong><span class=\"ticker\">(NASD', The system expects neutral or sideways movement in DIA. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:33.158821",
+    "user_id": "anonymous",
+    "belief": "What might happen after this? Why Joby Aviation Stock Is Soaring Today. Details: <p>Shares of <strong>Joby Aviation </strong><span class=\"ticker\">(NYSE: JOBY)</span> are rising on Monday, up 11.6% as of 3:41 p.m. ET. The jump comes as the<strong> S&amp;P 500</strong> and <strong>N",
+    "explanation": "Based on your belief: 'What might happen after this? Why Joby Aviation Stock Is Soaring Today. Details: <p>Shares of <strong>Joby Aviation </strong><span class=\"ticker\">(NYSE: JOBY)</span> are rising on Monday, up 11.6% as of 3:41 p.m. ET. The jump comes as the<strong> S&amp;P 500</strong> and <strong>N', The system expects neutral or sideways movement in SPY. Hence, the 'default strategy' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "default strategy",
+      "description": "Fallback plan",
+      "risk_level": "unknown",
+      "suggested_allocation": "20%",
+      "explanation": "Model confidence too low \u2014 requires manual advisor review."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:33.655932",
+    "user_id": "anonymous",
+    "belief": "I believe Why SoundHound AI Stock Is Soaring Today. Summary: <p><strong>SoundHound AI</strong> <span class=\"ticker\">(NASDAQ: SOUN)</span> stock is posting another day of big gains Monday. The artificial intelligence (<a href=\"https://www.fool.com/investing/stoc",
+    "explanation": "Based on your belief: 'I believe Why SoundHound AI Stock Is Soaring Today. Summary: <p><strong>SoundHound AI</strong> <span class=\"ticker\">(NASDAQ: SOUN)</span> stock is posting another day of big gains Monday. The artificial intelligence (<a href=\"https://www.fool.com/investing/stoc', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:34.147716",
+    "user_id": "anonymous",
+    "belief": "News just broke: Why KULR Technology Stock Is Skyrocketing Today \u2014 <p><strong>KULR Technology</strong> <span class=\"ticker\">(NYSEMKT: KULR)</span> stock is posting another day of big gains in Monday trading. The company's share price was up 12% as of 3:45 p.m. EDT. K",
+    "explanation": "Based on your belief: 'News just broke: Why KULR Technology Stock Is Skyrocketing Today \u2014 <p><strong>KULR Technology</strong> <span class=\"ticker\">(NYSEMKT: KULR)</span> stock is posting another day of big gains in Monday trading. The company's share price was up 12% as of 3:45 p.m. EDT. K', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
+  },
+  {
+    "timestamp": "2025-06-30T20:24:34.610646",
+    "user_id": "anonymous",
+    "belief": "News just broke: Why Robinhood Stock Is Soaring Today \u2014 <p>Shares of <strong>Robinhood Markets</strong> <span class=\"ticker\">(NASDAQ: HOOD)</span> are spiking on Monday, up 12.1% as of 3:24 p.m. ET. The jump comes as the <strong>S&amp;P 500</strong> and <s",
+    "explanation": "Based on your belief: 'News just broke: Why Robinhood Stock Is Soaring Today \u2014 <p>Shares of <strong>Robinhood Markets</strong> <span class=\"ticker\">(NASDAQ: HOOD)</span> are spiking on Monday, up 12.1% as of 3:24 p.m. ET. The jump comes as the <strong>S&amp;P 500</strong> and <s', The system expects neutral or sideways movement in SPY. Hence, the 'buy stock' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "buy stock",
+      "description": "Buy SPY shares",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Long-term bullish strategy with ownership and growth exposure."
+    }
   }
 ]

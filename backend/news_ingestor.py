@@ -11,7 +11,9 @@ import time
 import datetime
 import os
 import csv
-import sys  # NEW: For Render debug output
+import sys
+
+from backend.utils.logger import write_training_log  # ✅ Log training summary to /logs
 
 # === Config ===
 BACKEND_URL = "https://marketplayground-backend.onrender.com/process_belief"
@@ -44,14 +46,12 @@ FALLBACK_BELIEFS = [
     "Is gold a safe haven again in this climate?"
 ]
 
-# === Convert Title + Summary into Belief Prompt ===
 def generate_belief_prompt(title, summary=""):
     return random.choice(TEMPLATES).format(
         headline=title.strip(),
         summary=summary.strip()[:200] or "No summary provided"
     )
 
-# === Fetch News from Each RSS Feed ===
 def fetch_news_entries(limit_per_feed=5):
     entries = []
     print(f"🔧 Total feeds: {len(RSS_FEEDS)}", file=sys.stderr)
@@ -71,7 +71,6 @@ def fetch_news_entries(limit_per_feed=5):
             print(f"⚠️ Feed error: {url} → {e}", file=sys.stderr)
     return entries
 
-# === Save Belief for Model Review ===
 def log_raw_belief(title, summary, belief):
     os.makedirs(os.path.dirname(RAW_LOG_PATH), exist_ok=True)
     try:
@@ -81,7 +80,6 @@ def log_raw_belief(title, summary, belief):
     except Exception as e:
         print(f"❌ Logging raw belief error: {e}", file=sys.stderr)
 
-# === Save to Training Data if Strategy is Returned ===
 def log_training_row(belief, strategy, asset_class):
     try:
         with open(TRAINING_PATH, mode="a", newline="", encoding="utf-8") as csvfile:
@@ -90,7 +88,6 @@ def log_training_row(belief, strategy, asset_class):
     except Exception as e:
         print(f"❌ Training log error: {e}", file=sys.stderr)
 
-# === Send Belief to FastAPI Backend ===
 def send_belief_to_backend(belief, title="", summary=""):
     try:
         r = requests.post(BACKEND_URL, json={"belief": belief})
@@ -106,12 +103,16 @@ def send_belief_to_backend(belief, title="", summary=""):
     except Exception as e:
         print(f"❌ Request error: {e}", file=sys.stderr)
 
-# === Main Loop: Fetches → Converts → Sends to Backend ===
 def run_news_ingestor(interval=300):
     while True:
         print(f"\n🟢 News Ingestor started: {datetime.datetime.now()}", file=sys.stderr)
         entries = fetch_news_entries()
         print(f"🔍 Found {len(entries)} headlines", file=sys.stderr)
+
+        # ✅ Write to central training log for Render monitoring
+        write_training_log(
+            f"📰 News fetched: {len(entries)}\n🧠 Beliefs generated: {len(entries) or 1}\n➕ New beliefs added: {len(entries) or 1}"
+        )
 
         if not entries:
             fallback = random.choice(FALLBACK_BELIEFS)
@@ -126,6 +127,5 @@ def run_news_ingestor(interval=300):
         print(f"🛑 Sleeping for {interval}s", file=sys.stderr)
         time.sleep(interval)
 
-# === Run When Executed Directly ===
 if __name__ == "__main__":
     run_news_ingestor()
