@@ -14,7 +14,7 @@ import csv
 
 # === Config ===
 # IMPORTANT: Switch this to your Render URL when deploying
-BACKEND_URL = "http://127.0.0.1:8000/process_belief"  # use localhost for local testing
+BACKEND_URL = "https://marketplayground-backend.onrender.com/process_belief"
 RAW_LOG_PATH = "backend/logs/news_beliefs.csv"
 TRAINING_PATH = "backend/Training_Strategies.csv"
 
