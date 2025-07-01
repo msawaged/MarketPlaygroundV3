@@ -1,43 +1,64 @@
-"""
-Debug Router: Exposes diagnostic endpoints for internal training logs.
-"""
+# backend/routes/debug_router.py
+# ✅ Debug Router: Exposes diagnostic endpoints for training logs
 
+import os
+import json
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
-import os
 
 router = APIRouter()
 
-# Paths to logs
-RETRAIN_LOG_PATH = os.path.join("backend", "logs", "retrain_worker.log")
-LAST_TRAINING_LOG = os.path.join("backend", "logs", "last_training_log.txt")
+# === Paths to log files ===
+LOGS_DIR = os.path.join("backend", "logs")
+LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
+LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
+RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
 
+# === Modern: JSON summary for retrain log ===
+@router.get("/debug/retrain_log")
+def get_latest_retrain_log():
+    """
+    ✅ Preferred route for frontend: Returns latest training summary from JSON.
+    Written by logger.py → used by background worker.
+    """
+    if not os.path.exists(LAST_JSON_LOG):
+        raise HTTPException(status_code=404, detail="No retraining log found.")
+    try:
+        with open(LAST_JSON_LOG, "r") as f:
+            log = json.load(f)
+        return log
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read retrain log: {str(e)}")
+
+# === Legacy: Plain text (used by news ingestor or test) ===
 @router.get("/debug/last_training_status", response_class=PlainTextResponse)
 def read_last_training_status():
     """
-    Legacy: Returns the contents of the last_training_log.txt (from news ingestor).
+    Legacy fallback — reads last_training_log.txt for debug visibility.
     """
-    if os.path.exists(LAST_TRAINING_LOG):
-        with open(LAST_TRAINING_LOG, "r") as f:
+    if os.path.exists(LAST_TRAINING_LOG_TXT):
+        with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
     raise HTTPException(status_code=404, detail="No last training log found.")
 
-@router.get("/debug/retrain_log", response_class=PlainTextResponse)
+# === Full retrain_worker.log view ===
+@router.get("/debug/retrain_worker_log", response_class=PlainTextResponse)
 def read_retrain_worker_log():
     """
-    Returns retrain_worker.log contents from background retraining worker.
+    Returns full contents of retrain_worker.log (rolling history).
     """
     if os.path.exists(RETRAIN_LOG_PATH):
         with open(RETRAIN_LOG_PATH, "r") as f:
             return f.read()
-    raise HTTPException(status_code=404, detail="No retraining log found.")
+    raise HTTPException(status_code=404, detail="No retrain log found.")
 
+# === Duplicate alias route ===
 @router.get("/last_training_log", response_class=PlainTextResponse)
 def view_last_training_log():
     """
-    ✅ NEW: Returns the contents of last_training_log.txt at /last_training_log
+    Also returns last_training_log.txt — for compatibility with legacy tools.
     """
-    if os.path.exists(LAST_TRAINING_LOG):
-        with open(LAST_TRAINING_LOG, "r") as f:
+    if os.path.exists(LAST_TRAINING_LOG_TXT):
+        with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
