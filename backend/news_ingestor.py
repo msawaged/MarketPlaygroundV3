@@ -13,10 +13,10 @@ import csv
 import sys
 
 from backend.utils.logger import write_training_log  # ✅ Logs summary to backend/logs/last_training_log.txt
-from backend.utils.training_trigger import trigger_retraining  # ✅ Triggers model retraining after ingestion
 
 # === Configuration ===
 BACKEND_URL = "https://marketplayground-backend.onrender.com/process_belief"
+RETRAIN_URL = "https://marketplayground-backend.onrender.com/force_retrain"
 RAW_LOG_PATH = "backend/logs/news_beliefs.csv"         # Logs raw title → summary → belief
 TRAINING_PATH = "backend/Training_Strategies.csv"       # Adds belief-strategy pairs for model training
 
@@ -119,6 +119,19 @@ def send_belief_to_backend(belief, title="", summary=""):
     except Exception as e:
         print(f"❌ Request error: {e}", file=sys.stderr)
 
+def trigger_retraining():
+    """
+    Triggers backend retraining by POSTing to /force_retrain
+    """
+    try:
+        response = requests.post(RETRAIN_URL)
+        if response.status_code == 200:
+            print("✅ Retraining triggered successfully", file=sys.stderr)
+        else:
+            print(f"❌ Failed to trigger retraining — Status: {response.status_code}", file=sys.stderr)
+    except Exception as e:
+        print(f"❌ Exception while triggering retraining: {e}", file=sys.stderr)
+
 def run_news_ingestor(interval=300):
     """
     Main loop: fetch news → create beliefs → send to backend → log → trigger retraining.
@@ -145,10 +158,7 @@ def run_news_ingestor(interval=300):
 
         # ✅ Trigger background retraining
         print("🚀 Triggering retraining after ingestion...", file=sys.stderr)
-        try:
-            trigger_retraining()
-        except Exception as e:
-            print(f"❌ Failed to trigger retraining: {e}", file=sys.stderr)
+        trigger_retraining()
 
         print(f"🛑 Sleeping for {interval}s", file=sys.stderr)
         time.sleep(interval)
