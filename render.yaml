@@ -1,7 +1,7 @@
 # render.yaml — Defines all services for Render deployment
 
 services:
-  # 🚀 Main FastAPI backend
+  # 🚀 FastAPI backend service
   - type: web
     name: marketplayground-backend
     env: python
@@ -15,7 +15,7 @@ services:
         value: 3.11.9
     rootDir: .
 
-  # 🔁 Background retraining worker — runs train_all_models() on a loop
+  # 🔁 Background retraining worker
   - type: worker
     name: retrain-worker
     env: python
@@ -27,19 +27,19 @@ services:
         value: 3.11.9
     rootDir: .
 
-  # 📰 News Ingestor — pulls real headlines, converts to beliefs
+  # 📰 News Ingestor — now loops continuously using watchdog
   - type: worker
     name: news-ingestor
     env: python
     plan: starter
     buildCommand: "pip install -r backend/requirements-news.txt"
-    startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
+    startCommand: "PYTHONPATH=./ watchmedo shell-command --patterns='*.py' --recursive --command='python backend/news_ingestor.py' ."
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
     rootDir: .
 
-  # 🧠 Belief Feeder — sends fresh beliefs into training pipeline
+  # 🧠 Belief Feeder worker
   - type: worker
     name: belief-feeder
     env: python
