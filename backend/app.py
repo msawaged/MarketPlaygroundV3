@@ -14,6 +14,7 @@ import traceback
 # === Initialization ===
 from backend.user_models import init_db
 from backend.ai_engine.ai_engine import run_ai_engine
+from backend.alpaca_orders import AlpacaExecutor  # ✅ Alpaca broker integration
 
 # === Modular Routers ===
 from backend.routes.auth_router import router as auth_router
@@ -79,25 +80,40 @@ app.include_router(debug_router, tags=["Debug"])  # ✅ NEW
 # === Schemas ===
 class BeliefRequest(BaseModel):
     belief: str
+    user_id: Optional[str] = "anonymous"
     risk_profile: Optional[str] = "moderate"
+    place_order: Optional[bool] = False  # ✅ NEW field
 
 class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
     feedback: str
 
-# === AI Endpoint (standard, backward compatible) ===
+# === AI Endpoint (direct access, now with execution) ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
-        result = run_ai_engine(request.belief, risk_profile=request.risk_profile)
+        result = run_ai_engine(
+            belief=request.belief,
+            risk_profile=request.risk_profile,
+            user_id=request.user_id
+        )
+        result["user_id"] = request.user_id
+
+        # ✅ Optional trade execution
+        if request.place_order:
+            executor = AlpacaExecutor()
+            execution_result = executor.execute_order(result, user_id=request.user_id)
+            result["execution_result"] = execution_result
+
         return result
+
     except Exception as e:
         print("\n❌ ERROR in /process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === NEW: Strategy Endpoint with Full Trace Logging ===
+# === /strategy/process_belief (used by router) ===
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
     try:
@@ -117,7 +133,7 @@ async def strategy_process_belief(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ NEW: Force retraining regardless of feedback count
+# ✅ Manual force retrain endpoint
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
     try:
@@ -133,7 +149,7 @@ def force_retrain_now():
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
-# === Local Debug (optional) ===
+# === Local Debug Runner ===
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")
