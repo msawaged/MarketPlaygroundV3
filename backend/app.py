@@ -117,15 +117,6 @@ async def strategy_process_belief(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Training Monitor Endpoint ===
-@app.get("/debug/last_training_status", response_class=PlainTextResponse)
-def get_last_training_log():
-    log_path = os.path.join("backend", "logs", "last_training_log.txt")
-    if not os.path.exists(log_path):
-        raise HTTPException(status_code=404, detail="No training log found.")
-    with open(log_path, "r") as f:
-        return f.read()
-
 # ✅ NEW: Force retraining regardless of feedback count
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
