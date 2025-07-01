@@ -128,5 +128,4 @@ def run_news_ingestor(interval=300):
         time.sleep(interval)
 
 # === Run When Executed Directly ===
-if __name__ == "__main__":
-    run_news_ingestor()
+run_news_ingestor()
