@@ -20,10 +20,15 @@ class BrokerInterface(ABC):
                 - strategy type (e.g., "long call", "put spread")
                 - allocation
                 - expiry_date
-                - direction, etc.
+                - direction
+                - strike prices, etc.
             user_id (str): ID of the user placing the trade.
 
         Returns:
-            dict: Execution response with status, broker-specific info, error (if any).
+            dict: Execution response with:
+                - status: "success" or "error"
+                - message: summary of the result
+                - order_id (if successful)
+                - error (if failed)
         """
         pass

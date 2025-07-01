@@ -5618,5 +5618,31 @@
       "suggested_allocation": "20%",
       "explanation": "Long-term bullish strategy with ownership and growth exposure."
     }
+  },
+  {
+    "timestamp": "2025-07-01T07:36:27.985243",
+    "user_id": "murad",
+    "belief": "I believe TSLA will go up this week",
+    "explanation": "Based on your belief: 'I believe TSLA will go up this week', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 333c / Sell TSLA 365c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-01T19:52:35.916825",
+    "user_id": "murad",
+    "belief": "I believe TSLA will go up this week",
+    "explanation": "Based on your belief: 'I believe TSLA will go up this week', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 318c / Sell TSLA 348c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
   }
 ]

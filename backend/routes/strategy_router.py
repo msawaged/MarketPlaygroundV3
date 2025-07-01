@@ -1,5 +1,3 @@
-# backend/routes/strategy_router.py
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -7,6 +5,7 @@ from typing import Optional, Dict, Any
 from backend.ai_engine.ai_engine import run_ai_engine  # 🧠 Belief → strategy engine
 from backend.feedback_handler import save_feedback_entry  # 💾 Feedback logger
 from backend.logger.strategy_logger import log_strategy  # 📝 Strategy history logger
+from backend.alpaca_orders import AlpacaExecutor  # 🧾 Unified Alpaca execution
 
 router = APIRouter()
 
@@ -14,6 +13,7 @@ router = APIRouter()
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
+    place_order: Optional[bool] = False  # 🆕 Optional flag to execute strategy
 
 class FeedbackRequest(BaseModel):
     belief: str
@@ -25,11 +25,14 @@ class FeedbackRequest(BaseModel):
 @router.post("/process_belief")
 def process_belief(request: BeliefRequest):
     """
-    Input JSON: {
+    Input JSON:
+    {
         "belief": "TSLA will go up this week",
-        "user_id": "optional_user_id"
+        "user_id": "optional_user_id",
+        "place_order": true
     }
     """
+
     result = run_ai_engine(request.belief)
     result["user_id"] = request.user_id
 
@@ -39,13 +42,20 @@ def process_belief(request: BeliefRequest):
     # ✅ Save to strategy history log
     log_strategy(request.belief, result["strategy"]["type"], request.user_id)
 
+    # ✅ Optional trade execution
+    if request.place_order:
+        executor = AlpacaExecutor()
+        execution_response = executor.execute_order(result, request.user_id)
+        result["execution_result"] = execution_response
+
     return result
 
 # === POST /strategy/submit_feedback ===
 @router.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     """
-    Input JSON: {
+    Input JSON:
+    {
         "belief": "TSLA will go up this week",
         "strategy": { ... },
         "feedback": "good",
