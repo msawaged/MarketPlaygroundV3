@@ -13,6 +13,7 @@ LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
 RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
+NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")
 
 # === Modern: JSON summary for retrain log ===
 @router.get("/debug/retrain_log")
@@ -62,3 +63,29 @@ def view_last_training_log():
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
+
+# === Recent beliefs ingested from news ===
+@router.get("/debug/ingested_news")
+def get_ingested_news(limit: int = 10):
+    """
+    Returns the most recent beliefs ingested from news_beliefs.csv.
+    """
+    if not os.path.exists(NEWS_LOG_PATH):
+        raise HTTPException(status_code=404, detail="news_beliefs.csv not found.")
+
+    try:
+        with open(NEWS_LOG_PATH, mode="r", encoding="utf-8") as f:
+            lines = f.readlines()[-limit:]
+            parsed = []
+            for line in lines:
+                parts = line.strip().split(",")
+                if len(parts) >= 4:
+                    parsed.append({
+                        "timestamp": parts[0],
+                        "title": parts[1],
+                        "summary": parts[2],
+                        "belief": parts[3]
+                    })
+        return {"entries": parsed}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read news log: {str(e)}")

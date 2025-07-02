@@ -13494,5 +13494,212 @@
     "belief": "NVDA will crash this week after terrible earnings report",
     "strategy": "bear put spread",
     "result": "good"
+  },
+  {
+    "timestamp": "2025-07-02T02:48:00.493354",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "bond ladder",
+        "description": "Build a ladder of bonds with staggered maturities",
+        "risk_level": "low",
+        "suggested_allocation": "20%",
+        "explanation": "Generates predictable income while minimizing interest rate risk."
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 88.14
+      },
+      "high_low": [
+        88.31,
+        87.66
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-02T02:52:27.917317",
+    "user_id": "murad123",
+    "belief": "I believe TSLA will go up",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "description": "Buy TSLA 315c / Sell TSLA 345c",
+        "risk_level": "high",
+        "suggested_allocation": "10%",
+        "explanation": "Limited-risk bullish strategy with a defined reward range."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 300.71
+      },
+      "high_low": [
+        305.89,
+        293.21
+      ],
+      "confidence": 0.6611295021906322,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I believe TSLA will go up', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+      "user_id": "murad123"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-02T02:52:42.827415",
+    "user_id": "anonymous",
+    "belief": "I believe TSLA will go up",
+    "strategy": "bull call spread",
+    "result": "positive"
+  },
+  {
+    "timestamp": "2025-07-02T02:52:59.793371",
+    "user_id": "murad123",
+    "belief": "The market will crash on Monday",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "description": "Buy SPY 586p / Sell SPY 525p",
+        "risk_level": "high",
+        "suggested_allocation": "10%",
+        "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 617.65
+      },
+      "high_low": [
+        618.83,
+        615.52
+      ],
+      "confidence": 0.5973690217619249,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'The market will crash on Monday', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+      "user_id": "murad123"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-02T02:54:59.522314",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "bond ladder",
+        "description": "Build a ladder of bonds with staggered maturities",
+        "risk_level": "low",
+        "suggested_allocation": "20%",
+        "explanation": "Generates predictable income while minimizing interest rate risk."
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 88.14
+      },
+      "high_low": [
+        88.31,
+        87.66
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-02T02:55:03.346224",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "bond ladder",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-02T03:02:18.147298",
+    "user_id": "murad123",
+    "belief": "I believe AAPL will go up",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "description": "Buy AAPL 218c / Sell AAPL 238c",
+        "risk_level": "high",
+        "suggested_allocation": "10%",
+        "explanation": "Limited-risk bullish strategy with a defined reward range."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 207.82
+      },
+      "high_low": [
+        210.19,
+        206.14
+      ],
+      "confidence": 0.6661939557690038,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+      "user_id": "murad123"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-02T03:02:25.968050",
+    "user_id": "anonymous",
+    "belief": "I believe AAPL will go up",
+    "strategy": "bull call spread",
+    "result": "positive"
   }
 ]

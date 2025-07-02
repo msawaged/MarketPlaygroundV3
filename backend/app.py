@@ -15,7 +15,7 @@ import pandas as pd
 from backend.user_models import init_db
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.alpaca_orders import AlpacaExecutor
-from backend.feedback_handler import save_feedback_entry  # ✅ Needed for /submit_feedback
+from backend.feedback_handler import save_feedback_entry
 
 # === Routers (modularized routes) ===
 from backend.routes.auth_router import router as auth_router
@@ -30,24 +30,27 @@ from backend.routes.execution_router import router as execution_router
 from backend.routes.pnl_router import router as pnl_router
 from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
-from backend.routes.debug_router import router as debug_router  # ✅ Debug endpoints
+from backend.routes.debug_router import router as debug_router
 
 # === Initialize FastAPI ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# === Enable CORS for frontend local dev ===
+# ✅ CORS — Allow React frontend on ports 3000 and 3001
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === Run initial DB setup ===
+# === Initialize SQLite DB if needed ===
 init_db()
 
-# === Ensure strategy_outcomes.csv exists ===
+# ✅ Ensure strategy_outcomes.csv exists
 strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
 if not os.path.exists(strategy_csv_path):
     df = pd.DataFrame([{
@@ -63,34 +66,39 @@ if not os.path.exists(strategy_csv_path):
     df.to_csv(strategy_csv_path, index=False)
     print("✅ Created starter strategy_outcomes.csv")
 
-# === Register All Routers ===
-app.include_router(auth_router,        prefix="/auth",     tags=["Auth"])
-app.include_router(feedback_router,    prefix="/feedback", tags=["Feedback"])
-app.include_router(feedback_predictor, prefix="/predict",  tags=["Predictor"])
-app.include_router(portfolio_router,   prefix="/portfolio",tags=["Portfolio"])
-app.include_router(strategy_router,    prefix="/strategy", tags=["Strategy"])
-app.include_router(strategy_logger_router, prefix="/strategy", tags=["Strategy Logger"])
-app.include_router(hot_trades_router,                tags=["Hot Trades"])
-app.include_router(alpaca_router,      prefix="/alpaca",  tags=["Alpaca"])
-app.include_router(execution_router,   prefix="/alpaca",  tags=["Execution"])
-app.include_router(pnl_router,         prefix="/pnl",     tags=["PnL"])
-app.include_router(market_router,      prefix="/market",  tags=["Market"])
-app.include_router(analytics_router,   prefix="/analytics",tags=["Analytics"])
-app.include_router(debug_router,                    tags=["Debug"])
+# === Register All Modular Routers ===
+app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
+app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
+app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
+app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfolio"])
+app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
+app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
+app.include_router(hot_trades_router,                            tags=["Hot Trades"])
+app.include_router(alpaca_router,            prefix="/alpaca",    tags=["Alpaca"])
+app.include_router(execution_router,         prefix="/alpaca",    tags=["Execution"])
+app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
+app.include_router(market_router,            prefix="/market",    tags=["Market"])
+app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
+app.include_router(debug_router,                                tags=["Debug"])
 
-# === Schema Definitions ===
+# === Request Body Schemas ===
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
     risk_profile: Optional[str] = "moderate"
-    place_order: Optional[bool] = False  # ✅ Optional execution flag
+    place_order: Optional[bool] = False
 
 class FeedbackRequest(BaseModel):
     belief: str
     strategy: str
     feedback: str
 
-# === POST /process_belief — AI Engine Access + Optional Execution ===
+# === Root Route for Health Check ===
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to MarketPlayground AI Backend"}
+
+# === Primary Belief Endpoint — Processes via AI Engine ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
@@ -101,7 +109,6 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         )
         result["user_id"] = request.user_id
 
-        # ✅ Execute trade if requested
         if request.place_order:
             executor = AlpacaExecutor()
             result["execution_result"] = executor.execute_order(result, user_id=request.user_id)
@@ -113,7 +120,7 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Alternate route: /strategy/process_belief (async) ===
+# === Alternate Strategy Route (used by frontend) ===
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
     try:
@@ -133,7 +140,7 @@ async def strategy_process_belief(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ NEW: POST /submit_feedback (for manual feedback injection)
+# === Feedback Capture ===
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     try:
@@ -144,7 +151,7 @@ def submit_feedback(request: FeedbackRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to save feedback")
 
-# === POST /force_retrain — Manually triggers full model training ===
+# === Manual Retrain Trigger (backend UI or CLI) ===
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
     try:
@@ -155,12 +162,18 @@ def force_retrain_now():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === GET / — Welcome route
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to MarketPlayground AI Backend"}
+# ✅ Auto-Retrain Trigger from News Ingestor
+@app.post("/retrain", response_class=PlainTextResponse)
+def retrain_from_ingestor():
+    try:
+        from backend.train_all_models import train_all_models
+        train_all_models()
+        return "✅ Retraining triggered by news ingestor."
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === For local testing only (not triggered on Render) ===
+# === Uvicorn Entry for Local Dev ===
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")

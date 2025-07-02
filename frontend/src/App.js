@@ -2,23 +2,30 @@
 
 import React, { useState } from 'react';
 
+// ✅ CRA-compatible: Injects environment variable at build time
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
 function App() {
   const [belief, setBelief] = useState('');
+  const [userId, setUserId] = useState('');
   const [response, setResponse] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // 🔄 Submit belief to backend
+  // 🔄 Submit user belief to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setResponse(null);
 
     try {
-      const res = await fetch('/strategy/process_belief', {
+      const res = await fetch(`${BACKEND_URL}/strategy/process_belief`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ belief }),
+        body: JSON.stringify({
+          belief,
+          user_id: userId.trim() || 'anonymous',
+        }),
       });
 
       const data = await res.json();
@@ -26,17 +33,21 @@ function App() {
       setResponse({ ...data, strategy: strategies });
       setCurrentIndex(0);
     } catch {
-      setResponse({ error: '❌ Backend unreachable. Is FastAPI running?' });
+      setResponse({ error: '❌ Failed to reach backend. Check deployment.' });
     } finally {
       setLoading(false);
     }
   };
 
-  // ⏮️⏭️ Navigation
-  const handleNext = () => setCurrentIndex((prev) => Math.min(prev + 1, response.strategy.length - 1));
-  const handlePrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  // ⏭️ Navigate next strategy
+  const handleNext = () =>
+    setCurrentIndex((prev) => Math.min(prev + 1, response.strategy.length - 1));
 
-  // 🧠 Send feedback to backend
+  // ⏮️ Navigate previous strategy
+  const handlePrev = () =>
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+
+  // 🧠 Send strategy feedback to backend
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -48,11 +59,11 @@ function App() {
       asset_class: response.asset_class,
       direction: response.direction,
       confidence: response.confidence,
-      user_id: 'anonymous',
+      user_id: userId.trim() || 'anonymous',
     };
 
     try {
-      const res = await fetch('/feedback/submit_feedback', {
+      const res = await fetch(`${BACKEND_URL}/feedback/submit_feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -61,7 +72,7 @@ function App() {
       const result = await res.json();
       alert(result.message || '✅ Feedback submitted');
     } catch {
-      alert('❌ Failed to submit feedback');
+      alert('❌ Feedback submission failed');
     }
   };
 
@@ -72,18 +83,32 @@ function App() {
 
       {/* 🎯 Input form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-        <label htmlFor="beliefInput" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-          🎯 Enter a Market Belief
-        </label>
-        <br />
-        <input
-          id="beliefInput"
-          type="text"
-          value={belief}
-          onChange={(e) => setBelief(e.target.value)}
-          placeholder="e.g. TSLA will go up"
-          style={{ padding: '0.5rem', width: '300px', marginTop: '0.5rem', marginRight: '0.5rem', fontSize: '1rem' }}
-        />
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label>
+          <br />
+          <input
+            id="beliefInput"
+            type="text"
+            value={belief}
+            onChange={(e) => setBelief(e.target.value)}
+            placeholder="e.g. TSLA will go up"
+            style={{ padding: '0.5rem', width: '300px', fontSize: '1rem' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="userIdInput">👤 Optional User ID</label>
+          <br />
+          <input
+            id="userIdInput"
+            type="text"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            placeholder="e.g. murad123"
+            style={{ padding: '0.5rem', width: '300px', fontSize: '1rem' }}
+          />
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -100,7 +125,7 @@ function App() {
         </button>
       </form>
 
-      {/* 📡 AI Output */}
+      {/* 📡 AI Response */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -121,13 +146,13 @@ function App() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
-              {/* 👍 👎 Feedback */}
+              {/* 👍 👎 Feedback Buttons */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
-              {/* 🔄 Navigation */}
+              {/* ⏮️⏭️ Strategy Navigation */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>

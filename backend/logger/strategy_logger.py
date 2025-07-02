@@ -25,11 +25,11 @@ def log_strategy(belief: str, explanation: str, user_id: str = "anonymous", stra
     """
     Appends a strategy entry to strategy_log.json.
 
-    Now accepts:
-    - belief (str)
-    - explanation (str): explanation of strategy logic
-    - user_id (str)
-    - strategy (Dict): generated strategy
+    Parameters:
+    - belief: User's belief string
+    - explanation: Strategy reasoning
+    - user_id: Identifier for user
+    - strategy: Dict containing selected strategy
     """
     ensure_log_file_exists()
 
@@ -57,7 +57,7 @@ def log_strategy(belief: str, explanation: str, user_id: str = "anonymous", stra
 
 def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict[str, Any]]:
     """
-    Returns all saved strategies for a given user.
+    Returns all strategies for a specific user_id from strategy_log.json.
     """
     ensure_log_file_exists()
 
@@ -67,11 +67,12 @@ def get_user_strategy_history(user_id: str = "anonymous") -> List[Dict[str, Any]
     except (json.JSONDecodeError, FileNotFoundError):
         return []
 
-    return [entry for entry in logs if entry.get("user_id") == user_id]
+    # ✅ Normalize user_id and filter precisely
+    return [entry for entry in logs if str(entry.get("user_id", "")).strip() == user_id.strip()]
 
 def get_latest_strategies(limit: int = 5) -> List[Dict[str, Any]]:
     """
-    Returns the most recent N strategies regardless of user.
+    Returns the N most recent strategies (global, not user-specific).
     """
     ensure_log_file_exists()
 

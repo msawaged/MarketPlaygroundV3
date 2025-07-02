@@ -5657,5 +5657,174 @@
       "suggested_allocation": "10%",
       "explanation": "Limited-risk bearish strategy to profit from modest declines."
     }
+  },
+  {
+    "timestamp": "2025-07-02T02:48:00.453035",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:48:00.686682",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:52:27.747780",
+    "user_id": "anonymous",
+    "belief": "I believe TSLA will go up",
+    "explanation": "Based on your belief: 'I believe TSLA will go up', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 315c / Sell TSLA 345c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:52:27.935503",
+    "user_id": "murad123",
+    "belief": "I believe TSLA will go up",
+    "explanation": "Based on your belief: 'I believe TSLA will go up', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 315c / Sell TSLA 345c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:52:59.777477",
+    "user_id": "anonymous",
+    "belief": "The market will crash on Monday",
+    "explanation": "Based on your belief: 'The market will crash on Monday', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 586p / Sell SPY 525p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:52:59.811757",
+    "user_id": "murad123",
+    "belief": "The market will crash on Monday",
+    "explanation": "Based on your belief: 'The market will crash on Monday', The system expects neutral or sideways movement in SPY. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy SPY 586p / Sell SPY 525p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:54:59.504262",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T02:54:59.540203",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Based on your belief: 'I want to build a bond ladder for income', The system expects neutral or sideways movement in TLT. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T03:02:18.130002",
+    "user_id": "anonymous",
+    "belief": "I believe AAPL will go up",
+    "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 218c / Sell AAPL 238c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T03:02:18.166175",
+    "user_id": "murad123",
+    "belief": "I believe AAPL will go up",
+    "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 218c / Sell AAPL 238c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T03:05:56.615551",
+    "user_id": "murad123",
+    "belief": "I believe AAPL will go up",
+    "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 218c / Sell AAPL 238c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T03:15:02.603633",
+    "user_id": "murad123",
+    "belief": "I believe AAPL will go up",
+    "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 218c / Sell AAPL 238c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T03:15:11.646755",
+    "user_id": "murad123",
+    "belief": "I believe AAPL will go up",
+    "explanation": "Based on your belief: 'I believe AAPL will go up', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 218c / Sell AAPL 238c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
   }
 ]

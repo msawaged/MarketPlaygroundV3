@@ -1,44 +1,93 @@
-# 🐍 Virtual environments
-venv/
-.env/
-__pycache__/
+# =======================
+# 🐍 PYTHON + BACKEND
+# =======================
 
-# 🐍 Python compiled files
-*.py[cod]
+# Virtual environments
+venv/
+.env/                      # Global env vars (e.g., Supabase keys)
+__pycache__/              # Python bytecode cache
+
+# Python artifacts
+*.py[cod]                 # Compiled Python files
 *.so
 *.egg
 *.egg-info/
 dist/
 build/
 
-# 📓 Jupyter notebooks
+# Jupyter Notebook junk
 .ipynb_checkpoints/
 
-# 🍎 Mac system files
+# =======================
+# 🍎 OS + IDE
+# =======================
+
+# Mac system files
 .DS_Store
 
-# 🧠 Model and cache files (except inside backend/)
+# VS Code project settings
+.vscode/
+
+# =======================
+# 🤖 MODELS + DATA
+# =======================
+
+# Ignore ML model files globally...
 *.joblib
 *.pkl
 *.h5
 *.pt
 
-# ✅ Allow model files inside backend/
+# ✅ ...except essential ones in backend
 !backend/*.joblib
 
-# 📊 Logs and CSVs (except critical training files)
-*.log
-*.csv
+# =======================
+# 🧪 TEST + GENERATED FILES
+# =======================
 
-# ✅ Allow essential data and runtime info
+# Logs and runtime junk
+*.log
+*.tmp
+*.png
+
+# Raw or unstructured logs and outputs
+backend/logs/
+!backend/logs/last_training_log.txt
+!backend/logs/last_training_log.json
+
+# Explicitly ignore specific auto-logged files
+backend/logs/news_beliefs.csv
+backend/logs/news_ingestor_log.txt
+backend/routes/__pycache__/
+
+# Training artifacts that change frequently
+backend/Training_Strategies.csv
+backend/feedback_data.json
+backend/strategy_log.json
+
+# User session files
+user_portfolios.json
+test_api.py
+
+# =======================
+# 🌐 FRONTEND (React)
+# =======================
+
+# Ignore env and structure docs
+frontend/.env
+frontend_structure.txt
+
+# Node modules if frontend build grows
+node_modules/
+
+# React build outputs (if using vite/build later)
+dist/
+build/
+
+# =======================
+# ✅ WHITELIST TRAINING/CRITICAL DATA
+# =======================
+
 !backend/feedback.csv
 !backend/training_data/*.csv
 !runtime.txt
-
-# 💻 VS Code project settings
-.vscode/
-
-# 🧪 Test and user-generated output
-*.png
-user_portfolios.json
-test_api.py
