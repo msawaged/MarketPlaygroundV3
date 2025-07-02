@@ -5826,5 +5826,915 @@
       "suggested_allocation": "10%",
       "explanation": "Limited-risk bullish strategy with a defined reward range."
     }
+  },
+  {
+    "timestamp": "2025-07-02T22:28:01.191991",
+    "user_id": "anonymous",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 651c / Sell SPY 713c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:28:01.227616",
+    "user_id": "anonymous",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in SPY. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SPY 651c / Sell SPY 713c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:33:35.824377",
+    "user_id": "anonymous",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:33:35.859777",
+    "user_id": "anonymous",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:20.811090",
+    "user_id": "anonymous",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:21.033657",
+    "user_id": "test_batch",
+    "belief": "Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:21.498416",
+    "user_id": "anonymous",
+    "belief": "Apple is headed for a recession-driven dip",
+    "explanation": "Based on your belief: 'Apple is headed for a recession-driven dip', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:21.537857",
+    "user_id": "test_batch",
+    "belief": "Apple is headed for a recession-driven dip",
+    "explanation": "Based on your belief: 'Apple is headed for a recession-driven dip', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:22.007491",
+    "user_id": "anonymous",
+    "belief": "Bitcoin is going to hit 100k next year",
+    "explanation": "Based on your belief: 'Bitcoin is going to hit 100k next year', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:22.038547",
+    "user_id": "test_batch",
+    "belief": "Bitcoin is going to hit 100k next year",
+    "explanation": "Based on your belief: 'Bitcoin is going to hit 100k next year', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:22.502762",
+    "user_id": "anonymous",
+    "belief": "Interest rates will drop and bonds will rally",
+    "explanation": "Based on your belief: 'Interest rates will drop and bonds will rally', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:22.533371",
+    "user_id": "test_batch",
+    "belief": "Interest rates will drop and bonds will rally",
+    "explanation": "Based on your belief: 'Interest rates will drop and bonds will rally', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:23.028387",
+    "user_id": "anonymous",
+    "belief": "Palantir just signed a huge government contract",
+    "explanation": "Based on your belief: 'Palantir just signed a huge government contract', The system expects neutral or sideways movement in PLTR. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:23.059828",
+    "user_id": "test_batch",
+    "belief": "Palantir just signed a huge government contract",
+    "explanation": "Based on your belief: 'Palantir just signed a huge government contract', The system expects neutral or sideways movement in PLTR. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:23.519969",
+    "user_id": "anonymous",
+    "belief": "The tech sector looks weak going into Q3",
+    "explanation": "Based on your belief: 'The tech sector looks weak going into Q3', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:23.557084",
+    "user_id": "test_batch",
+    "belief": "The tech sector looks weak going into Q3",
+    "explanation": "Based on your belief: 'The tech sector looks weak going into Q3', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:24.034805",
+    "user_id": "anonymous",
+    "belief": "I want to double my money on Nvidia",
+    "explanation": "Based on your belief: 'I want to double my money on Nvidia', you want to multiply your money by 2.0x. The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:24.075925",
+    "user_id": "test_batch",
+    "belief": "I want to double my money on Nvidia",
+    "explanation": "Based on your belief: 'I want to double my money on Nvidia', you want to multiply your money by 2.0x. The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:24.507215",
+    "user_id": "anonymous",
+    "belief": "Energy stocks like XOM are undervalued",
+    "explanation": "Based on your belief: 'Energy stocks like XOM are undervalued', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:24.538742",
+    "user_id": "test_batch",
+    "belief": "Energy stocks like XOM are undervalued",
+    "explanation": "Based on your belief: 'Energy stocks like XOM are undervalued', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:25.007020",
+    "user_id": "anonymous",
+    "belief": "Gold is a safe haven during inflation",
+    "explanation": "Based on your belief: 'Gold is a safe haven during inflation', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:25.044376",
+    "user_id": "test_batch",
+    "belief": "Gold is a safe haven during inflation",
+    "explanation": "Based on your belief: 'Gold is a safe haven during inflation', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:25.570063",
+    "user_id": "anonymous",
+    "belief": "The market will crash this fall",
+    "explanation": "Based on your belief: 'The market will crash this fall', The system expects neutral or sideways movement in AAPL. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy AAPL 201p / Sell AAPL 180p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:36:25.601208",
+    "user_id": "test_batch",
+    "belief": "The market will crash this fall",
+    "explanation": "Based on your belief: 'The market will crash this fall', The system expects neutral or sideways movement in AAPL. Hence, the 'long put' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "long put",
+      "description": "Buy AAPL 201p / Sell AAPL 180p",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Speculative bearish trade with large profit potential on sharp drops."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:54.938229",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up after the next iPhone launch",
+    "explanation": "Based on your belief: 'AAPL will go up after the next iPhone launch', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 223c / Sell AAPL 244c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:54.972059",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up after the next iPhone launch",
+    "explanation": "Based on your belief: 'AAPL will go up after the next iPhone launch', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 223c / Sell AAPL 244c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:55.411770",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'I think Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:55.578145",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'I think Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:56.023153",
+    "user_id": "anonymous",
+    "belief": "Financials are looking strong heading into Q3",
+    "explanation": "Based on your belief: 'Financials are looking strong heading into Q3', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:56.057091",
+    "user_id": "anonymous",
+    "belief": "Financials are looking strong heading into Q3",
+    "explanation": "Based on your belief: 'Financials are looking strong heading into Q3', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:56.504676",
+    "user_id": "anonymous",
+    "belief": "Alphabet will dominate AI over the next year",
+    "explanation": "Based on your belief: 'Alphabet will dominate AI over the next year', The system expects neutral or sideways movement in GOOGL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:56.537017",
+    "user_id": "anonymous",
+    "belief": "Alphabet will dominate AI over the next year",
+    "explanation": "Based on your belief: 'Alphabet will dominate AI over the next year', The system expects neutral or sideways movement in GOOGL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:56.980124",
+    "user_id": "anonymous",
+    "belief": "Amgen just got FDA approval \u2014 this will send it higher",
+    "explanation": "Based on your belief: 'Amgen just got FDA approval \u2014 this will send it higher', The system expects neutral or sideways movement in AMGN. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:57.011526",
+    "user_id": "anonymous",
+    "belief": "Amgen just got FDA approval \u2014 this will send it higher",
+    "explanation": "Based on your belief: 'Amgen just got FDA approval \u2014 this will send it higher', The system expects neutral or sideways movement in AMGN. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:57.418226",
+    "user_id": "anonymous",
+    "belief": "Stanley Black & Decker\u2019s new CEO is shaking things up",
+    "explanation": "Based on your belief: 'Stanley Black & Decker\u2019s new CEO is shaking things up', The system expects neutral or sideways movement in SWK. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SWK 75c / Sell SWK 82c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:57.454008",
+    "user_id": "anonymous",
+    "belief": "Stanley Black & Decker\u2019s new CEO is shaking things up",
+    "explanation": "Based on your belief: 'Stanley Black & Decker\u2019s new CEO is shaking things up', The system expects neutral or sideways movement in SWK. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SWK 75c / Sell SWK 82c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:57.853525",
+    "user_id": "anonymous",
+    "belief": "Oil prices will surge after OPEC\u2019s announcement",
+    "explanation": "Based on your belief: 'Oil prices will surge after OPEC\u2019s announcement', The system expects neutral or sideways movement in XLE. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:57.886107",
+    "user_id": "anonymous",
+    "belief": "Oil prices will surge after OPEC\u2019s announcement",
+    "explanation": "Based on your belief: 'Oil prices will surge after OPEC\u2019s announcement', The system expects neutral or sideways movement in XLE. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:58.301748",
+    "user_id": "anonymous",
+    "belief": "Yields are rising \u2014 time to rotate into treasuries",
+    "explanation": "Based on your belief: 'Yields are rising \u2014 time to rotate into treasuries', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:58.350224",
+    "user_id": "anonymous",
+    "belief": "Yields are rising \u2014 time to rotate into treasuries",
+    "explanation": "Based on your belief: 'Yields are rising \u2014 time to rotate into treasuries', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:58.771361",
+    "user_id": "anonymous",
+    "belief": "Nvidia will benefit from the AI chip race",
+    "explanation": "Based on your belief: 'Nvidia will benefit from the AI chip race', The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:58.803112",
+    "user_id": "anonymous",
+    "belief": "Nvidia will benefit from the AI chip race",
+    "explanation": "Based on your belief: 'Nvidia will benefit from the AI chip race', The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:59.249628",
+    "user_id": "anonymous",
+    "belief": "Snowflake has been massively oversold this quarter",
+    "explanation": "Based on your belief: 'Snowflake has been massively oversold this quarter', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:46:59.283029",
+    "user_id": "anonymous",
+    "belief": "Snowflake has been massively oversold this quarter",
+    "explanation": "Based on your belief: 'Snowflake has been massively oversold this quarter', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:13.103783",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up after the next iPhone launch",
+    "explanation": "Based on your belief: 'AAPL will go up after the next iPhone launch', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 223c / Sell AAPL 244c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:13.140243",
+    "user_id": "anonymous",
+    "belief": "AAPL will go up after the next iPhone launch",
+    "explanation": "Based on your belief: 'AAPL will go up after the next iPhone launch', The system expects neutral or sideways movement in AAPL. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy AAPL 223c / Sell AAPL 244c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:13.564970",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'I think Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:13.597309",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will skyrocket after earnings",
+    "explanation": "Based on your belief: 'I think Tesla will skyrocket after earnings', The system expects neutral or sideways movement in TSLA. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy TSLA 331c / Sell TSLA 362c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:14.047443",
+    "user_id": "anonymous",
+    "belief": "Financials are looking strong heading into Q3",
+    "explanation": "Based on your belief: 'Financials are looking strong heading into Q3', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:14.079715",
+    "user_id": "anonymous",
+    "belief": "Financials are looking strong heading into Q3",
+    "explanation": "Based on your belief: 'Financials are looking strong heading into Q3', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:14.552660",
+    "user_id": "anonymous",
+    "belief": "Alphabet will dominate AI over the next year",
+    "explanation": "Based on your belief: 'Alphabet will dominate AI over the next year', The system expects neutral or sideways movement in GOOGL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:14.585635",
+    "user_id": "anonymous",
+    "belief": "Alphabet will dominate AI over the next year",
+    "explanation": "Based on your belief: 'Alphabet will dominate AI over the next year', The system expects neutral or sideways movement in GOOGL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:15.044890",
+    "user_id": "anonymous",
+    "belief": "Amgen just got FDA approval \u2014 this will send it higher",
+    "explanation": "Based on your belief: 'Amgen just got FDA approval \u2014 this will send it higher', The system expects neutral or sideways movement in AMGN. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:15.077908",
+    "user_id": "anonymous",
+    "belief": "Amgen just got FDA approval \u2014 this will send it higher",
+    "explanation": "Based on your belief: 'Amgen just got FDA approval \u2014 this will send it higher', The system expects neutral or sideways movement in AMGN. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:15.515949",
+    "user_id": "anonymous",
+    "belief": "Stanley Black & Decker\u2019s new CEO is shaking things up",
+    "explanation": "Based on your belief: 'Stanley Black & Decker\u2019s new CEO is shaking things up', The system expects neutral or sideways movement in SWK. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SWK 75c / Sell SWK 82c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:15.548568",
+    "user_id": "anonymous",
+    "belief": "Stanley Black & Decker\u2019s new CEO is shaking things up",
+    "explanation": "Based on your belief: 'Stanley Black & Decker\u2019s new CEO is shaking things up', The system expects neutral or sideways movement in SWK. Hence, the 'bull call spread' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bull call spread",
+      "description": "Buy SWK 75c / Sell SWK 82c",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Limited-risk bullish strategy with a defined reward range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:15.986673",
+    "user_id": "anonymous",
+    "belief": "Oil prices will surge after OPEC\u2019s announcement",
+    "explanation": "Based on your belief: 'Oil prices will surge after OPEC\u2019s announcement', The system expects neutral or sideways movement in XLE. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:16.018949",
+    "user_id": "anonymous",
+    "belief": "Oil prices will surge after OPEC\u2019s announcement",
+    "explanation": "Based on your belief: 'Oil prices will surge after OPEC\u2019s announcement', The system expects neutral or sideways movement in XLE. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:16.465404",
+    "user_id": "anonymous",
+    "belief": "Yields are rising \u2014 time to rotate into treasuries",
+    "explanation": "Based on your belief: 'Yields are rising \u2014 time to rotate into treasuries', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:16.499504",
+    "user_id": "anonymous",
+    "belief": "Yields are rising \u2014 time to rotate into treasuries",
+    "explanation": "Based on your belief: 'Yields are rising \u2014 time to rotate into treasuries', The system expects neutral or sideways movement in AAPL. Hence, the 'bond ladder' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "bond ladder",
+      "description": "Build a ladder of bonds with staggered maturities",
+      "risk_level": "low",
+      "suggested_allocation": "20%",
+      "explanation": "Generates predictable income while minimizing interest rate risk."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:16.960323",
+    "user_id": "anonymous",
+    "belief": "Nvidia will benefit from the AI chip race",
+    "explanation": "Based on your belief: 'Nvidia will benefit from the AI chip race', The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:16.992742",
+    "user_id": "anonymous",
+    "belief": "Nvidia will benefit from the AI chip race",
+    "explanation": "Based on your belief: 'Nvidia will benefit from the AI chip race', The system expects neutral or sideways movement in DIA. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:17.463472",
+    "user_id": "anonymous",
+    "belief": "Snowflake has been massively oversold this quarter",
+    "explanation": "Based on your belief: 'Snowflake has been massively oversold this quarter', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:47:17.500120",
+    "user_id": "anonymous",
+    "belief": "Snowflake has been massively oversold this quarter",
+    "explanation": "Based on your belief: 'Snowflake has been massively oversold this quarter', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:31.904575",
+    "user_id": "anonymous",
+    "belief": "Snowflake is poised to rebound after earnings",
+    "explanation": "Based on your belief: 'Snowflake is poised to rebound after earnings', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:31.938492",
+    "user_id": "anonymous",
+    "belief": "Snowflake is poised to rebound after earnings",
+    "explanation": "Based on your belief: 'Snowflake is poised to rebound after earnings', The system expects neutral or sideways movement in SNOW. Hence, the 'straddle' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "straddle",
+      "description": "Buy call and put at same strike/expiry",
+      "risk_level": "high",
+      "suggested_allocation": "10%",
+      "explanation": "Profit from volatility in either direction \u2014 useful before earnings or news."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:32.377294",
+    "user_id": "anonymous",
+    "belief": "AI chip makers will dominate this year",
+    "explanation": "Based on your belief: 'AI chip makers will dominate this year', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:32.458682",
+    "user_id": "anonymous",
+    "belief": "AI chip makers will dominate this year",
+    "explanation": "Based on your belief: 'AI chip makers will dominate this year', The system expects neutral or sideways movement in AAPL. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:32.943562",
+    "user_id": "anonymous",
+    "belief": "Banks will suffer in a credit crisis",
+    "explanation": "Based on your belief: 'Banks will suffer in a credit crisis', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
+  },
+  {
+    "timestamp": "2025-07-02T22:54:32.979368",
+    "user_id": "anonymous",
+    "belief": "Banks will suffer in a credit crisis",
+    "explanation": "Based on your belief: 'Banks will suffer in a credit crisis', The system expects neutral or sideways movement in XLF. Hence, the 'iron condor' strategy was selected to match your objective.",
+    "strategy": {
+      "type": "iron condor",
+      "description": "Sell call + put spreads (same expiry)",
+      "risk_level": "medium",
+      "suggested_allocation": "15%",
+      "explanation": "Best for neutral outlook \u2014 profit if price stays in a defined range."
+    }
   }
 ]
