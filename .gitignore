@@ -2,20 +2,23 @@
 # 🐍 PYTHON + BACKEND
 # =======================
 
+# Ignore .env file containing secrets
+.env
+
 # Virtual environments
 venv/
-.env/                      # Global env vars (e.g., Supabase keys)
-__pycache__/              # Python bytecode cache
+.env/                      # Global env vars folder (if any)
+**/__pycache__/             # Python __pycache__ folders recursively
+*.py[cod]                  # Compiled Python files
 
-# Python artifacts
-*.py[cod]                 # Compiled Python files
+# Python shared objects, eggs, build folders
 *.so
 *.egg
 *.egg-info/
 dist/
 build/
 
-# Jupyter Notebook junk
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
 # =======================
@@ -32,14 +35,11 @@ build/
 # 🤖 MODELS + DATA
 # =======================
 
-# Ignore ML model files globally...
+# Ignore ML model files globally (including backend)
 *.joblib
 *.pkl
 *.h5
 *.pt
-
-# ✅ ...except essential ones in backend
-!backend/*.joblib
 
 # =======================
 # 🧪 TEST + GENERATED FILES
@@ -73,21 +73,13 @@ test_api.py
 # 🌐 FRONTEND (React)
 # =======================
 
-# Ignore env and structure docs
+# Ignore frontend env and structure docs
 frontend/.env
 frontend_structure.txt
 
-# Node modules if frontend build grows
+# Node modules
 node_modules/
 
-# React build outputs (if using vite/build later)
+# React build outputs (vite/build)
 dist/
 build/
-
-# =======================
-# ✅ WHITELIST TRAINING/CRITICAL DATA
-# =======================
-
-!backend/feedback.csv
-!backend/training_data/*.csv
-!runtime.txt

@@ -15302,5 +15302,195 @@
       "user_id": "test_user"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T07:49:33.413017",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "quantity": "8",
+            "instrument": "Bond ETF",
+            "ticker": "AAPL",
+            "price": "212.44"
+          }
+        ],
+        "expiration": "N/A",
+        "target_return": "4%",
+        "max_loss": "2%",
+        "time_to_target": "12 months",
+        "explanation": "A bond ladder is a portfolio of bonds with different maturity dates. This strategy aims to reduce risk and have a steady income stream. As bonds mature on different dates, the cash can be reinvested or used for income. Since Apple is a strong company with a stable outlook, buying a Bond ETF of Apple bonds and holding it for a year could provide a steady stream of income through interest payments and potentially capital gains if the bonds appreciate in value. The risk is moderate, corresponding to the user's risk profile."
+      },
+      "ticker": "AAPL",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 212.44
+      },
+      "high_low": [
+        213.34,
+        208.14
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "A bond ladder is a portfolio of bonds with different maturity dates. This strategy aims to reduce risk and have a steady income stream. As bonds mature on different dates, the cash can be reinvested or used for income. Since Apple is a strong company with a stable outlook, buying a Bond ETF of Apple bonds and holding it for a year could provide a steady stream of income through interest payments and potentially capital gains if the bonds appreciate in value. The risk is moderate, corresponding to the user's risk profile.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T07:49:48.408189",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T07:50:38.736577",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T07:50:42.841556",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T07:51:09.863200",
+    "user_id": "anonymous",
+    "belief": "what are the latest earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "trade_legs": [
+          "sell 1 call 220 strike",
+          "buy 1 call 225 strike",
+          "sell 1 put 200 strike",
+          "buy 1 put 195 strike"
+        ],
+        "expiration": "2023-03-17",
+        "target_return": 25,
+        "max_loss": 75,
+        "time_to_target": "6 months",
+        "explanation": "Given your neutral direction and moderate risk profile, an Iron Condor options strategy fits well. This strategy involves selling an out-of-the-money call and an out-of-the-money put, and buying a further out-of-the-money call and put for protection. This creates a range where the stock can move, and as long as AAPL stays within this range, you can realize your target return. This strategy has limited risk and limited profit potential, aligning with your moderate risk profile. Your confidence level also suggests that the latest earnings are unlikely to cause a significant price move in the short term, making this a good strategy."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 212.44
+      },
+      "high_low": [
+        213.34,
+        208.14
+      ],
+      "confidence": 0.7591117552865096,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Given your neutral direction and moderate risk profile, an Iron Condor options strategy fits well. This strategy involves selling an out-of-the-money call and an out-of-the-money put, and buying a further out-of-the-money call and put for protection. This creates a range where the stock can move, and as long as AAPL stays within this range, you can realize your target return. This strategy has limited risk and limited profit potential, aligning with your moderate risk profile. Your confidence level also suggests that the latest earnings are unlikely to cause a significant price move in the short term, making this a good strategy.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T07:51:21.065043",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "what are the latest earnings",
+    "strategy": "Iron Condor",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T07:57:36.450233",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "contract": "call",
+            "strike": 160,
+            "expiration": "2021-12-31"
+          }
+        ],
+        "target_return": 100,
+        "max_loss": 100,
+        "time_to_target": "1 month",
+        "explanation": "The Long Call option strategy is a basic options strategy that bets on a significant upward price movement of the underlying asset. In this case, buying a call option on NVDA with a strike price close to the current price level, expecting the price of NVDA to double within the month. This fits the user's belief as the potential return could be very high if NVDA does indeed double. However, the user needs to be aware that the potential loss could also be 100% of the investment if the price of NVDA does not go above the strike price of 160 by the end of the month."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 157.25
+      },
+      "high_low": [
+        157.6,
+        152.97
+      ],
+      "confidence": 0.6422839143343279,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": "this month",
+      "expiry_date": "2025-07-04",
+      "risk_profile": "moderate",
+      "explanation": "The Long Call option strategy is a basic options strategy that bets on a significant upward price movement of the underlying asset. In this case, buying a call option on NVDA with a strike price close to the current price level, expecting the price of NVDA to double within the month. This fits the user's belief as the potential return could be very high if NVDA does indeed double. However, the user needs to be aware that the potential loss could also be 100% of the investment if the price of NVDA does not go above the strike price of 160 by the end of the month.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T07:58:15.997196",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Long Call",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T07:58:20.328641",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": "Long Call",
+    "feedback": "bad",
+    "risk_profile": "moderate"
   }
 ]
