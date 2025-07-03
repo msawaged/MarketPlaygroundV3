@@ -83,3 +83,7 @@ node_modules/
 # React build outputs (vite/build)
 dist/
 build/
+__pycache__/
+*.json
+*.txt
+.env
