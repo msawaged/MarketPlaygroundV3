@@ -89,3 +89,37 @@ def get_ingested_news(limit: int = 10):
         return {"entries": parsed}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read news log: {str(e)}")
+# === Total feedback entries ===
+@router.get("/debug/feedback_count")
+def get_feedback_count():
+    """
+    Returns the total number of feedback entries in feedback_data.json.
+    """
+    feedback_path = os.path.join("backend", "feedback_data.json")
+    if not os.path.exists(feedback_path):
+        raise HTTPException(status_code=404, detail="feedback_data.json not found.")
+    try:
+        with open(feedback_path, "r") as f:
+            data = json.load(f)
+        return {"feedback_count": len(data)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
+
+# === Last strategy log summary ===
+@router.get("/debug/last_strategy_log")
+def get_last_strategy_log():
+    """
+    Returns the most recent strategy log entries.
+    """
+    strategy_path = os.path.join("backend", "strategy_log.json")
+    if not os.path.exists(strategy_path):
+        raise HTTPException(status_code=404, detail="strategy_log.json not found.")
+    try:
+        with open(strategy_path, "r") as f:
+            data = json.load(f)
+        return {
+            "total_strategies": len(data),
+            "last_entry": data[-1] if data else {}
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read strategy log: {str(e)}")

@@ -15492,5 +15492,495 @@
     "strategy": "Long Call",
     "feedback": "bad",
     "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-03T09:07:38.846988",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 315.65
+      },
+      "high_low": [
+        316.83,
+        303.82
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T10:17:24.120167",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 172.8
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T10:18:06.875182",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "AAPL",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:12:43.074077",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 172.8
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:20:30.654381",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 172.8
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:20:44.072416",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "error",
+        "trade_legs": [],
+        "expiration": "N/A",
+        "target_return": 0,
+        "max_loss": 0,
+        "time_to_target": "N/A",
+        "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}"
+      },
+      "ticker": "AAPL",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Failed to generate strategy: Error code: 401 - {'error': {'message': 'Incorrect API key provided: REDACTED*********RITY. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:30:35.394324",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          "Buy 100 shares of AAPL Bond ETF"
+        ],
+        "expiration": "N/A",
+        "target_return": "4%",
+        "max_loss": "2%",
+        "time_to_target": "1 year",
+        "explanation": "A bond ladder is a portfolio of bonds with different maturity dates, which can provide a steady income stream. AAPL's Bond ETF is a suitable choice because it allows exposure to a diversified portfolio of AAPL's bonds. This is a neutral strategy since the price of the bond ETF is less affected by the company's equity price but more by the overall bond market and AAPL's creditworthiness. You can invest a certain amount in this bond ETF regularly to build up your bond ladder over time. The target return and max loss are set based on the moderate risk profile, and the expectation of the bond market."
+      },
+      "ticker": "AAPL",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "A bond ladder is a portfolio of bonds with different maturity dates, which can provide a steady income stream. AAPL's Bond ETF is a suitable choice because it allows exposure to a diversified portfolio of AAPL's bonds. This is a neutral strategy since the price of the bond ETF is less affected by the company's equity price but more by the overall bond market and AAPL's creditworthiness. You can invest a certain amount in this bond ETF regularly to build up your bond ladder over time. The target return and max loss are set based on the moderate risk profile, and the expectation of the bond market.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:31:38.497186",
+    "user_id": "anonymous",
+    "belief": "I think Apple will break new highs soon",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "buy 1 call 200 strike"
+        ],
+        "expiration": "2023-06-30",
+        "target_return": 20,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "If you believe that AAPL will break new highs soon, a long call strategy could be profitable. By buying a call option, you have the right to purchase the stock at a set price (the strike price) until the option's expiration date. If AAPL's price rises above the strike price, you could exercise the option or sell it for a profit. The risk is that the stock does not exceed the strike price before the option expires, in which case you would lose the premium paid for the option."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.7043312437844151,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "If you believe that AAPL will break new highs soon, a long call strategy could be profitable. By buying a call option, you have the right to purchase the stock at a set price (the strike price) until the option's expiration date. If AAPL's price rises above the strike price, you could exercise the option or sell it for a profit. The risk is that the stock does not exceed the strike price before the option expires, in which case you would lose the premium paid for the option.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:32:38.159588",
+    "user_id": "anonymous",
+    "belief": "The market is overdue for a correction",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          "Buy 1 put 100 strike"
+        ],
+        "expiration": "2023-12-31",
+        "target_return": "50%",
+        "max_loss": "100%",
+        "time_to_target": "1 year",
+        "explanation": "The belief that the market is overdue for a correction suggests the investor expects a significant drop in prices. A long put allows the investor to profit from a decrease in the underlying asset's price. The ARKK ETF is chosen as it reflects the overall market. This strategy has a moderate risk as the maximum loss is limited to the premium paid for the put option. The expiration date is set to one year from now to allow sufficient time for the market to correct."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6913358594319242,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "The belief that the market is overdue for a correction suggests the investor expects a significant drop in prices. A long put allows the investor to profit from a decrease in the underlying asset's price. The ARKK ETF is chosen as it reflects the overall market. This strategy has a moderate risk as the maximum loss is limited to the premium paid for the put option. The expiration date is set to one year from now to allow sufficient time for the market to correct.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:46:43.156153",
+    "user_id": "anonymous",
+    "belief": "I want a safe bond fund that gives me steady income",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "quantity": "As much as your budget allows",
+            "asset": "Bond ETF"
+          }
+        ],
+        "expiration": "N/A",
+        "target_return": "3-4%",
+        "max_loss": "1-2%",
+        "time_to_target": "1 year",
+        "explanation": "Based on your belief, a bond ETF is a suitable choice. Bond ETFs are generally considered safe and provide steady income through regular dividend payments. They are less volatile than stocks and can be a good way to generate a steady income stream. The target return is relatively lower, but so is the risk, matching your moderate risk profile."
+      },
+      "ticker": "AAPL",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income",
+        "safe"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 190.25
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5849038434237381,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Based on your belief, a bond ETF is a suitable choice. Bond ETFs are generally considered safe and provide steady income through regular dividend payments. They are less volatile than stocks and can be a good way to generate a steady income stream. The target return is relatively lower, but so is the risk, matching your moderate risk profile.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:51:46.570413",
+    "user_id": "anonymous",
+    "belief": "I want steady income from bonds",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          "Buy 100 units of TLT"
+        ],
+        "expiration": "N/A",
+        "target_return": "2-3%",
+        "max_loss": "1-2%",
+        "time_to_target": "1 year",
+        "explanation": "Buying a bond ETF like TLT provides a steady income through interest payments. The risk is moderate, as bonds are generally safer investments than stocks. The strategy matches the user's belief of wanting a steady income from bonds."
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5959931549904648,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Buying a bond ETF like TLT provides a steady income through interest payments. The risk is moderate, as bonds are generally safer investments than stocks. The strategy matches the user's belief of wanting a steady income from bonds.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-03T22:57:57.145685",
+    "user_id": "test",
+    "belief": "I think treasury yields will rise and bonds will fall",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "buy 1 put option",
+            "ticker": "TLT",
+            "strike": -1.0,
+            "expiration": "2023-12-31"
+          }
+        ],
+        "expiration": "2023-12-31",
+        "target_return": 20.0,
+        "max_loss": 10.0,
+        "time_to_target": "1 year",
+        "explanation": "The strategy involves buying a put option on TLT, which is an ETF that tracks the price of long-term treasury bonds. If the treasury yields rise, the price of bonds (and therefore TLT) will fall, making the put option more valuable. This strategy offers limited downside risk (the premium paid for the put option), and potentially significant upside if the belief about rising yields proves correct."
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6819219362915188,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "The strategy involves buying a put option on TLT, which is an ETF that tracks the price of long-term treasury bonds. If the treasury yields rise, the price of bonds (and therefore TLT) will fall, making the put option more valuable. This strategy offers limited downside risk (the premium paid for the put option), and potentially significant upside if the belief about rising yields proves correct.",
+      "user_id": "test"
+    },
+    "result": "auto_generated"
   }
 ]
