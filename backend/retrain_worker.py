@@ -20,7 +20,7 @@ LOG_PATH = os.path.join(LOG_DIR, "retrain_worker.log")           # Full retrain 
 LAST_RETRAIN_PATH = os.path.join(LOG_DIR, "last_retrain.json")   # Stores last feedback count
 FEEDBACK_PATH = os.path.join(BASE_DIR, "feedback.csv")           # Source of truth for retraining
 
-FEEDBACK_THRESHOLD = 25  # 🔁 Retrain only if this many new feedback rows appear
+FEEDBACK_THRESHOLD = 6  # 🔁 Retrain only if this many new feedback rows appear
 
 # === Logging Helper ===
 def log_to_file(message: str):
