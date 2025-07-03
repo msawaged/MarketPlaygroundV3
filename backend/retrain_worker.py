@@ -87,6 +87,7 @@ def run_retraining_loop(interval: int = 3600):
                 train_all_models()
                 save_retrain_state(current_count)
                 log_to_file("✅ Model retraining completed")
+                write_training_log("✅ Model retraining completed", source="retrain_worker")  # <-- 🔥 Critical fix
             else:
                 log_to_file(f"⏭️  Skipped — Need {FEEDBACK_THRESHOLD}, got {new_entries}")
 
