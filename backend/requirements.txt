@@ -17,7 +17,7 @@ beautifulsoup4==4.13.4     # HTML/XML parsing
 soupsieve==2.7             # CSS selectors for BeautifulSoup
 html5lib==1.1              # HTML parser
 lxml==5.4.0                # Fast XML/HTML parser
-feedparser                # RSS feed parsing
+feedparser                 # RSS feed parsing
 
 # === HTTP + Requests ===
 requests==2.32.4           # HTTP requests
@@ -52,7 +52,10 @@ yfinance==0.2.37           # Market data from Yahoo
 multitasking==0.0.11       # Async helpers (used by yfinance)
 
 # === Env Management ===
-python-dotenv==1.0.1       # 🔥 MISSING in your version — required for loading `.env`
+python-dotenv==1.0.1       # ✅ Required for loading `.env` file
+
+# === GPT-4 + Strategy Engine ===
+openai>=1.0.0              # ✅ GPT-4 model integration (use `from openai import OpenAI`)
 
 # === Other Utilities ===
 appdirs==1.4.4             # Used by joblib
