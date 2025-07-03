@@ -1,0 +1,1132 @@
+.
+├── RealTime_CNBC_Transcription_Guide.docx
+├── __pycache__
+│   ├── finnhub_client.cpython-311.pyc
+│   └── finnhub_client.cpython-39.pyc
+├── append_feedback.sh
+├── backend
+│   ├── Training_Strategies.csv
+│   ├── Training_Strategies_Enhanced.csv
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── alpaca_client.cpython-311.pyc
+│   │   ├── alpaca_orders.cpython-311.pyc
+│   │   ├── alpaca_portfolio.cpython-311.pyc
+│   │   ├── app.cpython-311.pyc
+│   │   ├── asset_selector.cpython-311.pyc
+│   │   ├── belief_parser.cpython-311.pyc
+│   │   ├── broker_interface.cpython-311.pyc
+│   │   ├── feedback_handler.cpython-311.pyc
+│   │   ├── feedback_trainer.cpython-311.pyc
+│   │   ├── market_data.cpython-311.pyc
+│   │   ├── news_entity_parser.cpython-311.pyc
+│   │   ├── news_ingestor.cpython-311.pyc
+│   │   ├── news_scraper.cpython-311.pyc
+│   │   ├── pnl_tracker.cpython-311.pyc
+│   │   ├── portfolio_handler.cpython-311.pyc
+│   │   ├── strategy_outcome_logger.cpython-311.pyc
+│   │   ├── strategy_selector.cpython-311.pyc
+│   │   ├── trade_execution_logger.cpython-311.pyc
+│   │   ├── train_all_models.cpython-311.pyc
+│   │   ├── train_asset_model.cpython-311.pyc
+│   │   ├── train_belief_model.cpython-311.pyc
+│   │   ├── train_smarter_strategy_model.cpython-311.pyc
+│   │   ├── user_models.cpython-311.pyc
+│   │   └── visualize_strategy_accuracy.cpython-311.pyc
+│   ├── ai_engine
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── ai_engine.py
+│   │   ├── expiry_utils.py
+│   │   ├── goal_evaluator.py
+│   │   ├── goal_parser.py
+│   │   ├── gpt4_strategy_generator.py
+│   │   ├── multi_asset_model.joblib
+│   │   └── multi_vectorizer.joblib
+│   ├── alpaca_client.py
+│   ├── alpaca_orders.py
+│   ├── alpaca_portfolio.py
+│   ├── analytics
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── portfolio_summary.py
+│   │   └── risk_engine.py
+│   ├── analytics.py
+│   ├── app.py
+│   ├── asset_class_model.joblib
+│   ├── asset_selector.py
+│   ├── asset_vectorizer.joblib
+│   ├── auth_handler.py
+│   ├── auto_retrain.py
+│   ├── background_tasks.py
+│   ├── belief_classifier.joblib
+│   ├── belief_feeder.py
+│   ├── belief_model.joblib
+│   ├── belief_model_old.joblib
+│   ├── belief_parser.py
+│   ├── belief_vectorizer.joblib
+│   ├── best_model.joblib
+│   ├── broker_interface.py
+│   ├── data
+│   │   └── users.json
+│   ├── deploy_trigger.py
+│   ├── equity_snapshots.json
+│   ├── feedback.csv
+│   ├── feedback_data.json
+│   ├── feedback_data_backup.json
+│   ├── feedback_handler.py
+│   ├── feedback_model.joblib
+│   ├── feedback_strategy_model.joblib
+│   ├── feedback_strategy_vectorizer.joblib
+│   ├── feedback_trainer.py
+│   ├── finnhub_data.py
+│   ├── fix_strategy_column.py
+│   ├── fix_training_csv.py
+│   ├── generate_enhanced_training_data.py
+│   ├── historic_data.csv
+│   ├── logger
+│   │   ├── __pycache__
+│   │   ├── portfolio_logger.py
+│   │   ├── strategy_logger.py
+│   │   └── trade_execution_logger.py
+│   ├── logs
+│   │   ├── auto_loop_output.log
+│   │   ├── executions
+│   │   ├── last_training_log.json
+│   │   ├── last_training_log.txt
+│   │   ├── news_beliefs.csv
+│   │   ├── news_ingestor_log.txt
+│   │   ├── retrain_worker.log
+│   │   ├── simulation_20250630_074454.json
+│   │   └── simulation_20250630_074725.json
+│   ├── market_data.py
+│   ├── multi_asset_model.joblib
+│   ├── multi_strategy_model.joblib
+│   ├── multi_vectorizer.joblib
+│   ├── news_beliefs.json
+│   ├── news_entity_parser.py
+│   ├── news_ingestor.py
+│   ├── news_scraper.py
+│   ├── openai_config.py
+│   ├── pnl.json
+│   ├── pnl_tracker.py
+│   ├── portfolio_handler.py
+│   ├── portfolio_log.json
+│   ├── requirements-news.txt
+│   ├── requirements-worker.txt
+│   ├── requirements.txt
+│   ├── retrain_worker.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── alpaca_router.py
+│   │   ├── analytics_router.py
+│   │   ├── auth_router.py
+│   │   ├── auth_routes.py
+│   │   ├── debug_router.py
+│   │   ├── execution_router.py
+│   │   ├── feedback_predictor.py
+│   │   ├── feedback_router.py
+│   │   ├── hot_trades_router.py
+│   │   ├── market_router.py
+│   │   ├── pnl_router.py
+│   │   ├── portfolio_router.py
+│   │   ├── strategy_logger_router.py
+│   │   └── strategy_router.py
+│   ├── schemas.py
+│   ├── smart_strategy_pipeline.joblib
+│   ├── strategy_distribution.png
+│   ├── strategy_distribution_chart.png
+│   ├── strategy_label_encoder.joblib
+│   ├── strategy_log.json
+│   ├── strategy_outcome_logger.py
+│   ├── strategy_outcome_summary.py
+│   ├── strategy_outcomes.csv
+│   ├── strategy_selector.py
+│   ├── test_ai_engine.py
+│   ├── ticker_model.joblib
+│   ├── trade_execution_logger.py
+│   ├── train_all_models.py
+│   ├── train_asset_model.py
+│   ├── train_belief_model.py
+│   ├── train_from_feedback.py
+│   ├── train_multi_asset_model.py
+│   ├── train_smarter_strategy_model.py
+│   ├── training_data
+│   │   ├── clean_belief_strategy.csv
+│   │   ├── clean_belief_tags.csv
+│   │   ├── cleaned_strategies.csv
+│   │   └── final_belief_asset_training.csv
+│   ├── user_models.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── feature_utils.py
+│   │   ├── json_to_csv.py
+│   │   ├── logger.py
+│   │   ├── model_utils.py
+│   │   ├── ticker_list.py
+│   │   └── training_trigger.py
+│   ├── vectorizer.joblib
+│   ├── visualize_strategy_accuracy.py
+│   └── visualize_strategy_distribution.py
+├── finnhub_client.py
+├── frontend
+│   ├── node_modules
+│   │   ├── @alloc
+│   │   ├── @ampproject
+│   │   ├── @babel
+│   │   ├── @bcoe
+│   │   ├── @csstools
+│   │   ├── @eslint
+│   │   ├── @eslint-community
+│   │   ├── @humanwhocodes
+│   │   ├── @isaacs
+│   │   ├── @istanbuljs
+│   │   ├── @jest
+│   │   ├── @jridgewell
+│   │   ├── @leichtgewicht
+│   │   ├── @nicolo-ribaudo
+│   │   ├── @nodelib
+│   │   ├── @pkgjs
+│   │   ├── @pmmmwh
+│   │   ├── @rollup
+│   │   ├── @rtsao
+│   │   ├── @rushstack
+│   │   ├── @sinclair
+│   │   ├── @sinonjs
+│   │   ├── @surma
+│   │   ├── @svgr
+│   │   ├── @tootallnate
+│   │   ├── @trysound
+│   │   ├── @types
+│   │   ├── @typescript-eslint
+│   │   ├── @ungap
+│   │   ├── @webassemblyjs
+│   │   ├── @xtuc
+│   │   ├── abab
+│   │   ├── accepts
+│   │   ├── acorn
+│   │   ├── acorn-globals
+│   │   ├── acorn-jsx
+│   │   ├── acorn-walk
+│   │   ├── address
+│   │   ├── adjust-sourcemap-loader
+│   │   ├── agent-base
+│   │   ├── ajv
+│   │   ├── ajv-formats
+│   │   ├── ajv-keywords
+│   │   ├── ansi-escapes
+│   │   ├── ansi-html
+│   │   ├── ansi-html-community
+│   │   ├── ansi-regex
+│   │   ├── ansi-styles
+│   │   ├── any-promise
+│   │   ├── anymatch
+│   │   ├── arg
+│   │   ├── argparse
+│   │   ├── aria-query
+│   │   ├── array-buffer-byte-length
+│   │   ├── array-flatten
+│   │   ├── array-includes
+│   │   ├── array-union
+│   │   ├── array.prototype.findlast
+│   │   ├── array.prototype.findlastindex
+│   │   ├── array.prototype.flat
+│   │   ├── array.prototype.flatmap
+│   │   ├── array.prototype.reduce
+│   │   ├── array.prototype.tosorted
+│   │   ├── arraybuffer.prototype.slice
+│   │   ├── asap
+│   │   ├── ast-types-flow
+│   │   ├── async
+│   │   ├── async-function
+│   │   ├── asynckit
+│   │   ├── at-least-node
+│   │   ├── autoprefixer
+│   │   ├── available-typed-arrays
+│   │   ├── axe-core
+│   │   ├── axobject-query
+│   │   ├── babel-jest
+│   │   ├── babel-loader
+│   │   ├── babel-plugin-istanbul
+│   │   ├── babel-plugin-jest-hoist
+│   │   ├── babel-plugin-macros
+│   │   ├── babel-plugin-named-asset-import
+│   │   ├── babel-plugin-polyfill-corejs2
+│   │   ├── babel-plugin-polyfill-corejs3
+│   │   ├── babel-plugin-polyfill-regenerator
+│   │   ├── babel-plugin-transform-react-remove-prop-types
+│   │   ├── babel-preset-current-node-syntax
+│   │   ├── babel-preset-jest
+│   │   ├── babel-preset-react-app
+│   │   ├── balanced-match
+│   │   ├── batch
+│   │   ├── bfj
+│   │   ├── big.js
+│   │   ├── binary-extensions
+│   │   ├── bluebird
+│   │   ├── body-parser
+│   │   ├── bonjour-service
+│   │   ├── boolbase
+│   │   ├── brace-expansion
+│   │   ├── braces
+│   │   ├── browser-process-hrtime
+│   │   ├── browserslist
+│   │   ├── bser
+│   │   ├── buffer-from
+│   │   ├── builtin-modules
+│   │   ├── bytes
+│   │   ├── call-bind
+│   │   ├── call-bind-apply-helpers
+│   │   ├── call-bound
+│   │   ├── callsites
+│   │   ├── camel-case
+│   │   ├── camelcase
+│   │   ├── camelcase-css
+│   │   ├── caniuse-api
+│   │   ├── caniuse-lite
+│   │   ├── case-sensitive-paths-webpack-plugin
+│   │   ├── chalk
+│   │   ├── char-regex
+│   │   ├── check-types
+│   │   ├── chokidar
+│   │   ├── chrome-trace-event
+│   │   ├── ci-info
+│   │   ├── cjs-module-lexer
+│   │   ├── clean-css
+│   │   ├── cliui
+│   │   ├── co
+│   │   ├── coa
+│   │   ├── collect-v8-coverage
+│   │   ├── color-convert
+│   │   ├── color-name
+│   │   ├── colord
+│   │   ├── colorette
+│   │   ├── combined-stream
+│   │   ├── commander
+│   │   ├── common-tags
+│   │   ├── commondir
+│   │   ├── compressible
+│   │   ├── compression
+│   │   ├── concat-map
+│   │   ├── confusing-browser-globals
+│   │   ├── connect-history-api-fallback
+│   │   ├── content-disposition
+│   │   ├── content-type
+│   │   ├── convert-source-map
+│   │   ├── cookie
+│   │   ├── cookie-signature
+│   │   ├── core-js
+│   │   ├── core-js-compat
+│   │   ├── core-js-pure
+│   │   ├── core-util-is
+│   │   ├── cosmiconfig
+│   │   ├── cra-template-pwa
+│   │   ├── cross-spawn
+│   │   ├── crypto-random-string
+│   │   ├── css-blank-pseudo
+│   │   ├── css-declaration-sorter
+│   │   ├── css-has-pseudo
+│   │   ├── css-loader
+│   │   ├── css-minimizer-webpack-plugin
+│   │   ├── css-prefers-color-scheme
+│   │   ├── css-select
+│   │   ├── css-select-base-adapter
+│   │   ├── css-tree
+│   │   ├── css-what
+│   │   ├── cssdb
+│   │   ├── cssesc
+│   │   ├── cssnano
+│   │   ├── cssnano-preset-default
+│   │   ├── cssnano-utils
+│   │   ├── csso
+│   │   ├── cssom
+│   │   ├── cssstyle
+│   │   ├── damerau-levenshtein
+│   │   ├── data-urls
+│   │   ├── data-view-buffer
+│   │   ├── data-view-byte-length
+│   │   ├── data-view-byte-offset
+│   │   ├── debug
+│   │   ├── decimal.js
+│   │   ├── dedent
+│   │   ├── deep-is
+│   │   ├── deepmerge
+│   │   ├── default-gateway
+│   │   ├── define-data-property
+│   │   ├── define-lazy-prop
+│   │   ├── define-properties
+│   │   ├── delayed-stream
+│   │   ├── depd
+│   │   ├── destroy
+│   │   ├── detect-newline
+│   │   ├── detect-node
+│   │   ├── detect-port-alt
+│   │   ├── didyoumean
+│   │   ├── diff-sequences
+│   │   ├── dir-glob
+│   │   ├── dlv
+│   │   ├── dns-packet
+│   │   ├── doctrine
+│   │   ├── dom-converter
+│   │   ├── dom-serializer
+│   │   ├── domelementtype
+│   │   ├── domexception
+│   │   ├── domhandler
+│   │   ├── domutils
+│   │   ├── dot-case
+│   │   ├── dotenv
+│   │   ├── dotenv-expand
+│   │   ├── dunder-proto
+│   │   ├── duplexer
+│   │   ├── eastasianwidth
+│   │   ├── ee-first
+│   │   ├── ejs
+│   │   ├── electron-to-chromium
+│   │   ├── emittery
+│   │   ├── emoji-regex
+│   │   ├── emojis-list
+│   │   ├── encodeurl
+│   │   ├── enhanced-resolve
+│   │   ├── entities
+│   │   ├── error-ex
+│   │   ├── error-stack-parser
+│   │   ├── es-abstract
+│   │   ├── es-array-method-boxes-properly
+│   │   ├── es-define-property
+│   │   ├── es-errors
+│   │   ├── es-iterator-helpers
+│   │   ├── es-module-lexer
+│   │   ├── es-object-atoms
+│   │   ├── es-set-tostringtag
+│   │   ├── es-shim-unscopables
+│   │   ├── es-to-primitive
+│   │   ├── escalade
+│   │   ├── escape-html
+│   │   ├── escape-string-regexp
+│   │   ├── escodegen
+│   │   ├── eslint
+│   │   ├── eslint-config-react-app
+│   │   ├── eslint-import-resolver-node
+│   │   ├── eslint-module-utils
+│   │   ├── eslint-plugin-flowtype
+│   │   ├── eslint-plugin-import
+│   │   ├── eslint-plugin-jest
+│   │   ├── eslint-plugin-jsx-a11y
+│   │   ├── eslint-plugin-react
+│   │   ├── eslint-plugin-react-hooks
+│   │   ├── eslint-plugin-testing-library
+│   │   ├── eslint-scope
+│   │   ├── eslint-visitor-keys
+│   │   ├── eslint-webpack-plugin
+│   │   ├── espree
+│   │   ├── esprima
+│   │   ├── esquery
+│   │   ├── esrecurse
+│   │   ├── estraverse
+│   │   ├── estree-walker
+│   │   ├── esutils
+│   │   ├── etag
+│   │   ├── eventemitter3
+│   │   ├── events
+│   │   ├── execa
+│   │   ├── exit
+│   │   ├── expect
+│   │   ├── express
+│   │   ├── fast-deep-equal
+│   │   ├── fast-glob
+│   │   ├── fast-json-stable-stringify
+│   │   ├── fast-levenshtein
+│   │   ├── fast-uri
+│   │   ├── fastq
+│   │   ├── faye-websocket
+│   │   ├── fb-watchman
+│   │   ├── file-entry-cache
+│   │   ├── file-loader
+│   │   ├── filelist
+│   │   ├── filesize
+│   │   ├── fill-range
+│   │   ├── finalhandler
+│   │   ├── find-cache-dir
+│   │   ├── find-up
+│   │   ├── flat-cache
+│   │   ├── flatted
+│   │   ├── follow-redirects
+│   │   ├── for-each
+│   │   ├── foreground-child
+│   │   ├── fork-ts-checker-webpack-plugin
+│   │   ├── form-data
+│   │   ├── forwarded
+│   │   ├── fraction.js
+│   │   ├── fresh
+│   │   ├── fs-extra
+│   │   ├── fs-monkey
+│   │   ├── fs.realpath
+│   │   ├── fsevents
+│   │   ├── function-bind
+│   │   ├── function.prototype.name
+│   │   ├── functions-have-names
+│   │   ├── gensync
+│   │   ├── get-caller-file
+│   │   ├── get-intrinsic
+│   │   ├── get-own-enumerable-property-symbols
+│   │   ├── get-package-type
+│   │   ├── get-proto
+│   │   ├── get-stream
+│   │   ├── get-symbol-description
+│   │   ├── glob
+│   │   ├── glob-parent
+│   │   ├── glob-to-regexp
+│   │   ├── global-modules
+│   │   ├── global-prefix
+│   │   ├── globals
+│   │   ├── globalthis
+│   │   ├── globby
+│   │   ├── gopd
+│   │   ├── graceful-fs
+│   │   ├── graphemer
+│   │   ├── gzip-size
+│   │   ├── handle-thing
+│   │   ├── harmony-reflect
+│   │   ├── has-bigints
+│   │   ├── has-flag
+│   │   ├── has-property-descriptors
+│   │   ├── has-proto
+│   │   ├── has-symbols
+│   │   ├── has-tostringtag
+│   │   ├── hasown
+│   │   ├── he
+│   │   ├── hoopy
+│   │   ├── hpack.js
+│   │   ├── html-encoding-sniffer
+│   │   ├── html-entities
+│   │   ├── html-escaper
+│   │   ├── html-minifier-terser
+│   │   ├── html-webpack-plugin
+│   │   ├── htmlparser2
+│   │   ├── http-deceiver
+│   │   ├── http-errors
+│   │   ├── http-parser-js
+│   │   ├── http-proxy
+│   │   ├── http-proxy-agent
+│   │   ├── http-proxy-middleware
+│   │   ├── https-proxy-agent
+│   │   ├── human-signals
+│   │   ├── iconv-lite
+│   │   ├── icss-utils
+│   │   ├── idb
+│   │   ├── identity-obj-proxy
+│   │   ├── ignore
+│   │   ├── immer
+│   │   ├── import-fresh
+│   │   ├── import-local
+│   │   ├── imurmurhash
+│   │   ├── inflight
+│   │   ├── inherits
+│   │   ├── ini
+│   │   ├── internal-slot
+│   │   ├── ipaddr.js
+│   │   ├── is-array-buffer
+│   │   ├── is-arrayish
+│   │   ├── is-async-function
+│   │   ├── is-bigint
+│   │   ├── is-binary-path
+│   │   ├── is-boolean-object
+│   │   ├── is-callable
+│   │   ├── is-core-module
+│   │   ├── is-data-view
+│   │   ├── is-date-object
+│   │   ├── is-docker
+│   │   ├── is-extglob
+│   │   ├── is-finalizationregistry
+│   │   ├── is-fullwidth-code-point
+│   │   ├── is-generator-fn
+│   │   ├── is-generator-function
+│   │   ├── is-glob
+│   │   ├── is-map
+│   │   ├── is-module
+│   │   ├── is-negative-zero
+│   │   ├── is-number
+│   │   ├── is-number-object
+│   │   ├── is-obj
+│   │   ├── is-path-inside
+│   │   ├── is-plain-obj
+│   │   ├── is-potential-custom-element-name
+│   │   ├── is-regex
+│   │   ├── is-regexp
+│   │   ├── is-root
+│   │   ├── is-set
+│   │   ├── is-shared-array-buffer
+│   │   ├── is-stream
+│   │   ├── is-string
+│   │   ├── is-symbol
+│   │   ├── is-typed-array
+│   │   ├── is-typedarray
+│   │   ├── is-weakmap
+│   │   ├── is-weakref
+│   │   ├── is-weakset
+│   │   ├── is-wsl
+│   │   ├── isarray
+│   │   ├── isexe
+│   │   ├── istanbul-lib-coverage
+│   │   ├── istanbul-lib-instrument
+│   │   ├── istanbul-lib-report
+│   │   ├── istanbul-lib-source-maps
+│   │   ├── istanbul-reports
+│   │   ├── iterator.prototype
+│   │   ├── jackspeak
+│   │   ├── jake
+│   │   ├── jest
+│   │   ├── jest-changed-files
+│   │   ├── jest-circus
+│   │   ├── jest-cli
+│   │   ├── jest-config
+│   │   ├── jest-diff
+│   │   ├── jest-docblock
+│   │   ├── jest-each
+│   │   ├── jest-environment-jsdom
+│   │   ├── jest-environment-node
+│   │   ├── jest-get-type
+│   │   ├── jest-haste-map
+│   │   ├── jest-jasmine2
+│   │   ├── jest-leak-detector
+│   │   ├── jest-matcher-utils
+│   │   ├── jest-message-util
+│   │   ├── jest-mock
+│   │   ├── jest-pnp-resolver
+│   │   ├── jest-regex-util
+│   │   ├── jest-resolve
+│   │   ├── jest-resolve-dependencies
+│   │   ├── jest-runner
+│   │   ├── jest-runtime
+│   │   ├── jest-serializer
+│   │   ├── jest-snapshot
+│   │   ├── jest-util
+│   │   ├── jest-validate
+│   │   ├── jest-watch-typeahead
+│   │   ├── jest-watcher
+│   │   ├── jest-worker
+│   │   ├── jiti
+│   │   ├── js-tokens
+│   │   ├── js-yaml
+│   │   ├── jsdom
+│   │   ├── jsesc
+│   │   ├── json-buffer
+│   │   ├── json-parse-even-better-errors
+│   │   ├── json-schema
+│   │   ├── json-schema-traverse
+│   │   ├── json-stable-stringify-without-jsonify
+│   │   ├── json5
+│   │   ├── jsonfile
+│   │   ├── jsonpath
+│   │   ├── jsonpointer
+│   │   ├── jsx-ast-utils
+│   │   ├── keyv
+│   │   ├── kind-of
+│   │   ├── kleur
+│   │   ├── klona
+│   │   ├── language-subtag-registry
+│   │   ├── language-tags
+│   │   ├── launch-editor
+│   │   ├── leven
+│   │   ├── levn
+│   │   ├── lilconfig
+│   │   ├── lines-and-columns
+│   │   ├── loader-runner
+│   │   ├── loader-utils
+│   │   ├── locate-path
+│   │   ├── lodash
+│   │   ├── lodash.debounce
+│   │   ├── lodash.memoize
+│   │   ├── lodash.merge
+│   │   ├── lodash.sortby
+│   │   ├── lodash.uniq
+│   │   ├── loose-envify
+│   │   ├── lower-case
+│   │   ├── lru-cache
+│   │   ├── magic-string
+│   │   ├── make-dir
+│   │   ├── makeerror
+│   │   ├── math-intrinsics
+│   │   ├── mdn-data
+│   │   ├── media-typer
+│   │   ├── memfs
+│   │   ├── merge-descriptors
+│   │   ├── merge-stream
+│   │   ├── merge2
+│   │   ├── methods
+│   │   ├── micromatch
+│   │   ├── mime
+│   │   ├── mime-db
+│   │   ├── mime-types
+│   │   ├── mimic-fn
+│   │   ├── mini-css-extract-plugin
+│   │   ├── minimalistic-assert
+│   │   ├── minimatch
+│   │   ├── minimist
+│   │   ├── minipass
+│   │   ├── mkdirp
+│   │   ├── ms
+│   │   ├── multicast-dns
+│   │   ├── mz
+│   │   ├── nanoid
+│   │   ├── natural-compare
+│   │   ├── natural-compare-lite
+│   │   ├── negotiator
+│   │   ├── neo-async
+│   │   ├── no-case
+│   │   ├── node-forge
+│   │   ├── node-int64
+│   │   ├── node-releases
+│   │   ├── normalize-path
+│   │   ├── normalize-range
+│   │   ├── normalize-url
+│   │   ├── npm-run-path
+│   │   ├── nth-check
+│   │   ├── nwsapi
+│   │   ├── object-assign
+│   │   ├── object-hash
+│   │   ├── object-inspect
+│   │   ├── object-keys
+│   │   ├── object.assign
+│   │   ├── object.entries
+│   │   ├── object.fromentries
+│   │   ├── object.getownpropertydescriptors
+│   │   ├── object.groupby
+│   │   ├── object.values
+│   │   ├── obuf
+│   │   ├── on-finished
+│   │   ├── on-headers
+│   │   ├── once
+│   │   ├── onetime
+│   │   ├── open
+│   │   ├── optionator
+│   │   ├── own-keys
+│   │   ├── p-limit
+│   │   ├── p-locate
+│   │   ├── p-retry
+│   │   ├── p-try
+│   │   ├── package-json-from-dist
+│   │   ├── param-case
+│   │   ├── parent-module
+│   │   ├── parse-json
+│   │   ├── parse5
+│   │   ├── parseurl
+│   │   ├── pascal-case
+│   │   ├── path-exists
+│   │   ├── path-is-absolute
+│   │   ├── path-key
+│   │   ├── path-parse
+│   │   ├── path-scurry
+│   │   ├── path-to-regexp
+│   │   ├── path-type
+│   │   ├── performance-now
+│   │   ├── picocolors
+│   │   ├── picomatch
+│   │   ├── pify
+│   │   ├── pirates
+│   │   ├── pkg-dir
+│   │   ├── pkg-up
+│   │   ├── possible-typed-array-names
+│   │   ├── postcss
+│   │   ├── postcss-attribute-case-insensitive
+│   │   ├── postcss-browser-comments
+│   │   ├── postcss-calc
+│   │   ├── postcss-clamp
+│   │   ├── postcss-color-functional-notation
+│   │   ├── postcss-color-hex-alpha
+│   │   ├── postcss-color-rebeccapurple
+│   │   ├── postcss-colormin
+│   │   ├── postcss-convert-values
+│   │   ├── postcss-custom-media
+│   │   ├── postcss-custom-properties
+│   │   ├── postcss-custom-selectors
+│   │   ├── postcss-dir-pseudo-class
+│   │   ├── postcss-discard-comments
+│   │   ├── postcss-discard-duplicates
+│   │   ├── postcss-discard-empty
+│   │   ├── postcss-discard-overridden
+│   │   ├── postcss-double-position-gradients
+│   │   ├── postcss-env-function
+│   │   ├── postcss-flexbugs-fixes
+│   │   ├── postcss-focus-visible
+│   │   ├── postcss-focus-within
+│   │   ├── postcss-font-variant
+│   │   ├── postcss-gap-properties
+│   │   ├── postcss-image-set-function
+│   │   ├── postcss-import
+│   │   ├── postcss-initial
+│   │   ├── postcss-js
+│   │   ├── postcss-lab-function
+│   │   ├── postcss-load-config
+│   │   ├── postcss-loader
+│   │   ├── postcss-logical
+│   │   ├── postcss-media-minmax
+│   │   ├── postcss-merge-longhand
+│   │   ├── postcss-merge-rules
+│   │   ├── postcss-minify-font-values
+│   │   ├── postcss-minify-gradients
+│   │   ├── postcss-minify-params
+│   │   ├── postcss-minify-selectors
+│   │   ├── postcss-modules-extract-imports
+│   │   ├── postcss-modules-local-by-default
+│   │   ├── postcss-modules-scope
+│   │   ├── postcss-modules-values
+│   │   ├── postcss-nested
+│   │   ├── postcss-nesting
+│   │   ├── postcss-normalize
+│   │   ├── postcss-normalize-charset
+│   │   ├── postcss-normalize-display-values
+│   │   ├── postcss-normalize-positions
+│   │   ├── postcss-normalize-repeat-style
+│   │   ├── postcss-normalize-string
+│   │   ├── postcss-normalize-timing-functions
+│   │   ├── postcss-normalize-unicode
+│   │   ├── postcss-normalize-url
+│   │   ├── postcss-normalize-whitespace
+│   │   ├── postcss-opacity-percentage
+│   │   ├── postcss-ordered-values
+│   │   ├── postcss-overflow-shorthand
+│   │   ├── postcss-page-break
+│   │   ├── postcss-place
+│   │   ├── postcss-preset-env
+│   │   ├── postcss-pseudo-class-any-link
+│   │   ├── postcss-reduce-initial
+│   │   ├── postcss-reduce-transforms
+│   │   ├── postcss-replace-overflow-wrap
+│   │   ├── postcss-selector-not
+│   │   ├── postcss-selector-parser
+│   │   ├── postcss-svgo
+│   │   ├── postcss-unique-selectors
+│   │   ├── postcss-value-parser
+│   │   ├── prelude-ls
+│   │   ├── pretty-bytes
+│   │   ├── pretty-error
+│   │   ├── pretty-format
+│   │   ├── process-nextick-args
+│   │   ├── promise
+│   │   ├── prompts
+│   │   ├── prop-types
+│   │   ├── proxy-addr
+│   │   ├── psl
+│   │   ├── punycode
+│   │   ├── q
+│   │   ├── qs
+│   │   ├── querystringify
+│   │   ├── queue-microtask
+│   │   ├── raf
+│   │   ├── randombytes
+│   │   ├── range-parser
+│   │   ├── raw-body
+│   │   ├── react
+│   │   ├── react-app-polyfill
+│   │   ├── react-dev-utils
+│   │   ├── react-dom
+│   │   ├── react-error-overlay
+│   │   ├── react-is
+│   │   ├── react-refresh
+│   │   ├── react-scripts
+│   │   ├── read-cache
+│   │   ├── readable-stream
+│   │   ├── readdirp
+│   │   ├── recursive-readdir
+│   │   ├── reflect.getprototypeof
+│   │   ├── regenerate
+│   │   ├── regenerate-unicode-properties
+│   │   ├── regenerator-runtime
+│   │   ├── regex-parser
+│   │   ├── regexp.prototype.flags
+│   │   ├── regexpu-core
+│   │   ├── regjsgen
+│   │   ├── regjsparser
+│   │   ├── relateurl
+│   │   ├── renderkid
+│   │   ├── require-directory
+│   │   ├── require-from-string
+│   │   ├── requires-port
+│   │   ├── resolve
+│   │   ├── resolve-cwd
+│   │   ├── resolve-from
+│   │   ├── resolve-url-loader
+│   │   ├── resolve.exports
+│   │   ├── retry
+│   │   ├── reusify
+│   │   ├── rimraf
+│   │   ├── rollup
+│   │   ├── rollup-plugin-terser
+│   │   ├── run-parallel
+│   │   ├── safe-array-concat
+│   │   ├── safe-buffer
+│   │   ├── safe-push-apply
+│   │   ├── safe-regex-test
+│   │   ├── safer-buffer
+│   │   ├── sanitize.css
+│   │   ├── sass-loader
+│   │   ├── sax
+│   │   ├── saxes
+│   │   ├── scheduler
+│   │   ├── schema-utils
+│   │   ├── select-hose
+│   │   ├── selfsigned
+│   │   ├── semver
+│   │   ├── send
+│   │   ├── serialize-javascript
+│   │   ├── serve-index
+│   │   ├── serve-static
+│   │   ├── set-function-length
+│   │   ├── set-function-name
+│   │   ├── set-proto
+│   │   ├── setprototypeof
+│   │   ├── shebang-command
+│   │   ├── shebang-regex
+│   │   ├── shell-quote
+│   │   ├── side-channel
+│   │   ├── side-channel-list
+│   │   ├── side-channel-map
+│   │   ├── side-channel-weakmap
+│   │   ├── signal-exit
+│   │   ├── sisteransi
+│   │   ├── slash
+│   │   ├── sockjs
+│   │   ├── source-list-map
+│   │   ├── source-map
+│   │   ├── source-map-js
+│   │   ├── source-map-loader
+│   │   ├── source-map-support
+│   │   ├── sourcemap-codec
+│   │   ├── spdy
+│   │   ├── spdy-transport
+│   │   ├── sprintf-js
+│   │   ├── stable
+│   │   ├── stack-utils
+│   │   ├── stackframe
+│   │   ├── static-eval
+│   │   ├── statuses
+│   │   ├── stop-iteration-iterator
+│   │   ├── string-length
+│   │   ├── string-natural-compare
+│   │   ├── string-width
+│   │   ├── string-width-cjs
+│   │   ├── string.prototype.includes
+│   │   ├── string.prototype.matchall
+│   │   ├── string.prototype.repeat
+│   │   ├── string.prototype.trim
+│   │   ├── string.prototype.trimend
+│   │   ├── string.prototype.trimstart
+│   │   ├── string_decoder
+│   │   ├── stringify-object
+│   │   ├── strip-ansi
+│   │   ├── strip-ansi-cjs
+│   │   ├── strip-bom
+│   │   ├── strip-comments
+│   │   ├── strip-final-newline
+│   │   ├── strip-json-comments
+│   │   ├── style-loader
+│   │   ├── stylehacks
+│   │   ├── sucrase
+│   │   ├── supports-color
+│   │   ├── supports-hyperlinks
+│   │   ├── supports-preserve-symlinks-flag
+│   │   ├── svg-parser
+│   │   ├── svgo
+│   │   ├── symbol-tree
+│   │   ├── tailwindcss
+│   │   ├── tapable
+│   │   ├── temp-dir
+│   │   ├── tempy
+│   │   ├── terminal-link
+│   │   ├── terser
+│   │   ├── terser-webpack-plugin
+│   │   ├── test-exclude
+│   │   ├── text-table
+│   │   ├── thenify
+│   │   ├── thenify-all
+│   │   ├── throat
+│   │   ├── thunky
+│   │   ├── tmpl
+│   │   ├── to-regex-range
+│   │   ├── toidentifier
+│   │   ├── tough-cookie
+│   │   ├── tr46
+│   │   ├── tryer
+│   │   ├── ts-interface-checker
+│   │   ├── tsconfig-paths
+│   │   ├── tslib
+│   │   ├── tsutils
+│   │   ├── type-check
+│   │   ├── type-detect
+│   │   ├── type-fest
+│   │   ├── type-is
+│   │   ├── typed-array-buffer
+│   │   ├── typed-array-byte-length
+│   │   ├── typed-array-byte-offset
+│   │   ├── typed-array-length
+│   │   ├── typedarray-to-buffer
+│   │   ├── typescript
+│   │   ├── unbox-primitive
+│   │   ├── underscore
+│   │   ├── undici-types
+│   │   ├── unicode-canonical-property-names-ecmascript
+│   │   ├── unicode-match-property-ecmascript
+│   │   ├── unicode-match-property-value-ecmascript
+│   │   ├── unicode-property-aliases-ecmascript
+│   │   ├── unique-string
+│   │   ├── universalify
+│   │   ├── unpipe
+│   │   ├── unquote
+│   │   ├── upath
+│   │   ├── update-browserslist-db
+│   │   ├── uri-js
+│   │   ├── url-parse
+│   │   ├── util-deprecate
+│   │   ├── util.promisify
+│   │   ├── utila
+│   │   ├── utils-merge
+│   │   ├── uuid
+│   │   ├── v8-to-istanbul
+│   │   ├── vary
+│   │   ├── w3c-hr-time
+│   │   ├── w3c-xmlserializer
+│   │   ├── walker
+│   │   ├── watchpack
+│   │   ├── wbuf
+│   │   ├── web-vitals
+│   │   ├── webidl-conversions
+│   │   ├── webpack
+│   │   ├── webpack-dev-middleware
+│   │   ├── webpack-dev-server
+│   │   ├── webpack-manifest-plugin
+│   │   ├── webpack-sources
+│   │   ├── websocket-driver
+│   │   ├── websocket-extensions
+│   │   ├── whatwg-encoding
+│   │   ├── whatwg-fetch
+│   │   ├── whatwg-mimetype
+│   │   ├── whatwg-url
+│   │   ├── which
+│   │   ├── which-boxed-primitive
+│   │   ├── which-builtin-type
+│   │   ├── which-collection
+│   │   ├── which-typed-array
+│   │   ├── word-wrap
+│   │   ├── workbox-background-sync
+│   │   ├── workbox-broadcast-update
+│   │   ├── workbox-build
+│   │   ├── workbox-cacheable-response
+│   │   ├── workbox-core
+│   │   ├── workbox-expiration
+│   │   ├── workbox-google-analytics
+│   │   ├── workbox-navigation-preload
+│   │   ├── workbox-precaching
+│   │   ├── workbox-range-requests
+│   │   ├── workbox-recipes
+│   │   ├── workbox-routing
+│   │   ├── workbox-strategies
+│   │   ├── workbox-streams
+│   │   ├── workbox-sw
+│   │   ├── workbox-webpack-plugin
+│   │   ├── workbox-window
+│   │   ├── wrap-ansi
+│   │   ├── wrap-ansi-cjs
+│   │   ├── wrappy
+│   │   ├── write-file-atomic
+│   │   ├── ws
+│   │   ├── xml-name-validator
+│   │   ├── xmlchars
+│   │   ├── y18n
+│   │   ├── yallist
+│   │   ├── yaml
+│   │   ├── yargs
+│   │   ├── yargs-parser
+│   │   └── yocto-queue
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   └── src
+│       ├── App.css
+│       ├── App.js
+│       ├── App.test.js
+│       ├── index.css
+│       ├── index.js
+│       ├── logo.svg
+│       ├── reportWebVitals.js
+│       ├── service-worker.js
+│       ├── serviceWorkerRegistration.js
+│       └── setupTests.js
+├── frontend_structure.txt
+├── full_tree.txt
+├── marketplayground_frontend_final.zip
+├── new_feedback.json
+├── project_structure.txt
+├── project_tree.txt
+├── render.yaml
+├── run_simulated_training_loop.py
+├── runtime.txt
+├── scripts
+│   ├── fix_feedback_json.py
+│   ├── generate_asset_training_data.py
+│   └── generate_clean_training_data.py
+├── test_api.py
+├── train_loop.sh
+├── tree_output.txt
+├── trigger.txt
+└── venv
+    ├── bin
+    │   ├── Activate.ps1
+    │   ├── __pycache__
+    │   ├── activate
+    │   ├── activate.csh
+    │   ├── activate.fish
+    │   ├── cygdb
+    │   ├── cython
+    │   ├── cythonize
+    │   ├── distro
+    │   ├── dotenv
+    │   ├── dotenv 2
+    │   ├── f2py
+    │   ├── f2py 2
+    │   ├── f2py3
+    │   ├── f2py3 2
+    │   ├── f2py3.11
+    │   ├── f2py3.11 2
+    │   ├── fonttools
+    │   ├── httpx
+    │   ├── markdown-it
+    │   ├── normalizer
+    │   ├── openai
+    │   ├── pip
+    │   ├── pip 2
+    │   ├── pip3
+    │   ├── pip3.11
+    │   ├── pwiz.py
+    │   ├── pyftmerge
+    │   ├── pyftsubset
+    │   ├── pygmentize
+    │   ├── python -> python3.11
+    │   ├── python3 -> python3.11
+    │   ├── python3.11 -> /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11
+    │   ├── sample
+    │   ├── spacy
+    │   ├── tqdm
+    │   ├── ttx
+    │   ├── typer
+    │   ├── uvicorn
+    │   ├── watchmedo
+    │   └── weasel
+    ├── include
+    │   └── python3.11
+    ├── lib
+    │   └── python3.11
+    ├── pyvenv.cfg
+    └── share
+        └── man
+
+899 directories, 231 files

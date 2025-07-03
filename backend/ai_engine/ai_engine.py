@@ -1,27 +1,36 @@
 """
 Main AI Engine — Translates natural language beliefs into trading strategies.
-Integrates belief parsing, goal evaluation, asset class selection, and strategy logic.
+Integrates belief parsing, goal evaluation, asset class selection, and GPT-4-powered strategy logic.
 """
 
 import os
+import json
+from dotenv import load_dotenv
+from openai import OpenAI
+
 from backend.belief_parser import parse_belief
-from backend.strategy_selector import select_strategy
 from backend.market_data import get_latest_price, get_weekly_high_low
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
 from backend.logger.strategy_logger import log_strategy
 
-# ✅ Known equity tickers to override ETF classification errors
+# ✅ Load environment variables
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# ✅ Known equities to override ETF misclassification
 KNOWN_EQUITIES = {
     "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
 }
 
+
 def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
-    Converts a user belief into a complete trade strategy suggestion.
+    Core AI pipeline — Takes belief → parses → calls GPT-4 → returns clean strategy dictionary
     """
 
-    # ✅ Step 1: Parse belief into components
+    # ✅ Step 1: Parse user belief
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
@@ -29,16 +38,14 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     confidence = parsed.get("confidence", 0.5)
     parsed_asset = parsed.get("asset_class", "options")
 
-    # ✅ Step 2: Goal evaluation
+    # ✅ Step 2: Parse goal
     goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
-
-    # ✅ Step 3: Parse expiry date from timeframe
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # ✅ Step 4: Fallback for missing ticker
+    # ✅ Step 3: Fallback ticker if missing
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
@@ -47,80 +54,97 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             ticker = "AAPL"
 
-    # ✅ Step 5: Use parsed asset class — with manual override
+    # ✅ Step 4: Fix asset class logic
     if parsed_asset == "etf" and ticker.upper() in KNOWN_EQUITIES:
         asset_class = "equity"
+    elif parsed_asset == "bond" and ticker.upper() == "SPY":
+        asset_class = "bond"
+        ticker = "TLT"
     else:
         asset_class = parsed_asset
 
-    # ✅ Step 6: Smart override for bond asset class
-    if asset_class == "bond" and ticker.upper() == "SPY":
-        ticker = "TLT"  # You could also use "BND" depending on your use case
-
-    # ✅ Step 7: Fallback direction if missing
-    if not direction:
-        if goal_type in ["double_money", "multiply", "safe_growth"]:
-            direction = "up"
-        elif goal_type in ["hedge", "protect"]:
-            direction = "down"
-        else:
-            direction = "neutral"
-
-    # ✅ Step 8: Market data
+    # ✅ Step 5: Market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
-        print(f"[ERROR] get_latest_price() failed for {ticker}: {e}")
+        print(f"[ERROR] get_latest_price failed: {e}")
         latest = -1.0
 
     try:
         high_low = get_weekly_high_low(ticker)
     except Exception as e:
-        print(f"[ERROR] get_weekly_high_low() failed for {ticker}: {e}")
+        print(f"[ERROR] get_weekly_high_low failed: {e}")
         high_low = (-1.0, -1.0)
 
     price_info = {"latest": latest}
 
-    # 🧠 Debug info
+    # 🧠 Debug Info
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
-    print(f"→ Ticker: {ticker}")
-    print(f"→ Direction: {direction}")
-    print(f"→ Tags: {tags}")
-    print(f"→ Confidence: {confidence}")
-    print(f"→ Goal Type: {goal_type}")
-    print(f"→ Multiplier: {multiplier}")
-    print(f"→ Timeframe: {timeframe}")
-    print(f"→ Expiry Date: {expiry_date}")
-    print(f"→ Asset Class (Parsed): {asset_class}")
-    print(f"→ Risk Profile: {risk_profile}")
-    print(f"→ Price Info: {latest}")
-    print(f"→ High/Low Info: {high_low}")
-    print("🧠 Selecting best strategy...\n")
+    print(f"→ Ticker: {ticker}, Direction: {direction}, Tags: {tags}")
+    print(f"→ Confidence: {confidence}, Risk: {risk_profile}")
+    print(f"→ Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}")
+    print(f"→ Asset Class: {asset_class}, Expiry: {expiry_date}")
+    print(f"→ Latest Price: {latest}, High/Low: {high_low}")
+    print("🧠 Using GPT-4...\n")
 
-    # ✅ Step 9: Strategy generation
-    strategy = select_strategy(
-        belief=belief,
-        direction=direction,
-        ticker=ticker,
-        asset_class=asset_class,
-        price_info=price_info,
-        confidence=confidence,
-        goal_type=goal_type,
-        multiplier=multiplier,
-        timeframe=timeframe,
-        expiry_date=expiry_date,
-        risk_profile=risk_profile
-    )
+    # ✅ Step 6: GPT prompt
+    strategy_prompt = f"""
+    You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
 
-    # ✅ Step 10: Explanation
-    explanation = generate_strategy_explainer(
-        belief, strategy, direction, goal_type, multiplier, timeframe, ticker
-    )
+    Include:
+    - type (e.g., long call, bull put spread, buy equity, buy bond ETF)
+    - trade_legs (e.g., 'buy 1 call 150 strike', 'sell 1 put 140 strike')
+    - expiration (in 'YYYY-MM-DD' format or 'N/A' if not applicable)
+    - target_return (expected gain %)
+    - max_loss (worst-case loss %)
+    - time_to_target (e.g., 2 weeks, 3 months)
+    - explanation (why this fits belief)
 
-    # ✅ Step 11: Log strategy
+    Context:
+    - Ticker: {ticker}
+    - Direction: {direction}
+    - Asset Class: {asset_class}
+    - Latest Price: {latest}
+    - Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
+    - Confidence: {confidence}, Risk Profile: {risk_profile}
+
+    Output valid JSON only.
+    """
+
+    # ✅ Step 7: Call GPT-4 and unwrap if double-nested
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": strategy_prompt}],
+            temperature=0.7
+        )
+        gpt_output = response.choices[0].message.content.strip()
+        strategy = json.loads(gpt_output)
+
+        # ✅ Unwrap if nested as strategy["strategy"]
+        if isinstance(strategy, dict) and "strategy" in strategy and isinstance(strategy["strategy"], dict):
+            strategy = strategy["strategy"]
+
+    except Exception as e:
+        print(f"[ERROR] GPT-4 strategy generation failed: {e}")
+        strategy = {
+            "type": "error",
+            "trade_legs": [],
+            "expiration": "N/A",
+            "target_return": 0,
+            "max_loss": 0,
+            "time_to_target": "N/A",
+            "explanation": f"Failed to generate strategy: {e}"
+        }
+
+    # ✅ Step 8: Ensure flat explanation
+    explanation = strategy.get("explanation", "Strategy explanation not available.")
+
+    # ✅ Step 9: Log the strategy
     log_strategy(belief, explanation, user_id, strategy)
 
+    # ✅ Step 10: Return flat response (no nested "strategy" again)
     return {
         "strategy": strategy,
         "ticker": ticker,
@@ -138,27 +162,3 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         "explanation": explanation,
         "user_id": user_id
     }
-
-def generate_strategy_explainer(belief, strategy, direction, goal_type, multiplier, timeframe, ticker):
-    """
-    Creates a user-friendly explanation based on belief and selected strategy.
-    """
-    base = f"Based on your belief: '{belief}', "
-
-    if goal_type in ["double_money", "multiply"]:
-        base += "you want to multiply your money"
-        if multiplier:
-            base += f" by {multiplier}x"
-        if timeframe:
-            base += f" within {timeframe}"
-        base += ". "
-
-    if direction == "up":
-        base += f"The system interpreted this as a bullish view on {ticker}. "
-    elif direction == "down":
-        base += f"The system interpreted this as a bearish outlook on {ticker}. "
-    else:
-        base += f"The system expects neutral or sideways movement in {ticker}. "
-
-    base += f"Hence, the '{strategy['type']}' strategy was selected to match your objective."
-    return base

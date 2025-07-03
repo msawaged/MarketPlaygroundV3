@@ -1,11 +1,6 @@
 
-🕒 2025-07-02 03:03:02 — unknown
-
-🧠 Starting full model retraining pipeline...
-✅ Belief tag model retrained
-✅ Asset class model retrained
-✅ Smart strategy model retrained
-✅ Feedback quality model retrained
-✅ Strategy-from-feedback classifier retrained
-
-✅ All models retrained successfully.
+🕒 2025-07-03 01:32:05 — strategy_router
+[STRATEGY GENERATED]
+Belief: I believe NVDA will go up this quarter
+User: test_user
+Strategy: {'type': 'Long Call', 'trade_legs': [{'action': 'Buy 1 call', 'strike_price': 160}], 'expiration': '2023-12-31', 'target_return': '20%', 'max_loss': '100%', 'time_to_target': '3 months', 'explanation': "A long call strategy is suitable since you have a bullish outlook on NVDA. This strategy involves buying a call option, which gives you the right to buy the underlying stock at a fixed price (the strike price) before a certain date (the expiration date). If NVDA's price goes up, as you predict, you can buy the stock at the lower strike price and sell it at the higher market price for a profit. The risk is that if NVDA's price doesn't exceed the strike price, the option will expire worthless and you will lose the premium you paid."}

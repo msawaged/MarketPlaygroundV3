@@ -1,12 +1,14 @@
 # backend/routes/strategy_router.py
+
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
-from backend.ai_engine.ai_engine import run_ai_engine  # 🧠 Belief → strategy engine
-from backend.feedback_handler import save_feedback_entry  # 💾 Feedback logger
-from backend.logger.strategy_logger import log_strategy  # 📝 Strategy history logger
-from backend.alpaca_orders import AlpacaExecutor  # 🧾 Unified Alpaca execution
+from backend.ai_engine.ai_engine import run_ai_engine
+from backend.feedback_handler import save_feedback_entry
+from backend.logger.strategy_logger import log_strategy
+from backend.alpaca_orders import AlpacaExecutor
+from backend.utils.logger import write_training_log  # ✅ CORRECT Supabase logger
 
 import pandas as pd
 import os
@@ -17,7 +19,7 @@ router = APIRouter()
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
-    place_order: Optional[bool] = False  # 🆕 Optional flag to execute strategy
+    place_order: Optional[bool] = False
 
 class FeedbackRequest(BaseModel):
     belief: str
@@ -29,22 +31,31 @@ class FeedbackRequest(BaseModel):
 @router.post("/process_belief")
 def process_belief(request: BeliefRequest):
     """
-    Generates strategy from belief, logs strategy and feedback,
-    and optionally executes it via Alpaca.
+    Generates strategy from belief, logs strategy to file and Supabase,
+    and optionally executes via Alpaca.
     """
     result = run_ai_engine(request.belief)
     result["user_id"] = request.user_id
 
-    # ✅ Save to feedback log
+    # ✅ Log to local feedback file
     save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
 
-    # ✅ Save to strategy history log
+    # ✅ Log to local strategy history file
     log_strategy(
         request.belief,
         result.get("explanation", "No explanation"),
         request.user_id,
         result.get("strategy", {})
     )
+
+    # ✅ Log strategy event to Supabase training_logs table
+    try:
+        write_training_log(
+            message=f"[STRATEGY GENERATED]\nBelief: {request.belief}\nUser: {request.user_id}\nStrategy: {result.get('strategy', {})}",
+            source="strategy_router"
+        )
+    except Exception as e:
+        print(f"[SUPABASE LOG ERROR] {e}")
 
     # ✅ Optional trade execution
     if request.place_order:
@@ -79,13 +90,11 @@ def strategy_summary(user_id: Optional[str] = Query(default=None)):
         if df.empty or "strategy" not in df.columns:
             raise HTTPException(status_code=400, detail="No strategy data available")
 
-        # Optional filtering by user_id
         if user_id:
             df = df[df["user_id"] == user_id]
             if df.empty:
                 return {"message": f"No strategies found for user_id: {user_id}"}
 
-        # Compute metrics
         total = len(df)
         avg_pnl = round(df["pnl_percent"].mean(), 2) if "pnl_percent" in df else None
         win_ratio = round((df["result"] == "win").mean(), 2) if "result" in df else None

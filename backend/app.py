@@ -35,7 +35,7 @@ from backend.routes.debug_router import router as debug_router
 # === Initialize FastAPI ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# ✅ CORS — Allow React frontend on ports 3000 and 3001
+# ✅ CORS — Allow frontend access from localhost ports 3000 and 3001
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -46,6 +46,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ✅ Handle CORS preflight (OPTIONS) requests — required for frontend requests
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    return PlainTextResponse("OK", status_code=200)
 
 # === Initialize SQLite DB if needed ===
 init_db()
