@@ -1,3 +1,4 @@
+# backend/ai_engine/ai_engine.py
 """
 Main AI Engine — Translates natural language beliefs into trading strategies.
 Integrates belief parsing, goal evaluation, asset class selection, and GPT-4-powered strategy logic.
@@ -5,6 +6,7 @@ Integrates belief parsing, goal evaluation, asset class selection, and GPT-4-pow
 
 import os
 import json
+import math
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -29,6 +31,12 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 KNOWN_EQUITIES = {
     "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
 }
+
+# Utility to clean invalid float values for JSON
+def clean_float(value):
+    if value is None or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
+        return None
+    return value
 
 def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
@@ -90,7 +98,9 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         print(f"[ERROR] get_weekly_high_low failed for {ticker}: {e}")
         high_low = (-1.0, -1.0)
 
-    price_info = {"latest": latest}
+    # Sanitize all float outputs for JSON compliance
+    price_info = {"latest": clean_float(latest)}
+    high_low = (clean_float(high_low[0]), clean_float(high_low[1]))
 
     # Debug output for traceability
     print("\n🔍 [AI ENGINE DEBUG INFO]")
