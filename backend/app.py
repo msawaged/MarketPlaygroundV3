@@ -119,6 +119,16 @@ class FeedbackRequest(BaseModel):
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
+# === Test environment variable endpoint ===
+@app.get("/test_env")
+def test_env():
+    """
+    Simple endpoint to verify if the OPENAI_API_KEY environment variable
+    is set correctly on the server.
+    """
+    openai_key = os.getenv("OPENAI_API_KEY")
+    return {"OPENAI_API_KEY": "Set" if openai_key else "Not Set"}
+
 # === Primary belief processing endpoint ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
