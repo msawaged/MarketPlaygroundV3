@@ -1,23 +1,39 @@
 # backend/app.py
-# ✅ Main FastAPI entrypoint — wires up all routes, AI engine, feedback, and Alpaca execution
 
+"""
+Main FastAPI entrypoint — wires up all modular routes,
+initializes database, handles CORS, and connects AI engine
+and Alpaca trading execution.
+
+Improved to:
+- Load environment variables via python-dotenv
+- Load OPENAI_API_KEY securely from env vars
+- Clean error handling and modular route includes
+- Support local dev with uvicorn entrypoint
+"""
+
+import os
+import traceback
+from datetime import datetime
+from typing import Dict, Any, Optional
+
+import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
-from datetime import datetime
-import traceback
-import os
-import pandas as pd
 
-# === Local Imports ===
+# Load environment variables from .env at startup
+from dotenv import load_dotenv
+load_dotenv()
+
+# === Local imports ===
 from backend.user_models import init_db
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.alpaca_orders import AlpacaExecutor
 from backend.feedback_handler import save_feedback_entry
 
-# === Routers (modularized routes) ===
+# === Modular route imports ===
 from backend.routes.auth_router import router as auth_router
 from backend.routes.feedback_router import router as feedback_router
 from backend.routes.feedback_predictor import router as feedback_predictor
@@ -32,10 +48,10 @@ from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
 
-# === Initialize FastAPI ===
+# === FastAPI app initialization ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# ✅ CORS — Allow frontend access from localhost ports 3000 and 3001
+# === CORS setup for local dev (React frontend typically on localhost:3000/3001) ===
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -47,7 +63,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Handle CORS preflight (OPTIONS) requests — required for frontend requests
+# Preflight OPTIONS handler to avoid CORS issues on frontend requests
 @app.options("/{rest_of_path:path}")
 async def preflight_handler():
     return PlainTextResponse("OK", status_code=200)
@@ -55,7 +71,7 @@ async def preflight_handler():
 # === Initialize SQLite DB if needed ===
 init_db()
 
-# ✅ Ensure strategy_outcomes.csv exists
+# === Ensure strategy_outcomes.csv exists with starter row ===
 strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
 if not os.path.exists(strategy_csv_path):
     df = pd.DataFrame([{
@@ -71,7 +87,7 @@ if not os.path.exists(strategy_csv_path):
     df.to_csv(strategy_csv_path, index=False)
     print("✅ Created starter strategy_outcomes.csv")
 
-# === Register All Modular Routers ===
+# === Register all modular routers ===
 app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
 app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
 app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
@@ -86,7 +102,7 @@ app.include_router(market_router,            prefix="/market",    tags=["Market"
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
 app.include_router(debug_router,                                tags=["Debug"])
 
-# === Request Body Schemas ===
+# === Request body schemas ===
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
@@ -98,15 +114,16 @@ class FeedbackRequest(BaseModel):
     strategy: str
     feedback: str
 
-# === Root Route for Health Check ===
+# === Root endpoint for health check ===
 @app.get("/")
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
-# === Primary Belief Endpoint — Processes via AI Engine ===
+# === Primary belief processing endpoint ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
+        # Run AI engine with given belief and risk profile
         result = run_ai_engine(
             belief=request.belief,
             risk_profile=request.risk_profile,
@@ -114,6 +131,7 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         )
         result["user_id"] = request.user_id
 
+        # Optionally execute the suggested trade via Alpaca
         if request.place_order:
             executor = AlpacaExecutor()
             result["execution_result"] = executor.execute_order(result, user_id=request.user_id)
@@ -125,7 +143,7 @@ def process_belief(request: BeliefRequest) -> Dict[str, Any]:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Alternate Strategy Route (used by frontend) ===
+# === Alternate strategy processing route (async) ===
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
     try:
@@ -145,7 +163,7 @@ async def strategy_process_belief(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Feedback Capture ===
+# === Feedback submission endpoint ===
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     try:
@@ -156,7 +174,7 @@ def submit_feedback(request: FeedbackRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to save feedback")
 
-# === Manual Retrain Trigger (backend UI or CLI) ===
+# === Manual retrain trigger endpoint ===
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
     try:
@@ -167,7 +185,7 @@ def force_retrain_now():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# ✅ Auto-Retrain Trigger from News Ingestor
+# === Auto retrain trigger endpoint (e.g., news ingestor) ===
 @app.post("/retrain", response_class=PlainTextResponse)
 def retrain_from_ingestor():
     try:
@@ -178,7 +196,7 @@ def retrain_from_ingestor():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === Uvicorn Entry for Local Dev ===
+# === Entrypoint for running with uvicorn locally ===
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")
