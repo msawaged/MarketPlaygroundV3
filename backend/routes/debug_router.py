@@ -1,14 +1,14 @@
 # backend/routes/debug_router.py
-# ✅ Debug Router: Exposes diagnostic endpoints for training logs
+# ✅ Debug Router: Central hub for inspecting backend AI loop health and logs
 
 import os
 import json
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, JSONResponse
 
 router = APIRouter()
 
-# === Paths to log files ===
+# === File paths used by diagnostics ===
 LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
@@ -17,19 +17,18 @@ NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
 
-# === Modern: JSON summary for retrain log ===
+# === GET /debug/retrain_log → Summary of last training session ===
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
     if not os.path.exists(LAST_JSON_LOG):
         raise HTTPException(status_code=404, detail="No retraining log found.")
     try:
         with open(LAST_JSON_LOG, "r") as f:
-            log = json.load(f)
-        return log
+            return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read retrain log: {str(e)}")
 
-# === Legacy: Plain text (used by news ingestor or test) ===
+# === GET /debug/last_training_status → Raw TXT (legacy) ===
 @router.get("/debug/last_training_status", response_class=PlainTextResponse)
 def read_last_training_status():
     if os.path.exists(LAST_TRAINING_LOG_TXT):
@@ -37,7 +36,7 @@ def read_last_training_status():
             return f.read()
     raise HTTPException(status_code=404, detail="No last training log found.")
 
-# === Full retrain_worker.log view ===
+# === GET /debug/retrain_worker_log → Full retrain log ===
 @router.get("/debug/retrain_worker_log", response_class=PlainTextResponse)
 def read_retrain_worker_log():
     if os.path.exists(RETRAIN_LOG_PATH):
@@ -45,7 +44,7 @@ def read_retrain_worker_log():
             return f.read()
     raise HTTPException(status_code=404, detail="No retrain log found.")
 
-# === Duplicate alias route ===
+# === GET /last_training_log → Legacy alias ===
 @router.get("/last_training_log", response_class=PlainTextResponse)
 def view_last_training_log():
     if os.path.exists(LAST_TRAINING_LOG_TXT):
@@ -53,13 +52,13 @@ def view_last_training_log():
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
 
-# === Recent beliefs ingested from news ===
+# === GET /debug/ingested_news → Returns last N news beliefs ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
     if not os.path.exists(NEWS_LOG_PATH):
         raise HTTPException(status_code=404, detail="news_beliefs.csv not found.")
     try:
-        with open(NEWS_LOG_PATH, mode="r", encoding="utf-8") as f:
+        with open(NEWS_LOG_PATH, "r", encoding="utf-8") as f:
             lines = f.readlines()[-limit:]
             parsed = []
             for line in lines:
@@ -75,7 +74,7 @@ def get_ingested_news(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read news log: {str(e)}")
 
-# === Total feedback entries ===
+# === GET /debug/feedback_count → Total feedback entries ===
 @router.get("/debug/feedback_count")
 def get_feedback_count():
     if not os.path.exists(FEEDBACK_PATH):
@@ -87,7 +86,7 @@ def get_feedback_count():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
 
-# === Last strategy log summary ===
+# === GET /debug/last_strategy_log → Recent strategy info ===
 @router.get("/debug/last_strategy_log")
 def get_last_strategy_log():
     if not os.path.exists(STRATEGY_PATH):
@@ -102,46 +101,59 @@ def get_last_strategy_log():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read strategy log: {str(e)}")
 
-# === NEW: Unified AI system loop status ===
+# === ✅ NEW: GET /debug/logs/recent → Generic log viewer ===
+@router.get("/logs/recent", response_class=PlainTextResponse)
+def get_recent_logs(lines: int = 50):
+    """
+    Returns the last N lines of retrain_worker.log for quick frontend preview.
+    """
+    if not os.path.exists(RETRAIN_LOG_PATH):
+        raise HTTPException(status_code=404, detail="Log file not found.")
+    try:
+        with open(RETRAIN_LOG_PATH, "r") as f:
+            content = f.readlines()
+            return "".join(content[-lines:])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading log file: {str(e)}")
+
+# === GET /debug/ai_loop_status → Unified backend dashboard ===
 @router.get("/debug/ai_loop_status")
 def get_ai_loop_status():
     """
-    🧠 Returns a full dashboard snapshot of AI pipeline health:
+    🧠 Master dashboard:
     - Last strategy
     - Feedback count
     - News ingestion count
-    - Retrain summary (last_training_log.json)
+    - Last retraining log
     """
     status = {}
 
-    # Last strategy
+    # Strategy info
     try:
         if os.path.exists(STRATEGY_PATH):
             with open(STRATEGY_PATH, "r") as f:
-                strat_data = json.load(f)
-                status["last_strategy"] = strat_data[-1] if strat_data else {}
+                data = json.load(f)
+                status["last_strategy"] = data[-1] if data else {}
         else:
             status["last_strategy"] = "Not available"
     except Exception as e:
         status["last_strategy"] = f"Error: {str(e)}"
 
-    # Feedback count
+    # Feedback total
     try:
         if os.path.exists(FEEDBACK_PATH):
             with open(FEEDBACK_PATH, "r") as f:
-                feedback = json.load(f)
-                status["feedback_count"] = len(feedback)
+                status["feedback_count"] = len(json.load(f))
         else:
             status["feedback_count"] = 0
     except Exception as e:
         status["feedback_count"] = f"Error: {str(e)}"
 
-    # News ingestion count
+    # News count
     try:
         if os.path.exists(NEWS_LOG_PATH):
             with open(NEWS_LOG_PATH, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                status["news_beliefs_ingested"] = len(lines)
+                status["news_beliefs_ingested"] = len(f.readlines())
         else:
             status["news_beliefs_ingested"] = 0
     except Exception as e:
@@ -151,8 +163,7 @@ def get_ai_loop_status():
     try:
         if os.path.exists(LAST_JSON_LOG):
             with open(LAST_JSON_LOG, "r") as f:
-                retrain_log = json.load(f)
-                status["last_retrain"] = retrain_log
+                status["last_retrain"] = json.load(f)
         else:
             status["last_retrain"] = "Not available"
     except Exception as e:

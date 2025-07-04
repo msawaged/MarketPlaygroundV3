@@ -13,11 +13,13 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
-  const [showSimulation, setShowSimulation] = useState(false); // ✅ toggle for animated modal
+  const [showSimulation, setShowSimulation] = useState(false);
+  const [logs, setLogs] = useState([]); // ✅ NEW: Supabase training logs
 
-  // 🔁 Fetch AI system loop status on mount
+  // 🔁 Fetch AI system loop status and training logs on mount
   useEffect(() => {
     fetchLoopStatus();
+    fetchRecentLogs();
   }, []);
 
   const fetchLoopStatus = () => {
@@ -25,6 +27,14 @@ function App() {
       .then((res) => res.json())
       .then((data) => setLoopStatus(data))
       .catch((err) => console.error('Loop status fetch error:', err));
+  };
+
+  // ✅ NEW: Fetch recent training logs from Supabase or fallback file
+  const fetchRecentLogs = () => {
+    fetch(`${BACKEND_URL}/logs/recent`)
+      .then((res) => res.json())
+      .then((data) => setLogs(data.logs || []))
+      .catch((err) => console.error('Log fetch error:', err));
   };
 
   // 🎯 Submit belief to backend
@@ -107,6 +117,21 @@ function App() {
           <p><strong>📊 Feedback Entries:</strong> {loopStatus.feedback_count}</p>
           <p><strong>📰 News Beliefs Ingested:</strong> {loopStatus.news_beliefs_ingested}</p>
           <p><strong>🛠️ Last Retrain:</strong> {loopStatus.last_retrain?.timestamp}</p>
+        </div>
+      )}
+
+      {/* ✅ NEW: Supabase Log Viewer */}
+      {logs.length > 0 && (
+        <div style={{ backgroundColor: '#fefbe7', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
+          <h3>📜 Recent Training Logs</h3>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {logs.slice(0, 5).map((log, idx) => (
+              <li key={idx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                🕒 <strong>{log.timestamp}</strong><br />
+                <code>{log.message}</code>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -227,13 +252,12 @@ function App() {
           <h2>🎬 Belief Simulation: {belief}</h2>
           <p>📈 Simulating: <strong>{response?.strategy[currentIndex].type}</strong></p>
 
-          {/* ✅ Inject live chart with asset-class context */}
           <SimulatedChart
             ticker={response.ticker}
             strategyType={response.strategy[currentIndex].type}
             price={response.price_info?.latest}
             confidence={response.confidence}
-            assetClass={response.asset_class} // ✅ used to drive chart type
+            assetClass={response.asset_class}
           />
 
           <button
