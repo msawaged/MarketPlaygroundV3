@@ -8388,5 +8388,61 @@
       "time_to_target": "1 year",
       "explanation": "Creating a ladder with bond ETFs AGG, IEF, and SHY allows for diversification and risk management. AGG provides broad exposure to U.S. investment-grade bonds, IEF targets mid-term (7-10 year) U.S. Treasuries, and SHY targets short-term (1-3 year) U.S. Treasuries. This strategy staggers the maturity dates, which can provide a steady stream of income. The risk profile is moderate, as bonds are generally considered safer than equities, but there is still a risk of loss if interest rates increase. The target return is moderate to reflect the lower risk nature of bonds compared to equities."
     }
+  },
+  {
+    "timestamp": "2025-07-04T11:02:09.151468",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        {
+          "action": "Buy AGG",
+          "quantity": "33%"
+        },
+        {
+          "action": "Buy IEF",
+          "quantity": "33%"
+        },
+        {
+          "action": "Buy SHY",
+          "quantity": "33%"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "3-5%",
+      "max_loss": "1-2%",
+      "time_to_target": "12 months",
+      "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs."
+    }
+  },
+  {
+    "timestamp": "2025-07-04T11:02:09.207472",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        {
+          "action": "Buy AGG",
+          "quantity": "33%"
+        },
+        {
+          "action": "Buy IEF",
+          "quantity": "33%"
+        },
+        {
+          "action": "Buy SHY",
+          "quantity": "33%"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "3-5%",
+      "max_loss": "1-2%",
+      "time_to_target": "12 months",
+      "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs."
+    }
   }
 ]

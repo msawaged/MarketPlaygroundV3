@@ -17017,5 +17017,76 @@
       "user_id": "murad"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-04T11:02:09.182279",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          {
+            "action": "Buy AGG",
+            "quantity": "33%"
+          },
+          {
+            "action": "Buy IEF",
+            "quantity": "33%"
+          },
+          {
+            "action": "Buy SHY",
+            "quantity": "33%"
+          }
+        ],
+        "expiration": "N/A",
+        "target_return": "3-5%",
+        "max_loss": "1-2%",
+        "time_to_target": "12 months",
+        "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs."
+      },
+      "ticker": "AGG",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 98.47
+      },
+      "high_low": [
+        98.59,
+        98.41
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "This strategy involves building a bond ladder with ETFs that cover different maturity ranges. AGG provides broad exposure, IEF is focused on mid-term, and SHY is short-term. This diversification aims to provide a steady income stream, with the potential for some price appreciation. The varying maturities help to manage interest rate risk. The allocation percentages can be adjusted based on the individual's risk tolerance and income needs.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-04T11:02:35.941602",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-04T11:06:29.332759",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "good",
+    "risk_profile": "moderate"
   }
 ]

@@ -13,8 +13,9 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
-  const [showSimulation, setShowSimulation] = useState(false); // 🔁 Toggle modal
+  const [showSimulation, setShowSimulation] = useState(false); // 🔁 Toggle modal for chart
 
+  // 📡 Fetch loop/training/retraining status from backend
   const fetchLoopStatus = () => {
     fetch(`${BACKEND_URL}/debug/ai_loop_status`)
       .then((res) => res.json())
@@ -26,6 +27,7 @@ function App() {
     fetchLoopStatus();
   }, []);
 
+  // 🔁 Send belief to backend and fetch strategy
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -59,6 +61,7 @@ function App() {
   const handlePrev = () =>
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
+  // ✅ Send user feedback to backend
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -93,7 +96,7 @@ function App() {
       <h1>🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span></h1>
       <p>Enter your belief and watch the strategy unfold</p>
 
-      {/* 🔍 AI Loop Status */}
+      {/* 🧠 AI Loop Status Monitor */}
       {loopStatus && (
         <div style={{ backgroundColor: '#eef7ff', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
           <h3>🧠 AI Loop Status Dashboard</h3>
@@ -105,7 +108,7 @@ function App() {
         </div>
       )}
 
-      {/* 📥 Input Form */}
+      {/* 📥 Belief Submission Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
@@ -147,7 +150,7 @@ function App() {
         </button>
       </form>
 
-      {/* 📡 Strategy Output */}
+      {/* 📡 Strategy Response Display */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -168,13 +171,13 @@ function App() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
-              {/* Feedback */}
+              {/* 👍👎 Feedback Buttons */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
-              {/* Strategy nav */}
+              {/* ⬅️➡️ Navigation for Multi-Strategy */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>
@@ -182,7 +185,7 @@ function App() {
                 </div>
               )}
 
-              {/* Simulate button */}
+              {/* 🎬 Simulate Button */}
               <div style={{ marginTop: '2rem' }}>
                 <button
                   onClick={() => setShowSimulation(true)}
@@ -203,7 +206,7 @@ function App() {
         </div>
       )}
 
-      {/* Simulation Modal */}
+      {/* 🎬 Simulation Modal */}
       {showSimulation && (
         <div
           style={{
@@ -222,12 +225,13 @@ function App() {
           <h2>🎬 Belief Simulation: {belief}</h2>
           <p>📈 Visualizing profitable outcome for strategy: <strong>{response?.strategy[currentIndex].type}</strong></p>
 
-          {/* ✅ Inject live animated chart */}
+          {/* ✅ Inject live animated chart with full context */}
           <SimulatedChart
             ticker={response.ticker}
             strategyType={response.strategy[currentIndex].type}
             price={response.price_info?.latest}
             confidence={response.confidence}
+            assetClass={response.asset_class} // ✅ NEW: passed to enable dynamic simulations
           />
 
           <button
