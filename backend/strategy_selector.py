@@ -11,7 +11,7 @@ VEC_PATH = os.path.join("backend", "multi_vectorizer.joblib")
 model = joblib.load(MODEL_PATH)
 vectorizer = joblib.load(VEC_PATH)
 
-# ✅ Strategy metadata
+# ✅ Strategy metadata (full dictionary restored)
 STRATEGY_DETAILS = {
     "buy stock": {
         "description": "Buy shares of the underlying company",
@@ -24,9 +24,9 @@ STRATEGY_DETAILS = {
         "explanation": "Ideal for income-focused investors seeking stability and passive cash flow."
     },
     "bond ladder": {
-        "description": "Build a ladder of bonds with staggered maturities",
+        "description": "Build a ladder of bond ETFs: AGG, IEF, SHY",
         "risk_level": "low",
-        "explanation": "Generates predictable income while minimizing interest rate risk."
+        "explanation": "Generates predictable income by staggering maturities and reducing reinvestment risk. AGG covers broad exposure, IEF mid-term, SHY short-term."
     },
     "index fund": {
         "description": "Buy a diversified ETF tracking a market index (e.g. SPY)",
@@ -126,15 +126,11 @@ STRATEGY_DETAILS = {
 }
 
 def get_dynamic_allocation(risk_level: str, risk_profile: str) -> str:
-    """
-    Returns a % allocation based on user profile and strategy risk level.
-    """
     matrix = {
         "conservative": {"low": 20, "medium": 10, "high": 5},
         "moderate": {"low": 20, "medium": 15, "high": 10},
         "aggressive": {"low": 25, "medium": 20, "high": 20},
     }
-
     try:
         return f"{matrix[risk_profile][risk_level]}%"
     except KeyError:
@@ -143,6 +139,17 @@ def get_dynamic_allocation(risk_level: str, risk_profile: str) -> str:
 def is_earnings_play(belief: str) -> bool:
     keywords = ["earnings", "report", "announcement", "quarter", "after earnings", "post-earnings"]
     return any(kw in belief.lower() for kw in keywords)
+
+def is_bond_ladder_belief(belief: str, tags: list, asset_class: str, ticker: str) -> bool:
+    bond_keywords = ["bond", "ladder", "income", "fixed income"]
+    bond_tickers = ["agg", "bnd", "ief", "shy", "tip", "lqd"]
+    belief_text = belief.lower()
+    return (
+        any(k in belief_text for k in bond_keywords) or
+        any(k in tags for k in bond_keywords) or
+        asset_class == "bond" or
+        ticker.lower() in bond_tickers
+    )
 
 def select_strategy(
     belief: str,
@@ -155,11 +162,12 @@ def select_strategy(
     multiplier: float = None,
     timeframe: str = None,
     expiry_date: str = None,
-    risk_profile: str = "moderate"
+    risk_profile: str = "moderate",
+    tags: list = []
 ) -> dict:
     latest_price = round(float(price_info["latest"]), 2) if isinstance(price_info, dict) else round(float(price_info), 2)
 
-    # ✅ Override for earnings-related beliefs
+    # ✅ Step 1: Earnings override
     if is_earnings_play(belief):
         if direction == "bullish":
             predicted_strategy = "bull call spread"
@@ -168,8 +176,14 @@ def select_strategy(
         else:
             predicted_strategy = "straddle"
         print(f"[EARNINGS OVERRIDE] → {predicted_strategy}")
+
+    # ✅ Step 2: Bond ladder override
+    elif is_bond_ladder_belief(belief, tags, asset_class, ticker):
+        predicted_strategy = "bond ladder"
+        print(f"[BOND LADDER OVERRIDE] → {predicted_strategy}")
+
+    # ✅ Step 3: ML fallback
     else:
-        # ✅ ML Prediction
         input_text = f"{belief} | {ticker} | {asset_class} | {direction}"
         try:
             X_vectorized = vectorizer.transform([input_text])
@@ -179,7 +193,7 @@ def select_strategy(
             print(f"[ERROR] Prediction failed: {e}")
             predicted_strategy = "default strategy"
 
-    # ✅ Normalize alias labels
+    # ✅ Normalize prediction
     alias_map = {
         "stock": "buy stock",
         "equity": "buy stock",
@@ -187,7 +201,6 @@ def select_strategy(
     }
     normalized = alias_map.get(predicted_strategy, predicted_strategy)
 
-    # ✅ Fallback if unknown
     if normalized not in STRATEGY_DETAILS:
         print(f"[WARN] Unknown strategy '{normalized}', using fallback.")
         normalized = "default strategy"
@@ -195,7 +208,7 @@ def select_strategy(
     details = STRATEGY_DETAILS[normalized]
     risk_level = details["risk_level"]
 
-    # ✅ Custom description formatting
+    # ✅ Customize descriptions
     if "call" in normalized:
         description = f"Buy {ticker} {int(latest_price * 1.05)}c / Sell {ticker} {int(latest_price * 1.15)}c"
     elif "put" in normalized:
@@ -204,6 +217,8 @@ def select_strategy(
         description = f"Buy {ticker} shares for dividend income"
     elif "stock" in normalized:
         description = f"Buy {ticker} shares"
+    elif "bond ladder" in normalized:
+        description = "Ladder: 1/3 AGG + 1/3 IEF + 1/3 SHY — covers short, mid, and broad-term bonds"
     else:
         description = details["description"]
 

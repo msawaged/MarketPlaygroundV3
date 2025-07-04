@@ -38,10 +38,16 @@ SYMBOL_LOOKUP_MAP = {
     "tech": "XLK", "technology": "XLK", "ark": "ARKK", "cathie wood": "ARKK", "gold": "GLD"
 }
 
+BOND_KEYWORDS = ["bond", "bonds", "bond ladder", "income", "fixed income", "treasury", "muni", "municipal bond"]
+
 def clean_belief(text: str) -> str:
     return re.sub(r"[^a-zA-Z0-9\s]", "", text.lower().strip())
 
-def detect_ticker(belief: str) -> str:
+def detect_ticker(belief: str, asset_class: str = None) -> str:
+    """
+    Returns a detected ticker from the belief. If asset_class is 'bond' and no ticker is detected,
+    returns a bond ETF fallback (AGG or BND).
+    """
     cleaned_belief = clean_belief(belief)
 
     for ticker in ALL_TICKERS:
@@ -51,6 +57,11 @@ def detect_ticker(belief: str) -> str:
     for keyword, mapped_ticker in SYMBOL_LOOKUP_MAP.items():
         if keyword in cleaned_belief:
             return mapped_ticker.upper()
+
+    # ✅ If this is a bond-related belief and no ticker was found, assign bond ETF fallback
+    if asset_class == "bond":
+        print("[TICKER DETECTION] No match — assigning fallback bond ETF (AGG)")
+        return "AGG"
 
     print("[TICKER DETECTION] No match — returning None")
     return None
@@ -114,18 +125,16 @@ def parse_belief(belief: str) -> dict:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
 
     tag_list = inject_keyword_tags(belief, tag_list)
-    predicted_asset_class = detect_asset_class(belief)
 
+    # 🔍 Asset class logic override if bond keywords are found
     lower_belief = belief.lower()
-    if any(kw in lower_belief for kw in ["government bond", "treasury", "fixed income", "bond fund", "low-risk income"]):
-        asset_class = "bond"
-    elif "bond" in tag_list or "income" in tag_list:
+    if any(kw in lower_belief for kw in BOND_KEYWORDS) or "bond" in tag_list or "income" in tag_list:
         asset_class = "bond"
     else:
-        asset_class = predicted_asset_class
+        asset_class = detect_asset_class(belief)
 
     return {
-        "ticker": detect_ticker(belief),
+        "ticker": detect_ticker(belief, asset_class),
         "direction": detect_direction(belief),
         "tags": tag_list,
         "confidence": float(confidence),

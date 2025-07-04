@@ -1,4 +1,5 @@
 # backend/ai_engine/ai_engine.py
+
 """
 Main AI Engine — Translates natural language beliefs into trading strategies.
 Integrates belief parsing, goal evaluation, asset class selection, and GPT-4-powered strategy logic.
@@ -16,15 +17,15 @@ from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evalua
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
 from backend.logger.strategy_logger import log_strategy
 
-# Load environment variables from .env file at runtime
+# Load environment variables
 load_dotenv()
 
-# Securely read OpenAI API key from environment
+# Securely read OpenAI API key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable not set")
 
-# Initialize OpenAI client with API key
+# Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Known equities override ETF misclassification
@@ -32,7 +33,7 @@ KNOWN_EQUITIES = {
     "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
 }
 
-# Utility to clean invalid float values for JSON
+# Sanitize float values for JSON output
 def clean_float(value):
     if value is None or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
         return None
@@ -40,19 +41,11 @@ def clean_float(value):
 
 def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
     """
-    Core AI pipeline: 
-    - Parse the user belief to extract key info (direction, ticker, tags, confidence, asset class)
-    - Parse user financial goal from belief (goal type, multiplier, timeframe)
-    - Use fallback logic for missing ticker or asset class
-    - Fetch latest market price and weekly high/low for ticker
-    - Compose a detailed GPT-4 prompt with all context
-    - Call GPT-4 chat completions API to generate a JSON trading strategy
-    - Handle API errors gracefully by returning error info in the strategy
-    - Log the generated strategy with associated belief and user info
-    - Return a flat dictionary with all info for frontend consumption
+    Core AI engine logic for translating user beliefs into strategies using GPT-4.
+    Uses ML to parse belief metadata, GPT for strategy generation, and logs output.
     """
 
-    # Step 1: Parse belief for key info
+    # Step 1: Parse belief using ML
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
@@ -60,14 +53,14 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     confidence = parsed.get("confidence", 0.5)
     parsed_asset = parsed.get("asset_class", "options")
 
-    # Step 2: Parse financial goal from belief
+    # Step 2: Parse financial goal
     goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # Step 3: Fallback ticker if missing
+    # Step 3: Fallback for missing ticker
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
@@ -85,7 +78,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     else:
         asset_class = parsed_asset
 
-    # Step 5: Fetch market data, handle errors safely
+    # Step 5: Fetch market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -98,11 +91,10 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         print(f"[ERROR] get_weekly_high_low failed for {ticker}: {e}")
         high_low = (-1.0, -1.0)
 
-    # Sanitize all float outputs for JSON compliance
     price_info = {"latest": clean_float(latest)}
     high_low = (clean_float(high_low[0]), clean_float(high_low[1]))
 
-    # Debug output for traceability
+    # Step 6: Debug output
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}, Direction: {direction}, Tags: {tags}")
@@ -110,16 +102,23 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     print(f"→ Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}")
     print(f"→ Asset Class: {asset_class}, Expiry Date: {expiry_date}")
     print(f"→ Latest Price: {latest}, Weekly High/Low: {high_low}")
-    print("🧠 Using GPT-4 to generate strategy...\n")
 
-    # Step 6: Build prompt for GPT-4
+    # Step 7: Detect bond ladder interest
+    bond_tags = ["bond", "ladder", "income", "fixed income"]
+    is_bond_ladder = (
+        "bond ladder" in belief.lower()
+        or any(tag in tags for tag in bond_tags)
+        or asset_class == "bond"
+    )
+
+    # Step 8: Build GPT prompt
     strategy_prompt = f"""
 You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
 
 Include:
 - type (e.g., long call, bull put spread, buy equity, buy bond ETF)
 - trade_legs (e.g., 'buy 1 call 150 strike', 'sell 1 put 140 strike')
-- expiration (in 'YYYY-MM-DD' format or 'N/A' if not applicable)
+- expiration (in 'YYYY-MM-DD' format or 'N/A')
 - target_return (expected gain %)
 - max_loss (worst-case loss %)
 - time_to_target (e.g., 2 weeks, 3 months)
@@ -132,11 +131,22 @@ Context:
 - Latest Price: {latest}
 - Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
 - Confidence: {confidence}, Risk Profile: {risk_profile}
-
-Output valid JSON only.
 """
 
-    # Step 7: Call GPT-4 API and parse JSON response
+    # Add bond ladder helper if relevant
+    if is_bond_ladder:
+        strategy_prompt += """
+NOTE: The user appears interested in a bond ladder or income strategy.
+Recommend a bond ETF ladder using AGG (broad), IEF (mid-term), and SHY (short-term).
+Explain the maturity staggering, income generation, and diversification benefits clearly.
+"""
+
+    # Ensure GPT outputs raw JSON
+    strategy_prompt += "\nRespond ONLY with valid JSON. Do not include explanations, markdown, or formatting."
+
+    print("🧠 Using GPT-4 to generate strategy...\n")
+
+    # Step 9: Call GPT-4 and parse
     try:
         response = client.chat.completions.create(
             model="gpt-4",
@@ -144,11 +154,17 @@ Output valid JSON only.
             temperature=0.7,
         )
         gpt_output = response.choices[0].message.content.strip()
-        strategy = json.loads(gpt_output)
 
-        # Unwrap nested strategy if necessary
-        if isinstance(strategy, dict) and "strategy" in strategy and isinstance(strategy["strategy"], dict):
-            strategy = strategy["strategy"]
+        # Log raw GPT output for debugging
+        print("🧾 GPT RAW OUTPUT:\n", gpt_output)
+
+        # Parse only if valid JSON detected
+        if gpt_output.startswith("{"):
+            strategy = json.loads(gpt_output)
+            if isinstance(strategy, dict) and "strategy" in strategy:
+                strategy = strategy["strategy"]
+        else:
+            raise ValueError("GPT returned non-JSON response.")
 
     except Exception as e:
         print(f"[ERROR] GPT-4 strategy generation failed: {e}")
@@ -162,13 +178,13 @@ Output valid JSON only.
             "explanation": f"Failed to generate strategy: {e}"
         }
 
-    # Step 8: Prepare explanation field
+    # Step 10: Explanation fallback
     explanation = strategy.get("explanation", "Strategy explanation not available.")
 
-    # Step 9: Log strategy for analytics and tracking
+    # Step 11: Log strategy
     log_strategy(belief, explanation, user_id, strategy)
 
-    # Step 10: Return a flat dictionary with all relevant info
+    # Step 12: Return full response for frontend
     return {
         "strategy": strategy,
         "ticker": ticker,

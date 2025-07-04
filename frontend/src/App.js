@@ -1,6 +1,8 @@
 // frontend/src/App.js
 
 import React, { useState, useEffect } from 'react';
+import './App.css';
+import SimulatedChart from './components/SimulatedChart'; // ✅ Simulation chart component
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -10,10 +12,9 @@ function App() {
   const [response, setResponse] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loopStatus, setLoopStatus] = useState(null);
+  const [showSimulation, setShowSimulation] = useState(false); // 🔁 Toggle modal
 
-  const [loopStatus, setLoopStatus] = useState(null); // 🌐 AI loop monitor
-
-  // 🧠 Reusable loop fetcher
   const fetchLoopStatus = () => {
     fetch(`${BACKEND_URL}/debug/ai_loop_status`)
       .then((res) => res.json())
@@ -21,7 +22,6 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
-  // Initial fetch on mount
   useEffect(() => {
     fetchLoopStatus();
   }, []);
@@ -45,7 +45,7 @@ function App() {
       const strategies = Array.isArray(data.strategy) ? data.strategy : [data.strategy];
       setResponse({ ...data, strategy: strategies });
       setCurrentIndex(0);
-      fetchLoopStatus(); // 🔁 Refresh loop status
+      fetchLoopStatus();
     } catch {
       setResponse({ error: '❌ Failed to reach backend. Check deployment.' });
     } finally {
@@ -82,7 +82,7 @@ function App() {
 
       const result = await res.json();
       alert(result.message || '✅ Feedback submitted');
-      fetchLoopStatus(); // 🔁 Refresh loop status after feedback
+      fetchLoopStatus();
     } catch {
       alert('❌ Feedback submission failed');
     }
@@ -93,7 +93,7 @@ function App() {
       <h1>🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span></h1>
       <p>Enter your belief and watch the strategy unfold</p>
 
-      {/* 🧭 Live AI Loop Status Monitor */}
+      {/* 🔍 AI Loop Status */}
       {loopStatus && (
         <div style={{ backgroundColor: '#eef7ff', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
           <h3>🧠 AI Loop Status Dashboard</h3>
@@ -105,11 +105,10 @@ function App() {
         </div>
       )}
 
-      {/* 🎯 Input form */}
+      {/* 📥 Input Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label>
-          <br />
+          <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
           <input
             id="beliefInput"
             type="text"
@@ -121,8 +120,7 @@ function App() {
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="userIdInput">👤 Optional User ID</label>
-          <br />
+          <label htmlFor="userIdInput">👤 Optional User ID</label><br />
           <input
             id="userIdInput"
             type="text"
@@ -149,7 +147,7 @@ function App() {
         </button>
       </form>
 
-      {/* 📡 AI Response */}
+      {/* 📡 Strategy Output */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -170,19 +168,74 @@ function App() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
+              {/* Feedback */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
+              {/* Strategy nav */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>
                   <button onClick={handleNext} disabled={currentIndex === response.strategy.length - 1}>Next ➡️</button>
                 </div>
               )}
+
+              {/* Simulate button */}
+              <div style={{ marginTop: '2rem' }}>
+                <button
+                  onClick={() => setShowSimulation(true)}
+                  style={{
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    padding: '0.5rem 1rem',
+                    fontSize: '1rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🎬 Simulate Belief Outcome
+                </button>
+              </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Simulation Modal */}
+      {showSimulation && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            color: '#fff',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem'
+          }}
+        >
+          <h2>🎬 Belief Simulation: {belief}</h2>
+          <p>📈 Visualizing profitable outcome for strategy: <strong>{response?.strategy[currentIndex].type}</strong></p>
+
+          {/* ✅ Inject live animated chart */}
+          <SimulatedChart
+            ticker={response.ticker}
+            strategyType={response.strategy[currentIndex].type}
+            price={response.price_info?.latest}
+            confidence={response.confidence}
+          />
+
+          <button
+            onClick={() => setShowSimulation(false)}
+            style={{ marginTop: '2rem', padding: '0.5rem 1rem', fontSize: '1rem' }}
+          >
+            ❌ Close Simulation
+          </button>
         </div>
       )}
     </div>
