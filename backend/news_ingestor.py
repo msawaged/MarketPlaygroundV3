@@ -1,12 +1,12 @@
 """
 News Ingestor: Fetches RSS news → generates belief → POSTs to backend → logs for training.
 Also triggers model retraining after ingestion completes.
+This version runs ONCE per execution (designed for Render Cron).
 """
 
 import feedparser
 import random
 import requests
-import time
 import datetime
 import os
 import csv
@@ -47,18 +47,12 @@ FALLBACK_BELIEFS = [
 ]
 
 def generate_belief_prompt(title, summary=""):
-    """
-    Creates a synthetic belief from a news title and summary.
-    """
     return random.choice(TEMPLATES).format(
         headline=title.strip(),
         summary=summary.strip()[:200] or "No summary provided"
     )
 
 def fetch_news_entries(limit_per_feed=5):
-    """
-    Pulls the latest headlines + summaries from all RSS feeds.
-    """
     entries = []
     print(f"🔧 Total feeds: {len(RSS_FEEDS)}", file=sys.stderr)
     for url in RSS_FEEDS:
@@ -78,9 +72,6 @@ def fetch_news_entries(limit_per_feed=5):
     return entries
 
 def log_raw_belief(title, summary, belief):
-    """
-    Logs the raw title → summary → belief into news_beliefs.csv for review.
-    """
     os.makedirs(os.path.dirname(RAW_LOG_PATH), exist_ok=True)
     try:
         with open(RAW_LOG_PATH, mode="a", newline="", encoding="utf-8") as csvfile:
@@ -90,9 +81,6 @@ def log_raw_belief(title, summary, belief):
         print(f"❌ Logging raw belief error: {e}", file=sys.stderr)
 
 def log_training_row(belief, strategy, asset_class):
-    """
-    Saves belief-strategy-asset_class row into Training_Strategies.csv for training.
-    """
     try:
         with open(TRAINING_PATH, mode="a", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
@@ -101,10 +89,6 @@ def log_training_row(belief, strategy, asset_class):
         print(f"❌ Training log error: {e}", file=sys.stderr)
 
 def send_belief_to_backend(belief, title="", summary=""):
-    """
-    Sends a single belief to the /process_belief endpoint.
-    Logs the strategy and asset class to the training dataset.
-    """
     try:
         r = requests.post(BACKEND_URL, json={"belief": belief})
         if r.status_code == 200:
@@ -120,9 +104,6 @@ def send_belief_to_backend(belief, title="", summary=""):
         print(f"❌ Request error: {e}", file=sys.stderr)
 
 def trigger_retraining():
-    """
-    Triggers backend retraining by POSTing to /force_retrain
-    """
     try:
         response = requests.post(RETRAIN_URL)
         if response.status_code == 200:
@@ -132,37 +113,28 @@ def trigger_retraining():
     except Exception as e:
         print(f"❌ Exception while triggering retraining: {e}", file=sys.stderr)
 
-def run_news_ingestor(interval=300):
-    """
-    Main loop: fetch news → create beliefs → send to backend → log → trigger retraining.
-    """
-    while True:
-        print(f"\n🟢 News Ingestor started: {datetime.datetime.now()}", file=sys.stderr)
-        entries = fetch_news_entries()
-        print(f"🔍 Found {len(entries)} headlines", file=sys.stderr)
+def run_news_ingestor():
+    print(f"\n🟢 News Ingestor started: {datetime.datetime.now()}", file=sys.stderr)
+    entries = fetch_news_entries()
+    print(f"🔍 Found {len(entries)} headlines", file=sys.stderr)
 
-        # ✅ Write ingestion summary to logs
-        write_training_log(
-            f"📰 News fetched: {len(entries)}\n🧠 Beliefs generated: {len(entries) or 1}\n➕ New beliefs added: {len(entries) or 1}"
-        )
+    write_training_log(
+        f"📰 News fetched: {len(entries)}\n🧠 Beliefs generated: {len(entries) or 1}\n➕ New beliefs added: {len(entries) or 1}"
+    )
 
-        if not entries:
-            fallback = random.choice(FALLBACK_BELIEFS)
-            print("⚠️ No headlines found — using fallback", file=sys.stderr)
-            send_belief_to_backend(fallback, "Fallback", "")
-        else:
-            print(f"✅ Proceeding with {len(entries)} headlines", file=sys.stderr)
-            for title, summary in entries:
-                belief = generate_belief_prompt(title, summary)
-                send_belief_to_backend(belief, title, summary)
+    if not entries:
+        fallback = random.choice(FALLBACK_BELIEFS)
+        print("⚠️ No headlines found — using fallback", file=sys.stderr)
+        send_belief_to_backend(fallback, "Fallback", "")
+    else:
+        for title, summary in entries:
+            belief = generate_belief_prompt(title, summary)
+            send_belief_to_backend(belief, title, summary)
 
-        # ✅ Trigger background retraining
-        print("🚀 Triggering retraining after ingestion...", file=sys.stderr)
-        trigger_retraining()
+    print("🚀 Triggering retraining after ingestion...", file=sys.stderr)
+    trigger_retraining()
+    print(f"✅ Ingestor completed at {datetime.datetime.now()}", file=sys.stderr)
 
-        print(f"🛑 Sleeping for {interval}s", file=sys.stderr)
-        time.sleep(interval)
-
-# === Entrypoint for Render Worker ===
+# === Entrypoint ===
 if __name__ == "__main__":
     run_news_ingestor()
