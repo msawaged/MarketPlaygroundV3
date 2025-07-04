@@ -5,20 +5,27 @@ import { Line, Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
 /**
- * Renders a dynamic simulation chart based on asset class and strategy type.
- * Supports options, bonds, stocks, and currency simulations using Chart.js.
+ * SimulatedChart Component
+ * Dynamically renders a simulation chart based on strategy type and asset class.
+ * Supports options (call/put/straddle), bonds (allocation), stocks (pnl line),
+ * and currencies (fluctuation). Falls back to a default chart if unsupported.
  */
+
 const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass }) => {
   const chartRef = useRef(null);
   const currentPrice = parseFloat(price);
 
-  // Dynamic simulation logic based on asset class
+  // 🔁 Strategy simulation logic by asset class and strategy
   const generateData = () => {
     const x = [];
     const y = [];
 
-    // ---- Options (e.g. Long Call, Long Put, etc.) ----
-    if (assetClass === 'option' || strategyType.toLowerCase().includes('call') || strategyType.toLowerCase().includes('put')) {
+    // ✅ Options Strategy Payoff Curve
+    if (
+      assetClass === 'option' ||
+      strategyType.toLowerCase().includes('call') ||
+      strategyType.toLowerCase().includes('put')
+    ) {
       for (let p = currentPrice * 0.5; p <= currentPrice * 1.5; p += 1) {
         x.push(p.toFixed(2));
         let payoff = 0;
@@ -55,10 +62,10 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
       };
     }
 
-    // ---- Bonds → Simulate ladder maturity buckets ----
+    // ✅ Bonds → Allocation bar chart for laddered ETFs
     if (assetClass === 'bond') {
       const ladders = ['SHY (Short)', 'IEF (Mid)', 'AGG (Broad)'];
-      const weights = [20, 30, 50]; // Adjust as needed
+      const weights = [33, 33, 34]; // Simulated equal ladder
       return {
         type: 'bar',
         data: {
@@ -66,13 +73,13 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
           datasets: [{
             label: 'Capital Allocation (%)',
             data: weights,
-            backgroundColor: ['#8cb9ff', '#7abfff', '#4a90e2'],
+            backgroundColor: ['#a5d8ff', '#74c0fc', '#4dabf7'],
           }],
         },
       };
     }
 
-    // ---- Stocks → Simulate linear price movement → projected gain/loss ----
+    // ✅ Stocks → Simulated projected PnL
     if (assetClass === 'stock') {
       for (let p = currentPrice * 0.8; p <= currentPrice * 1.2; p += 1) {
         x.push(p.toFixed(2));
@@ -96,14 +103,14 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
       };
     }
 
-    // ---- Currency → Simulate range-bound FX rate swing ----
+    // ✅ Currency → Simulated FX rate fluctuation
     if (assetClass === 'currency') {
       const mid = currentPrice;
       const range = 0.05 * mid;
       for (let i = -10; i <= 10; i++) {
         const p = (mid + (i * range) / 10).toFixed(4);
         x.push(p);
-        y.push((Math.sin(i / 3) * 0.5).toFixed(3)); // Fake fluctuation
+        y.push((Math.sin(i / 3) * 0.5).toFixed(3)); // Fake sine-wave fluctuation
       }
 
       return {
@@ -121,7 +128,7 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
       };
     }
 
-    // ---- Default fallback ----
+    // ❓ Fallback Simulation for unsupported types
     return {
       type: 'line',
       data: {
@@ -169,7 +176,6 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
     },
   };
 
-  // Render appropriate chart type
   return (
     <div style={{ padding: '1rem' }}>
       {type === 'bar' ? (
