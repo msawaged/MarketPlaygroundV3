@@ -1,6 +1,6 @@
 # backend/retrain_worker.py
 # ✅ Background worker: Auto-retrains models when enough new feedback is collected
-# ✅ Logs to Supabase + retrain_worker.log + last_retrain.json
+# ✅ Logs to Supabase + retrain_worker.log + last_retrain.json + training_log
 
 import time
 import os
@@ -85,9 +85,18 @@ def run_retraining_loop(interval: int = 3600):
 
             if new_entries >= FEEDBACK_THRESHOLD:
                 log_to_file("⚙️  Threshold met — starting retraining...")
-                train_all_models()
+                log_to_file("🔁 [START] Model retraining initiated...")
+
+                # 🧠 Train all models and capture report
+                report = train_all_models()
+
+                # ✅ Print and persist metrics
+                log_to_file("📊 [REPORT] Model metrics:\n" + json.dumps(report, indent=2))
+                write_training_log("📊 Model training summary:\n" + json.dumps(report, indent=2), source="retrain_worker")
+
                 save_retrain_state(current_count)
                 log_to_file("✅ Retraining complete and state saved")
+
             else:
                 log_to_file(f"⏭️  Skipping — need {FEEDBACK_THRESHOLD}, only {new_entries} new")
 
