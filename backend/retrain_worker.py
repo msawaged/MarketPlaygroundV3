@@ -66,7 +66,7 @@ def save_retrain_state(current_count: int):
         }, f)
 
 # === Main Worker Loop ===
-def run_retraining_loop(interval: int = 3600):
+def run_retraining_loop(interval: int = 60):
     """
     Loop that:
     - Watches feedback.csv row count
