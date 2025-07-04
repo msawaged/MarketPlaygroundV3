@@ -6,25 +6,28 @@ import Chart from 'chart.js/auto';
 
 /**
  * SimulatedChart Component
- * Dynamically renders a simulation chart based on strategy type and asset class.
- * Supports options (call/put/straddle), bonds (allocation), stocks (pnl line),
- * and currencies (fluctuation). Falls back to a default chart if unsupported.
+ * ✅ Handles dynamic visualizations for:
+ *    - Options (calls, puts, straddles)
+ *    - Stocks
+ *    - Bonds (ETF ladder)
+ *    - Currencies (wave pattern)
  */
 
 const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass }) => {
   const chartRef = useRef(null);
   const currentPrice = parseFloat(price);
 
-  // 🔁 Strategy simulation logic by asset class and strategy
   const generateData = () => {
     const x = [];
     const y = [];
 
-    // ✅ Options Strategy Payoff Curve
+    // ✅ Options Simulation
     if (
       assetClass === 'option' ||
+      assetClass === 'options' ||  // fix for backend plural
       strategyType.toLowerCase().includes('call') ||
-      strategyType.toLowerCase().includes('put')
+      strategyType.toLowerCase().includes('put') ||
+      strategyType.toLowerCase().includes('straddle')
     ) {
       for (let p = currentPrice * 0.5; p <= currentPrice * 1.5; p += 1) {
         x.push(p.toFixed(2));
@@ -43,48 +46,105 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
           payoff = (p - currentPrice) * 0.5;
         }
 
-        y.push(payoff.toFixed(2));
+        y.push(payoff);
       }
 
       return {
         type: 'line',
         data: {
           labels: x,
-          datasets: [{
-            label: `${strategyType} Payoff`,
-            data: y,
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointRadius: 0,
-          }],
+          datasets: [
+            {
+              label: `${strategyType} Payoff`,
+              data: y,
+              fill: 'start',
+              backgroundColor: 'rgba(0, 200, 255, 0.1)',
+              borderColor: 'rgba(0, 200, 255, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              pointRadius: 0,
+            },
+            {
+              label: 'Break-even',
+              data: Array(x.length).fill(0),
+              borderColor: 'gray',
+              borderDash: [5, 5],
+              pointRadius: 0,
+            },
+            {
+              label: 'Current Price',
+              data: x.map(label => parseFloat(label) === parseFloat(currentPrice.toFixed(2)) ? 0.01 : null),
+              backgroundColor: 'red',
+              pointRadius: 5,
+              type: 'line',
+              borderWidth: 0,
+            }
+          ],
         },
       };
     }
 
-    // ✅ Bonds → Allocation bar chart for laddered ETFs
+    // ✅ Bonds Simulation
     if (assetClass === 'bond') {
-      const ladders = ['SHY (Short)', 'IEF (Mid)', 'AGG (Broad)'];
-      const weights = [33, 33, 34]; // Simulated equal ladder
       return {
         type: 'bar',
         data: {
-          labels: ladders,
+          labels: ['SHY (Short)', 'IEF (Mid)', 'AGG (Broad)'],
           datasets: [{
             label: 'Capital Allocation (%)',
-            data: weights,
+            data: [33, 33, 34],
             backgroundColor: ['#a5d8ff', '#74c0fc', '#4dabf7'],
           }],
         },
       };
     }
 
-    // ✅ Stocks → Simulated projected PnL
+    // ✅ Stock PnL Simulation
     if (assetClass === 'stock') {
       for (let p = currentPrice * 0.8; p <= currentPrice * 1.2; p += 1) {
         x.push(p.toFixed(2));
-        const pnl = (p - currentPrice).toFixed(2);
-        y.push(pnl);
+        y.push((p - currentPrice).toFixed(2));
+      }
+
+      return {
+        type: 'line',
+        data: {
+          labels: x,
+          datasets: [
+            {
+              label: `Projected PnL`,
+              data: y,
+              borderColor: 'limegreen',
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 0,
+            },
+            {
+              label: 'Break-even',
+              data: Array(x.length).fill(0),
+              borderColor: 'gray',
+              borderDash: [5, 5],
+              pointRadius: 0,
+            },
+            {
+              label: 'Current Price',
+              data: x.map(label => parseFloat(label) === parseFloat(currentPrice.toFixed(2)) ? 0.01 : null),
+              backgroundColor: 'orange',
+              pointRadius: 5,
+              type: 'line',
+              borderWidth: 0,
+            }
+          ],
+        },
+      };
+    }
+
+    // ✅ Currency Simulation
+    if (assetClass === 'currency') {
+      for (let i = -10; i <= 10; i++) {
+        const p = (currentPrice + i * (currentPrice * 0.01)).toFixed(4);
+        x.push(p);
+        y.push((Math.sin(i / 3) * 0.5).toFixed(3));
       }
 
       return {
@@ -92,43 +152,18 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
         data: {
           labels: x,
           datasets: [{
-            label: `Projected PnL for ${ticker}`,
+            label: 'Simulated FX Movement',
             data: y,
-            fill: true,
-            tension: 0.2,
+            borderColor: 'deepskyblue',
             borderWidth: 2,
+            tension: 0.3,
             pointRadius: 0,
           }],
         },
       };
     }
 
-    // ✅ Currency → Simulated FX rate fluctuation
-    if (assetClass === 'currency') {
-      const mid = currentPrice;
-      const range = 0.05 * mid;
-      for (let i = -10; i <= 10; i++) {
-        const p = (mid + (i * range) / 10).toFixed(4);
-        x.push(p);
-        y.push((Math.sin(i / 3) * 0.5).toFixed(3)); // Fake sine-wave fluctuation
-      }
-
-      return {
-        type: 'line',
-        data: {
-          labels: x,
-          datasets: [{
-            label: `${ticker} Simulated FX Movement`,
-            data: y,
-            fill: false,
-            borderWidth: 2,
-            pointRadius: 1,
-          }],
-        },
-      };
-    }
-
-    // ❓ Fallback Simulation for unsupported types
+    // ❓ Fallback
     return {
       type: 'line',
       data: {
@@ -145,18 +180,23 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
 
   const options = {
     responsive: true,
-    animation: {
-      duration: 1500,
-    },
+    maintainAspectRatio: false,
+    animation: { duration: 1200 },
     plugins: {
       title: {
         display: true,
         text: `${ticker} Simulation (${assetClass})`,
-        font: { size: 18 },
+        font: { size: 20 },
+      },
+      legend: {
+        labels: {
+          color: '#ddd',
+          font: { size: 12 },
+        },
       },
       tooltip: {
         callbacks: {
-          label: (ctx) => `Value: ${ctx.raw}`,
+          label: ctx => `Value: ${ctx.raw}`,
         },
       },
     },
@@ -164,26 +204,28 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
       x: {
         title: {
           display: true,
-          text: assetClass === 'bond' ? 'ETF Segment' : 'Price or Rate',
+          text: assetClass === 'bond' ? 'ETF' : 'Price',
+          color: '#aaa',
         },
       },
       y: {
         title: {
           display: true,
           text: assetClass === 'bond' ? 'Allocation (%)' : 'Profit / Loss',
+          color: '#aaa',
         },
       },
     },
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{ padding: '1rem', height: '400px' }}>
       {type === 'bar' ? (
         <Bar ref={chartRef} data={data} options={options} />
       ) : (
         <Line ref={chartRef} data={data} options={options} />
       )}
-      <p style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+      <p style={{ textAlign: 'center', marginTop: '0.5rem', color: '#ccc' }}>
         📊 Confidence Level: <strong>{(confidence * 100).toFixed(1)}%</strong>
       </p>
     </div>

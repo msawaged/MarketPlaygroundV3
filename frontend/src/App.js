@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import SimulatedChart from './components/SimulatedChart'; // ✅ Simulation chart component
+import SimulatedChart from './components/SimulatedChart'; // ✅ Chart component for simulation
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -13,9 +13,13 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
-  const [showSimulation, setShowSimulation] = useState(false); // 🔁 Toggle modal for chart
+  const [showSimulation, setShowSimulation] = useState(false); // ✅ toggle for animated modal
 
-  // 📡 Fetch loop/training/retraining status from backend
+  // 🔁 Fetch AI system loop status on mount
+  useEffect(() => {
+    fetchLoopStatus();
+  }, []);
+
   const fetchLoopStatus = () => {
     fetch(`${BACKEND_URL}/debug/ai_loop_status`)
       .then((res) => res.json())
@@ -23,11 +27,7 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
-  useEffect(() => {
-    fetchLoopStatus();
-  }, []);
-
-  // 🔁 Send belief to backend and fetch strategy
+  // 🎯 Submit belief to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -55,13 +55,15 @@ function App() {
     }
   };
 
-  const handleNext = () =>
+  const handleNext = () => {
     setCurrentIndex((prev) => Math.min(prev + 1, response.strategy.length - 1));
+  };
 
-  const handlePrev = () =>
+  const handlePrev = () => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  };
 
-  // ✅ Send user feedback to backend
+  // 👍👎 Submit user feedback
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -108,7 +110,7 @@ function App() {
         </div>
       )}
 
-      {/* 📥 Belief Submission Form */}
+      {/* 🎯 Belief Submission Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
@@ -150,7 +152,7 @@ function App() {
         </button>
       </form>
 
-      {/* 📡 Strategy Response Display */}
+      {/* 📡 Strategy Display */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -164,20 +166,20 @@ function App() {
               <p><strong>🎯 Ticker:</strong> {response.ticker}</p>
               <p><strong>📊 Asset Class:</strong> {response.asset_class}</p>
               <p><strong>📈 Direction:</strong> {response.direction}</p>
-              <p><strong>⚡ Confidence:</strong> {response.confidence.toFixed(4)}</p>
+              <p><strong>⚡ Confidence:</strong> {response.confidence?.toFixed(4)}</p>
               <p><strong>💸 Latest Price:</strong> ${response.price_info?.latest}</p>
               <p><strong>📅 Expiry:</strong> {response.expiry_date || 'N/A'}</p>
               <p><strong>🎯 Goal:</strong> {response.goal_type} {response.multiplier ? `(${response.multiplier}x)` : ''}</p>
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
-              {/* 👍👎 Feedback Buttons */}
+              {/* 👍👎 Feedback */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
-              {/* ⬅️➡️ Navigation for Multi-Strategy */}
+              {/* ⬅️➡️ Strategy Navigation */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>
@@ -185,7 +187,7 @@ function App() {
                 </div>
               )}
 
-              {/* 🎬 Simulate Button */}
+              {/* 🎬 Simulation Trigger */}
               <div style={{ marginTop: '2rem' }}>
                 <button
                   onClick={() => setShowSimulation(true)}
@@ -223,15 +225,15 @@ function App() {
           }}
         >
           <h2>🎬 Belief Simulation: {belief}</h2>
-          <p>📈 Visualizing profitable outcome for strategy: <strong>{response?.strategy[currentIndex].type}</strong></p>
+          <p>📈 Simulating: <strong>{response?.strategy[currentIndex].type}</strong></p>
 
-          {/* ✅ Inject live animated chart with full context */}
+          {/* ✅ Inject live chart with asset-class context */}
           <SimulatedChart
             ticker={response.ticker}
             strategyType={response.strategy[currentIndex].type}
             price={response.price_info?.latest}
             confidence={response.confidence}
-            assetClass={response.asset_class} // ✅ NEW: passed to enable dynamic simulations
+            assetClass={response.asset_class} // ✅ used to drive chart type
           />
 
           <button
