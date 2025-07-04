@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "cra-template-pwa": "2.0.0",
+    "framer-motion": "^12.23.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-parallax": "^3.5.2",
     "react-scripts": "5.0.1",
+    "react-spring": "^10.0.1",
     "web-vitals": "^5.0.3"
   },
   "scripts": {
@@ -35,5 +39,3 @@
   },
   "proxy": "http://127.0.0.1:8000"
 }
-
-

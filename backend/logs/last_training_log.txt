@@ -1,6 +1,6 @@
 
-🕒 2025-07-03 22:57:57 — strategy_router
+🕒 2025-07-04 08:11:54 — strategy_router
 [STRATEGY GENERATED]
-Belief: I think treasury yields will rise and bonds will fall
-User: test
-Strategy: {'type': 'Long Put', 'trade_legs': [{'action': 'buy 1 put option', 'ticker': 'TLT', 'strike': -1.0, 'expiration': '2023-12-31'}], 'expiration': '2023-12-31', 'target_return': 20.0, 'max_loss': 10.0, 'time_to_target': '1 year', 'explanation': 'The strategy involves buying a put option on TLT, which is an ETF that tracks the price of long-term treasury bonds. If the treasury yields rise, the price of bonds (and therefore TLT) will fall, making the put option more valuable. This strategy offers limited downside risk (the premium paid for the put option), and potentially significant upside if the belief about rising yields proves correct.'}
+Belief: Apple will beat earnings and spike after hours
+User: local_test
+Strategy: {'type': 'Long Call', 'trade_legs': ['buy 1 call 220 strike'], 'expiration': '2023-03-17', 'target_return': 20, 'max_loss': 100, 'time_to_target': '2 weeks', 'explanation': "The strategy involves buying a call option on AAPL with a strike price slightly higher than the current stock price. If the user's belief is correct and Apple beats earnings leading to a spike in the stock price, this will increase the value of the call option, leading to a profit. The max loss is the premium paid for the call option, which occurs if AAPL price ends below the strike at expiration. The target return is set at 20% which might be achieved if AAPL spikes significantly post earnings. This strategy is suitable for moderate risk profile as it has a defined risk (the premium paid) and potentially high reward."}

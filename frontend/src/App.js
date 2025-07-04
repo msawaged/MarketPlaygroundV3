@@ -13,12 +13,17 @@ function App() {
 
   const [loopStatus, setLoopStatus] = useState(null); // 🌐 AI loop monitor
 
-  // 🧠 Fetch loop status on mount
-  useEffect(() => {
+  // 🧠 Reusable loop fetcher
+  const fetchLoopStatus = () => {
     fetch(`${BACKEND_URL}/debug/ai_loop_status`)
       .then((res) => res.json())
       .then((data) => setLoopStatus(data))
       .catch((err) => console.error('Loop status fetch error:', err));
+  };
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchLoopStatus();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -40,6 +45,7 @@ function App() {
       const strategies = Array.isArray(data.strategy) ? data.strategy : [data.strategy];
       setResponse({ ...data, strategy: strategies });
       setCurrentIndex(0);
+      fetchLoopStatus(); // 🔁 Refresh loop status
     } catch {
       setResponse({ error: '❌ Failed to reach backend. Check deployment.' });
     } finally {
@@ -76,6 +82,7 @@ function App() {
 
       const result = await res.json();
       alert(result.message || '✅ Feedback submitted');
+      fetchLoopStatus(); // 🔁 Refresh loop status after feedback
     } catch {
       alert('❌ Feedback submission failed');
     }
