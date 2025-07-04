@@ -1,8 +1,7 @@
 // frontend/src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// ✅ CRA-compatible: Injects environment variable at build time
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
 function App() {
@@ -12,7 +11,16 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // 🔄 Submit user belief to backend
+  const [loopStatus, setLoopStatus] = useState(null); // 🌐 AI loop monitor
+
+  // 🧠 Fetch loop status on mount
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/debug/ai_loop_status`)
+      .then((res) => res.json())
+      .then((data) => setLoopStatus(data))
+      .catch((err) => console.error('Loop status fetch error:', err));
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -39,15 +47,12 @@ function App() {
     }
   };
 
-  // ⏭️ Navigate next strategy
   const handleNext = () =>
     setCurrentIndex((prev) => Math.min(prev + 1, response.strategy.length - 1));
 
-  // ⏮️ Navigate previous strategy
   const handlePrev = () =>
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
-  // 🧠 Send strategy feedback to backend
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -80,6 +85,18 @@ function App() {
     <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: 'auto' }}>
       <h1>🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span></h1>
       <p>Enter your belief and watch the strategy unfold</p>
+
+      {/* 🧭 Live AI Loop Status Monitor */}
+      {loopStatus && (
+        <div style={{ backgroundColor: '#eef7ff', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
+          <h3>🧠 AI Loop Status Dashboard</h3>
+          <p><strong>📝 Last Belief:</strong> {loopStatus.last_strategy?.belief}</p>
+          <p><strong>📈 Last Strategy:</strong> {loopStatus.last_strategy?.strategy?.type}</p>
+          <p><strong>📊 Feedback Entries:</strong> {loopStatus.feedback_count}</p>
+          <p><strong>📰 News Beliefs Ingested:</strong> {loopStatus.news_beliefs_ingested}</p>
+          <p><strong>🛠️ Last Retrain:</strong> {loopStatus.last_retrain?.timestamp}</p>
+        </div>
+      )}
 
       {/* 🎯 Input form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
@@ -146,13 +163,11 @@ function App() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
-              {/* 👍 👎 Feedback Buttons */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
-              {/* ⏮️⏭️ Strategy Navigation */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>
