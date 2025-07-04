@@ -24,7 +24,7 @@ FEEDBACK_THRESHOLD = 5  # ✅ Trigger retrain only if this many new feedback row
 
 # === Logging Helper ===
 def log_to_file(message: str):
-    """Logs message to log file, console, and Supabase."""
+    """Logs message to retrain_worker.log, prints to console, and logs to Supabase."""
     timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     full = f"[{timestamp}] {message}"
     try:
@@ -37,7 +37,7 @@ def log_to_file(message: str):
 
 # === Feedback Tracking ===
 def get_feedback_count() -> int:
-    """Returns row count of feedback.csv (or 0 on error)."""
+    """Returns total rows in feedback.csv (or 0 on error)."""
     if not os.path.exists(FEEDBACK_PATH):
         return 0
     try:
@@ -48,7 +48,7 @@ def get_feedback_count() -> int:
         return 0
 
 def load_last_retrain_count() -> int:
-    """Returns feedback count from last retrain (stored in JSON)."""
+    """Returns the feedback count at last retrain."""
     if os.path.exists(LAST_RETRAIN_PATH):
         try:
             with open(LAST_RETRAIN_PATH, "r") as f:
@@ -58,7 +58,7 @@ def load_last_retrain_count() -> int:
     return 0
 
 def save_retrain_state(current_count: int):
-    """Persists new retrain state to JSON."""
+    """Saves current feedback count + timestamp to JSON state."""
     with open(LAST_RETRAIN_PATH, "w") as f:
         json.dump({
             "feedback_count": current_count,
@@ -68,33 +68,33 @@ def save_retrain_state(current_count: int):
 # === Main Worker Loop ===
 def run_retraining_loop(interval: int = 3600):
     """
-    Infinite loop that:
-    - Checks feedback.csv count
-    - Retrains if threshold is hit
-    - Logs every step
+    Loop that:
+    - Watches feedback.csv row count
+    - Triggers retraining if threshold met
+    - Logs progress and errors
     """
-    log_to_file("🚨 Retrain worker started")
+    log_to_file("✅ Retrain worker started and running (threshold = 5)")
+
     while True:
         try:
             current_count = get_feedback_count()
             last_count = load_last_retrain_count()
             new_entries = current_count - last_count
 
-            log_to_file(f"🧠 Feedback: {current_count} total | {new_entries} new since last retrain")
+            log_to_file(f"🧠 Feedback total: {current_count} | New since last: {new_entries}")
 
             if new_entries >= FEEDBACK_THRESHOLD:
-                log_to_file("⚙️  Retraining triggered...")
+                log_to_file("⚙️  Threshold met — starting retraining...")
                 train_all_models()
                 save_retrain_state(current_count)
-                log_to_file("✅ Model retraining completed")
-                write_training_log("✅ Model retraining completed", source="retrain_worker")  # <-- 🔥 Critical fix
+                log_to_file("✅ Retraining complete and state saved")
             else:
-                log_to_file(f"⏭️  Skipped — Need {FEEDBACK_THRESHOLD}, got {new_entries}")
+                log_to_file(f"⏭️  Skipping — need {FEEDBACK_THRESHOLD}, only {new_entries} new")
 
         except Exception as e:
-            log_to_file(f"❌ Error: {str(e)}")
+            log_to_file(f"❌ Uncaught error: {str(e)}")
 
-        log_to_file(f"⏳ Sleeping {interval} seconds...\n")
+        log_to_file(f"⏳ Sleeping for {interval} seconds...\n")
         time.sleep(interval)
 
 # === Entrypoint ===
