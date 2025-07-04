@@ -27,13 +27,14 @@ services:
         value: 3.11.9
     rootDir: .
 
-  # 📰 News Ingestor — now loops continuously using watchdog
+  # 📰 News Ingestor — now runs once per hour using Render’s cron feature
   - type: worker
     name: news-ingestor
     env: python
     plan: starter
+    schedule: "hourly"
     buildCommand: "pip install -r backend/requirements-news.txt"
-    startCommand: "PYTHONPATH=./ watchmedo shell-command --patterns='*.py' --recursive --command='python backend/news_ingestor.py' ."
+    startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
