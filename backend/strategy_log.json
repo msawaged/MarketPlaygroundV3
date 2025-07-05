@@ -8866,5 +8866,83 @@
       "time_to_target": "6 months",
       "explanation": "Given the bullish outlook on Apple due to the recent patent case win, a long call options strategy is recommended. This involves buying a call option with a strike price slightly above the current price, anticipating the stock price will increase. The target return is set at 15% based on the user's moderate risk profile and confidence level. The maximum loss is the total premium paid for the call option. The time to target is estimated to be 6 months based on typical market reactions to similar events."
     }
+  },
+  {
+    "timestamp": "2025-07-05T01:21:51.426847",
+    "user_id": "anonymous",
+    "belief": "Tesla is going up",
+    "explanation": "Based on the user's belief that Tesla is going up, a long call option is a suitable strategy. This allows the user to profit from a rise in Tesla's share price with limited downside risk. The chosen strike price is slightly above the current price, indicating the user's belief that the price will increase beyond this point. The expiration date gives the market 6 months to move in the user's favor. However, options carry the risk of losing the entire investment if the price does not exceed the strike price by the expiration date.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "buy 1 call option TSLA 320 strike"
+      ],
+      "expiration": "2022-12-16",
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Based on the user's belief that Tesla is going up, a long call option is a suitable strategy. This allows the user to profit from a rise in Tesla's share price with limited downside risk. The chosen strike price is slightly above the current price, indicating the user's belief that the price will increase beyond this point. The expiration date gives the market 6 months to move in the user's favor. However, options carry the risk of losing the entire investment if the price does not exceed the strike price by the expiration date."
+    }
+  },
+  {
+    "timestamp": "2025-07-05T01:21:51.484961",
+    "user_id": "anonymous",
+    "belief": "Tesla is going up",
+    "explanation": "Based on the user's belief that Tesla is going up, a long call option is a suitable strategy. This allows the user to profit from a rise in Tesla's share price with limited downside risk. The chosen strike price is slightly above the current price, indicating the user's belief that the price will increase beyond this point. The expiration date gives the market 6 months to move in the user's favor. However, options carry the risk of losing the entire investment if the price does not exceed the strike price by the expiration date.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "buy 1 call option TSLA 320 strike"
+      ],
+      "expiration": "2022-12-16",
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Based on the user's belief that Tesla is going up, a long call option is a suitable strategy. This allows the user to profit from a rise in Tesla's share price with limited downside risk. The chosen strike price is slightly above the current price, indicating the user's belief that the price will increase beyond this point. The expiration date gives the market 6 months to move in the user's favor. However, options carry the risk of losing the entire investment if the price does not exceed the strike price by the expiration date."
+    }
+  },
+  {
+    "timestamp": "2025-07-05T01:22:35.782669",
+    "user_id": "anonymous",
+    "belief": "long-term Equity play on Tesla",
+    "explanation": "Given your belief in Tesla as a long-term equity play, the recommended strategy is to buy the stock outright. This approach provides unlimited upside if the company performs well. Your downside is limited to the amount invested, fitting your moderate risk profile.",
+    "strategy": {
+      "type": "buy equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 100,
+          "ticker": "TSLA",
+          "price": 315.35
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": 15,
+      "max_loss": 10,
+      "time_to_target": "2 years",
+      "explanation": "Given your belief in Tesla as a long-term equity play, the recommended strategy is to buy the stock outright. This approach provides unlimited upside if the company performs well. Your downside is limited to the amount invested, fitting your moderate risk profile."
+    }
+  },
+  {
+    "timestamp": "2025-07-05T01:22:35.830026",
+    "user_id": "anonymous",
+    "belief": "long-term Equity play on Tesla",
+    "explanation": "Given your belief in Tesla as a long-term equity play, the recommended strategy is to buy the stock outright. This approach provides unlimited upside if the company performs well. Your downside is limited to the amount invested, fitting your moderate risk profile.",
+    "strategy": {
+      "type": "buy equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 100,
+          "ticker": "TSLA",
+          "price": 315.35
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": 15,
+      "max_loss": 10,
+      "time_to_target": "2 years",
+      "explanation": "Given your belief in Tesla as a long-term equity play, the recommended strategy is to buy the stock outright. This approach provides unlimited upside if the company performs well. Your downside is limited to the amount invested, fitting your moderate risk profile."
+    }
   }
 ]

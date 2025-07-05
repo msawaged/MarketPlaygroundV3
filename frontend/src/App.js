@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import SimulatedChart from './components/SimulatedChart'; // ✅ Chart component for simulation
+import SimulatedChart from './components/SimulatedChart';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -14,9 +14,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
   const [showSimulation, setShowSimulation] = useState(false);
-  const [logs, setLogs] = useState([]); // ✅ NEW: Supabase training logs
+  const [logs, setLogs] = useState([]);
 
-  // 🔁 Fetch AI system loop status and training logs on mount
   useEffect(() => {
     fetchLoopStatus();
     fetchRecentLogs();
@@ -29,7 +28,6 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
-  // ✅ NEW: Fetch recent training logs from Supabase or fallback file
   const fetchRecentLogs = () => {
     fetch(`${BACKEND_URL}/logs/recent`)
       .then((res) => res.json())
@@ -37,7 +35,6 @@ function App() {
       .catch((err) => console.error('Log fetch error:', err));
   };
 
-  // 🎯 Submit belief to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +70,6 @@ function App() {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
-  // 👍👎 Submit user feedback
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -108,7 +104,6 @@ function App() {
       <h1>🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span></h1>
       <p>Enter your belief and watch the strategy unfold</p>
 
-      {/* 🧠 AI Loop Status Monitor */}
       {loopStatus && (
         <div style={{ backgroundColor: '#eef7ff', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
           <h3>🧠 AI Loop Status Dashboard</h3>
@@ -120,7 +115,6 @@ function App() {
         </div>
       )}
 
-      {/* ✅ NEW: Supabase Log Viewer */}
       {logs.length > 0 && (
         <div style={{ backgroundColor: '#fefbe7', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
           <h3>📜 Recent Training Logs</h3>
@@ -135,7 +129,7 @@ function App() {
         </div>
       )}
 
-      {/* 🎯 Belief Submission Form */}
+      {/* 🎯 Belief Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
@@ -147,6 +141,45 @@ function App() {
             placeholder="e.g. TSLA will go up"
             style={{ padding: '0.5rem', width: '300px', fontSize: '1rem' }}
           />
+          <br />
+          {/* 🎤 Voice Input Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (!SpeechRecognition) {
+                alert("Speech Recognition not supported in this browser.");
+                return;
+              }
+
+              const recognition = new SpeechRecognition();
+              recognition.lang = 'en-US';
+              recognition.interimResults = false;
+              recognition.maxAlternatives = 1;
+
+              recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                setBelief(spokenText);
+              };
+
+              recognition.onerror = (event) => {
+                alert('Speech recognition error: ' + event.error);
+              };
+
+              recognition.start();
+            }}
+            style={{
+              marginTop: '0.5rem',
+              backgroundColor: '#ffc107',
+              color: '#000',
+              padding: '0.4rem 1rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            🎤 Speak Belief
+          </button>
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
@@ -177,7 +210,7 @@ function App() {
         </button>
       </form>
 
-      {/* 📡 Strategy Display */}
+      {/* 📡 Strategy Results */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -198,13 +231,13 @@ function App() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
-              {/* 👍👎 Feedback */}
+              {/* Feedback */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')}>👎 No</button>
               </div>
 
-              {/* ⬅️➡️ Strategy Navigation */}
+              {/* Strategy Nav */}
               {response.strategy.length > 1 && (
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handlePrev} disabled={currentIndex === 0} style={{ marginRight: '1rem' }}>⬅️ Previous</button>
@@ -212,7 +245,7 @@ function App() {
                 </div>
               )}
 
-              {/* 🎬 Simulation Trigger */}
+              {/* Simulation */}
               <div style={{ marginTop: '2rem' }}>
                 <button
                   onClick={() => setShowSimulation(true)}
@@ -233,7 +266,6 @@ function App() {
         </div>
       )}
 
-      {/* 🎬 Simulation Modal */}
       {showSimulation && (
         <div
           style={{
