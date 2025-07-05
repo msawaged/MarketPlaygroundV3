@@ -88,3 +88,8 @@ __pycache__/
 *.txt
 .env
 .env
+backend/feedback_log.csv
+backend/Training_Strategies.csv
+backend/logs/
+backend/*.joblib
+backend/*.json

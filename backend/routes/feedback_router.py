@@ -24,8 +24,9 @@ class FeedbackPayload(BaseModel):
 # ✅ File paths
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 TRAINING_PATH = os.path.join("backend", "Training_Strategies.csv")
+LOG_PATH = os.path.join("backend", "feedback_log.csv")  # ⬅️ CSV log path
 
-# ✅ Append raw feedback JSON
+# ✅ Save raw JSON feedback
 def save_feedback_entry(data: dict):
     if os.path.exists(FEEDBACK_PATH):
         with open(FEEDBACK_PATH, "r") as f:
@@ -41,7 +42,7 @@ def save_feedback_entry(data: dict):
     with open(FEEDBACK_PATH, "w") as f:
         json.dump(existing, f, indent=2)
 
-# ✅ Append training-ready CSV row
+# ✅ Save training CSV if "good"
 def append_training_example(belief, strategy, risk_profile):
     parsed = parse_belief(belief)
     goal = evaluate_goal_from_belief(belief)
@@ -62,6 +63,25 @@ def append_training_example(belief, strategy, risk_profile):
             writer.writeheader()
         writer.writerow(row)
 
+# ✅ Save flat CSV log of all feedback (good + bad)
+def log_feedback_csv(entry: dict):
+    row = {
+        "timestamp": entry["timestamp"],
+        "user_id": entry["user_id"],
+        "ip": entry["ip"],
+        "belief": entry["belief"],
+        "strategy": entry["strategy"],
+        "feedback": entry["feedback"],
+        "risk_profile": entry["risk_profile"]
+    }
+
+    file_exists = os.path.isfile(LOG_PATH)
+    with open(LOG_PATH, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys())
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
 # ✅ POST /submit_feedback
 @router.post("/submit_feedback")
 def submit_feedback(payload: FeedbackPayload, request: Request):
@@ -75,10 +95,9 @@ def submit_feedback(payload: FeedbackPayload, request: Request):
         "risk_profile": payload.risk_profile
     }
 
-    # Save raw JSON feedback
+    # Save raw JSON + training CSV (if good)
     save_feedback_entry(entry)
-
-    # Save structured training data if labeled as "good"
+    log_feedback_csv(entry)
     if payload.feedback == "good":
         append_training_example(payload.belief, payload.strategy, payload.risk_profile)
 
