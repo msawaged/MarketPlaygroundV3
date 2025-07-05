@@ -17509,5 +17509,51 @@
       "user_id": "anonymous"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-05T00:06:06.515408",
+    "user_id": "test_local",
+    "belief": "Apple just won a huge patent case, will the stock go up?",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "call",
+            "strike": 220,
+            "expiration": "2023-09-15"
+          }
+        ],
+        "expiration": "2023-09-15",
+        "target_return": 15,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Given the bullish outlook on Apple due to the recent patent case win, a long call options strategy is recommended. This involves buying a call option with a strike price slightly above the current price, anticipating the stock price will increase. The target return is set at 15% based on the user's moderate risk profile and confidence level. The maximum loss is the total premium paid for the call option. The time to target is estimated to be 6 months based on typical market reactions to similar events."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 213.55
+      },
+      "high_low": [
+        214.65,
+        211.81
+      ],
+      "confidence": 0.7291148784150879,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Given the bullish outlook on Apple due to the recent patent case win, a long call options strategy is recommended. This involves buying a call option with a strike price slightly above the current price, anticipating the stock price will increase. The target return is set at 15% based on the user's moderate risk profile and confidence level. The maximum loss is the total premium paid for the call option. The time to target is estimated to be 6 months based on typical market reactions to similar events.",
+      "user_id": "test_local"
+    },
+    "result": "auto_generated"
   }
 ]

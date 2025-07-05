@@ -3,13 +3,14 @@
 """
 Main AI Engine — Translates natural language beliefs into trading strategies.
 Integrates belief parsing, goal evaluation, asset class selection, and GPT-4-powered strategy logic.
+Now uses openai>=1.0.0 compliant client.
 """
 
 import os
 import json
 import math
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI  # ✅ openai>=1.0.0 format
 
 from backend.belief_parser import parse_belief
 from backend.market_data import get_latest_price, get_weekly_high_low
@@ -20,20 +21,20 @@ from backend.logger.strategy_logger import log_strategy
 # Load environment variables
 load_dotenv()
 
-# Securely read OpenAI API key
+# Securely load OpenAI key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable not set")
 
-# Initialize OpenAI client
+# ✅ Create OpenAI client with new interface
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Known equities override ETF misclassification
+# Equities override for ETF misclassifications
 KNOWN_EQUITIES = {
     "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
 }
 
-# Sanitize float values for JSON output
+# Float cleanup for JSON
 def clean_float(value):
     if value is None or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
         return None
@@ -45,7 +46,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     Uses ML to parse belief metadata, GPT for strategy generation, and logs output.
     """
 
-    # Step 1: Parse belief using ML
+    # Step 1: Parse belief metadata
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
@@ -60,7 +61,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     timeframe = goal.get("timeframe")
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # Step 3: Fallback for missing ticker
+    # Step 3: Ticker fallback
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
@@ -69,7 +70,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             ticker = "AAPL"
 
-    # Step 4: Fix asset class misclassification
+    # Step 4: Fix ETF/Equity/Bond mixups
     if parsed_asset == "etf" and ticker.upper() in KNOWN_EQUITIES:
         asset_class = "equity"
     elif parsed_asset == "bond" and ticker.upper() == "SPY":
@@ -78,7 +79,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     else:
         asset_class = parsed_asset
 
-    # Step 5: Fetch market data
+    # Step 5: Market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -94,7 +95,7 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     price_info = {"latest": clean_float(latest)}
     high_low = (clean_float(high_low[0]), clean_float(high_low[1]))
 
-    # Step 6: Debug output
+    # Step 6: Console debug
     print("\n🔍 [AI ENGINE DEBUG INFO]")
     print(f"Belief: {belief}")
     print(f"→ Ticker: {ticker}, Direction: {direction}, Tags: {tags}")
@@ -133,7 +134,7 @@ Context:
 - Confidence: {confidence}, Risk Profile: {risk_profile}
 """
 
-    # Add bond ladder helper if relevant
+    # Bond helper tip
     if is_bond_ladder:
         strategy_prompt += """
 NOTE: The user appears interested in a bond ladder or income strategy.
@@ -141,12 +142,12 @@ Recommend a bond ETF ladder using AGG (broad), IEF (mid-term), and SHY (short-te
 Explain the maturity staggering, income generation, and diversification benefits clearly.
 """
 
-    # Ensure GPT outputs raw JSON
+    # Force raw JSON
     strategy_prompt += "\nRespond ONLY with valid JSON. Do not include explanations, markdown, or formatting."
 
     print("🧠 Using GPT-4 to generate strategy...\n")
 
-    # Step 9: Call GPT-4 and parse
+    # Step 9: GPT call with new SDK
     try:
         response = client.chat.completions.create(
             model="gpt-4",
@@ -155,10 +156,8 @@ Explain the maturity staggering, income generation, and diversification benefits
         )
         gpt_output = response.choices[0].message.content.strip()
 
-        # Log raw GPT output for debugging
         print("🧾 GPT RAW OUTPUT:\n", gpt_output)
 
-        # Parse only if valid JSON detected
         if gpt_output.startswith("{"):
             strategy = json.loads(gpt_output)
             if isinstance(strategy, dict) and "strategy" in strategy:
@@ -178,13 +177,10 @@ Explain the maturity staggering, income generation, and diversification benefits
             "explanation": f"Failed to generate strategy: {e}"
         }
 
-    # Step 10: Explanation fallback
+    # Step 10: Finalize + log
     explanation = strategy.get("explanation", "Strategy explanation not available.")
-
-    # Step 11: Log strategy
     log_strategy(belief, explanation, user_id, strategy)
 
-    # Step 12: Return full response for frontend
     return {
         "strategy": strategy,
         "ticker": ticker,
