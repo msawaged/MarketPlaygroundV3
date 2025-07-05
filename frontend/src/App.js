@@ -4,7 +4,18 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+/**
+ * ✅ Smart backend routing logic:
+ * - Uses .env variable if it's clearly set to a Render URL
+ * - Falls back to localhost if in dev
+ * - Defaults to Render cloud URL if deployed
+ */
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL?.includes('render.com')
+    ? process.env.REACT_APP_BACKEND_URL
+    : window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : 'https://marketplayground-backend.onrender.com';
 
 function App() {
   const [belief, setBelief] = useState('');

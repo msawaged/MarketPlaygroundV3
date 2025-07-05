@@ -17649,5 +17649,57 @@
       "user_id": "anonymous"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-05T01:42:56.768568",
+    "user_id": "anonymous",
+    "belief": "stocks tank because of tariffs",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "trade_legs": [
+          {
+            "action": "buy 1 put 210 strike",
+            "ticker": "AAPL"
+          }
+        ],
+        "expiration": "2023-12-15",
+        "target_return": 25,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Given the user's belief that stocks (in this case AAPL) tank because of tariffs, a bearish strategy such as a long put could be beneficial. This strategy involves buying a put option, which increases in value as the underlying asset's price decreases, hence producing a profit if AAPL's stock price falls as anticipated in the belief. The strike price is chosen to be slightly lower than the current price, with a 6-month timeframe to allow enough time for the tariffs to have an effect. The user's moderate risk profile is considered by limiting the maximum loss to the cost of the option itself."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 213.55
+      },
+      "high_low": [
+        214.65,
+        211.81
+      ],
+      "confidence": 0.7018531877069569,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Given the user's belief that stocks (in this case AAPL) tank because of tariffs, a bearish strategy such as a long put could be beneficial. This strategy involves buying a put option, which increases in value as the underlying asset's price decreases, hence producing a profit if AAPL's stock price falls as anticipated in the belief. The strike price is chosen to be slightly lower than the current price, with a 6-month timeframe to allow enough time for the tariffs to have an effect. The user's moderate risk profile is considered by limiting the maximum loss to the cost of the option itself.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-05T01:43:08.485716",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "stocks tank because of tariffs",
+    "strategy": "long put",
+    "feedback": "bad",
+    "risk_profile": "moderate"
   }
 ]
