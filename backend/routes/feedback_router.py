@@ -13,7 +13,7 @@ from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief
 
 router = APIRouter()
 
-# ✅ Define expected feedback payload
+# ✅ Expected input format
 class FeedbackPayload(BaseModel):
     belief: str
     strategy: str
@@ -21,12 +21,13 @@ class FeedbackPayload(BaseModel):
     user_id: str = "anonymous"
     risk_profile: str = "moderate"
 
-# ✅ File paths
-FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
-TRAINING_PATH = os.path.join("backend", "Training_Strategies.csv")
-LOG_PATH = os.path.join("backend", "feedback_log.csv")  # ⬅️ CSV log path
+# ✅ Paths for all feedback logs
+FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")             # Raw JSON log
+TRAINING_PATH = os.path.join("backend", "Training_Strategies.csv")       # Good samples for retraining
+LOG_PATH = os.path.join("backend", "feedback_log.csv")                   # All feedback (flat log)
+RETRAIN_PATH = os.path.join("backend", "feedback.csv")                   # ⬅️ Used by retrain_worker
 
-# ✅ Save raw JSON feedback
+# ✅ Store raw feedback entries as JSON
 def save_feedback_entry(data: dict):
     if os.path.exists(FEEDBACK_PATH):
         with open(FEEDBACK_PATH, "r") as f:
@@ -42,7 +43,7 @@ def save_feedback_entry(data: dict):
     with open(FEEDBACK_PATH, "w") as f:
         json.dump(existing, f, indent=2)
 
-# ✅ Save training CSV if "good"
+# ✅ Store good samples for model training
 def append_training_example(belief, strategy, risk_profile):
     parsed = parse_belief(belief)
     goal = evaluate_goal_from_belief(belief)
@@ -63,7 +64,7 @@ def append_training_example(belief, strategy, risk_profile):
             writer.writeheader()
         writer.writerow(row)
 
-# ✅ Save flat CSV log of all feedback (good + bad)
+# ✅ Store all feedback in both log.csv and retrain.csv
 def log_feedback_csv(entry: dict):
     row = {
         "timestamp": entry["timestamp"],
@@ -75,10 +76,19 @@ def log_feedback_csv(entry: dict):
         "risk_profile": entry["risk_profile"]
     }
 
-    file_exists = os.path.isfile(LOG_PATH)
+    # Write to feedback_log.csv (for general auditing)
+    log_exists = os.path.isfile(LOG_PATH)
     with open(LOG_PATH, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=row.keys())
-        if not file_exists:
+        if not log_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
+    # ✅ Also write to feedback.csv (for retrain_worker)
+    retrain_exists = os.path.isfile(RETRAIN_PATH)
+    with open(RETRAIN_PATH, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys())
+        if not retrain_exists:
             writer.writeheader()
         writer.writerow(row)
 
@@ -95,7 +105,7 @@ def submit_feedback(payload: FeedbackPayload, request: Request):
         "risk_profile": payload.risk_profile
     }
 
-    # Save raw JSON + training CSV (if good)
+    # Save to all feedback systems
     save_feedback_entry(entry)
     log_feedback_csv(entry)
     if payload.feedback == "good":
