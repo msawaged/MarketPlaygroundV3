@@ -22,12 +22,12 @@ except Exception as e:
 
 # === Load Asset Class Model (full pipeline) ===
 try:
-    asset_model = load_model("asset_class_model.joblib")  # pipeline includes vectorizer
+    asset_model = load_model("asset_class_model.joblib")
 except Exception as e:
     print(f"[WARNING] Asset class model not loaded: {e}")
     asset_model = None
 
-# === Fallback map for company/sector keywords to tickers ===
+# === Fallback keyword-to-ticker maps ===
 SYMBOL_LOOKUP_MAP = {
     "tesla": "TSLA", "apple": "AAPL", "microsoft": "MSFT", "nvidia": "NVDA",
     "amazon": "AMZN", "meta": "META", "facebook": "META", "google": "GOOGL", "alphabet": "GOOGL",
@@ -38,6 +38,15 @@ SYMBOL_LOOKUP_MAP = {
     "tech": "XLK", "technology": "XLK", "ark": "ARKK", "cathie wood": "ARKK", "gold": "GLD"
 }
 
+# === New: currency-specific logic ===
+CURRENCY_LOOKUP_MAP = {
+    "usd": "UUP", "dollar": "UUP", "us dollar": "UUP",
+    "euro": "FXE", "eur": "FXE",
+    "yen": "FXY", "jpy": "FXY",
+    "pound": "FXB", "gbp": "FXB",
+    "yuan": "CYB", "cny": "CYB"
+}
+
 BOND_KEYWORDS = ["bond", "bonds", "bond ladder", "income", "fixed income", "treasury", "muni", "municipal bond"]
 
 def clean_belief(text: str) -> str:
@@ -45,8 +54,7 @@ def clean_belief(text: str) -> str:
 
 def detect_ticker(belief: str, asset_class: str = None) -> str:
     """
-    Returns a detected ticker from the belief. If asset_class is 'bond' and no ticker is detected,
-    returns a bond ETF fallback (AGG or BND).
+    Attempts to detect a ticker based on keywords, currencies, or fallback logic.
     """
     cleaned_belief = clean_belief(belief)
 
@@ -54,11 +62,17 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         if ticker.lower() in cleaned_belief:
             return ticker.upper()
 
+    # Check company/sector map
     for keyword, mapped_ticker in SYMBOL_LOOKUP_MAP.items():
         if keyword in cleaned_belief:
             return mapped_ticker.upper()
 
-    # ✅ If this is a bond-related belief and no ticker was found, assign bond ETF fallback
+    # ✅ Check currency map
+    for keyword, mapped_ticker in CURRENCY_LOOKUP_MAP.items():
+        if keyword in cleaned_belief:
+            return mapped_ticker.upper()
+
+    # ✅ Fallback for bond-related beliefs
     if asset_class == "bond":
         print("[TICKER DETECTION] No match — assigning fallback bond ETF (AGG)")
         return "AGG"
@@ -68,8 +82,8 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
 
 def detect_direction(belief: str) -> str:
     text = belief.lower()
-    bearish_words = ["down", "drop", "fall", "bear", "crash", "tank", "recession"]
-    bullish_words = ["up", "rise", "bull", "skyrocket", "jump", "explode", "rally", "soar"]
+    bearish_words = ["down", "drop", "fall", "bear", "crash", "tank", "recession", "weaken"]
+    bullish_words = ["up", "rise", "bull", "skyrocket", "jump", "explode", "rally", "soar", "strengthen"]
 
     if any(word in text for word in bearish_words):
         return "bearish"
@@ -78,9 +92,6 @@ def detect_direction(belief: str) -> str:
     return "neutral"
 
 def detect_asset_class(raw_belief: str) -> str:
-    """
-    Uses full ML pipeline to predict asset class.
-    """
     if asset_model:
         try:
             prediction = asset_model.predict([raw_belief])[0]
@@ -88,7 +99,6 @@ def detect_asset_class(raw_belief: str) -> str:
             return prediction
         except Exception as e:
             print(f"[ASSET CLASS ERROR] Failed to predict: {e}")
-    
     print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
     return "options"
 
@@ -105,7 +115,6 @@ def inject_keyword_tags(belief: str, tags: list) -> list:
     for key, phrases in keyword_map.items():
         if any(phrase in belief_lower for phrase in phrases) and key not in tags:
             tags.append(key)
-
     return tags
 
 def parse_belief(belief: str) -> dict:
@@ -126,7 +135,7 @@ def parse_belief(belief: str) -> dict:
 
     tag_list = inject_keyword_tags(belief, tag_list)
 
-    # 🔍 Asset class logic override if bond keywords are found
+    # 🔍 Override asset class if bond-related
     lower_belief = belief.lower()
     if any(kw in lower_belief for kw in BOND_KEYWORDS) or "bond" in tag_list or "income" in tag_list:
         asset_class = "bond"
