@@ -160,3 +160,4 @@ def get_ai_loop_status():
         status["last_retrain"] = f"Error: {str(e)}"
 
     return status
+ 
