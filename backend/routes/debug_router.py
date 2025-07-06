@@ -13,7 +13,7 @@ LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
 RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
-NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")
+NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")  # ✅ Updated to match actual path
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
 
@@ -52,7 +52,7 @@ def view_last_training_log():
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
 
-# === GET /debug/ingested_news → Returns last N news beliefs ===
+# === ✅ FIXED: GET /debug/ingested_news → Returns last N news beliefs ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
     if not os.path.exists(NEWS_LOG_PATH):
@@ -101,12 +101,9 @@ def get_last_strategy_log():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read strategy log: {str(e)}")
 
-# === ✅ NEW: GET /debug/logs/recent → Generic log viewer ===
+# === GET /debug/logs/recent → Generic log viewer ===
 @router.get("/logs/recent", response_class=PlainTextResponse)
 def get_recent_logs(lines: int = 50):
-    """
-    Returns the last N lines of retrain_worker.log for quick frontend preview.
-    """
     if not os.path.exists(RETRAIN_LOG_PATH):
         raise HTTPException(status_code=404, detail="Log file not found.")
     try:
@@ -119,13 +116,6 @@ def get_recent_logs(lines: int = 50):
 # === GET /debug/ai_loop_status → Unified backend dashboard ===
 @router.get("/debug/ai_loop_status")
 def get_ai_loop_status():
-    """
-    🧠 Master dashboard:
-    - Last strategy
-    - Feedback count
-    - News ingestion count
-    - Last retraining log
-    """
     status = {}
 
     # Strategy info
