@@ -1,0 +1,12 @@
+belief,label,confidence,ticker,asset_class,strategy
+"TSLA will go up next week",bullish,0.9,TSLA,equity,buy_call
+"NVDA is going to crash soon",bearish,0.85,NVDA,equity,buy_put
+"Apple will trade sideways",neutral,0.75,AAPL,equity,iron_condor
+"The S&P 500 might dip",bearish,0.6,SPY,etf,buy_put
+"Bitcoin is about to skyrocket",bullish,0.95,BTC,crypto,buy
+"Oil prices will drop this summer",bearish,0.8,USO,commodity,short
+"Interest rates are likely to stay flat",neutral,0.65,TLT,bond,hold
+"Amazon could rally into earnings",bullish,0.88,AMZN,equity,buy_call_spread
+"The whole market is going to collapse",bearish,0.9,SPY,etf,buy_put
+"Gold will rise steadily",bullish,0.85,GLD,commodity,buy
+"AI chip demand will surge due to new regulations on China",good
