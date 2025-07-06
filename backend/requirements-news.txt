@@ -1,0 +1,5 @@
+feedparser
+requests
+xgboost
+watchdog  # Needed to keep news_ingestor.py running continuously on Render
+python-dotenv  # ✅ Needed for backend/utils/logger.py
