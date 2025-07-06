@@ -3,6 +3,7 @@
 
 import os
 import json
+import subprocess
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 
@@ -13,11 +14,34 @@ LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
 RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
-NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")  # ✅ Updated to match actual path
+NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
 
-# === GET /debug/retrain_log → Summary of last training session ===
+# === ✅ NEW: GET /debug/run_news_ingestor ===
+@router.get("/debug/run_news_ingestor")
+def run_news_ingestor():
+    """
+    🧠 Triggers news_ingestor.py manually using subprocess.
+    Works on Render if Python path and working directory are correct.
+    """
+    try:
+        result = subprocess.run(
+            ["python", "backend/news_ingestor.py"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        return {
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "exit_code": result.returncode
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to run script: {str(e)}")
+
+# (Everything below here is unchanged, but preserved for completeness...)
+
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
     if not os.path.exists(LAST_JSON_LOG):
@@ -28,7 +52,6 @@ def get_latest_retrain_log():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read retrain log: {str(e)}")
 
-# === GET /debug/last_training_status → Raw TXT (legacy) ===
 @router.get("/debug/last_training_status", response_class=PlainTextResponse)
 def read_last_training_status():
     if os.path.exists(LAST_TRAINING_LOG_TXT):
@@ -36,7 +59,6 @@ def read_last_training_status():
             return f.read()
     raise HTTPException(status_code=404, detail="No last training log found.")
 
-# === GET /debug/retrain_worker_log → Full retrain log ===
 @router.get("/debug/retrain_worker_log", response_class=PlainTextResponse)
 def read_retrain_worker_log():
     if os.path.exists(RETRAIN_LOG_PATH):
@@ -44,7 +66,6 @@ def read_retrain_worker_log():
             return f.read()
     raise HTTPException(status_code=404, detail="No retrain log found.")
 
-# === GET /last_training_log → Legacy alias ===
 @router.get("/last_training_log", response_class=PlainTextResponse)
 def view_last_training_log():
     if os.path.exists(LAST_TRAINING_LOG_TXT):
@@ -52,7 +73,6 @@ def view_last_training_log():
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
 
-# === ✅ FIXED: GET /debug/ingested_news → Returns last N news beliefs ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
     if not os.path.exists(NEWS_LOG_PATH):
@@ -74,7 +94,6 @@ def get_ingested_news(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read news log: {str(e)}")
 
-# === GET /debug/feedback_count → Total feedback entries ===
 @router.get("/debug/feedback_count")
 def get_feedback_count():
     if not os.path.exists(FEEDBACK_PATH):
@@ -86,7 +105,6 @@ def get_feedback_count():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
 
-# === GET /debug/last_strategy_log → Recent strategy info ===
 @router.get("/debug/last_strategy_log")
 def get_last_strategy_log():
     if not os.path.exists(STRATEGY_PATH):
@@ -101,7 +119,6 @@ def get_last_strategy_log():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read strategy log: {str(e)}")
 
-# === GET /debug/logs/recent → Generic log viewer ===
 @router.get("/logs/recent", response_class=PlainTextResponse)
 def get_recent_logs(lines: int = 50):
     if not os.path.exists(RETRAIN_LOG_PATH):
@@ -113,12 +130,9 @@ def get_recent_logs(lines: int = 50):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading log file: {str(e)}")
 
-# === GET /debug/ai_loop_status → Unified backend dashboard ===
 @router.get("/debug/ai_loop_status")
 def get_ai_loop_status():
     status = {}
-
-    # Strategy info
     try:
         if os.path.exists(STRATEGY_PATH):
             with open(STRATEGY_PATH, "r") as f:
@@ -129,7 +143,6 @@ def get_ai_loop_status():
     except Exception as e:
         status["last_strategy"] = f"Error: {str(e)}"
 
-    # Feedback total
     try:
         if os.path.exists(FEEDBACK_PATH):
             with open(FEEDBACK_PATH, "r") as f:
@@ -139,7 +152,6 @@ def get_ai_loop_status():
     except Exception as e:
         status["feedback_count"] = f"Error: {str(e)}"
 
-    # News count
     try:
         if os.path.exists(NEWS_LOG_PATH):
             with open(NEWS_LOG_PATH, "r", encoding="utf-8") as f:
@@ -149,7 +161,6 @@ def get_ai_loop_status():
     except Exception as e:
         status["news_beliefs_ingested"] = f"Error: {str(e)}"
 
-    # Retrain summary
     try:
         if os.path.exists(LAST_JSON_LOG):
             with open(LAST_JSON_LOG, "r") as f:
@@ -160,4 +171,3 @@ def get_ai_loop_status():
         status["last_retrain"] = f"Error: {str(e)}"
 
     return status
- 

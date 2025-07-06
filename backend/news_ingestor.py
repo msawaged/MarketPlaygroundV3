@@ -12,7 +12,8 @@ import csv
 import random
 import sys
 
-from backend.utils.logger import write_training_log
+from utils.logger import write_training_log
+
 
 # === Config ===
 BACKEND_URL = "https://marketplayground-backend.onrender.com/strategy/process_belief"
