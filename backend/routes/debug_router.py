@@ -27,14 +27,14 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 def run_news_ingestor():
     """
     🧠 Triggers news_ingestor.py manually using subprocess.
-    Works on Render if Python path and working directory are correct.
+    ⏱️ Timeout increased to 90s to avoid premature kill on Render.
     """
     try:
         result = subprocess.run(
             ["python", "backend/news_ingestor.py"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=90  # ⬅️ increased from 30 to 90 seconds
         )
         return {
             "stdout": result.stdout,
