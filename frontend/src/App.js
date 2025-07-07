@@ -1,13 +1,20 @@
+// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
 
+/**
+ * ✅ BACKEND_URL Resolution (CRA Compatible)
+ * Automatically resolves in this priority:
+ * - REACT_APP_BACKEND_URL (from .env.local or build)
+ * - localhost:8000 for development
+ * - fallback to live Render backend
+ */
 const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL?.includes('render.com')
-    ? process.env.REACT_APP_BACKEND_URL
-    : window.location.hostname === 'localhost'
+  process.env.REACT_APP_BACKEND_URL ||
+  (window.location.hostname === 'localhost'
     ? 'http://localhost:8000'
-    : 'https://marketplayground-backend.onrender.com';
+    : 'https://marketplayground-backend.onrender.com');
 
 function App() {
   const [belief, setBelief] = useState('');
@@ -31,11 +38,23 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
-  const fetchRecentLogs = () => {
-    fetch(`${BACKEND_URL}/logs/recent`)
-      .then((res) => res.json())
-      .then((data) => setLogs(data.logs || []))
-      .catch((err) => console.error('Log fetch error:', err));
+  /**
+   * ✅ Resilient log fetch — avoids crash on malformed JSON
+   */
+  const fetchRecentLogs = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/logs/recent`);
+      const contentType = res.headers.get('content-type');
+
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+      } else {
+        console.warn('⚠️ Unexpected content-type from /logs/recent:', contentType);
+      }
+    } catch (err) {
+      console.error('Log fetch error:', err);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -236,7 +255,7 @@ function App() {
               borderRadius: '12px',
               lineHeight: '1.6',
               marginTop: '1rem',
-              boxShadow: '0 0 20px rgba(59,130,246,0.5)' // ✅ Glowing card effect
+              boxShadow: '0 0 20px rgba(59,130,246,0.5)'
             }}>
               <p><strong>🧠 Strategy:</strong> {response.strategy[currentIndex].type}</p>
               <p><strong>📝 Description:</strong> {response.strategy[currentIndex].description}</p>

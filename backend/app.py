@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # === Local imports ===
@@ -57,6 +58,7 @@ app.add_middleware(
 async def preflight_handler():
     return PlainTextResponse("OK", status_code=200)
 
+# === Initialize SQLite DB (users) ===
 init_db()
 
 # === Seed strategy_outcomes.csv if missing ===
@@ -178,7 +180,7 @@ def retrain_from_ingestor():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === ✅ Strategy Distribution Endpoint ===
+# === ✅ Strategy Distribution Chart ===
 @app.get("/analytics/strategy_distribution")
 def strategy_distribution(
     asset_class: Optional[str] = Query(None),
@@ -223,6 +225,42 @@ def top_tags(limit: int = 10):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to compute top tags")
+
+# === ✅ Log Reader for AI Training Logs ===
+@app.get("/logs/recent")
+def fetch_recent_logs(limit: int = 10):
+    """
+    Returns the N most recent log entries from backend/logs/last_training_log.txt
+    as structured JSON (timestamp + message), useful for frontend AI loop visibility.
+    """
+    try:
+        log_path = os.path.join("backend", "logs", "last_training_log.txt")
+        if not os.path.exists(log_path):
+            return {"logs": []}
+
+        with open(log_path, "r") as f:
+            raw = f.read().strip()
+
+        chunks = [chunk.strip() for chunk in raw.split("🕒") if chunk.strip()]
+        recent = chunks[-limit:]
+
+        formatted = []
+        for chunk in recent:
+            lines = chunk.strip().splitlines()
+            if not lines:
+                continue
+            timestamp = lines[0].strip()
+            message = "\n".join(lines[1:]).strip()
+            formatted.append({
+                "timestamp": timestamp,
+                "message": message
+            })
+
+        return {"logs": formatted}
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to read logs")
 
 # === ✅ Ingestion Pause Toggle (read from ENV) ===
 @app.get("/toggle/news_ingestion_status")
