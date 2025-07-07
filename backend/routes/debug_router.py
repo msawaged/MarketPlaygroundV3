@@ -4,6 +4,7 @@
 import os
 import json
 import subprocess
+import requests
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 
@@ -14,11 +15,14 @@ LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
 RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
-NEWS_LOG_PATH = os.path.join(LOGS_DIR, "news_beliefs.csv")
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
 
-# === ✅ NEW: GET /debug/run_news_ingestor ===
+# === Supabase keys ===
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+# === ✅ GET /debug/run_news_ingestor ===
 @router.get("/debug/run_news_ingestor")
 def run_news_ingestor():
     """
@@ -40,7 +44,33 @@ def run_news_ingestor():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run script: {str(e)}")
 
-# (Everything below here is unchanged, but preserved for completeness...)
+# === ✅ GET /debug/ingested_news — now pulls from Supabase ===
+@router.get("/debug/ingested_news")
+def get_ingested_news(limit: int = 10):
+    """
+    🔍 Pulls latest ingested news beliefs from Supabase `news_beliefs` table.
+    Replaces old local file-based version for cloud compatibility.
+    """
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise HTTPException(status_code=500, detail="Supabase credentials not set in environment.")
+
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/news_beliefs?order=timestamp.desc&limit={limit}"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}"
+        }
+        r = requests.get(url, headers=headers)
+
+        if r.status_code != 200:
+            raise HTTPException(status_code=r.status_code, detail=r.text)
+
+        return {"entries": r.json()}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
+
+# === Everything below here is unchanged ===
 
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
@@ -72,27 +102,6 @@ def view_last_training_log():
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
     raise HTTPException(status_code=404, detail="Training log not found.")
-
-@router.get("/debug/ingested_news")
-def get_ingested_news(limit: int = 10):
-    if not os.path.exists(NEWS_LOG_PATH):
-        raise HTTPException(status_code=404, detail="news_beliefs.csv not found.")
-    try:
-        with open(NEWS_LOG_PATH, "r", encoding="utf-8") as f:
-            lines = f.readlines()[-limit:]
-            parsed = []
-            for line in lines:
-                parts = line.strip().split(",")
-                if len(parts) >= 4:
-                    parsed.append({
-                        "timestamp": parts[0],
-                        "title": parts[1],
-                        "summary": parts[2],
-                        "belief": parts[3]
-                    })
-        return {"entries": parsed}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read news log: {str(e)}")
 
 @router.get("/debug/feedback_count")
 def get_feedback_count():
@@ -151,15 +160,6 @@ def get_ai_loop_status():
             status["feedback_count"] = 0
     except Exception as e:
         status["feedback_count"] = f"Error: {str(e)}"
-
-    try:
-        if os.path.exists(NEWS_LOG_PATH):
-            with open(NEWS_LOG_PATH, "r", encoding="utf-8") as f:
-                status["news_beliefs_ingested"] = len(f.readlines())
-        else:
-            status["news_beliefs_ingested"] = 0
-    except Exception as e:
-        status["news_beliefs_ingested"] = f"Error: {str(e)}"
 
     try:
         if os.path.exists(LAST_JSON_LOG):
