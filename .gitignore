@@ -50,14 +50,17 @@ build/
 *.tmp
 *.png
 
-# Raw or unstructured logs and outputs
-backend/logs/
+# =======================
+# ✅ RETRAINING LOGS (allowed for Render visibility)
 !backend/logs/last_training_log.txt
 !backend/logs/last_training_log.json
 
-# Explicitly ignore specific auto-logged files
+# Ignore all other backend logs
+backend/logs/
 backend/logs/news_beliefs.csv
 backend/logs/news_ingestor_log.txt
+
+# Ignore Python bytecode in routes
 backend/routes/__pycache__/
 
 # Training artifacts that change frequently
@@ -88,8 +91,9 @@ __pycache__/
 *.txt
 .env
 .env
+
+# Redundant fallback exclusions
 backend/feedback_log.csv
 backend/Training_Strategies.csv
-backend/logs/
 backend/*.joblib
 backend/*.json
