@@ -1,29 +1,20 @@
 # backend/app.py
 
 """
-Main FastAPI entrypoint — wires up all modular routes,
-initializes database, handles CORS, and connects AI engine
-and Alpaca trading execution.
-
-Improved to:
-- Load environment variables via python-dotenv
-- Load OPENAI_API_KEY securely from env vars
-- Clean error handling and modular route includes
-- Support local dev with uvicorn entrypoint
+Main FastAPI entrypoint — modular routes, CORS, AI engine, Alpaca, analytics, and ingestion toggles.
 """
 
 import os
 import traceback
 from datetime import datetime
 from typing import Dict, Any, Optional
+from collections import Counter
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-
-# Load environment variables from .env at startup
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -48,10 +39,9 @@ from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
 
-# === FastAPI app initialization ===
 app = FastAPI(title="MarketPlayground AI Backend")
 
-# === CORS setup for local dev (React frontend typically on localhost:3000/3001) ===
+# === CORS for frontend integration ===
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -63,15 +53,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Preflight OPTIONS handler to avoid CORS issues on frontend requests
 @app.options("/{rest_of_path:path}")
 async def preflight_handler():
     return PlainTextResponse("OK", status_code=200)
 
-# === Initialize SQLite DB if needed ===
 init_db()
 
-# === Ensure strategy_outcomes.csv exists with starter row ===
+# === Seed strategy_outcomes.csv if missing ===
 strategy_csv_path = os.path.join("backend", "strategy_outcomes.csv")
 if not os.path.exists(strategy_csv_path):
     df = pd.DataFrame([{
@@ -87,7 +75,7 @@ if not os.path.exists(strategy_csv_path):
     df.to_csv(strategy_csv_path, index=False)
     print("✅ Created starter strategy_outcomes.csv")
 
-# === Register all modular routers ===
+# === Register routers ===
 app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
 app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
 app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
@@ -102,7 +90,7 @@ app.include_router(market_router,            prefix="/market",    tags=["Market"
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
 app.include_router(debug_router,                                tags=["Debug"])
 
-# === Request body schemas ===
+# === Request schemas ===
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
@@ -114,46 +102,33 @@ class FeedbackRequest(BaseModel):
     strategy: str
     feedback: str
 
-# === Root endpoint for health check ===
 @app.get("/")
 def read_root():
     return {"message": "Welcome to MarketPlayground AI Backend"}
 
-# === Test environment variable endpoint ===
 @app.get("/test_env")
 def test_env():
-    """
-    Simple endpoint to verify if the OPENAI_API_KEY environment variable
-    is set correctly on the server.
-    """
     openai_key = os.getenv("OPENAI_API_KEY")
     return {"OPENAI_API_KEY": "Set" if openai_key else "Not Set"}
 
-# === Primary belief processing endpoint ===
 @app.post("/process_belief")
 def process_belief(request: BeliefRequest) -> Dict[str, Any]:
     try:
-        # Run AI engine with given belief and risk profile
         result = run_ai_engine(
             belief=request.belief,
             risk_profile=request.risk_profile,
             user_id=request.user_id
         )
         result["user_id"] = request.user_id
-
-        # Optionally execute the suggested trade via Alpaca
         if request.place_order:
             executor = AlpacaExecutor()
             result["execution_result"] = executor.execute_order(result, user_id=request.user_id)
-
         return result
-
     except Exception as e:
         print("\n❌ ERROR in /process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Alternate strategy processing route (async) ===
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
     try:
@@ -173,7 +148,6 @@ async def strategy_process_belief(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Feedback submission endpoint ===
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     try:
@@ -184,7 +158,6 @@ def submit_feedback(request: FeedbackRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to save feedback")
 
-# === Manual retrain trigger endpoint ===
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
     try:
@@ -195,7 +168,6 @@ def force_retrain_now():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === Auto retrain trigger endpoint (e.g., news ingestor) ===
 @app.post("/retrain", response_class=PlainTextResponse)
 def retrain_from_ingestor():
     try:
@@ -206,7 +178,58 @@ def retrain_from_ingestor():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Retrain failed: {str(e)}")
 
-# === Entrypoint for running with uvicorn locally ===
+# === ✅ Strategy Distribution Endpoint ===
+@app.get("/analytics/strategy_distribution")
+def strategy_distribution(
+    asset_class: Optional[str] = Query(None),
+    belief_contains: Optional[str] = Query(None)
+):
+    try:
+        df = pd.read_csv(strategy_csv_path)
+        if asset_class:
+            df = df[df["strategy"].str.contains(asset_class, case=False, na=False)]
+        if belief_contains:
+            df = df[df["belief"].str.contains(belief_contains, case=False, na=False)]
+        strategy_counts = Counter(df["strategy"])
+        return dict(strategy_counts)
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error loading strategy data: {e}")
+
+# === ✅ Trending Strategies Leaderboard ===
+@app.get("/analytics/trending_strategies")
+def trending_strategies(limit: int = 5):
+    try:
+        df = pd.read_csv(strategy_csv_path)
+        trending = df["strategy"].value_counts().head(limit).to_dict()
+        return {"top_strategies": trending}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to load trending strategies")
+
+# === ✅ Top Tags / Topics Summary ===
+@app.get("/analytics/top_tags")
+def top_tags(limit: int = 10):
+    try:
+        if not os.path.exists(strategy_csv_path):
+            return {"message": "strategy_outcomes.csv not found"}
+        df = pd.read_csv(strategy_csv_path)
+        if "tags" not in df.columns:
+            return {"message": "tags column not found in CSV"}
+        tags_series = df["tags"].dropna().str.split(",")
+        all_tags = [tag.strip() for tags in tags_series for tag in tags]
+        top = Counter(all_tags).most_common(limit)
+        return {"top_tags": dict(top)}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to compute top tags")
+
+# === ✅ Ingestion Pause Toggle (read from ENV) ===
+@app.get("/toggle/news_ingestion_status")
+def news_ingestion_status():
+    paused = os.getenv("PAUSE_NEWS_INGESTION", "false").lower() == "true"
+    return {"paused": paused}
+
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")

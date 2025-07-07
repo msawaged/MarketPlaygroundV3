@@ -1,4 +1,2 @@
-timestamp,user_id,belief,strategy,ticker,pnl_percent,result,risk,holding_period_days,notes
-2025-06-30 06:18:41,murad34,I think AAPL will rise after earnings,bull call spread,AAPL,18.25,win,high,7,simulated test
-timestamp,user_id,belief,strategy,ticker,pnl_percent,result
-2025-07-02T01:00:00,tester_001,I believe AAPL will rise,bull call spread,AAPL,25.5,win
+timestamp,user_id,belief,strategy,ticker,pnl_percent,result,risk,holding_period_days,notes,tags
+2025-07-02T01:00:00,tester_001,I believe AAPL will rise,bull call spread,AAPL,25.5,win,moderate,7,corrected test row,"tech,earnings"

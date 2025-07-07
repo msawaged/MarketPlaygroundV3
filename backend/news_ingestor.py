@@ -25,6 +25,7 @@ SUPABASE_TABLE = "news_beliefs"
 # === 🔧 Backend URLs ===
 BACKEND_URL = "https://marketplayground-backend.onrender.com/strategy/process_belief"
 RETRAIN_URL = "https://marketplayground-backend.onrender.com/force_retrain"
+FEEDBACK_URL = "https://marketplayground-backend.onrender.com/feedback/submit_feedback"
 
 # === 📁 File Paths ===
 RAW_LOG_PATH = "backend/logs/news_beliefs.csv"
@@ -84,6 +85,27 @@ def log_training_row(belief, strategy, asset_class):
         writer = csv.writer(csvfile)
         writer.writerow([belief, strategy, asset_class])
 
+# ✅ FIXED: Changed "positive" → "good" to pass feedback schema
+def submit_auto_feedback(belief, strategy_type, confidence=0.5):
+    feedback_payload = {
+        "belief": belief,
+        "strategy": strategy_type,
+        "feedback": "good",  # ✅ Must be "good" or "bad"
+        "user_id": "news_ingestor",
+        "source": "news_ingestor",
+        "confidence": confidence
+    }
+    print(f"\n📤 Submitting feedback payload:\n{feedback_payload}\n")
+
+    try:
+        r = requests.post(FEEDBACK_URL, json=feedback_payload, timeout=10)
+        if r.status_code == 200:
+            log_debug(f"🧠 Auto-feedback submitted for: {belief[:60]}")
+        else:
+            log_debug(f"⚠️ Feedback failed: {r.status_code} — {r.text}")
+    except Exception as e:
+        log_debug(f"⚠️ Feedback exception: {e}")
+
 def send_to_backend(belief_text):
     payload = {"belief": belief_text, "user_id": "news_ingestor"}
     for attempt in range(2):  # 🔁 Max 2 tries
@@ -93,8 +115,10 @@ def send_to_backend(belief_text):
                 data = r.json()
                 strategy = data.get("strategy", {}).get("type", "unknown")
                 asset_class = data.get("asset_class", "unknown")
+                confidence = data.get("confidence", 0.5)
                 log_training_row(belief_text, strategy, asset_class)
                 log_debug(f"✅ Strategy generated: {strategy} → {belief_text[:60]}")
+                submit_auto_feedback(belief_text, strategy, confidence)
                 return True
             else:
                 log_debug(f"❌ Backend error {r.status_code}: {r.text}")
@@ -162,7 +186,7 @@ def run_news_ingestor():
 
                 log_debug(f"🧠 [{i+1}/{len(entries)}] Sending: {belief[:60]}")
                 send_to_backend(belief)
-                time.sleep(5)  # ⏱️ Slow down to avoid timeouts
+                time.sleep(5)  # ⏱️ Slow down to avoid backend overload
 
             write_training_log(
                 f"📰 News fetched: {len(entries)}\n🧠 Beliefs generated: {len(entries)}\n➕ New beliefs added: {len(entries)}"
