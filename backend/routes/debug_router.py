@@ -5,6 +5,7 @@ import os
 import json
 import subprocess
 import requests
+from collections import Counter
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 
@@ -34,7 +35,7 @@ def run_news_ingestor():
             ["python", "backend/news_ingestor.py"],
             capture_output=True,
             text=True,
-            timeout=90  # ⬅️ increased from 30 to 90 seconds
+            timeout=90
         )
         return {
             "stdout": result.stdout,
@@ -44,7 +45,7 @@ def run_news_ingestor():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run script: {str(e)}")
 
-# === ✅ GET /debug/ingested_news — now pulls from Supabase ===
+# === ✅ GET /debug/ingested_news — pulls from Supabase ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
     """
@@ -70,7 +71,7 @@ def get_ingested_news(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
 
-# === Everything below here is unchanged ===
+# === Existing debug tools ===
 
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
@@ -171,3 +172,34 @@ def get_ai_loop_status():
         status["last_retrain"] = f"Error: {str(e)}"
 
     return status
+
+# === ✅ NEW: /debug/strategy_leaderboard (cleaned + resilient) ===
+@router.get("/debug/strategy_leaderboard")
+def strategy_leaderboard(limit: int = 10):
+    """
+    📊 Returns most common strategy types from strategy_log.json (cleaned).
+    Handles corrupted rows gracefully.
+    """
+    if not os.path.exists(STRATEGY_PATH):
+        raise HTTPException(status_code=404, detail="strategy_log.json not found.")
+    
+    try:
+        with open(STRATEGY_PATH, "r") as f:
+            data = json.load(f)
+
+        # ✅ Filter out invalid entries
+        strategy_types = []
+        for entry in data:
+            if isinstance(entry, dict):
+                strat = entry.get("strategy")
+                if isinstance(strat, dict):
+                    strat_type = strat.get("type")
+                    if strat_type:
+                        strategy_types.append(strat_type)
+
+        # ✅ Return top N most common
+        top = Counter(strategy_types).most_common(limit)
+        return [{"strategy": s, "count": c} for s, c in top]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Leaderboard generation error: {str(e)}")

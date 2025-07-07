@@ -5,10 +5,6 @@ import SimulatedChart from './components/SimulatedChart';
 
 /**
  * ✅ BACKEND_URL Resolution (CRA Compatible)
- * Automatically resolves in this priority:
- * - REACT_APP_BACKEND_URL (from .env.local or build)
- * - localhost:8000 for development
- * - fallback to live Render backend
  */
 const BACKEND_URL =
   process.env.REACT_APP_BACKEND_URL ||
@@ -38,14 +34,10 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
-  /**
-   * ✅ Resilient log fetch — avoids crash on malformed JSON
-   */
   const fetchRecentLogs = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/logs/recent`);
       const contentType = res.headers.get('content-type');
-
       if (contentType && contentType.includes('application/json')) {
         const data = await res.json();
         setLogs(data.logs || []);
@@ -61,7 +53,6 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setResponse(null);
-
     try {
       const res = await fetch(`${BACKEND_URL}/strategy/process_belief`, {
         method: 'POST',
@@ -130,17 +121,55 @@ function App() {
         Enter your belief and watch the strategy unfold
       </p>
 
+      {/* === 🧠 AI Loop Status + 📈 Leaderboard in Flex Row === */}
       {loopStatus && (
-        <div style={{ backgroundColor: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', boxShadow: '0 0 10px #334155' }}>
-          <h3 style={{ fontWeight: 'bold' }}>🧠 AI Loop Status Dashboard</h3>
-          <p><strong>📝 Last Belief:</strong> {loopStatus.last_strategy?.belief}</p>
-          <p><strong>📈 Last Strategy:</strong> {loopStatus.last_strategy?.strategy?.type}</p>
-          <p><strong>📊 Feedback Entries:</strong> {loopStatus.feedback_count}</p>
-          <p><strong>📰 News Beliefs Ingested:</strong> {loopStatus.news_beliefs_ingested}</p>
-          <p><strong>🛠️ Last Retrain:</strong> {loopStatus.last_retrain?.timestamp}</p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          {/* AI Loop Box */}
+          <div style={{
+            flex: '1 1 300px',
+            backgroundColor: '#1e293b',
+            padding: '1rem',
+            borderRadius: '8px',
+            boxShadow: '0 0 10px #334155',
+            minWidth: '280px'
+          }}>
+            <h3 style={{ fontWeight: 'bold' }}>🧠 AI Loop Status Dashboard</h3>
+            <p><strong>📝 Last Belief:</strong> {loopStatus.last_strategy?.belief}</p>
+            <p><strong>📈 Last Strategy:</strong> {loopStatus.last_strategy?.strategy?.type}</p>
+            <p><strong>📊 Feedback Entries:</strong> {loopStatus.feedback_count}</p>
+            <p><strong>📰 News Beliefs Ingested:</strong> {loopStatus.news_beliefs_ingested}</p>
+            <p><strong>🛠️ Last Retrain:</strong> {loopStatus.last_retrain?.timestamp}</p>
+          </div>
+
+          {/* Strategy Leaderboard Box */}
+          <div style={{
+            flex: '1 1 300px',
+            backgroundColor: '#0f172a',
+            padding: '1rem',
+            borderRadius: '8px',
+            boxShadow: '0 0 10px #22d3ee',
+            minWidth: '280px',
+            color: '#f8fafc'
+          }}>
+            <h3 style={{ fontWeight: 'bold' }}>📈 Strategy Leaderboard</h3>
+            <p>Top trending strategies will appear here soon...</p>
+            <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '1rem' }}>
+              <li>🥇 TSLA – Long Straddle</li>
+              <li>🥈 AAPL – Buy Stock for Income</li>
+              <li>🥉 SPY – Protective Put</li>
+            </ul>
+          </div>
         </div>
       )}
 
+      {/* 📜 Recent Logs Section */}
       {logs.length > 0 && (
         <div style={{ backgroundColor: '#1e1b4b', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', boxShadow: '0 0 10px #4c1d95' }}>
           <h3 style={{ fontWeight: 'bold' }}>📜 Recent Training Logs</h3>
@@ -155,7 +184,9 @@ function App() {
         </div>
       )}
 
+      {/* Belief Input */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
+        {/* Belief Box */}
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
           <input
@@ -203,6 +234,7 @@ function App() {
           </button>
         </div>
 
+        {/* User ID */}
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="userIdInput">👤 Optional User ID</label><br />
           <input
@@ -242,6 +274,7 @@ function App() {
         </button>
       </form>
 
+      {/* Strategy Breakdown */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -304,21 +337,20 @@ function App() {
         </div>
       )}
 
+      {/* 📽️ Modal Simulation */}
       {showSimulation && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.9)',
-            color: '#fff',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem'
-          }}
-        >
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
           <h2>🎬 Belief Simulation: {belief}</h2>
           <p>📈 Simulating: <strong>{response?.strategy[currentIndex].type}</strong></p>
 
