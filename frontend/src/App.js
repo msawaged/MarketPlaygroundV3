@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
+import SimulatedChart3D from './components/SimulatedChart3D'; // 🆕 3D Chart import
 
 /**
- * ✅ BACKEND_URL Resolution (CRA Compatible)
+ * ✅ BACKEND_URL Resolution (Render + Local Compatible)
  */
 const BACKEND_URL =
   process.env.REACT_APP_BACKEND_URL ||
@@ -13,20 +14,26 @@ const BACKEND_URL =
     : 'https://marketplayground-backend.onrender.com');
 
 function App() {
+  // === 💾 State Hooks ===
   const [belief, setBelief] = useState('');
   const [userId, setUserId] = useState('');
   const [response, setResponse] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
-  const [showSimulation, setShowSimulation] = useState(false);
   const [logs, setLogs] = useState([]);
+  const [showSimulation, setShowSimulation] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]); // 🆕 Live leaderboard data
+  const [show3DChart, setShow3DChart] = useState(false); // 🆕 Toggle for 3D chart
 
+  // === 🔁 On Load: Fetch AI loop + logs + leaderboard
   useEffect(() => {
     fetchLoopStatus();
     fetchRecentLogs();
+    fetchLeaderboard(); // 🆕 Load leaderboard from backend
   }, []);
 
+  // === 🧠 GET /debug/ai_loop_status
   const fetchLoopStatus = () => {
     fetch(`${BACKEND_URL}/debug/ai_loop_status`)
       .then((res) => res.json())
@@ -34,6 +41,7 @@ function App() {
       .catch((err) => console.error('Loop status fetch error:', err));
   };
 
+  // === 📜 GET /logs/recent
   const fetchRecentLogs = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/logs/recent`);
@@ -49,6 +57,18 @@ function App() {
     }
   };
 
+  // === 🏆 GET /debug/strategy_leaderboard
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/debug/strategy_leaderboard`);
+      const data = await res.json();
+      setLeaderboard(data || []);
+    } catch (err) {
+      console.error('Leaderboard fetch error:', err);
+    }
+  };
+
+  // === 🚀 POST /strategy/process_belief
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,6 +103,7 @@ function App() {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
+  // === 👍👎 POST /feedback/submit_feedback
   const sendFeedback = async (feedbackType) => {
     const currentStrategy = response.strategy[currentIndex];
     const payload = {
@@ -111,7 +132,6 @@ function App() {
       alert('❌ Feedback submission failed');
     }
   };
-
   return (
     <div style={{ backgroundColor: '#0f172a', color: '#f8fafc', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
@@ -121,7 +141,7 @@ function App() {
         Enter your belief and watch the strategy unfold
       </p>
 
-      {/* === 🧠 AI Loop Status + 📈 Leaderboard in Flex Row === */}
+      {/* === 🧠 AI Loop Status + 🏆 Leaderboard Row === */}
       {loopStatus && (
         <div style={{
           display: 'flex',
@@ -131,7 +151,7 @@ function App() {
           gap: '1rem',
           marginBottom: '2rem'
         }}>
-          {/* AI Loop Box */}
+          {/* ✅ AI Loop Box */}
           <div style={{
             flex: '1 1 300px',
             backgroundColor: '#1e293b',
@@ -148,7 +168,7 @@ function App() {
             <p><strong>🛠️ Last Retrain:</strong> {loopStatus.last_retrain?.timestamp}</p>
           </div>
 
-          {/* Strategy Leaderboard Box */}
+          {/* ✅ Live Strategy Leaderboard */}
           <div style={{
             flex: '1 1 300px',
             backgroundColor: '#0f172a',
@@ -159,11 +179,15 @@ function App() {
             color: '#f8fafc'
           }}>
             <h3 style={{ fontWeight: 'bold' }}>📈 Strategy Leaderboard</h3>
-            <p>Top trending strategies will appear here soon...</p>
+            <p>Top trending strategies based on frequency:</p>
             <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '1rem' }}>
-              <li>🥇 TSLA – Long Straddle</li>
-              <li>🥈 AAPL – Buy Stock for Income</li>
-              <li>🥉 SPY – Protective Put</li>
+              {leaderboard.length === 0 ? (
+                <li>Loading...</li>
+              ) : (
+                leaderboard.map((item, index) => (
+                  <li key={index}>🥇 {item.strategy} — <strong>{item.count}</strong></li>
+                ))
+              )}
             </ul>
           </div>
         </div>
@@ -184,9 +208,8 @@ function App() {
         </div>
       )}
 
-      {/* Belief Input */}
+      {/* 🎯 Belief Input */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-        {/* Belief Box */}
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="beliefInput" style={{ fontWeight: 'bold' }}>🎯 Market Belief</label><br />
           <input
@@ -234,7 +257,6 @@ function App() {
           </button>
         </div>
 
-        {/* User ID */}
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="userIdInput">👤 Optional User ID</label><br />
           <input
@@ -274,7 +296,7 @@ function App() {
         </button>
       </form>
 
-      {/* Strategy Breakdown */}
+      {/* 📡 Strategy Result Section */}
       {response && (
         <div>
           <h3>📡 Strategy Breakdown:</h3>
@@ -337,7 +359,7 @@ function App() {
         </div>
       )}
 
-      {/* 📽️ Modal Simulation */}
+      {/* 🎬 Simulation Modal with 3D toggle 🆕 */}
       {showSimulation && (
         <div style={{
           position: 'fixed',
@@ -354,13 +376,38 @@ function App() {
           <h2>🎬 Belief Simulation: {belief}</h2>
           <p>📈 Simulating: <strong>{response?.strategy[currentIndex].type}</strong></p>
 
-          <SimulatedChart
-            ticker={response.ticker}
-            strategyType={response.strategy[currentIndex].type}
-            price={response.price_info?.latest}
-            confidence={response.confidence}
-            assetClass={response.asset_class}
-          />
+          <button
+            onClick={() => setShow3DChart((prev) => !prev)}
+            style={{
+              marginBottom: '1rem',
+              backgroundColor: '#818cf8',
+              color: '#fff',
+              padding: '0.4rem 0.8rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {show3DChart ? 'Switch to 2D View' : 'Switch to 3D View'}
+          </button>
+
+          {show3DChart ? (
+            <SimulatedChart3D
+              ticker={response.ticker}
+              strategyType={response.strategy[currentIndex].type}
+              price={response.price_info?.latest}
+              confidence={response.confidence}
+              assetClass={response.asset_class}
+            />
+          ) : (
+            <SimulatedChart
+              ticker={response.ticker}
+              strategyType={response.strategy[currentIndex].type}
+              price={response.price_info?.latest}
+              confidence={response.confidence}
+              assetClass={response.asset_class}
+            />
+          )}
 
           <button
             onClick={() => setShowSimulation(false)}

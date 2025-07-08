@@ -1,29 +1,31 @@
 # backend/routes/debug_router.py
-# ✅ Debug Router: Central hub for inspecting backend AI loop health and logs
+# ✅ Debug Router: Central hub for inspecting backend AI loop health, outcomes, logs, and strategy leaderboards
 
 import os
 import json
 import subprocess
 import requests
+import csv
 from collections import Counter
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 
 router = APIRouter()
 
-# === File paths used by diagnostics ===
+# === 📁 File paths used by diagnostics and logs ===
 LOGS_DIR = os.path.join("backend", "logs")
 LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
 LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
 RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
 STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
+OUTCOMES_PATH = os.path.join("backend", "strategy_outcomes.csv")
 
-# === Supabase keys ===
+# === 🔐 Supabase credentials ===
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-# === ✅ GET /debug/run_news_ingestor ===
+# === ✅ GET /debug/run_news_ingestor — manually runs ingestion loop ===
 @router.get("/debug/run_news_ingestor")
 def run_news_ingestor():
     """
@@ -45,7 +47,7 @@ def run_news_ingestor():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run script: {str(e)}")
 
-# === ✅ GET /debug/ingested_news — pulls from Supabase ===
+# === ✅ GET /debug/ingested_news — pulls latest beliefs from Supabase ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
     """
@@ -71,10 +73,11 @@ def get_ingested_news(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
 
-# === Existing debug tools ===
+# === 🧪 Core AI loop diagnostics ===
 
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
+    """🔁 Load structured JSON from last_training_log.json"""
     if not os.path.exists(LAST_JSON_LOG):
         raise HTTPException(status_code=404, detail="No retraining log found.")
     try:
@@ -85,6 +88,7 @@ def get_latest_retrain_log():
 
 @router.get("/debug/last_training_status", response_class=PlainTextResponse)
 def read_last_training_status():
+    """📄 Return raw text version of last training run"""
     if os.path.exists(LAST_TRAINING_LOG_TXT):
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
@@ -92,6 +96,7 @@ def read_last_training_status():
 
 @router.get("/debug/retrain_worker_log", response_class=PlainTextResponse)
 def read_retrain_worker_log():
+    """📄 Returns full retrain_worker.log from backend/logs"""
     if os.path.exists(RETRAIN_LOG_PATH):
         with open(RETRAIN_LOG_PATH, "r") as f:
             return f.read()
@@ -99,6 +104,7 @@ def read_retrain_worker_log():
 
 @router.get("/last_training_log", response_class=PlainTextResponse)
 def view_last_training_log():
+    """📄 Alias route for viewing last training log (plain text)"""
     if os.path.exists(LAST_TRAINING_LOG_TXT):
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
@@ -106,6 +112,7 @@ def view_last_training_log():
 
 @router.get("/debug/feedback_count")
 def get_feedback_count():
+    """📈 Count feedback entries in feedback_data.json"""
     if not os.path.exists(FEEDBACK_PATH):
         raise HTTPException(status_code=404, detail="feedback_data.json not found.")
     try:
@@ -117,6 +124,7 @@ def get_feedback_count():
 
 @router.get("/debug/last_strategy_log")
 def get_last_strategy_log():
+    """📊 Returns count + last entry from strategy_log.json"""
     if not os.path.exists(STRATEGY_PATH):
         raise HTTPException(status_code=404, detail="strategy_log.json not found.")
     try:
@@ -131,6 +139,7 @@ def get_last_strategy_log():
 
 @router.get("/logs/recent", response_class=PlainTextResponse)
 def get_recent_logs(lines: int = 50):
+    """📜 Tail N lines from retrain_worker.log"""
     if not os.path.exists(RETRAIN_LOG_PATH):
         raise HTTPException(status_code=404, detail="Log file not found.")
     try:
@@ -142,6 +151,12 @@ def get_recent_logs(lines: int = 50):
 
 @router.get("/debug/ai_loop_status")
 def get_ai_loop_status():
+    """
+    🔁 Summary of current AI pipeline status:
+    - Last strategy
+    - Feedback count
+    - Last retrain
+    """
     status = {}
     try:
         if os.path.exists(STRATEGY_PATH):
@@ -173,7 +188,7 @@ def get_ai_loop_status():
 
     return status
 
-# === ✅ NEW: /debug/strategy_leaderboard (cleaned + resilient) ===
+# === ✅ /debug/strategy_leaderboard — top strategy types by count ===
 @router.get("/debug/strategy_leaderboard")
 def strategy_leaderboard(limit: int = 10):
     """
@@ -203,3 +218,41 @@ def strategy_leaderboard(limit: int = 10):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Leaderboard generation error: {str(e)}")
+
+# === ✅ /debug/pnl_leaderboard — ranks by actual outcome PnL% ===
+@router.get("/debug/pnl_leaderboard")
+def pnl_leaderboard(limit: int = 10):
+    """
+    🏆 Returns top N strategies from strategy_outcomes.csv based on actual PnL%.
+    Filters corrupted or malformed rows. Sorted by pnl_percent descending.
+    """
+    if not os.path.exists(OUTCOMES_PATH):
+        raise HTTPException(status_code=404, detail="strategy_outcomes.csv not found.")
+    
+    try:
+        rows = []
+        with open(OUTCOMES_PATH, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    # ✅ Ensure all required fields exist and are valid
+                    belief = row.get("belief", "")
+                    ticker = row.get("ticker", "")
+                    strategy = row.get("strategy", "")
+                    pnl = float(row.get("pnl_percent", ""))
+                    if strategy and ticker:
+                        rows.append({
+                            "belief": belief.strip(),
+                            "ticker": ticker.strip(),
+                            "strategy": strategy.strip(),
+                            "pnl_percent": pnl
+                        })
+                except:
+                    continue  # Skip bad rows
+
+        # ✅ Sort by PnL%, highest first
+        sorted_rows = sorted(rows, key=lambda x: x["pnl_percent"], reverse=True)
+        return sorted_rows[:limit]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PNL leaderboard error: {str(e)}")
