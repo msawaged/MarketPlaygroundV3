@@ -256,3 +256,24 @@ def pnl_leaderboard(limit: int = 10):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PNL leaderboard error: {str(e)}")
+# === ✅ /debug/recent_feedback — shows latest feedback entries from file ===
+@router.get("/debug/recent_feedback")
+def recent_feedback(limit: int = 10):
+    """
+    🧠 Returns the last N feedback entries from feedback_data.json
+    Useful for verifying auto-feedback from news_ingestor
+    """
+    if not os.path.exists(FEEDBACK_PATH):
+        raise HTTPException(status_code=404, detail="feedback_data.json not found.")
+    
+    try:
+        with open(FEEDBACK_PATH, "r") as f:
+            data = json.load(f)
+            if not isinstance(data, list):
+                raise ValueError("Invalid feedback format")
+
+        # ✅ Return last N in reverse chronological order
+        return {"entries": data[-limit:]}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
