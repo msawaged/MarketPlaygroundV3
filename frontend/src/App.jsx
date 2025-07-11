@@ -1,4 +1,4 @@
-// frontend/src/App.js
+// frontend/src/App.jsx
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
@@ -7,13 +7,18 @@ import SimulatedChart3D from './components/SimulatedChart3D'; // 🆕 3D Chart i
 /**
  * ✅ BACKEND_URL Resolution (Render + Local Compatible)
  */
-const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL ||
-  (window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : 'https://marketplayground-backend.onrender.com');
+// Fix: Handle process.env undefined at runtime
+let BACKEND_URL = 'https://marketplayground-backend.onrender.com';
+
+if (typeof window !== 'undefined') {
+  if (window.location.hostname === 'localhost') {
+    BACKEND_URL = 'http://localhost:8000';
+  }
+}
 
 function App() {
+  console.log("✅ App component is rendering");
+
   // === 💾 State Hooks ===
   const [belief, setBelief] = useState('');
   const [userId, setUserId] = useState('');
