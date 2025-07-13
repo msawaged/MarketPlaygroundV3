@@ -20085,5 +20085,112 @@
     "strategy": "long call",
     "feedback": "good",
     "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-13T04:47:30.270332",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          "Buy AGG bond ETF",
+          "Buy IEF bond ETF",
+          "Buy SHY bond ETF"
+        ],
+        "expiration": "N/A",
+        "target_return": 2.5,
+        "max_loss": 1,
+        "time_to_target": "1 Year",
+        "explanation": "By buying a mix of AGG (broad), IEF (mid-term), and SHY (short-term) bond ETFs, you can create a bond ladder. This strategy involves staggering the maturities of your bond investments to balance risk and return. As each bond matures, it provides income that can be reinvested in new bonds. This approach provides a consistent income stream and diversifies your portfolio across different bond durations. The diversification helps to cushion against interest rate risk as the impact of interest rate changes will not affect all bonds equally. Since the direction is neutral, it implies that the market is expected to remain relatively stable, which is a suitable condition for a bond ladder strategy."
+      },
+      "ticker": "AGG",
+      "asset_class": "bond",
+      "tags": [
+        "bull call spread",
+        "bond",
+        "income"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 98.05
+      },
+      "high_low": [
+        98.25,
+        98.02
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "By buying a mix of AGG (broad), IEF (mid-term), and SHY (short-term) bond ETFs, you can create a bond ladder. This strategy involves staggering the maturities of your bond investments to balance risk and return. As each bond matures, it provides income that can be reinvested in new bonds. This approach provides a consistent income stream and diversifies your portfolio across different bond durations. The diversification helps to cushion against interest rate risk as the impact of interest rate changes will not affect all bonds equally. Since the direction is neutral, it implies that the market is expected to remain relatively stable, which is a suitable condition for a bond ladder strategy.",
+      "user_id": "anonymous"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T04:48:00.307083",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "Buy Bond ETF",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-13T04:56:45.653689",
+    "user_id": "murad_test",
+    "belief": "The market will crash this week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "Buy 1 put option",
+            "ticker": "ARKK",
+            "strike_price": 70,
+            "expiration_date": "2022-12-31"
+          }
+        ],
+        "expiration": "2025-07-12",
+        "target_return": 20,
+        "max_loss": 100,
+        "time_to_target": "1 week",
+        "explanation": "Given the user's belief that the market will crash this week, a long put strategy is suitable. This involves purchasing a put option, which gives the investor the right, but not the obligation, to sell the underlying asset at a specified price before the option's expiration date. If the market does indeed crash, the value of the put option will increase, thus providing a profit. The strike price is set to 70, slightly below the latest price, to increase the likelihood that the option will be in-the-money at expiration. The maximum loss is the premium paid for the option, should the market not crash as expected."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 72.29
+      },
+      "high_low": [
+        73.61,
+        71.99
+      ],
+      "confidence": 0.5832964900040863,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this week",
+      "expiry_date": "2025-07-12",
+      "risk_profile": "moderate",
+      "explanation": "Given the user's belief that the market will crash this week, a long put strategy is suitable. This involves purchasing a put option, which gives the investor the right, but not the obligation, to sell the underlying asset at a specified price before the option's expiration date. If the market does indeed crash, the value of the put option will increase, thus providing a profit. The strike price is set to 70, slightly below the latest price, to increase the likelihood that the option will be in-the-money at expiration. The maximum loss is the premium paid for the option, should the market not crash as expected.",
+      "user_id": "murad_test"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T04:59:44.786629",
+    "user_id": "murad_test",
+    "ip": "127.0.0.1",
+    "belief": "The market will crash this week",
+    "strategy": "put spread",
+    "feedback": "good",
+    "risk_profile": "moderate"
   }
 ]
