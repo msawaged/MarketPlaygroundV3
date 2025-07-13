@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
 import SimulatedChart3D from './components/SimulatedChart3D'; // 🆕 3D Chart import
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import StrategyOpsPage from './components/StrategyOpsPage'; // ⬅️ new route component
+
 
 /**
  * ✅ BACKEND_URL Resolution (Render + Local Compatible)
@@ -16,8 +19,9 @@ if (typeof window !== 'undefined') {
   }
 }
 
-function App() {
+function MainApp() {
   console.log("✅ App component is rendering");
+  const navigate = useNavigate(); // ✅ This enables the 🛠️ button to work
 
   // === 💾 State Hooks ===
   const [belief, setBelief] = useState('');
@@ -145,6 +149,23 @@ function App() {
       <p style={{ marginBottom: '2rem', color: '#94a3b8' }}>
         Enter your belief and watch the strategy unfold
       </p>
+
+      <button
+  onClick={() => navigate('/strategy-ops')}
+  style={{
+    marginBottom: '2rem',
+    backgroundColor: '#facc15',
+    color: '#000',
+    padding: '0.5rem 1rem',
+    fontWeight: 'bold',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+  }}
+>
+  🛠️ Strategy Ops Page
+</button>
+
 
       {/* === 🧠 AI Loop Status + 🏆 Leaderboard Row === */}
       {loopStatus && (
@@ -426,4 +447,14 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainApp />} />
+        <Route path="/strategy-ops" element={<StrategyOpsPage />} />
+      </Routes>
+    </Router>
+  );
+}
+

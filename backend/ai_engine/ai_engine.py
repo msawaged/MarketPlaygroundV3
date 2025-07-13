@@ -9,32 +9,28 @@ import os
 import json
 import math
 from datetime import datetime
-from openai import OpenAI, OpenAIError  # ✅ OpenAIError needed for try/except
-import openai  # ✅ Global key assignment
+from openai import OpenAI, OpenAIError
+import openai
 
-from backend.openai_config import OPENAI_API_KEY, GPT_MODEL  # ✅ Centralized OpenAI config
+from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
 from backend.belief_parser import parse_belief
 from backend.market_data import get_latest_price, get_weekly_high_low, get_option_expirations
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
 from backend.logger.strategy_logger import log_strategy
 
-# 🔐 Check if key loaded
 if not OPENAI_API_KEY:
     raise ValueError("❌ OPENAI_API_KEY not found in environment variables.")
 else:
     print(f"🔑 OpenAI key loaded: ...{OPENAI_API_KEY[-4:]}")
 
-# ✅ Set globally for SDK
 openai.api_key = OPENAI_API_KEY
 
-# ✅ OpenAI client
 try:
     client = OpenAI()
 except OpenAIError as e:
     raise RuntimeError(f"❌ Failed to initialize OpenAI client: {e}")
 
-# ✅ Known equities override
 KNOWN_EQUITIES = {
     "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
 }
@@ -61,14 +57,12 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     confidence = parsed.get("confidence", 0.5)
     parsed_asset = parsed.get("asset_class", "options")
 
-    # 🎯 Goal parsing
     goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
     multiplier = goal.get("multiplier")
     timeframe = goal.get("timeframe")
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
-    # 🧠 Ticker fallback logic
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
@@ -77,7 +71,6 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         else:
             ticker = "AAPL"
 
-    # ✅ Asset class correction
     if parsed_asset == "etf" and ticker.upper() in KNOWN_EQUITIES:
         asset_class = "equity"
     elif parsed_asset == "bond" and ticker.upper() == "SPY":
@@ -86,7 +79,6 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     else:
         asset_class = parsed_asset
 
-    # 📈 Fetch market data
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -102,7 +94,6 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     price_info = {"latest": clean_float(latest)}
     high_low = (clean_float(high_low[0]), clean_float(high_low[1]))
 
-    # 📊 Bond ladder detection
     bond_tags = ["bond", "ladder", "income", "fixed income"]
     is_bond_ladder = (
         "bond ladder" in belief.lower()
@@ -110,7 +101,6 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         or asset_class == "bond"
     )
 
-    # 🎯 GPT strategy prompt
     strategy_prompt = f"""
 You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
 
@@ -171,23 +161,71 @@ Explain the maturity staggering, income generation, and diversification benefits
             "explanation": f"Failed to generate strategy: {e}"
         }
 
-    # 🛠 Fix invalid expiration
+    # 🛠 Fix invalid or expired expiration from GPT
     if asset_class == "options":
         raw_expiry = strategy.get("expiration")
-        if is_expired(raw_expiry):
-            fallback_dates = get_option_expirations(ticker)
-            if fallback_dates:
-                strategy["expiration"] = fallback_dates[0]
-                print(f"[FIXED] Overriding bad expiration: {strategy['expiration']}")
 
-    # ⚠️ Check mismatch
-    generated_type = strategy.get("type", "").lower()
-    if goal_type == "multiply" and direction in ["bullish", "bearish"]:
-        if "straddle" in generated_type or "neutral" in generated_type:
-            print("⚠️ [MISMATCH] Strategy may not match belief direction")
+        # If it's expired or not present, override it
+        if is_expired(raw_expiry):
+            try:
+                fallback_dates = get_option_expirations(ticker)
+                future_dates = [d for d in fallback_dates if not is_expired(d)]
+
+                if future_dates:
+                    strategy["expiration"] = future_dates[0]
+                    print(f"[FIXED] Overriding bad expiration → {strategy['expiration']}")
+                else:
+                    strategy["expiration"] = "N/A"
+                    print(f"[WARNING] No valid future expirations found.")
+            except Exception as e:
+                strategy["expiration"] = "N/A"
+                print(f"[ERROR] Failed to fetch expirations: {e}")
+
+
+    # ✅ FIXED: Ensure trade_legs list is converted to a lowercase string safely
+    strategy_type = strategy.get("type", "").lower()
+    trade_legs_raw = strategy.get("trade_legs", [])
+    trade_legs = " ".join(str(leg).lower() for leg in trade_legs_raw)
+
+    tags = []
+    if "spread" in strategy_type or "spread" in trade_legs:
+        if "put" in trade_legs and "sell" in trade_legs and "buy" in trade_legs:
+            tags.append("bear put spread" if direction == "bearish" else "bull put spread")
+        elif "call" in trade_legs and "sell" in trade_legs and "buy" in trade_legs:
+            tags.append("bull call spread" if direction == "bullish" else "bear call spread")
+        else:
+            tags.append("spread")
+    elif "call" in strategy_type:
+        tags.append("long call" if "buy" in trade_legs else "call")
+    elif "put" in strategy_type:
+        tags.append("long put" if "buy" in trade_legs else "put")
+    elif "bond" in strategy_type:
+        tags.append("bond")
+    elif "equity" in strategy_type or "stock" in strategy_type:
+        tags.append("stock")
+    elif "straddle" in strategy_type or "strangle" in strategy_type:
+        tags.append("neutral")
+
+    if direction == "neutral" and "long call" in tags:
+        direction = "bullish"
+    elif direction == "neutral" and "long put" in tags:
+        direction = "bearish"
 
     explanation = strategy.get("explanation", "Strategy explanation not available.")
     log_strategy(belief, explanation, user_id, strategy)
+
+    try:
+        from backend.strategy_validator import evaluate_strategy_against_belief
+        validation = evaluate_strategy_against_belief(belief, strategy)
+        print(f"[✅ VALIDATOR] {validation}")
+    except Exception as e:
+        print(f"[ERROR] Strategy validation failed: {e}")
+        validation = {
+            "valid": False,
+            "would_profit": None,
+            "estimated_profit_pct": None,
+            "notes": f"Validation error: {e}"
+        }
 
     return {
         "strategy": strategy,
@@ -205,4 +243,9 @@ Explain the maturity staggering, income generation, and diversification benefits
         "risk_profile": risk_profile,
         "explanation": explanation,
         "user_id": user_id,
+        "validator": validation,
+        "valid": validation.get("valid"),
+        "would_profit": validation.get("would_profit"),
+        "estimated_profit_pct": validation.get("estimated_profit_pct"),
+        "notes": validation.get("notes"),
     }
