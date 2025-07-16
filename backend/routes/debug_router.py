@@ -28,10 +28,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 # === ✅ GET /debug/run_news_ingestor — manually runs ingestion loop ===
 @router.get("/debug/run_news_ingestor")
 def run_news_ingestor():
-    """
-    🧠 Triggers news_ingestor.py manually using subprocess.
-    ⏱️ Timeout increased to 90s to avoid premature kill on Render.
-    """
     try:
         result = subprocess.run(
             ["python", "backend/news_ingestor.py"],
@@ -50,13 +46,8 @@ def run_news_ingestor():
 # === ✅ GET /debug/ingested_news — pulls latest beliefs from Supabase ===
 @router.get("/debug/ingested_news")
 def get_ingested_news(limit: int = 10):
-    """
-    🔍 Pulls latest ingested news beliefs from Supabase `news_beliefs` table.
-    Replaces old local file-based version for cloud compatibility.
-    """
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise HTTPException(status_code=500, detail="Supabase credentials not set in environment.")
-
     try:
         url = f"{SUPABASE_URL}/rest/v1/news_beliefs?order=timestamp.desc&limit={limit}"
         headers = {
@@ -64,12 +55,9 @@ def get_ingested_news(limit: int = 10):
             "Authorization": f"Bearer {SUPABASE_KEY}"
         }
         r = requests.get(url, headers=headers)
-
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail=r.text)
-
         return {"entries": r.json()}
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
 
@@ -77,7 +65,6 @@ def get_ingested_news(limit: int = 10):
 
 @router.get("/debug/retrain_log")
 def get_latest_retrain_log():
-    """🔁 Load structured JSON from last_training_log.json"""
     if not os.path.exists(LAST_JSON_LOG):
         raise HTTPException(status_code=404, detail="No retraining log found.")
     try:
@@ -88,15 +75,25 @@ def get_latest_retrain_log():
 
 @router.get("/debug/last_training_status", response_class=PlainTextResponse)
 def read_last_training_status():
-    """📄 Return raw text version of last training run"""
     if os.path.exists(LAST_TRAINING_LOG_TXT):
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
     raise HTTPException(status_code=404, detail="No last training log found.")
 
+@router.get("/debug/last_training_log", response_class=PlainTextResponse)
+def read_last_training_log():
+    """
+    ✅ EXTERNAL FIXED ENDPOINT
+    📄 Returns plain text contents of last_training_log.txt
+    Enables curl or browser access to check AI loop training.
+    """
+    if os.path.exists(LAST_TRAINING_LOG_TXT):
+        with open(LAST_TRAINING_LOG_TXT, "r") as f:
+            return f.read()
+    raise HTTPException(status_code=404, detail="Training log not found.")
+
 @router.get("/debug/retrain_worker_log", response_class=PlainTextResponse)
 def read_retrain_worker_log():
-    """📄 Returns full retrain_worker.log from backend/logs"""
     if os.path.exists(RETRAIN_LOG_PATH):
         with open(RETRAIN_LOG_PATH, "r") as f:
             return f.read()
@@ -104,7 +101,6 @@ def read_retrain_worker_log():
 
 @router.get("/last_training_log", response_class=PlainTextResponse)
 def view_last_training_log():
-    """📄 Alias route for viewing last training log (plain text)"""
     if os.path.exists(LAST_TRAINING_LOG_TXT):
         with open(LAST_TRAINING_LOG_TXT, "r") as f:
             return f.read()
@@ -112,7 +108,6 @@ def view_last_training_log():
 
 @router.get("/debug/feedback_count")
 def get_feedback_count():
-    """📈 Count feedback entries in feedback_data.json"""
     if not os.path.exists(FEEDBACK_PATH):
         raise HTTPException(status_code=404, detail="feedback_data.json not found.")
     try:
@@ -124,7 +119,6 @@ def get_feedback_count():
 
 @router.get("/debug/last_strategy_log")
 def get_last_strategy_log():
-    """📊 Returns count + last entry from strategy_log.json"""
     if not os.path.exists(STRATEGY_PATH):
         raise HTTPException(status_code=404, detail="strategy_log.json not found.")
     try:
@@ -139,7 +133,6 @@ def get_last_strategy_log():
 
 @router.get("/logs/recent", response_class=PlainTextResponse)
 def get_recent_logs(lines: int = 50):
-    """📜 Tail N lines from retrain_worker.log"""
     if not os.path.exists(RETRAIN_LOG_PATH):
         raise HTTPException(status_code=404, detail="Log file not found.")
     try:
@@ -151,12 +144,6 @@ def get_recent_logs(lines: int = 50):
 
 @router.get("/debug/ai_loop_status")
 def get_ai_loop_status():
-    """
-    🔁 Summary of current AI pipeline status:
-    - Last strategy
-    - Feedback count
-    - Last retrain
-    """
     status = {}
     try:
         if os.path.exists(STRATEGY_PATH):
@@ -188,21 +175,13 @@ def get_ai_loop_status():
 
     return status
 
-# === ✅ /debug/strategy_leaderboard — top strategy types by count ===
 @router.get("/debug/strategy_leaderboard")
 def strategy_leaderboard(limit: int = 10):
-    """
-    📊 Returns most common strategy types from strategy_log.json (cleaned).
-    Handles corrupted rows gracefully.
-    """
     if not os.path.exists(STRATEGY_PATH):
         raise HTTPException(status_code=404, detail="strategy_log.json not found.")
-    
     try:
         with open(STRATEGY_PATH, "r") as f:
             data = json.load(f)
-
-        # ✅ Filter out invalid entries
         strategy_types = []
         for entry in data:
             if isinstance(entry, dict):
@@ -211,31 +190,21 @@ def strategy_leaderboard(limit: int = 10):
                     strat_type = strat.get("type")
                     if strat_type:
                         strategy_types.append(strat_type)
-
-        # ✅ Return top N most common
         top = Counter(strategy_types).most_common(limit)
         return [{"strategy": s, "count": c} for s, c in top]
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Leaderboard generation error: {str(e)}")
 
-# === ✅ /debug/pnl_leaderboard — ranks by actual outcome PnL% ===
 @router.get("/debug/pnl_leaderboard")
 def pnl_leaderboard(limit: int = 10):
-    """
-    🏆 Returns top N strategies from strategy_outcomes.csv based on actual PnL%.
-    Filters corrupted or malformed rows. Sorted by pnl_percent descending.
-    """
     if not os.path.exists(OUTCOMES_PATH):
         raise HTTPException(status_code=404, detail="strategy_outcomes.csv not found.")
-    
     try:
         rows = []
         with open(OUTCOMES_PATH, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 try:
-                    # ✅ Ensure all required fields exist and are valid
                     belief = row.get("belief", "")
                     ticker = row.get("ticker", "")
                     strategy = row.get("strategy", "")
@@ -248,32 +217,21 @@ def pnl_leaderboard(limit: int = 10):
                             "pnl_percent": pnl
                         })
                 except:
-                    continue  # Skip bad rows
-
-        # ✅ Sort by PnL%, highest first
+                    continue
         sorted_rows = sorted(rows, key=lambda x: x["pnl_percent"], reverse=True)
         return sorted_rows[:limit]
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PNL leaderboard error: {str(e)}")
-# === ✅ /debug/recent_feedback — shows latest feedback entries from file ===
+
 @router.get("/debug/recent_feedback")
 def recent_feedback(limit: int = 10):
-    """
-    🧠 Returns the last N feedback entries from feedback_data.json
-    Useful for verifying auto-feedback from news_ingestor
-    """
     if not os.path.exists(FEEDBACK_PATH):
         raise HTTPException(status_code=404, detail="feedback_data.json not found.")
-    
     try:
         with open(FEEDBACK_PATH, "r") as f:
             data = json.load(f)
             if not isinstance(data, list):
                 raise ValueError("Invalid feedback format")
-
-        # ✅ Return last N in reverse chronological order
         return {"entries": data[-limit:]}
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
