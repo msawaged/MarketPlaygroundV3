@@ -64,6 +64,7 @@ def write_training_log(message: str, source: str = "unknown"):
                 }
             )
             response.raise_for_status()
+            print("✅ Supabase log saved")  # ✅ Confirm success in console
         except Exception as e:
             print(f"[⚠️ Supabase logging failed] {e}")
 

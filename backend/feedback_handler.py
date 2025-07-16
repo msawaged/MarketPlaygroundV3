@@ -91,9 +91,54 @@ def save_feedback(belief: str, strategy: str, feedback: str = None, user_id: str
     
     print(f"✅ Feedback saved to file for user: {user_id}")
 
-def save_feedback_entry(belief: str, strategy: str, result: str, user_id: str = "anonymous"):
+def save_feedback(belief: str, strategy: str, feedback: str = None, user_id: str = "anonymous", **kwargs):
     """
-    Alias function for compatibility with older code.
-    Allows external modules (e.g., strategy_router) to save feedback easily.
+    ✅ Saves user feedback and any extra metadata to JSON.
+    Accepts optional args like:
+    - feedback (explicit or predicted)
+    - user_id
+    - confidence
+    - source
     """
-    save_feedback(belief, strategy, feedback=result, user_id=user_id)
+    data = []
+
+    if os.path.exists(FEEDBACK_FILE):
+        with open(FEEDBACK_FILE, "r") as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                print("⚠️ JSON decode error — starting fresh.")
+                data = []
+
+    if not feedback:
+        feedback = predict_feedback_label(belief, strategy)
+
+    feedback_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "user_id": user_id,
+        "belief": belief,
+        "strategy": strategy,
+        "result": feedback
+    }
+
+    # ✅ Merge any additional metadata into entry (like confidence, source)
+    feedback_entry.update(kwargs)
+
+    data.append(feedback_entry)
+    with open(FEEDBACK_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+    print(f"✅ Feedback saved to file for user: {user_id}")
+
+def save_feedback_entry(belief: str, strategy: str, result: str = None, user_id: str = "anonymous", **kwargs):
+    """
+    ✅ Adaptive alias to support legacy and upgraded feedback entry logic.
+    Accepts flexible metadata such as confidence, source, etc.
+    Avoids double-passing 'feedback' via both args and kwargs.
+    """
+    # Remove 'feedback' key from kwargs if present to avoid conflict
+    kwargs.pop("feedback", None)
+
+    # Explicitly pass result as feedback
+    save_feedback(belief, strategy, feedback=result, user_id=user_id, **kwargs)
+                                                                                   

@@ -20648,5 +20648,1439 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T20:43:16.837387",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "Buy 1 call 320 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "The user believes that TSLA will go up. A long call is a simple and common strategy used when the expectation is bullish. This involves buying call options with a strike price of 320, which means the user believes that TSLA will rise above this price before the option's expiration date. The maximum loss is the premium paid for the call, and it happens if the option is not in the money at expiration. The target return of 50% is set based on the user's moderate risk profile and the current market conditions."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "The user believes that TSLA will go up. A long call is a simple and common strategy used when the expectation is bullish. This involves buying call options with a strike price of 320, which means the user believes that TSLA will rise above this price before the option's expiration date. The maximum loss is the premium paid for the call, and it happens if the option is not in the money at expiration. The target return of 50% is set based on the user's moderate risk profile and the current market conditions.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T20:44:22.736947",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy 1 call option",
+            "strike_price": 320
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 30,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "A long call option is a bullish strategy that benefits when the price of the underlying asset rises above the strike price. In this case, we are buying a call option with a strike price of $320, which is slightly above the current price of Tesla (TSLA). If TSLA rises above this strike price, the option will be in the money, and we can exercise the option to buy TSLA at a lower price and sell at the market price for a profit. The maximum loss is the premium paid for the option if TSLA does not rise above the strike price before expiration. This strategy is suitable for a moderate risk profile as it has a defined maximum loss."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call option is a bullish strategy that benefits when the price of the underlying asset rises above the strike price. In this case, we are buying a call option with a strike price of $320, which is slightly above the current price of Tesla (TSLA). If TSLA rises above this strike price, the option will be in the money, and we can exercise the option to buy TSLA at a lower price and sell at the market price for a profit. The maximum loss is the premium paid for the option if TSLA does not rise above the strike price before expiration. This strategy is suitable for a moderate risk profile as it has a defined maximum loss.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T20:44:50.917904",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "TSLA WILL GO UP",
+    "strategy": "long call",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-13T23:09:36.968441",
+    "user_id": "anonymous",
+    "belief": "Tesla will go up",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "Buy 1 call 320 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": "20%",
+        "max_loss": "100%",
+        "time_to_target": "6 months",
+        "explanation": "A long call option is a bullish strategy. It gives the buyer the right, but not the obligation, to buy the underlying asset (in this case Tesla stock) at a predetermined price on or before a specific date. Given the user's belief that Tesla's price will go up, this strategy allows the user to potentially profit from an increase in the stock's price with a limited downside risk (the premium paid for the option). The 320 strike price is chosen because it is slightly above the current price, reflecting the user's bullish outlook. The expiration date is set six months into the future to allow the user's belief to potentially materialize. However, because options can expire worthless, the max loss could be 100% of the investment if Tesla's price does not rise above the strike price by the expiration date."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.7104163352690597,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call option is a bullish strategy. It gives the buyer the right, but not the obligation, to buy the underlying asset (in this case Tesla stock) at a predetermined price on or before a specific date. Given the user's belief that Tesla's price will go up, this strategy allows the user to potentially profit from an increase in the stock's price with a limited downside risk (the premium paid for the option). The 320 strike price is chosen because it is slightly above the current price, reflecting the user's bullish outlook. The expiration date is set six months into the future to allow the user's belief to potentially materialize. However, because options can expire worthless, the max loss could be 100% of the investment if Tesla's price does not rise above the strike price by the expiration date.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-13T23:09:54.893111",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "Tesla will go up",
+    "strategy": "Long Call",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-14T04:25:47.377165",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy 1 call 320 strike"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 20.0,
+        "max_loss": 100.0,
+        "time_to_target": "1 year",
+        "explanation": "If you believe TSLA stock is going to rise, a long call is a strategy that can be used to leverage this belief. This strategy involves buying a call option, which gives you the right to buy the stock at a certain price (the strike price) before a certain date (the expiration date). In this case, you would be buying a call option with a strike price of $320. If TSLA stock rises above this price, you can exercise the option and buy the stock at the lower strike price, thus making a profit. However, if TSLA stock does not rise above the strike price before the expiration date, the option will expire worthless and you will lose the premium paid for the option. This strategy has a potentially high return if TSLA stock rises significantly, but also carries a high risk as you could lose the entire premium paid if TSLA does not rise above the strike price."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "If you believe TSLA stock is going to rise, a long call is a strategy that can be used to leverage this belief. This strategy involves buying a call option, which gives you the right to buy the stock at a certain price (the strike price) before a certain date (the expiration date). In this case, you would be buying a call option with a strike price of $320. If TSLA stock rises above this price, you can exercise the option and buy the stock at the lower strike price, thus making a profit. However, if TSLA stock does not rise above the strike price before the expiration date, the option will expire worthless and you will lose the premium paid for the option. This strategy has a potentially high return if TSLA stock rises significantly, but also carries a high risk as you could lose the entire premium paid if TSLA does not rise above the strike price.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T05:16:48.385764",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "buy 1 call 320 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "A long call option is a bullish strategy that involves buying a call option on the stock. The user believes that TSLA stock will go up, and a long call strategy would profit from this upward movement. The chosen strike price is slightly above the current stock price, offering a balance between the cost of the option and the potential upside. The expiration date is set far enough in the future to allow the stock price to move up. However, the user should be aware that this strategy carries a high risk, as the entire investment can be lost if TSLA stock does not rise above the strike price by the expiration date."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call option is a bullish strategy that involves buying a call option on the stock. The user believes that TSLA stock will go up, and a long call strategy would profit from this upward movement. The chosen strike price is slightly above the current stock price, offering a balance between the cost of the option and the potential upside. The expiration date is set far enough in the future to allow the stock price to move up. However, the user should be aware that this strategy carries a high risk, as the entire investment can be lost if TSLA stock does not rise above the strike price by the expiration date.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T05:17:07.180114",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "TSLA WILL GO UP",
+    "strategy": "Long Call",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-14T05:26:50.769458",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "Buy 1 call option TSLA with a 320 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 30,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "This strategy involves buying a call option which gives the right to buy TSLA shares at a predetermined price (strike price of 320). If the investor's belief that TSLA's price will go up is correct, they can exercise the option to buy the shares at the lower strike price, then sell them at the current market price for a profit. The investor's target return is 30%. However, if TSLA's price does not exceed the strike price by the option's expiration date, the option expires worthless and the investor loses the entire premium paid for the option, hence the maximum loss is 100%. The investor expects this price increase to occur within the next 6 months."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 313.51
+      },
+      "high_low": [
+        314.09,
+        305.65
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "This strategy involves buying a call option which gives the right to buy TSLA shares at a predetermined price (strike price of 320). If the investor's belief that TSLA's price will go up is correct, they can exercise the option to buy the shares at the lower strike price, then sell them at the current market price for a profit. The investor's target return is 30%. However, if TSLA's price does not exceed the strike price by the option's expiration date, the option expires worthless and the investor loses the entire premium paid for the option, hence the maximum loss is 100%. The investor expects this price increase to occur within the next 6 months.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T06:09:37.196483",
+    "user_id": "anonymous",
+    "belief": "snowflke will go up",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "call",
+            "strike": 220,
+            "ticker": "AAPL"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Based on the user's belief that the price of AAPL will increase, a long call strategy is fitting. This involves buying a call option, which gives the right, but not the obligation, to buy the stock at the strike price before the expiration date. The user's risk is limited to the premium paid for the call, but the potential return is theoretically unlimited. The target return and max loss percentages are rough estimates and will depend on the actual premium paid and the price movement of AAPL. Given the user's moderate risk profile, it's recommended to choose a strike price slightly above the current price and an expiration date a few months out to give the stock time to move in the anticipated direction."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 211.16
+      },
+      "high_low": [
+        212.13,
+        209.86
+      ],
+      "confidence": 0.7104163352690597,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Based on the user's belief that the price of AAPL will increase, a long call strategy is fitting. This involves buying a call option, which gives the right, but not the obligation, to buy the stock at the strike price before the expiration date. The user's risk is limited to the premium paid for the call, but the potential return is theoretically unlimited. The target return and max loss percentages are rough estimates and will depend on the actual premium paid and the price movement of AAPL. Given the user's moderate risk profile, it's recommended to choose a strike price slightly above the current price and an expiration date a few months out to give the stock time to move in the anticipated direction.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T06:12:28.776658",
+    "user_id": "anonymous",
+    "belief": "snowflke will go up",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "call",
+            "strike": 220,
+            "expiration": "2022-12-16"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 15,
+        "max_loss": 100,
+        "time_to_target": "3 months",
+        "explanation": "A long call is a bullish strategy that profits if the underlying asset's price goes up. The user believes the price of AAPL (Apple Inc.) will increase. With a moderate risk profile, the user is prepared to lose the entire premium paid if the trade doesn't go as planned - which is the risk in a long call. The expiration date is 3 months from now, providing ample time for the user's prediction to materialize. The target return is set at 15%, which is achievable if AAPL's price rises above the strike price of $220 before the option's expiration date."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 211.16
+      },
+      "high_low": [
+        212.13,
+        209.86
+      ],
+      "confidence": 0.7104163352690597,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call is a bullish strategy that profits if the underlying asset's price goes up. The user believes the price of AAPL (Apple Inc.) will increase. With a moderate risk profile, the user is prepared to lose the entire premium paid if the trade doesn't go as planned - which is the risk in a long call. The expiration date is 3 months from now, providing ample time for the user's prediction to materialize. The target return is set at 15%, which is achievable if AAPL's price rises above the strike price of $220 before the option's expiration date.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T12:52:21.735538",
+    "user_id": "murad_local",
+    "belief": "I believe AAPL will go up",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          {
+            "action": "buy 1 call 215 strike"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 12,
+        "max_loss": 100,
+        "time_to_target": "2 months",
+        "explanation": "Buying a long call option on AAPL provides unlimited potential profit if the stock price rises, which aligns with your belief that AAPL will go up. The strike price of 215 is chosen as it is slightly above the current price, indicating a bullish outlook. The expiration date is set to two months from now to provide the stock sufficient time to rise. While the potential loss is 100% (the cost of the option if it expires worthless), this is mitigated by your moderate risk profile and the 66.62% confidence in the belief that AAPL will rise."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 211.16
+      },
+      "high_low": [
+        212.13,
+        209.86
+      ],
+      "confidence": 0.6661939557690038,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a long call option on AAPL provides unlimited potential profit if the stock price rises, which aligns with your belief that AAPL will go up. The strike price of 215 is chosen as it is slightly above the current price, indicating a bullish outlook. The expiration date is set to two months from now to provide the stock sufficient time to rise. While the potential loss is 100% (the cost of the option if it expires worthless), this is mitigated by your moderate risk profile and the 66.62% confidence in the belief that AAPL will rise.",
+      "user_id": "murad_local",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T15:44:22.760940",
+    "user_id": "murad_test_goal",
+    "belief": "I want to 3x my money on Nvidia in 6 months",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "call",
+            "strike_price": 600,
+            "expiration_date": "2023-04-01"
+          }
+        ],
+        "expiration": "2023-04-01",
+        "target_return": 200,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "The Long Call strategy is chosen because the user believes that Nvidia's price will triple in 6 months. Buying a call option allows the user to profit from an increase in the stock's price with limited downside risk. The strike price is set higher than the current price, anticipating a large price increase. This strategy is suitable for moderate risk profile as the maximum loss is the premium paid for the option."
+      },
+      "ticker": "DIA",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 444.2
+      },
+      "high_low": [
+        444.43,
+        442.26
+      ],
+      "confidence": 0.5757974480592541,
+      "goal_type": "multiply",
+      "multiplier": 3.0,
+      "timeframe": "in 6 month",
+      "expiry_date": "2023-04-01",
+      "risk_profile": "moderate",
+      "explanation": "The Long Call strategy is chosen because the user believes that Nvidia's price will triple in 6 months. Buying a call option allows the user to profit from an increase in the stock's price with limited downside risk. The strike price is set higher than the current price, anticipating a large price increase. This strategy is suitable for moderate risk profile as the maximum loss is the premium paid for the option.",
+      "user_id": "murad_test_goal",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T16:02:35.464940",
+    "user_id": "murad_test_goal",
+    "belief": "I want to 3x my money on Nvidia in 6 months",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "Buy 1 call",
+            "strike": 600
+          }
+        ],
+        "expiration": "2023-08-18",
+        "target_return": 200,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "A long call strategy is used when an investor believes the price of the underlying asset (in this case Nvidia) will rise significantly in a short period. This strategy will allow the investor to leverage their position for a relatively small amount of capital, while having the potential to 3x their money if Nvidia's price goes significantly above the strike price before expiry. However, the risk is also high as the investor could lose their entire investment if Nvidia's price does not rise above the strike price before expiry."
+      },
+      "ticker": "DIA",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 443.86
+      },
+      "high_low": [
+        444.43,
+        442.26
+      ],
+      "confidence": 0.5757974480592541,
+      "goal_type": "multiply",
+      "multiplier": 3.0,
+      "timeframe": "in 6 month",
+      "expiry_date": "2023-08-18",
+      "risk_profile": "moderate",
+      "explanation": "A long call strategy is used when an investor believes the price of the underlying asset (in this case Nvidia) will rise significantly in a short period. This strategy will allow the investor to leverage their position for a relatively small amount of capital, while having the potential to 3x their money if Nvidia's price goes significantly above the strike price before expiry. However, the risk is also high as the investor could lose their entire investment if Nvidia's price does not rise above the strike price before expiry.",
+      "user_id": "murad_test_goal",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:33:54.998039",
+    "user_id": "murad_test_goal",
+    "belief": "I want to 3x my money on Nvidia in 6 months",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call Options",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "quantity": 1,
+            "instrument": "NVDA Call Option",
+            "strike_price": 220,
+            "expiration_date": "2023-09-15"
+          }
+        ],
+        "expiration": "2023-09-15",
+        "target_return": 200,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "A Long Call strategy is a bullish strategy that is executed by buying Call options on the stock. Since the user is confident that Nvidia's price will increase substantially within the next 6 months, buying a call option can provide the leverage needed to achieve the 3x return. The strike price is set higher than the current price, and if Nvidia's price reaches this strike price within the next 6 months, the option can be exercised for a profit. The maximum loss is the premium paid for the option, while the potential gain is theoretically unlimited. This strategy fits the user's belief because it provides a high potential return while limiting the maximum loss."
+      },
+      "ticker": "NVDA",
+      "asset_class": "equity",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 165.14
+      },
+      "high_low": [
+        165.49,
+        162.02
+      ],
+      "confidence": 0.5757974480592541,
+      "goal_type": "multiply",
+      "multiplier": 3.0,
+      "timeframe": "in 6 month",
+      "expiry_date": "2023-09-15",
+      "risk_profile": "moderate",
+      "explanation": "A Long Call strategy is a bullish strategy that is executed by buying Call options on the stock. Since the user is confident that Nvidia's price will increase substantially within the next 6 months, buying a call option can provide the leverage needed to achieve the 3x return. The strike price is set higher than the current price, and if Nvidia's price reaches this strike price within the next 6 months, the option can be exercised for a profit. The maximum loss is the premium paid for the option, while the potential gain is theoretically unlimited. This strategy fits the user's belief because it provides a high potential return while limiting the maximum loss.",
+      "user_id": "murad_test_goal",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:37:42.484621",
+    "user_id": "test_apple",
+    "belief": "I want to double my money on Apple by next year",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "security_type": "call option",
+            "ticker": "AAPL",
+            "strike": 209.26,
+            "expiration": "2023-12-31"
+          }
+        ],
+        "target_return": 100,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "Since the user wants to double the investment in Apple within a year, a long call option can be used. This strategy is suitable because it offers unlimited potential profits while the maximum loss is limited to the premium paid for the option. The strike price is set at the current price level, and the expiration is set to one year from now to align with the user's timeframe. The user's moderate risk profile is taken into account as the max loss is limited to the initial investment."
+      },
+      "ticker": "AAPL",
+      "asset_class": "equity",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 209.26
+      },
+      "high_low": [
+        210.91,
+        207.54
+      ],
+      "confidence": 0.5379691667304313,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": "next year",
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Since the user wants to double the investment in Apple within a year, a long call option can be used. This strategy is suitable because it offers unlimited potential profits while the maximum loss is limited to the premium paid for the option. The strike price is set at the current price level, and the expiration is set to one year from now to align with the user's timeframe. The user's moderate risk profile is taken into account as the max loss is limited to the initial investment.",
+      "user_id": "test_apple",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:38:08.847593",
+    "user_id": "test_eth",
+    "belief": "Ethereum will surge soon",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "Buy 1 call 30 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": "50%",
+        "max_loss": "100%",
+        "time_to_target": "12 months",
+        "explanation": "A long call option is a bullish strategy that is used when the expectation is that the price of the underlying asset will increase. The user believes that Ethereum will surge soon, so a call option could provide significant upside if Ethereum's price increases substantially. The risk in this strategy is limited to the premium paid for the option, hence the 100% max loss. However, the target return is 50%, assuming the price of Ethereum exceeds the strike price plus the premium paid. The expiration date is set to one year from now to give the market ample time to realize the expected surge in Ethereum."
+      },
+      "ticker": "ETH",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 28.37
+      },
+      "high_low": [
+        28.94,
+        28.23
+      ],
+      "confidence": 0.7680365516936734,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call option is a bullish strategy that is used when the expectation is that the price of the underlying asset will increase. The user believes that Ethereum will surge soon, so a call option could provide significant upside if Ethereum's price increases substantially. The risk in this strategy is limited to the premium paid for the option, hence the 100% max loss. However, the target return is 50%, assuming the price of Ethereum exceeds the strike price plus the premium paid. The expiration date is set to one year from now to give the market ample time to realize the expected surge in Ethereum.",
+      "user_id": "test_eth",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:38:27.992312",
+    "user_id": "test_market",
+    "belief": "The market will tank in August",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "Buy 1 put option",
+            "strike": 70,
+            "expiration": "2022-08-31"
+          }
+        ],
+        "target_return": 20,
+        "max_loss": 100,
+        "time_to_target": "1 month",
+        "explanation": "Buying a put option allows you to profit from a decrease in the price of the underlying asset. In this case, if ARKK decreases in value as expected, the value of the put option will increase. The strike price is set below the current price, which increases the potential for profit if the price decreases significantly. The expiration date is set for the end of August, when the user expects the market to have tanked. While the potential loss is the premium paid for the option, this strategy allows for a significant return if the user's belief is correct.",
+        "expiration": "2025-07-19"
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 73.48
+      },
+      "high_low": [
+        73.71,
+        72.45
+      ],
+      "confidence": 0.6668781592152382,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a put option allows you to profit from a decrease in the price of the underlying asset. In this case, if ARKK decreases in value as expected, the value of the put option will increase. The strike price is set below the current price, which increases the potential for profit if the price decreases significantly. The expiration date is set for the end of August, when the user expects the market to have tanked. While the potential loss is the premium paid for the option, this strategy allows for a significant return if the user's belief is correct.",
+      "user_id": "test_market",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:38:56.321070",
+    "user_id": "test_tesla_bear",
+    "belief": "I think Tesla will drop next week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "put",
+            "strike": 310,
+            "ticker": "TSLA"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 10,
+        "max_loss": 100,
+        "time_to_target": "1 week",
+        "explanation": "A long put option strategy is suitable for your belief that Tesla's price will drop next week. Buying a put option will give you the right to sell TSLA at the strike price before the option expires. If TSLA's price drops as you expect, you can buy TSLA at the lower market price and sell at the strike price, making a profit. The strike price is set slightly lower than the current market price, reflecting your moderate confidence in the price drop. Note that the risk is that if TSLA's price doesn't drop, the option could expire worthless, causing a total loss of the premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 314.4
+      },
+      "high_low": [
+        322.6,
+        312.67
+      ],
+      "confidence": 0.5648883112659243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long put option strategy is suitable for your belief that Tesla's price will drop next week. Buying a put option will give you the right to sell TSLA at the strike price before the option expires. If TSLA's price drops as you expect, you can buy TSLA at the lower market price and sell at the strike price, making a profit. The strike price is set slightly lower than the current market price, reflecting your moderate confidence in the price drop. Note that the risk is that if TSLA's price doesn't drop, the option could expire worthless, causing a total loss of the premium paid.",
+      "user_id": "test_tesla_bear",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T17:44:26.807643",
+    "user_id": "test_crash",
+    "belief": "The market will crash",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          "buy 1 put 70 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "A long put strategy involves buying a put option, betting that the underlying stock will fall below the strike price before expiration. If the user believes that the market will crash, this type of strategy could yield high profits. The risk is limited to the premium paid to enter the position. The target return and max loss percentages are rough estimates and actual results will depend on the price movement of the underlying asset."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 73.35
+      },
+      "high_low": [
+        73.71,
+        72.45
+      ],
+      "confidence": 0.5783653943078433,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long put strategy involves buying a put option, betting that the underlying stock will fall below the strike price before expiration. If the user believes that the market will crash, this type of strategy could yield high profits. The risk is limited to the premium paid to enter the position. The target return and max loss percentages are rough estimates and actual results will depend on the price movement of the underlying asset.",
+      "user_id": "test_crash",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T19:38:17.983048",
+    "user_id": "anonymous",
+    "belief": "The market will crash",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          "buy 1 put 70 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "A long put strategy is a bearish strategy that profits when the price of the underlying asset declines. Since the user believes the market will crash, this strategy is suitable as it will profit from a decrease in the price of ARKK. The maximum loss is the premium paid for the put option, while the maximum gain is significant if ARKK drastically drops in price."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 73.5
+      },
+      "high_low": [
+        73.71,
+        72.45
+      ],
+      "confidence": 0.5783653943078433,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long put strategy is a bearish strategy that profits when the price of the underlying asset declines. Since the user believes the market will crash, this strategy is suitable as it will profit from a decrease in the price of ARKK. The maximum loss is the premium paid for the put option, while the maximum gain is significant if ARKK drastically drops in price.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T19:47:14.642239",
+    "user_id": "anonymous",
+    "belief": "The market will crash",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          "buy 1 put 70 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 15,
+        "max_loss": 100,
+        "time_to_target": "3 months",
+        "explanation": "A long put is a bearish strategy that profits when the price of the underlying asset decreases. By buying a put option with a strike price below the current price, the strategy can profit from a decrease in the price of ARKK. The maximum loss is limited to the premium paid for the put option. The target return of 15% is moderate and achievable within the given timeframe, fitting the user's moderate risk profile and bearish market belief."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 73.51
+      },
+      "high_low": [
+        73.71,
+        72.45
+      ],
+      "confidence": 0.5783653943078433,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long put is a bearish strategy that profits when the price of the underlying asset decreases. By buying a put option with a strike price below the current price, the strategy can profit from a decrease in the price of ARKK. The maximum loss is limited to the premium paid for the put option. The target return of 15% is moderate and achievable within the given timeframe, fitting the user's moderate risk profile and bearish market belief.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-14T19:54:44.868033",
+    "user_id": "anonymous",
+    "belief": "The market will crash",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "trade_legs": [
+          "buy 1 put 620 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Buying a long put option is a bearish strategy that profits when the price of the underlying asset falls. The strike price is slightly below the current price, providing a cushion in case the market does not fall as expected. The expiration date is set far enough in the future to give the market time to move in the desired direction. The target return is set at a moderate level to reflect the user's confidence and risk profile."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 624.6
+      },
+      "high_low": [
+        625.16,
+        621.8
+      ],
+      "confidence": 0.5783653943078433,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a long put option is a bearish strategy that profits when the price of the underlying asset falls. The strike price is slightly below the current price, providing a cushion in case the market does not fall as expected. The expiration date is set far enough in the future to give the market time to move in the desired direction. The target return is set at a moderate level to reflect the user's confidence and risk profile.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T02:32:31.631554",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "buy bond ETF",
+        "trade_legs": [
+          "buy AGG ETF",
+          "buy IEF ETF",
+          "buy SHY ETF"
+        ],
+        "expiration": "N/A",
+        "target_return": 2.5,
+        "max_loss": 1.0,
+        "time_to_target": "1 year",
+        "explanation": "A bond ladder strategy using ETFs involves purchasing bond ETFs of varying maturities to generate a steady income stream and mitigate interest rate risk. In this case, AGG (broad), IEF (mid-term), and SHY (short-term) are selected. AGG provides exposure to a wide range of bonds for diversification. IEF and SHY are included to stagger the maturities, providing a more stable income stream. The target return is based on historical bond yields, while the max loss reflects potential price volatility. The time to target is set to 1 year, reflecting the general time horizon for bond investments."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5421286087359034,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "A bond ladder strategy using ETFs involves purchasing bond ETFs of varying maturities to generate a steady income stream and mitigate interest rate risk. In this case, AGG (broad), IEF (mid-term), and SHY (short-term) are selected. AGG provides exposure to a wide range of bonds for diversification. IEF and SHY are included to stagger the maturities, providing a more stable income stream. The target return is based on historical bond yields, while the max loss reflects potential price volatility. The time to target is set to 1 year, reflecting the general time horizon for bond investments.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T02:37:09.260794",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": "buy bond ETF",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-15T04:27:03.669823",
+    "user_id": "anonymous",
+    "belief": "TSLA will crash",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "put",
+            "strike": 620,
+            "expiration": "2023-12-31"
+          }
+        ],
+        "target_return": 30,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "A long put is a strategy that profits if the underlying asset price drops sharply. This aligns with the user's belief that TSLA will crash. The maximum loss is limited to the price paid for the put, while the profit potential is significant if TSLA indeed crashes.",
+        "expiration": "2025-07-19"
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 624.81
+      },
+      "high_low": [
+        625.16,
+        621.8
+      ],
+      "confidence": 0.5281602434877539,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long put is a strategy that profits if the underlying asset price drops sharply. This aligns with the user's belief that TSLA will crash. The maximum loss is limited to the price paid for the put, while the profit potential is significant if TSLA indeed crashes.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T04:53:56.562158",
+    "user_id": "anonymous",
+    "belief": "Tesla is going up",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          "buy 1 call 320 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 20.0,
+        "max_loss": 100.0,
+        "time_to_target": "3 months",
+        "explanation": "The user believes that Tesla's price will increase. Buying a call option is a bullish strategy that profits from a price increase in the underlying asset. The 320 strike price is slightly above the current price, indicating the user's belief that the price will rise. The 3-month expiration gives the trade enough time to work out. However, the risk is fairly high as the entire premium can be lost if Tesla does not rise above the strike price by expiration."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 316.9
+      },
+      "high_low": [
+        322.6,
+        312.67
+      ],
+      "confidence": 0.6497034277117258,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "The user believes that Tesla's price will increase. Buying a call option is a bullish strategy that profits from a price increase in the underlying asset. The 320 strike price is slightly above the current price, indicating the user's belief that the price will rise. The 3-month expiration gives the trade enough time to work out. However, the risk is fairly high as the entire premium can be lost if Tesla does not rise above the strike price by expiration.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T05:06:08.255330",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "long call",
+        "trade_legs": [
+          "buy 1 call option at a strike price near the current TSLA price"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": "50%",
+        "max_loss": "100%",
+        "time_to_target": "6 months",
+        "explanation": "Given the user's bullish stance on Tesla, a long call option strategy is suitable. It allows us to benefit from an increase in the stock's price with limited downside risk. The maximum loss is the premium paid for the option, which occurs if TSLA does not rise above the strike price by expiration. The potential return can be significant if TSLA performs well, hence the target return of 50%. We chose an expiration date 6 months out to give TSLA ample time to move in the desired direction."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6654716609547243,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Given the user's bullish stance on Tesla, a long call option strategy is suitable. It allows us to benefit from an increase in the stock's price with limited downside risk. The maximum loss is the premium paid for the option, which occurs if TSLA does not rise above the strike price by expiration. The potential return can be significant if TSLA performs well, hence the target return of 50%. We chose an expiration date 6 months out to give TSLA ample time to move in the desired direction.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T08:03:25.496491",
+    "user_id": "anonymous",
+    "belief": "i want to make money from the russia and ukrain war",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument_type": "call",
+            "strike_price": 100,
+            "expiration_date": "2023-12-31"
+          }
+        ],
+        "expiration": "2023-12-31",
+        "target_return": 20,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "Investing in the Russia-Ukraine conflict can be somewhat complex and may involve geopolitical risks. An option might be to buy a long call on an ETF that tracks Russian equities or commodities that might be affected by the conflict. This would allow you to profit if there is an increase in the price of the ETF due to the conflict, while limiting your potential losses to the price paid for the option. The expiration date is set for one year from now to give the conflict time to affect the price of the ETF. However, it's important to note that this strategy involves a high level of risk and uncertainty."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6159531755036665,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2023-12-31",
+      "risk_profile": "moderate",
+      "explanation": "Investing in the Russia-Ukraine conflict can be somewhat complex and may involve geopolitical risks. An option might be to buy a long call on an ETF that tracks Russian equities or commodities that might be affected by the conflict. This would allow you to profit if there is an increase in the price of the ETF due to the conflict, while limiting your potential losses to the price paid for the option. The expiration date is set for one year from now to give the conflict time to affect the price of the ETF. However, it's important to note that this strategy involves a high level of risk and uncertainty.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-15T08:04:52.338852",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "i want to make money from the russia and ukrain war",
+    "strategy": "Long Call",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-15T18:46:32.912420",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "buy 1 call at market price"
+        ],
+        "expiration": "2022-05-31",
+        "target_return": "100%",
+        "max_loss": "100%",
+        "time_to_target": "1 month",
+        "explanation": "A long call strategy involves buying call options with the belief that the price of the stock will increase significantly within a certain period. This aligns with the user's belief of wanting to double their money on NVDA within a month. The risk is high because if the price of NVDA doesn't increase, the option will expire worthless and the investment will be lost. However, the potential return is also high, which aligns with the user's goal."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.6422839143343279,
+      "goal_type": "multiply",
+      "multiplier": 2.0,
+      "timeframe": "this month",
+      "expiry_date": "2022-05-31",
+      "risk_profile": "moderate",
+      "explanation": "A long call strategy involves buying call options with the belief that the price of the stock will increase significantly within a certain period. This aligns with the user's belief of wanting to double their money on NVDA within a month. The risk is high because if the price of NVDA doesn't increase, the option will expire worthless and the investment will be lost. However, the potential return is also high, which aligns with the user's goal.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-16T03:22:34.403196",
+    "user_id": "anonymous",
+    "belief": "Inflation is cooling rapidly",
+    "strategy": "unknown",
+    "result": "positive"
+  },
+  {
+    "timestamp": "2025-07-16T10:05:24.400888",
+    "user_id": "news_ingestor",
+    "belief": "Inflation is cooling rapidly",
+    "strategy": "unknown",
+    "result": "good",
+    "source": "news_router",
+    "confidence": 0.6835535450677694
+  },
+  {
+    "timestamp": "2025-07-16T10:09:40.855335",
+    "user_id": "news_ingestor",
+    "belief": "Tech stocks are set to rally after strong earnings from Microsoft",
+    "strategy": "unknown",
+    "result": "good",
+    "source": "news_router",
+    "confidence": 0.766440340056566
   }
 ]

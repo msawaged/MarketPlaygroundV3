@@ -23,14 +23,15 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_TABLE = "news_beliefs"
 
 # === 🔧 Backend URLs ===
-BACKEND_URL = "https://marketplayground-backend.onrender.com/strategy/process_belief"
-RETRAIN_URL = "https://marketplayground-backend.onrender.com/force_retrain"
-FEEDBACK_URL = "https://marketplayground-backend.onrender.com/feedback/submit_feedback"
+BASE_URL = "https://marketplayground-backend.onrender.com"
+BACKEND_URL = f"{BASE_URL}/strategy/process_belief"
+RETRAIN_URL = f"{BASE_URL}/force_retrain"
+FEEDBACK_URL = f"{BASE_URL}/feedback/submit_feedback"
 
 # === 📁 File Paths ===
-RAW_LOG_PATH = "backend/logs/news_beliefs.csv"
-TRAINING_PATH = "backend/Training_Strategies.csv"
-DEBUG_LOG_PATH = "backend/logs/news_ingestor_debug.log"
+RAW_LOG_PATH = os.path.join("backend", "logs", "news_beliefs.csv")
+TRAINING_PATH = os.path.join("backend", "Training_Strategies.csv")
+DEBUG_LOG_PATH = os.path.join("backend", "logs", "news_ingestor_debug.log")
 
 # === 📰 RSS Sources ===
 RSS_FEEDS = [
@@ -60,20 +61,6 @@ def log_debug(msg: str):
     with open(DEBUG_LOG_PATH, "a") as f:
         f.write(f"[{timestamp}] {msg}\n")
 
-def fetch_news_entries(limit_per_feed=5):
-    entries = []
-    for url in RSS_FEEDS:
-        try:
-            feed = feedparser.parse(url)
-            for entry in feed.entries[:limit_per_feed]:
-                title = entry.get("title", "").strip()
-                summary = entry.get("summary", entry.get("description", "")).strip()
-                if title and len(title) > 20:
-                    entries.append((title, summary))
-        except Exception as e:
-            log_debug(f"🚨 Feed error from {url}: {e}")
-    return entries
-
 def log_raw_belief(title, summary, belief):
     os.makedirs(os.path.dirname(RAW_LOG_PATH), exist_ok=True)
     with open(RAW_LOG_PATH, "a", newline="", encoding="utf-8") as csvfile:
@@ -85,41 +72,41 @@ def log_training_row(belief, strategy, asset_class):
         writer = csv.writer(csvfile)
         writer.writerow([belief, strategy, asset_class])
 
-# ✅ FIXED: Changed "positive" → "good" to pass feedback schema
 def submit_auto_feedback(belief, strategy_type, confidence=0.5):
     feedback_payload = {
         "belief": belief,
         "strategy": strategy_type,
-        "feedback": "good",  # ✅ Must be "good" or "bad"
+        "feedback": "good",
         "user_id": "news_ingestor",
         "source": "news_ingestor",
         "confidence": confidence
     }
-    print(f"\n📤 Submitting feedback payload:\n{feedback_payload}\n")
-
     try:
         r = requests.post(FEEDBACK_URL, json=feedback_payload, timeout=10)
         if r.status_code == 200:
-            log_debug(f"🧠 Auto-feedback submitted for: {belief[:60]}")
+            log_debug(f"✅ Auto-feedback submitted: {belief[:60]}...")
         else:
-            log_debug(f"⚠️ Feedback failed: {r.status_code} — {r.text}")
+            log_debug(f"⚠️ Auto-feedback failed ({r.status_code}): {belief[:60]}")
     except Exception as e:
-        log_debug(f"⚠️ Feedback exception: {e}")
+        log_debug(f"❌ Auto-feedback exception: {e}")
 
 def send_to_backend(belief_text):
     payload = {"belief": belief_text, "user_id": "news_ingestor"}
-    for attempt in range(2):  # 🔁 Max 2 tries
+    for attempt in range(2):
         try:
             r = requests.post(BACKEND_URL, json=payload, timeout=20)
             if r.status_code == 200:
-                data = r.json()
-                strategy = data.get("strategy", {}).get("type", "unknown")
-                asset_class = data.get("asset_class", "unknown")
-                confidence = data.get("confidence", 0.5)
-                log_training_row(belief_text, strategy, asset_class)
-                log_debug(f"✅ Strategy generated: {strategy} → {belief_text[:60]}")
-                submit_auto_feedback(belief_text, strategy, confidence)
-                return True
+                try:
+                    data = r.json()
+                    strategy = data.get("strategy", {}).get("type", "unknown")
+                    asset_class = data.get("asset_class", "unknown")
+                    confidence = data.get("confidence", 0.5)
+                    log_training_row(belief_text, strategy, asset_class)
+                    log_debug(f"✅ Strategy generated: {strategy} → {belief_text[:60]}")
+                    submit_auto_feedback(belief_text, strategy, confidence)
+                    return True
+                except Exception as e:
+                    log_debug(f"❌ JSON decode error: {e}")
             else:
                 log_debug(f"❌ Backend error {r.status_code}: {r.text}")
         except Exception as e:
@@ -164,10 +151,24 @@ def trigger_retraining():
     except Exception as e:
         log_debug(f"❌ Retraining exception: {e}")
 
+def fetch_news_entries(limit=5):
+    entries = []
+    for url in RSS_FEEDS:
+        try:
+            feed = feedparser.parse(url)
+            for entry in feed.entries[:limit]:
+                title = entry.get("title", "")
+                summary = entry.get("summary", "")
+                if title and summary:
+                    entries.append((title.strip(), summary.strip()))
+        except Exception as e:
+            log_debug(f"⚠️ RSS parse error from {url}: {e}")
+    return entries
+
 def run_news_ingestor():
     now = datetime.datetime.now()
     log_debug(f"\n🚀 News Ingestor started: {now}")
-    print(f"🚀 News Ingestor started: {now}", file=sys.stderr)
+    print(f"🚀 News Ingestor started: {now}", file=sys.stderr, flush=True)
 
     try:
         entries = fetch_news_entries()
@@ -176,6 +177,8 @@ def run_news_ingestor():
         if not entries:
             fallback = random.choice(FALLBACK_BELIEFS)
             log_debug("⚠️ No entries — using fallback belief")
+            log_raw_belief("Fallback", "No news found", fallback)
+            write_news_belief_to_supabase("Fallback", "No news found", fallback)
             send_to_backend(fallback)
             write_training_log("📰 News fetched: 0\n🧠 Beliefs generated: 1\n➕ New beliefs added: 1")
         else:
@@ -186,7 +189,7 @@ def run_news_ingestor():
 
                 log_debug(f"🧠 [{i+1}/{len(entries)}] Sending: {belief[:60]}")
                 send_to_backend(belief)
-                time.sleep(5)  # ⏱️ Slow down to avoid backend overload
+                time.sleep(5)
 
             write_training_log(
                 f"📰 News fetched: {len(entries)}\n🧠 Beliefs generated: {len(entries)}\n➕ New beliefs added: {len(entries)}"
@@ -197,7 +200,7 @@ def run_news_ingestor():
 
     except Exception as e:
         log_debug(f"❌ Top-level crash: {e}")
-        print(f"❌ Fatal Error: {e}", file=sys.stderr)
+        print(f"❌ Fatal Error: {e}", file=sys.stderr, flush=True)
 
 # === CLI Entry Point ===
 if __name__ == "__main__":

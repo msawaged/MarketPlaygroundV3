@@ -1,10 +1,11 @@
 # backend/routes/hot_trades_router.py
-# ✅ Exposes a public /hot_trades endpoint to show trending strategies
+# ✅ Enhanced /hot_trades with Polymarket signal blending
 
 from fastapi import APIRouter
 from typing import List, Dict, Any
 import json
 import os
+import requests
 from collections import Counter
 
 router = APIRouter()
@@ -14,30 +15,30 @@ STRATEGY_LOG_FILE = os.path.join(os.path.dirname(__file__), "..", "strategy_log.
 @router.get("/hot_trades", response_model=List[Dict[str, Any]])
 def get_hot_trades():
     """
-    Returns top 5 most frequently suggested strategies over the past 100 entries.
+    Returns a mix of internal trending strategies + top Polymarket markets.
     """
-    if not os.path.exists(STRATEGY_LOG_FILE):
-        return []
+    hot_trades = []
 
-    with open(STRATEGY_LOG_FILE, "r") as f:
+    # ✅ PART 1: Internal AI trending strategies (same logic as before)
+    if os.path.exists(STRATEGY_LOG_FILE):
         try:
-            logs = json.load(f)[-100:]  # Only look at most recent 100 logs
+            with open(STRATEGY_LOG_FILE, "r") as f:
+                logs = json.load(f)[-100:]
         except json.JSONDecodeError:
-            return []
+            logs = []
+    else:
+        logs = []
 
-    # Count strategy types
     strategy_counter = Counter()
     examples = {}
 
     for entry in logs:
         raw_strat = entry.get("strategy", {})
-
-        # 👇 Safely parse if strategy is stringified JSON
         if isinstance(raw_strat, str):
             try:
                 strat = json.loads(raw_strat)
             except json.JSONDecodeError:
-                continue  # skip malformed entries
+                continue
         elif isinstance(raw_strat, dict):
             strat = raw_strat
         else:
@@ -48,13 +49,36 @@ def get_hot_trades():
         if strat_type not in examples:
             examples[strat_type] = strat
 
-    # Return top 5 strategies with metadata
     top_strats = strategy_counter.most_common(5)
-    result = []
-
     for strat_type, count in top_strats:
         strat = examples[strat_type]
         strat["usage_count"] = count
-        result.append(strat)
+        strat["source"] = "AI Feedback"
+        hot_trades.append(strat)
 
-    return result
+    # ✅ PART 2: Add Polymarket trends (no API key required)
+    try:
+        poly_res = requests.get("https://api.polymarket.com/v3/markets", timeout=5)
+        if poly_res.status_code == 200:
+            data = poly_res.json()
+            top_markets = sorted(
+                data.get("markets", []), 
+                key=lambda x: x.get("volume24Hr", 0), 
+                reverse=True
+            )[:5]
+
+            for market in top_markets:
+                hot_trades.append({
+                    "type": f"Polymarket: {market.get('question', 'Unknown')}",
+                    "trade_legs": [],
+                    "target_return": "Dynamic",
+                    "max_loss": "Limited",
+                    "time_to_target": "Market Resolution",
+                    "explanation": market.get("description", ""),
+                    "usage_count": int(market.get("volume24Hr", 0)),
+                    "source": "Polymarket"
+                })
+    except Exception as e:
+        print(f"⚠️ Failed to fetch Polymarket: {e}")
+
+    return hot_trades

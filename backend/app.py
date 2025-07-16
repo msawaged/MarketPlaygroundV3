@@ -32,6 +32,7 @@ from backend.routes.feedback_predictor import router as feedback_predictor
 from backend.routes.portfolio_router import router as portfolio_router
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
+from backend.routes.news_router import router as news_router  # ✅ Add this
 from backend.routes.hot_trades_router import router as hot_trades_router
 from backend.routes.alpaca_router import router as alpaca_router
 from backend.routes.execution_router import router as execution_router
@@ -82,6 +83,7 @@ app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
 app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
 app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
 app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfolio"])
+app.include_router(news_router, prefix="/news", tags=["News"])  # ✅ Add this
 app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
 app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
 app.include_router(hot_trades_router,                            tags=["Hot Trades"])
@@ -91,6 +93,7 @@ app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
 app.include_router(market_router,            prefix="/market",    tags=["Market"])
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
 app.include_router(debug_router,                                tags=["Debug"])
+app.include_router(news_router, prefix="/news", tags=["News"])
 
 # === Request schemas ===
 class BeliefRequest(BaseModel):

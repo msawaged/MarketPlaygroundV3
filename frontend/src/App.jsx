@@ -5,6 +5,7 @@ import SimulatedChart from './components/SimulatedChart';
 import SimulatedChart3D from './components/SimulatedChart3D'; // 🆕 3D Chart import
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import StrategyOpsPage from './components/StrategyOpsPage'; // ⬅️ new route component
+import HotTradesPage from './components/HotTrades'; // ✅ NEW: Hot Trades route import
 
 
 /**
@@ -166,6 +167,23 @@ function MainApp() {
   🛠️ Strategy Ops Page
 </button>
 
+{/* === 🔥 Hot Trades Navigation Button === */}
+<button
+  onClick={() => navigate('/hot-trades')} // Route to /hot-trades
+  style={{
+    marginBottom: '2rem',
+    backgroundColor: '#f97316', // Orange background
+    color: '#fff',
+    padding: '0.5rem 1rem',
+    fontWeight: 'bold',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    marginLeft: '1rem', // Creates spacing if buttons align horizontally
+  }}
+>
+  🔥 View Hot Trades
+</button>
 
       {/* === 🧠 AI Loop Status + 🏆 Leaderboard Row === */}
       {loopStatus && (
@@ -351,6 +369,32 @@ function MainApp() {
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
+              {/* ✅ Conditionally show the Execute Trade button if we have a strategy */}
+{response && response.strategy && (
+  <button
+    // ✅ On click, show an alert simulating trade execution
+    onClick={() =>
+      alert(
+        `🚀 Executing trade: ${response.strategy.type || 'UNKNOWN'} on ${
+          response.strategy.ticker || 'UNKNOWN'
+        }`
+      )
+    }
+    // ✅ Styling: green button, white text, rounded corners, margin from left
+    style={{
+      marginLeft: '10px',
+      backgroundColor: '#10B981',  // Tailwind green-500
+      color: '#ffffff',
+      border: 'none',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+    }}
+  >
+    🚀 Execute Trade
+  </button>
+)}
+
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem', backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px' }}>👍 Yes</button>
                 <button onClick={() => sendFeedback('bad')} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px' }}>👎 No</button>
@@ -453,6 +497,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainApp />} />
         <Route path="/strategy-ops" element={<StrategyOpsPage />} />
+        <Route path="/hot-trades" element={<HotTradesPage />} /> {/* ✅ NEW: Route added */}
       </Routes>
     </Router>
   );
