@@ -22082,5 +22082,117 @@
     "result": "good",
     "source": "news_router",
     "confidence": 0.766440340056566
+  },
+  {
+    "timestamp": "2025-07-16T12:01:37.802578",
+    "user_id": "anonymous",
+    "belief": "Apple will dominate the AI hardware market this year",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "asset": "AAPL call option",
+            "strike_price": 210,
+            "expiration": "2022-12-16"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "12 months",
+        "explanation": "This strategy involves buying a call option, which gives the right to buy AAPL shares at the strike price before expiration. If AAPL dominates the AI market this year, its stock price will likely rise, increasing the value of the call option. However, the risk is the entire premium paid if AAPL does not rise above the strike price by expiration. The target return is an estimate based on the assumption that AAPL will significantly rise, while the max loss is the total premium paid for the option."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 209.11
+      },
+      "high_low": [
+        211.89,
+        208.92
+      ],
+      "confidence": 0.6572713397752492,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this year",
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "This strategy involves buying a call option, which gives the right to buy AAPL shares at the strike price before expiration. If AAPL dominates the AI market this year, its stock price will likely rise, increasing the value of the call option. However, the risk is the entire premium paid if AAPL does not rise above the strike price by expiration. The target return is an estimate based on the assumption that AAPL will significantly rise, while the max loss is the total premium paid for the option.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-16T12:03:52.075395",
+    "user_id": "anonymous",
+    "belief": "Apple will dominate the AI hardware market this year",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "buy",
+            "quantity": 1,
+            "instrument": "call",
+            "strike": 220,
+            "expiration": "2022-12-16"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 50,
+        "max_loss": 100,
+        "time_to_target": "12 months",
+        "explanation": "Buying a call option is a bullish strategy that profits if the underlying asset's price appreciates. In this case, we are buying a call option on AAPL because we believe that Apple will dominate the AI hardware market this year, which could lead to an increase in Apple's stock price. The strike price is set at 220, which is higher than the current price, indicating our expectation of a significant increase in the stock price. However, the max loss is 100% as options can become worthless if the stock price does not exceed the strike price by the expiration date."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 209.11
+      },
+      "high_low": [
+        211.89,
+        208.92
+      ],
+      "confidence": 0.6572713397752492,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this year",
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a call option is a bullish strategy that profits if the underlying asset's price appreciates. In this case, we are buying a call option on AAPL because we believe that Apple will dominate the AI hardware market this year, which could lead to an increase in Apple's stock price. The strike price is set at 220, which is higher than the current price, indicating our expectation of a significant increase in the stock price. However, the max loss is 100% as options can become worthless if the stock price does not exceed the strike price by the expiration date.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
   }
 ]
