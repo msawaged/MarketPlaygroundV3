@@ -22332,5 +22332,69 @@
     "result": "good",
     "source": "news_router",
     "confidence": 0.695590874663683
+  },
+  {
+    "timestamp": "2025-07-17T08:58:55.812349",
+    "user_id": "local_test",
+    "belief": "I think AAPL will drop next week",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "buy 1 put option",
+            "ticker": "AAPL",
+            "strike_price": "current market price",
+            "expiration": "next week"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": "10%",
+        "max_loss": "100%",
+        "time_to_target": "1 week",
+        "explanation": "Buying a put option allows you to benefit from a decrease in the price of the underlying asset, which in this case is AAPL. Your belief is that AAPL will drop next week, so if this happens, you will be able to sell the shares at the strike price (which would be higher than the market price) and make a profit. Your maximum loss would be the premium you paid for the put option if AAPL price doesn't decrease."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": -1.0
+      },
+      "high_low": [
+        null,
+        null
+      ],
+      "confidence": 0.5493246276876028,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a put option allows you to benefit from a decrease in the price of the underlying asset, which in this case is AAPL. Your belief is that AAPL will drop next week, so if this happens, you will be able to sell the shares at the strike price (which would be higher than the market price) and make a profit. Your maximum loss would be the premium you paid for the put option if AAPL price doesn't decrease.",
+      "user_id": "local_test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-17T08:59:27.984883",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "AAPL will drop",
+    "strategy": "Long Put",
+    "feedback": "good",
+    "risk_profile": "moderate"
   }
 ]
