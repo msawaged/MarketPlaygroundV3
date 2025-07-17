@@ -22396,5 +22396,61 @@
     "strategy": "Long Put",
     "feedback": "good",
     "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-17T22:35:38.855970",
+    "user_id": "test_strategy",
+    "belief": "Tech will rise",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "quantity": 1,
+            "asset": "XLK call option",
+            "strike_price": 270,
+            "expiration": "2023-01-20"
+          }
+        ],
+        "target_return": 25,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+        "expiration": "2025-07-19"
+      },
+      "ticker": "XLK",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 261.06
+      },
+      "high_low": [
+        261.47,
+        258.51
+      ],
+      "confidence": 0.690100622185721,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+      "user_id": "test_strategy",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
   }
 ]

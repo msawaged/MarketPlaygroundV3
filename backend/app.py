@@ -31,6 +31,7 @@ from backend.routes.auth_router import router as auth_router
 from backend.routes.feedback_router import router as feedback_router
 from backend.routes.feedback_predictor import router as feedback_predictor
 from backend.routes.portfolio_router import router as portfolio_router
+from backend.routes.basket_router import router as basket_router  # ✅ Asset Basket
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
 from backend.routes.news_router import router as news_router  # ✅ Add this
@@ -88,13 +89,14 @@ app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfol
 app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
 app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
 app.include_router(news_router,              prefix="/news",      tags=["News"])
-app.include_router(hot_trades_router,                            tags=["Hot Trades"])
+app.include_router(hot_trades_router,                             tags=["Hot Trades"])
+app.include_router(basket_router,            prefix="/basket",    tags=["Asset Baskets"])  # ✅ Basket routes now live
 app.include_router(alpaca_router,            prefix="/alpaca",    tags=["Alpaca"])
 app.include_router(execution_router,         prefix="/alpaca",    tags=["Execution"])
 app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
 app.include_router(market_router,            prefix="/market",    tags=["Market"])
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router, tags=["Debug"])  # ✅ Fixed: Removed extra /debug prefix
+app.include_router(debug_router,                                  tags=["Debug"])  # ✅ Fixed: Removed extra /debug prefix
 
 
 

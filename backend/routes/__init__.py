@@ -10,6 +10,7 @@ from backend.routes.auth_router import router as auth_router
 from backend.routes.portfolio_router import router as portfolio_router
 from backend.routes.strategy_logger_router import router as strategy_logger_router
 from backend.routes.hot_trades_router import router as hot_trades_router  # ✅ NEW: Hot trades route
+from backend.routes.basket_router import router as basket_router  # ✅ NEW: Asset basket generator
 
 # ✅ Master router object
 router = APIRouter()
@@ -21,3 +22,4 @@ router.include_router(auth_router, prefix="/auth", tags=["Auth"])
 router.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])
 router.include_router(strategy_logger_router, prefix="/strategy", tags=["Strategy Logger"])
 router.include_router(hot_trades_router, tags=["Hot Trades"])  # ✅ NEW: Include hot trades
+router.include_router(basket_router, prefix="/basket", tags=["Asset Baskets"])  # ✅ NEW: Include asset basket routes
