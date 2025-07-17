@@ -12615,5 +12615,94 @@
       "time_to_target": "12 months",
       "explanation": "Buying a call option is a bullish strategy that profits if the underlying asset's price appreciates. In this case, we are buying a call option on AAPL because we believe that Apple will dominate the AI hardware market this year, which could lead to an increase in Apple's stock price. The strike price is set at 220, which is higher than the current price, indicating our expectation of a significant increase in the stock price. However, the max loss is 100% as options can become worthless if the stock price does not exceed the strike price by the expiration date."
     }
+  },
+  {
+    "timestamp": "2025-07-17T04:32:05.920756",
+    "user_id": "anonymous",
+    "belief": "TSLA will crash",
+    "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy 1 put 600 strike"
+        }
+      ],
+      "expiration": "2025-07-19",
+      "target_return": 30,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly."
+    }
+  },
+  {
+    "timestamp": "2025-07-17T04:32:05.997754",
+    "user_id": "sandbox_test",
+    "belief": "TSLA will crash",
+    "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy 1 put 600 strike"
+        }
+      ],
+      "expiration": "2025-07-19",
+      "target_return": 30,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly."
+    }
+  },
+  {
+    "timestamp": "2025-07-17T05:24:15.735666",
+    "user_id": "anonymous",
+    "belief": "AAPL will outperform the market",
+    "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "buy 1 call 80 strike"
+      ],
+      "expiration": "2025-07-19",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "1 year",
+      "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach."
+    }
+  },
+  {
+    "timestamp": "2025-07-17T05:24:15.816411",
+    "user_id": "final_test_user",
+    "belief": "AAPL will outperform the market",
+    "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "buy 1 call 80 strike"
+      ],
+      "expiration": "2025-07-19",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "1 year",
+      "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach."
+    }
+  },
+  {
+    "timestamp": "2025-07-17T05:25:24.993914",
+    "user_id": "news_ingestor",
+    "belief": "Oil prices expected to spike as OPEC cuts supply",
+    "explanation": "If the user expects oil prices to spike due to OPEC's decision to cut supply, this could lead to an increase in the price of energy-related stocks and ETFs. Buying a long call option on XLE would allow the user to benefit from a rise in the ETF's price. The chosen strike price is slightly higher than the current price, allowing room for the price to increase. The expiration date is set far enough in the future to allow time for the expected price increase to occur. This strategy has a moderate risk profile, as the maximum possible loss is the premium paid for the option, but there is a significant potential return if the price of XLE increases as expected.",
+    "strategy": {
+      "type": "long call",
+      "trade_legs": [
+        "buy 1 call 90 strike"
+      ],
+      "expiration": "2023-12-15",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "If the user expects oil prices to spike due to OPEC's decision to cut supply, this could lead to an increase in the price of energy-related stocks and ETFs. Buying a long call option on XLE would allow the user to benefit from a rise in the ETF's price. The chosen strike price is slightly higher than the current price, allowing room for the price to increase. The expiration date is set far enough in the future to allow time for the expected price increase to occur. This strategy has a moderate risk profile, as the maximum possible loss is the premium paid for the option, but there is a significant potential return if the price of XLE increases as expected."
+    }
   }
 ]

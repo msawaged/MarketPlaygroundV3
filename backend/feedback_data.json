@@ -22194,5 +22194,143 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-17T04:32:05.966546",
+    "user_id": "sandbox_test",
+    "belief": "TSLA will crash",
+    "strategy": {
+      "strategy": {
+        "type": "Long Put",
+        "trade_legs": [
+          {
+            "action": "buy 1 put 600 strike"
+          }
+        ],
+        "expiration": "2025-07-19",
+        "target_return": 30,
+        "max_loss": 100,
+        "time_to_target": "1 year",
+        "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly."
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 624.22
+      },
+      "high_low": [
+        624.73,
+        618.05
+      ],
+      "confidence": 0.528160243487754,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "Buying a long put option would allow the investor to profit if TSLA does indeed crash. The strike price is set below the current price, anticipating a significant drop. The expiration date allows plenty of time for the predicted crash to occur. The maximum loss is capped at the premium paid for the option, while the potential return is substantial if TSLA's price falls significantly.",
+      "user_id": "sandbox_test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-17T05:11:15.001349",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "TSLA will crash",
+    "strategy": "Long Put",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-17T05:24:15.785806",
+    "user_id": "final_test_user",
+    "belief": "AAPL will outperform the market",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          "buy 1 call 80 strike"
+        ],
+        "expiration": "2025-07-19",
+        "target_return": "20%",
+        "max_loss": "100%",
+        "time_to_target": "1 year",
+        "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach."
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 75.25
+      },
+      "high_low": [
+        75.57,
+        73.2
+      ],
+      "confidence": 0.6584942257016345,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-07-19",
+      "risk_profile": "moderate",
+      "explanation": "A long call option strategy is suitable for investors who believe that the underlying asset (in this case, AAPL) will rise in value. This strategy allows the investor to profit from an increase in the price of the underlying asset. However, the investor's maximum loss is limited to the premium paid for the call option. The investor's break-even point is the strike price plus the premium paid. The higher the price of the underlying asset rises above the break-even point, the higher the profit. Given the user's moderate risk profile and belief that AAPL will outperform the market, a long call option strategy could be a suitable approach.",
+      "user_id": "final_test_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-17T05:24:26.633319",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "AAPL will outperform",
+    "strategy": "Buy Stock",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-17T05:24:42.714382",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "Crypto will crash",
+    "strategy": "Short BTC",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-17T05:25:25.187102",
+    "user_id": "news_ingestor",
+    "belief": "Oil prices expected to spike as OPEC cuts supply",
+    "strategy": "unknown",
+    "result": "good",
+    "source": "news_router",
+    "confidence": 0.695590874663683
   }
 ]

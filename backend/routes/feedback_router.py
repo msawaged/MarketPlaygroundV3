@@ -7,19 +7,12 @@ import json
 import os
 import csv
 from datetime import datetime
-
+from backend.schemas import FeedbackRequest
 from backend.belief_parser import parse_belief
 from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief
 
 router = APIRouter()
 
-# ✅ Define expected feedback payload
-class FeedbackPayload(BaseModel):
-    belief: str
-    strategy: str
-    feedback: Literal["good", "bad"]
-    user_id: str = "anonymous"
-    risk_profile: str = "moderate"
 
 # ✅ File paths
 FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
@@ -84,7 +77,9 @@ def log_feedback_csv(entry: dict):
 
 # ✅ POST /submit_feedback
 @router.post("/submit_feedback")
-def submit_feedback(payload: FeedbackPayload, request: Request):
+@router.post("/submit_feedback")
+def submit_feedback(payload: FeedbackRequest, request: Request):
+
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": payload.user_id,
