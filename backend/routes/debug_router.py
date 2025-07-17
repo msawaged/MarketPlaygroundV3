@@ -235,3 +235,19 @@ def recent_feedback(limit: int = 10):
         return {"entries": data[-limit:]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read feedback data: {str(e)}")
+@router.get("/retrain_status")
+def retrain_status():
+    """
+    ✅ NEW ENDPOINT
+    📊 Returns latest retraining status log as JSON
+    Used by frontend or curl to verify if the AI retrained.
+    """
+    print("✅ /debug/retrain_status endpoint HIT")  # 🔍 DEBUG PRINT
+
+    if os.path.exists(LAST_JSON_LOG):
+        try:
+            with open(LAST_JSON_LOG, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to load retrain log: {str(e)}")
+    return {"status": "unknown", "message": "Retraining log not found."}

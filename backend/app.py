@@ -12,6 +12,7 @@ from collections import Counter
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Query
+from backend.routes import debug_router  # ✅ THIS LINE IS REQUIRED
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
@@ -79,21 +80,22 @@ if not os.path.exists(strategy_csv_path):
     print("✅ Created starter strategy_outcomes.csv")
 
 # === Register routers ===
+
 app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
 app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
 app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
 app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfolio"])
-app.include_router(news_router, prefix="/news", tags=["News"])  # ✅ Add this
 app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
 app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
+app.include_router(news_router,              prefix="/news",      tags=["News"])
 app.include_router(hot_trades_router,                            tags=["Hot Trades"])
 app.include_router(alpaca_router,            prefix="/alpaca",    tags=["Alpaca"])
 app.include_router(execution_router,         prefix="/alpaca",    tags=["Execution"])
 app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
 app.include_router(market_router,            prefix="/market",    tags=["Market"])
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router,                                tags=["Debug"])
-app.include_router(news_router, prefix="/news", tags=["News"])
+app.include_router(debug_router,             prefix="/debug",     tags=["Debug"])  # ✅ THIS LINE
+
 
 # === Request schemas ===
 class BeliefRequest(BaseModel):
@@ -270,6 +272,11 @@ def fetch_recent_logs(limit: int = 10):
 def news_ingestion_status():
     paused = os.getenv("PAUSE_NEWS_INGESTION", "false").lower() == "true"
     return {"paused": paused}
+
+    print("\n🔍 ROUTES LOADED:")
+for route in app.routes:
+    print(f"{route.path} → {route.name}")
+
 
 if __name__ == "__main__":
     import uvicorn
