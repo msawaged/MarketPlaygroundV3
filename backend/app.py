@@ -12,6 +12,7 @@ from collections import Counter
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Query
+from backend.routes import debug_router  # ✅ THIS LINE IS REQUIRED
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
@@ -271,6 +272,11 @@ def fetch_recent_logs(limit: int = 10):
 def news_ingestion_status():
     paused = os.getenv("PAUSE_NEWS_INGESTION", "false").lower() == "true"
     return {"paused": paused}
+
+    print("\n🔍 ROUTES LOADED:")
+for route in app.routes:
+    print(f"{route.path} → {route.name}")
+
 
 if __name__ == "__main__":
     import uvicorn
