@@ -518,6 +518,8 @@ export default function App() {
   {/* ✅ Other pages */}
   <Route path="/strategy-ops" element={<StrategyOpsPage />} />
   <Route path="/hot-trades" element={<HotTradesPage />} />
+  <Route path="/basket-builder" element={<BasketBuilderPage />} />
+
 </Routes>
 
     </Router>

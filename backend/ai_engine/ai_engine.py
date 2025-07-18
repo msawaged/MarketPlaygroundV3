@@ -12,6 +12,7 @@ from datetime import datetime
 from openai import OpenAI, OpenAIError
 import openai
 
+from typing import Optional  # ✅ Required for Optional[str] in function signatures
 from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
 from backend.belief_parser import parse_belief
 from backend.market_data import get_latest_price, get_weekly_high_low, get_option_expirations
@@ -249,3 +250,84 @@ Explain the maturity staggering, income generation, and diversification benefits
         "estimated_profit_pct": validation.get("estimated_profit_pct"),
         "notes": validation.get("notes"),
     }
+# === 🧠 New Function: Asset Basket Generation via GPT-4 ===
+def generate_asset_basket(input_text: str, goal: Optional[str] = None, user_id: Optional[str] = None) -> dict:
+    """
+    Generates an intelligent asset basket (stocks, bonds, crypto, etc.)
+    based on user input using GPT-4. Returns a parsed JSON structure.
+    """
+    try:
+        prompt = f"""
+You are a financial advisor AI.
+
+A user has requested a smart asset allocation basket.
+Their input: "{input_text}"
+Goal: {goal or 'unspecified'}
+
+Your task:
+- Create a diversified basket of 2–5 assets (stocks, ETFs, crypto, bonds).
+- For each: include ticker, type, allocation %, and a one-sentence rationale.
+- Also return a goal summary, estimated return range, and risk profile.
+
+Format as valid JSON:
+{{
+  "basket": [
+    {{
+      "ticker": "VTI",
+      "type": "stock",
+      "allocation": "60%",
+      "rationale": "Broad U.S. stock exposure"
+    }},
+    {{
+      "ticker": "BND",
+      "type": "bond",
+      "allocation": "40%",
+      "rationale": "Diversified bond exposure"
+    }}
+  ],
+  "goal": "moderate growth",
+  "estimated_return": "5–7% annually",
+  "risk_profile": "moderate"
+}}
+
+Only return pure JSON — no explanation, markdown, or commentary.
+"""
+
+        print("📦 Calling GPT-4 for asset basket generation...")
+
+        response = client.chat.completions.create(
+            model=GPT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.4,
+            max_tokens=500
+        )
+
+        raw_output = response.choices[0].message.content.strip()
+        print("📤 Raw GPT Output:\n", raw_output)  # 🔍 Add this line
+        parsed = json.loads(raw_output)
+
+        return parsed
+
+    except Exception as e:
+        print(f"[❌] GPT-4 asset basket generation failed: {e}")
+
+        # Fallback conservative basket
+        return {
+            "basket": [
+                {
+                    "ticker": "VTI",
+                    "type": "stock",
+                    "allocation": "60%",
+                    "rationale": "Broad U.S. stock exposure for long-term growth"
+                },
+                {
+                    "ticker": "BND",
+                    "type": "bond",
+                    "allocation": "40%",
+                    "rationale": "Bond ETF for income and capital preservation"
+                }
+            ],
+            "goal": goal or "growth",
+            "estimated_return": "4–6% annually",
+            "risk_profile": "moderate"
+        }
