@@ -1,4 +1,4 @@
-// frontend/src/components/BasketBuilderPage.jsx
+// frontend/src/BasketBuilderPage.jsx
 import React, { useState } from 'react';
 import { FiMic } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -132,31 +132,12 @@ const BasketBuilderPage = () => {
     </div>
   </div>
 
-  {/* 🔥 Top Mixes (Moved to right side of input) */}
-  <div className="w-full lg:w-[380px] bg-gradient-to-br from-indigo-800 to-gray-900 p-4 rounded-2xl shadow-lg border border-indigo-700">
-    <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-      🔥 Top Mixes <span className="text-sm text-gray-300 font-normal">(YTD)</span>
-    </h2>
-    <div className="space-y-3">
-      {topAssets.map((asset, index) => (
-        <div key={index} className="bg-indigo-950 p-3 rounded-xl border border-indigo-700 shadow hover:shadow-md transition">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-sm font-semibold text-white">{asset.name}</div>
-              <div className="text-indigo-300 text-xs italic">{asset.mix}</div>
-            </div>
-            <span className="bg-green-700 text-white text-xs px-2 py-1 rounded-full shadow">
-              {asset.ytd}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
+ 
     <p className="text-[11px] text-gray-400 mt-3 text-center italic">
       Auto-synced from market data — <span className="text-yellow-400">Premium after beta</span> 🚀
     </p>
   </div>
-</div>
+
 
 
       {/* 🔴 Error */}
