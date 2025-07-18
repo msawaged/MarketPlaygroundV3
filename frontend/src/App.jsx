@@ -7,7 +7,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import StrategyOpsPage from './components/StrategyOpsPage'; // ⬅️ new route component
 import HotTradesPage from './components/HotTrades'; // ✅ NEW: Hot Trades route import
 import ToolSelectorPage from './components/ToolSelectorPage';
-import BasketBuilderPage from './components/BasketBuilderPage'; // 🧺 Asset basket builder
+import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
 
 
 
