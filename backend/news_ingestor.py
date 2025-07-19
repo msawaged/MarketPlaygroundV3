@@ -91,6 +91,8 @@ def submit_auto_feedback(belief, strategy_type, confidence=0.5):
         log_debug(f"❌ Auto-feedback exception: {e}")
 
 def send_to_backend(belief_text):
+    print(f"📤 Sending belief to backend: {belief_text[:80]}...", flush=True)
+
     payload = {"belief": belief_text, "user_id": "news_ingestor"}
     for attempt in range(2):
         try:
