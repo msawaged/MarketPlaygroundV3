@@ -10,6 +10,21 @@ import ToolSelectorPage from './components/ToolSelectorPage';
 import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
 
 
+// ✅ Option parsing helpers
+const parseOptionType = (leg) => {
+  if (!leg || typeof leg !== 'string') return 'N/A';
+  return leg.toLowerCase().includes('put') ? 'Put' : 'Call';
+};
+
+const parseStrike = (leg) => {
+  const match = leg.match(/(\d+\.?\d*)/);
+  return match ? `${match[1]} strike` : 'N/A';
+};
+
+const parseQuantity = (leg) => {
+  const match = leg.match(/(buy|sell)\s*(\d+)/i);
+  return match ? `${match[2]} (${match[1]})` : 'N/A';
+};
 
 
 
@@ -154,12 +169,16 @@ function MainApp() {
 
   return (
     <div style={{ backgroundColor: '#0f172a', color: '#f8fafc', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-        🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span>
-      </h1>
-      <p style={{ marginBottom: '2rem', color: '#94a3b8' }}>
-        Enter your belief and watch the strategy unfold
-      </p>
+  <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+    🚀 MarketPlayground <span role="img" aria-label="brain">🧠</span>{' '}
+    <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'normal', color: '#94a3b8', marginTop: '0.5rem' }}>
+      (During beta, pricing is fetched live from yfinance, Finnhub, or Alpaca — or simulated if unavailable. This lets you test the strategy engine, while we prepare for full execution via public broker APIs.)
+    </span>
+  </h1>
+  <p style={{ marginBottom: '2rem', color: '#94a3b8' }}>
+    Enter your belief and watch the strategy unfold
+  </p>
+
 
       <button
   onClick={() => navigate('/strategy-ops')}
@@ -367,10 +386,34 @@ function MainApp() {
               boxShadow: '0 0 20px rgba(59,130,246,0.5)'
             }}>
               <p><strong>🧠 Strategy:</strong> {response.strategy[currentIndex].type}</p>
+              <p><strong>📉 Type:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.instrument || parseOptionType(response.strategy[currentIndex].trade_legs?.[0])}</p>
+              <p><strong>💥 Strike:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.strike || parseStrike(response.strategy[currentIndex].trade_legs?.[0])}</p>
+              <p><strong>🧾 Quantity:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.quantity || parseQuantity(response.strategy[currentIndex].trade_legs?.[0])}</p>
+
               <p><strong>📝 Description:</strong> {response.strategy[currentIndex].description}</p>
               <p><strong>📌 Tags:</strong> {response.tags?.join(', ') || 'N/A'}</p>
               <p><strong>🎯 Ticker:</strong> {response.ticker}</p>
               <p><strong>📊 Asset Class:</strong> {response.asset_class}</p>
+                      {/* ✅ Extra breakdown for option strategies */}
+        {response.asset_class === "options" && response.strategy?.trade_legs && (
+          <div style={{
+            backgroundColor: '#334155',
+            padding: '1rem',
+            marginTop: '1.5rem',
+            borderRadius: '10px',
+            boxShadow: '0 0 12px rgba(148,163,184,0.3)'
+          }}>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>🧾 Option Trade Details</h4>
+            
+            <p><strong>Ticker:</strong> {response.ticker}</p>
+            <p><strong>Type:</strong> {response.strategy.trade_legs[0].instrument || parseOptionType(response.strategy.trade_legs[0])}</p>
+            <p><strong>Strike:</strong> {response.strategy.trade_legs[0].strike || parseStrike(response.strategy.trade_legs[0])}</p>
+            <p><strong>Quantity:</strong> {response.strategy.trade_legs[0].quantity || parseQuantity(response.strategy.trade_legs[0])}</p>
+            <p><strong>Expiration:</strong> {response.strategy.expiration}</p>
+            <p><strong>Confidence:</strong> {(response.confidence * 100).toFixed(1)}%</p>
+          </div>
+        )}
+
               <p><strong>📈 Direction:</strong> {response.direction}</p>
               <p><strong>⚡ Confidence:</strong> {response.confidence?.toFixed(4)}</p>
               <p><strong>💸 Latest Price:</strong> ${response.price_info?.latest}</p>

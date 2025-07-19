@@ -228,6 +228,32 @@ Explain the maturity staggering, income generation, and diversification benefits
             "notes": f"Validation error: {e}"
         }
 
+       # ✅ DEBUG — Log final strategy output for visibility
+    print("[DEBUG] Final strategy output:")
+    print(json.dumps({
+        "strategy": strategy,
+        "ticker": ticker,
+        "asset_class": asset_class,
+        "tags": tags,
+        "direction": direction,
+        "price_info": price_info,
+        "high_low": high_low,
+        "confidence": confidence,
+        "goal_type": goal_type,
+        "multiplier": multiplier,
+        "timeframe": timeframe,
+        "expiry_date": strategy.get("expiration"),
+        "risk_profile": risk_profile,
+        "explanation": explanation,
+        "user_id": user_id,
+        "validator": validation,
+        "valid": validation.get("valid"),
+        "would_profit": validation.get("would_profit"),
+        "estimated_profit_pct": validation.get("estimated_profit_pct"),
+        "notes": validation.get("notes"),
+    }, indent=2))
+
+   
     return {
         "strategy": strategy,
         "ticker": ticker,
