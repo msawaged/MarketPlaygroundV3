@@ -22557,5 +22557,62 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-19T08:08:53.049929",
+    "user_id": "test_user",
+    "belief": "Inflation is cooling rapidly",
+    "strategy": {
+      "strategy": {
+        "type": "Buy Bond ETF",
+        "trade_legs": [
+          "Buy 100 shares of TIP at market price"
+        ],
+        "expiration": "N/A",
+        "target_return": 5,
+        "max_loss": 5,
+        "time_to_target": "6 months",
+        "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile."
+      },
+      "ticker": "TIP",
+      "asset_class": "etf",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 109.7
+      },
+      "high_low": [
+        109.88,
+        109.64
+      ],
+      "confidence": 0.6835535450677693,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile.",
+      "user_id": "test_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-19T08:08:57.863495",
+    "user_id": "anonymous",
+    "belief": "Inflation is cooling rapidly",
+    "strategy": "bull call spread",
+    "result": "positive"
   }
 ]

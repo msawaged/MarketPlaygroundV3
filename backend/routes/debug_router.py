@@ -99,13 +99,6 @@ def read_retrain_worker_log():
             return f.read()
     raise HTTPException(status_code=404, detail="No retrain log found.")
 
-@router.get("/last_training_log", response_class=PlainTextResponse)
-def view_last_training_log():
-    if os.path.exists(LAST_TRAINING_LOG_TXT):
-        with open(LAST_TRAINING_LOG_TXT, "r") as f:
-            return f.read()
-    raise HTTPException(status_code=404, detail="Training log not found.")
-
 @router.get("/feedback_count")
 def get_feedback_count():
     if not os.path.exists(FEEDBACK_PATH):

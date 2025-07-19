@@ -12872,5 +12872,39 @@
       "time_to_target": "6 months",
       "explanation": "Given the user's belief in investing in oil ETFs and neutral direction, buying equity of XLE makes sense. This strategy involves purchasing the ETF at the current price and holding it for a period of time, hoping for the price to appreciate. A target return and maximum loss of 10% is set, reflecting the user's moderate risk profile. The timeframe to achieve the target return would be approximately 6 months, considering the average movement of oil prices."
     }
+  },
+  {
+    "timestamp": "2025-07-19T08:08:53.001425",
+    "user_id": "anonymous",
+    "belief": "Inflation is cooling rapidly",
+    "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        "Buy 100 shares of TIP at market price"
+      ],
+      "expiration": "N/A",
+      "target_return": 5,
+      "max_loss": 5,
+      "time_to_target": "6 months",
+      "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile."
+    }
+  },
+  {
+    "timestamp": "2025-07-19T08:08:53.076811",
+    "user_id": "test_user",
+    "belief": "Inflation is cooling rapidly",
+    "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        "Buy 100 shares of TIP at market price"
+      ],
+      "expiration": "N/A",
+      "target_return": 5,
+      "max_loss": 5,
+      "time_to_target": "6 months",
+      "explanation": "Inflation-protected securities like TIP can increase in value when inflation is expected to decrease. This is because these securities are designed to provide a return above inflation, so if inflation decreases, the real yield (the yield above inflation) of these securities can increase. This could lead to capital gains for the holder of the securities. The user's belief that inflation is cooling rapidly would therefore support a strategy of buying TIP. A target return of 5% over six months is chosen to reflect the moderate risk profile of the user and the current price level of TIP. The max loss is also set at 5% to reflect the user's moderate risk profile."
+    }
   }
 ]
