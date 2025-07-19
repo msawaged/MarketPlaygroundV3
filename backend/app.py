@@ -276,14 +276,10 @@ def news_ingestion_status():
     paused = os.getenv("PAUSE_NEWS_INGESTION", "false").lower() == "true"
     return {"paused": paused}
 
-    print("\n🔍 ROUTES LOADED:")
-for route in app.routes:
-    print(f"{route.path} → {route.name}")
-
 
 if __name__ == "__main__":
     import uvicorn
     print("\n🔍 ROUTES LOADED:")
     for route in app.routes:
-        print(f"{route.path} -> {route.name}")
+        print(f"{route.path} → {route.name}")
     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
