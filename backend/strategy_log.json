@@ -12748,5 +12748,129 @@
       "time_to_target": "1 week",
       "explanation": "Buying a put option allows you to benefit from a decrease in the price of the underlying asset, which in this case is AAPL. Your belief is that AAPL will drop next week, so if this happens, you will be able to sell the shares at the strike price (which would be higher than the market price) and make a profit. Your maximum loss would be the premium you paid for the put option if AAPL price doesn't decrease."
     }
+  },
+  {
+    "timestamp": "2025-07-17T22:35:38.821072",
+    "user_id": "anonymous",
+    "belief": "Tech will rise",
+    "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "quantity": 1,
+          "asset": "XLK call option",
+          "strike_price": 270,
+          "expiration": "2023-01-20"
+        }
+      ],
+      "target_return": 25,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+      "expiration": "2025-07-19"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T22:35:38.886070",
+    "user_id": "test_strategy",
+    "belief": "Tech will rise",
+    "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "quantity": 1,
+          "asset": "XLK call option",
+          "strike_price": 270,
+          "expiration": "2023-01-20"
+        }
+      ],
+      "target_return": 25,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Buying a long-term call option on XLK takes advantage of the user's bullish outlook on the tech sector. The strike price is set slightly above the current price, offering potential for significant profit if the tech sector performs well. However, the risk is also high, as any depreciation in the tech sector could render the option worthless. The expiration date is set far in the future to give the tech sector ample time to grow.",
+      "expiration": "2025-07-19"
+    }
+  },
+  {
+    "timestamp": "2025-07-18T06:28:24.757357",
+    "user_id": "anonymous",
+    "belief": "TSLA will crash",
+    "explanation": "Given the belief that TSLA will crash, a Long Put strategy is suitable. This involves buying a Put option, which gives the right to sell the asset at a predetermined price (strike price). This strategy profits when the price of TSLA falls below the strike price. The target return is 50% because a significant drop in TSLA price will increase the value of the put option substantially. The maximum loss is 100%, which occurs if TSLA price is above the strike price at expiration, rendering the put option worthless. This strategy fits the belief because it profits from a significant downward movement in price, which is what is expected if TSLA crashes.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        "buy 1 put option with a 600 strike"
+      ],
+      "expiration": "2025-07-19",
+      "target_return": 50,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Given the belief that TSLA will crash, a Long Put strategy is suitable. This involves buying a Put option, which gives the right to sell the asset at a predetermined price (strike price). This strategy profits when the price of TSLA falls below the strike price. The target return is 50% because a significant drop in TSLA price will increase the value of the put option substantially. The maximum loss is 100%, which occurs if TSLA price is above the strike price at expiration, rendering the put option worthless. This strategy fits the belief because it profits from a significant downward movement in price, which is what is expected if TSLA crashes."
+    }
+  },
+  {
+    "timestamp": "2025-07-18T06:28:24.847339",
+    "user_id": "anonymous",
+    "belief": "TSLA will crash",
+    "explanation": "Given the belief that TSLA will crash, a Long Put strategy is suitable. This involves buying a Put option, which gives the right to sell the asset at a predetermined price (strike price). This strategy profits when the price of TSLA falls below the strike price. The target return is 50% because a significant drop in TSLA price will increase the value of the put option substantially. The maximum loss is 100%, which occurs if TSLA price is above the strike price at expiration, rendering the put option worthless. This strategy fits the belief because it profits from a significant downward movement in price, which is what is expected if TSLA crashes.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        "buy 1 put option with a 600 strike"
+      ],
+      "expiration": "2025-07-19",
+      "target_return": 50,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Given the belief that TSLA will crash, a Long Put strategy is suitable. This involves buying a Put option, which gives the right to sell the asset at a predetermined price (strike price). This strategy profits when the price of TSLA falls below the strike price. The target return is 50% because a significant drop in TSLA price will increase the value of the put option substantially. The maximum loss is 100%, which occurs if TSLA price is above the strike price at expiration, rendering the put option worthless. This strategy fits the belief because it profits from a significant downward movement in price, which is what is expected if TSLA crashes."
+    }
+  },
+  {
+    "timestamp": "2025-07-18T06:44:37.735571",
+    "user_id": "anonymous",
+    "belief": "I want to invest in oil ETFs",
+    "explanation": "Given the user's belief in investing in oil ETFs and neutral direction, buying equity of XLE makes sense. This strategy involves purchasing the ETF at the current price and holding it for a period of time, hoping for the price to appreciate. A target return and maximum loss of 10% is set, reflecting the user's moderate risk profile. The timeframe to achieve the target return would be approximately 6 months, considering the average movement of oil prices.",
+    "strategy": {
+      "type": "Buy Equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 100,
+          "ticker": "XLE",
+          "price": 86.66
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": 0.1,
+      "max_loss": 0.1,
+      "time_to_target": "6 months",
+      "explanation": "Given the user's belief in investing in oil ETFs and neutral direction, buying equity of XLE makes sense. This strategy involves purchasing the ETF at the current price and holding it for a period of time, hoping for the price to appreciate. A target return and maximum loss of 10% is set, reflecting the user's moderate risk profile. The timeframe to achieve the target return would be approximately 6 months, considering the average movement of oil prices."
+    }
+  },
+  {
+    "timestamp": "2025-07-18T06:44:37.817959",
+    "user_id": "anonymous",
+    "belief": "I want to invest in oil ETFs",
+    "explanation": "Given the user's belief in investing in oil ETFs and neutral direction, buying equity of XLE makes sense. This strategy involves purchasing the ETF at the current price and holding it for a period of time, hoping for the price to appreciate. A target return and maximum loss of 10% is set, reflecting the user's moderate risk profile. The timeframe to achieve the target return would be approximately 6 months, considering the average movement of oil prices.",
+    "strategy": {
+      "type": "Buy Equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 100,
+          "ticker": "XLE",
+          "price": 86.66
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": 0.1,
+      "max_loss": 0.1,
+      "time_to_target": "6 months",
+      "explanation": "Given the user's belief in investing in oil ETFs and neutral direction, buying equity of XLE makes sense. This strategy involves purchasing the ETF at the current price and holding it for a period of time, hoping for the price to appreciate. A target return and maximum loss of 10% is set, reflecting the user's moderate risk profile. The timeframe to achieve the target return would be approximately 6 months, considering the average movement of oil prices."
+    }
   }
 ]

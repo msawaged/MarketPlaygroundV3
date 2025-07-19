@@ -3,9 +3,17 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import SimulatedChart from './components/SimulatedChart';
 import SimulatedChart3D from './components/SimulatedChart3D'; // 🆕 3D Chart import
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import StrategyOpsPage from './components/StrategyOpsPage'; // ⬅️ new route component
 import HotTradesPage from './components/HotTrades'; // ✅ NEW: Hot Trades route import
+import ToolSelectorPage from './components/ToolSelectorPage';
+import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
+
+
+
+
+
+
 
 
 /**
@@ -142,6 +150,8 @@ function MainApp() {
       alert('❌ Feedback submission failed');
     }
   };
+  console.log("🔁 Render block A");
+
   return (
     <div style={{ backgroundColor: '#0f172a', color: '#f8fafc', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
@@ -495,10 +505,23 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainApp />} />
-        <Route path="/strategy-ops" element={<StrategyOpsPage />} />
-        <Route path="/hot-trades" element={<HotTradesPage />} /> {/* ✅ NEW: Route added */}
-      </Routes>
+  {/* ✅ Default redirect: when user visits "/", send them to the tool selector */}
+  <Route path="/" element={<Navigate to="/select-tool" replace />} />
+
+  {/* ✅ Tool selector page */}
+  <Route path="/select-tool" element={<ToolSelectorPage />} />
+  <Route path="/basket-builder" element={<BasketBuilderPage />} />
+
+  {/* ✅ Main strategy page (what used to be your default app) */}
+  <Route path="/generator" element={<MainApp />} />
+
+  {/* ✅ Other pages */}
+  <Route path="/strategy-ops" element={<StrategyOpsPage />} />
+  <Route path="/hot-trades" element={<HotTradesPage />} />
+  <Route path="/basket-builder" element={<BasketBuilderPage />} />
+
+</Routes>
+
     </Router>
   );
 }
