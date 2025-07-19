@@ -94,7 +94,8 @@ app.include_router(execution_router,         prefix="/alpaca",    tags=["Executi
 app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
 app.include_router(market_router,            prefix="/market",    tags=["Market"])
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router, tags=["Debug"])  # ✅ Fixed: Removed extra /debug prefix
+app.include_router(debug_router, prefix="/debug", tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
+
 
 
 
