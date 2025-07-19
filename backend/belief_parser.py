@@ -39,6 +39,18 @@ SYMBOL_LOOKUP_MAP = {
     "tech": "XLK", "technology": "XLK", "ark": "ARKK", "cathie wood": "ARKK", "gold": "GLD"
 }
 
+# === New: AI + Healthcare theme fallback ===
+AI_HEALTHCARE_MAP = {
+    "ai healthcare": "HART",  # Global X Health & AI ETF
+    "healthcare ai": "HART",
+    "ai in healthcare": "HART",
+    "biotech ai": "ARKG",     # Genomics + AI
+    "biotech": "ARKG",
+    "healthcare": "XLV",
+    "machine learning": "QQQ",
+    "artificial intelligence": "QQQ"
+}
+
 # === Fallback for broad market themes ===
 THEME_TO_TICKER_MAP = {
     "the market": "SPY",
@@ -60,6 +72,7 @@ THEME_TO_TICKER_MAP = {
     "boom": "QQQ",
     "bubble": "SPY"
 }
+
 
 # === New: currency-specific logic ===
 CURRENCY_LOOKUP_MAP = {
@@ -111,6 +124,13 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         if theme in cleaned_belief:
             print(f"[DEBUG][TICKER] Matched theme fallback: '{theme}' → {fallback_ticker}")
             return fallback_ticker.upper()
+
+    # ✅ Match AI + healthcare themes
+    for theme, fallback_ticker in AI_HEALTHCARE_MAP.items():
+        if theme in cleaned_belief:
+            print(f"[DEBUG][TICKER] Matched AI/Healthcare fallback: '{theme}' → {fallback_ticker}")
+            return fallback_ticker.upper()
+
 
     # ❌ No ticker match found
     print("[DEBUG][TICKER] ❌ No ticker detected — returning 'UNKNOWN'")
