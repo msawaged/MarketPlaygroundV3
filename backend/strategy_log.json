@@ -14042,5 +14042,668 @@
       "time_to_target": "3 months",
       "explanation": "Given the user's belief that the summer heat will increase demand and electricity over the summer, a long call option strategy can be used. This involves buying call options on electricity-related stocks or ETFs. If the price of these assets increases due to increased demand, the value of the call options will also rise, potentially providing a profit. However, the risk in this strategy is that if the price does not increase as expected, the premium paid for the options could be lost, hence the 100% max loss."
     }
+  },
+  {
+    "timestamp": "2025-07-20T09:28:46.677206",
+    "user_id": "anonymous",
+    "belief": "I think interest rates will fall by the end of the year",
+    "explanation": "\u26a0\ufe0f GPT strategy fallback used. No gpt_strategy_engine.py module available.",
+    "strategy": {
+      "type": "fallback-gpt",
+      "trade_legs": [],
+      "expiration": "2025-08-16",
+      "target_return": 0,
+      "max_loss": 0,
+      "time_to_target": "N/A",
+      "explanation": "\u26a0\ufe0f GPT strategy fallback used. No gpt_strategy_engine.py module available."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:28:48.249739",
+    "user_id": "beta_test",
+    "belief": "I think interest rates will fall by the end of the year",
+    "explanation": "\u26a0\ufe0f GPT strategy fallback used. No gpt_strategy_engine.py module available.",
+    "strategy": {
+      "type": "fallback-gpt",
+      "trade_legs": [],
+      "expiration": "2025-08-16",
+      "target_return": 0,
+      "max_loss": 0,
+      "time_to_target": "N/A",
+      "explanation": "\u26a0\ufe0f GPT strategy fallback used. No gpt_strategy_engine.py module available."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:34:11.499668",
+    "user_id": "anonymous",
+    "belief": "I think NVDA will go up a lot after earnings",
+    "explanation": "Buying a long call option allows the trader to profit from a significant increase in NVDA's price, as expected after the earnings report. The risk is limited to the premium paid for the option. This strategy fits with the user's belief because it provides unlimited upside with fixed downside, consistent with a moderately risky profile.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 call option NVDA at market price"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "Buying a long call option allows the trader to profit from a significant increase in NVDA's price, as expected after the earnings report. The risk is limited to the premium paid for the option. This strategy fits with the user's belief because it provides unlimited upside with fixed downside, consistent with a moderately risky profile."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:34:11.588132",
+    "user_id": "test_options",
+    "belief": "I think NVDA will go up a lot after earnings",
+    "explanation": "Buying a long call option allows the trader to profit from a significant increase in NVDA's price, as expected after the earnings report. The risk is limited to the premium paid for the option. This strategy fits with the user's belief because it provides unlimited upside with fixed downside, consistent with a moderately risky profile.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 call option NVDA at market price"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "Buying a long call option allows the trader to profit from a significant increase in NVDA's price, as expected after the earnings report. The risk is limited to the premium paid for the option. This strategy fits with the user's belief because it provides unlimited upside with fixed downside, consistent with a moderately risky profile."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:38:35.191159",
+    "user_id": "anonymous",
+    "belief": "I want stable income from bonds",
+    "explanation": "By purchasing a bond ETF like TLT, you can receive regular interest payments and potential capital appreciation. The bond's value can fluctuate, but the overall risk is relatively low compared to equities. This aligns with your belief of wanting a stable income from bonds.",
+    "strategy": {
+      "type": "Buy bond ETF",
+      "trade_legs": [
+        "Buy 100 shares of TLT"
+      ],
+      "expiration": "N/A",
+      "target_return": "2-3%",
+      "max_loss": "1-2%",
+      "time_to_target": "1 year",
+      "explanation": "By purchasing a bond ETF like TLT, you can receive regular interest payments and potential capital appreciation. The bond's value can fluctuate, but the overall risk is relatively low compared to equities. This aligns with your belief of wanting a stable income from bonds."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:38:35.283503",
+    "user_id": "test_bonds",
+    "belief": "I want stable income from bonds",
+    "explanation": "By purchasing a bond ETF like TLT, you can receive regular interest payments and potential capital appreciation. The bond's value can fluctuate, but the overall risk is relatively low compared to equities. This aligns with your belief of wanting a stable income from bonds.",
+    "strategy": {
+      "type": "Buy bond ETF",
+      "trade_legs": [
+        "Buy 100 shares of TLT"
+      ],
+      "expiration": "N/A",
+      "target_return": "2-3%",
+      "max_loss": "1-2%",
+      "time_to_target": "1 year",
+      "explanation": "By purchasing a bond ETF like TLT, you can receive regular interest payments and potential capital appreciation. The bond's value can fluctuate, but the overall risk is relatively low compared to equities. This aligns with your belief of wanting a stable income from bonds."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:39:29.617210",
+    "user_id": "anonymous",
+    "belief": "AAPL will rise 10% in the next 3 months",
+    "explanation": "A long call strategy involves buying a call option on the belief that the stock price will increase. If AAPL's stock price increases as the user expects, the option will increase in value. This strategy has a moderate risk profile, as the maximum loss is limited to the premium paid for the option, but the potential return is significant if the stock price increases significantly. Confidence level is moderate, so a long call strategy is a reasonable approach.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 AAPL call option with a strike price near the current trading price"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "60%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "A long call strategy involves buying a call option on the belief that the stock price will increase. If AAPL's stock price increases as the user expects, the option will increase in value. This strategy has a moderate risk profile, as the maximum loss is limited to the premium paid for the option, but the potential return is significant if the stock price increases significantly. Confidence level is moderate, so a long call strategy is a reasonable approach."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:39:29.709090",
+    "user_id": "test_aapl",
+    "belief": "AAPL will rise 10% in the next 3 months",
+    "explanation": "A long call strategy involves buying a call option on the belief that the stock price will increase. If AAPL's stock price increases as the user expects, the option will increase in value. This strategy has a moderate risk profile, as the maximum loss is limited to the premium paid for the option, but the potential return is significant if the stock price increases significantly. Confidence level is moderate, so a long call strategy is a reasonable approach.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 AAPL call option with a strike price near the current trading price"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "60%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "A long call strategy involves buying a call option on the belief that the stock price will increase. If AAPL's stock price increases as the user expects, the option will increase in value. This strategy has a moderate risk profile, as the maximum loss is limited to the premium paid for the option, but the potential return is significant if the stock price increases significantly. Confidence level is moderate, so a long call strategy is a reasonable approach."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:40:23.112866",
+    "user_id": "anonymous",
+    "belief": "The US dollar is going to weaken",
+    "explanation": "A long put option strategy is a bearish strategy that believes the price of the underlying asset will fall significantly. If the investor's belief that the US dollar will weaken is correct, the value of UUP will decrease, increasing the value of the put option. The maximum loss is limited to the premium paid for the put option, but the potential gain if UUP falls significantly is substantial.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy 1 put 25 strike",
+          "ticker": "UUP"
+        }
+      ],
+      "expiration": "2023-12-31",
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "A long put option strategy is a bearish strategy that believes the price of the underlying asset will fall significantly. If the investor's belief that the US dollar will weaken is correct, the value of UUP will decrease, increasing the value of the put option. The maximum loss is limited to the premium paid for the put option, but the potential gain if UUP falls significantly is substantial."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:40:23.211109",
+    "user_id": "test_fx",
+    "belief": "The US dollar is going to weaken",
+    "explanation": "A long put option strategy is a bearish strategy that believes the price of the underlying asset will fall significantly. If the investor's belief that the US dollar will weaken is correct, the value of UUP will decrease, increasing the value of the put option. The maximum loss is limited to the premium paid for the put option, but the potential gain if UUP falls significantly is substantial.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy 1 put 25 strike",
+          "ticker": "UUP"
+        }
+      ],
+      "expiration": "2023-12-31",
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "A long put option strategy is a bearish strategy that believes the price of the underlying asset will fall significantly. If the investor's belief that the US dollar will weaken is correct, the value of UUP will decrease, increasing the value of the put option. The maximum loss is limited to the premium paid for the put option, but the potential gain if UUP falls significantly is substantial."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:45:12.402116",
+    "user_id": "anonymous",
+    "belief": "Gold is going to surge due to inflation",
+    "explanation": "Buying a call option on GLD will allow you to profit from a surge in gold prices due to inflation. The call option gives you the right, but not the obligation, to buy GLD at the strike price at any time before the option expires. If GLD's price rises above the strike price, you can exercise the option and buy GLD at the lower price, thus profiting from the difference. However, if GLD's price does not rise as expected, your maximum loss is limited to the premium paid for the option.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy 1 call option",
+          "ticker": "GLD",
+          "strike": "Market price + 5%",
+          "expiration": "2022-12-31"
+        }
+      ],
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a call option on GLD will allow you to profit from a surge in gold prices due to inflation. The call option gives you the right, but not the obligation, to buy GLD at the strike price at any time before the option expires. If GLD's price rises above the strike price, you can exercise the option and buy GLD at the lower price, thus profiting from the difference. However, if GLD's price does not rise as expected, your maximum loss is limited to the premium paid for the option."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:45:12.487523",
+    "user_id": "test_commodity",
+    "belief": "Gold is going to surge due to inflation",
+    "explanation": "Buying a call option on GLD will allow you to profit from a surge in gold prices due to inflation. The call option gives you the right, but not the obligation, to buy GLD at the strike price at any time before the option expires. If GLD's price rises above the strike price, you can exercise the option and buy GLD at the lower price, thus profiting from the difference. However, if GLD's price does not rise as expected, your maximum loss is limited to the premium paid for the option.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy 1 call option",
+          "ticker": "GLD",
+          "strike": "Market price + 5%",
+          "expiration": "2022-12-31"
+        }
+      ],
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a call option on GLD will allow you to profit from a surge in gold prices due to inflation. The call option gives you the right, but not the obligation, to buy GLD at the strike price at any time before the option expires. If GLD's price rises above the strike price, you can exercise the option and buy GLD at the lower price, thus profiting from the difference. However, if GLD's price does not rise as expected, your maximum loss is limited to the premium paid for the option."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:45:58.744317",
+    "user_id": "anonymous",
+    "belief": "I believe the S&P 500 will drop 15% in the next 6 months",
+    "explanation": "Buying a long put option allows the trader to profit if the underlying asset drops. The put option increases in value as the asset price declines. In this case, if SPY drops 15% as expected, the value of the put option will increase significantly. The maximum loss is limited to the premium paid for the option, while the potential gain is substantial if SPY drops as anticipated.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 1,
+          "instrument": "put",
+          "strike": 330,
+          "ticker": "SPY"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a long put option allows the trader to profit if the underlying asset drops. The put option increases in value as the asset price declines. In this case, if SPY drops 15% as expected, the value of the put option will increase significantly. The maximum loss is limited to the premium paid for the option, while the potential gain is substantial if SPY drops as anticipated."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:45:58.825132",
+    "user_id": "test_index",
+    "belief": "I believe the S&P 500 will drop 15% in the next 6 months",
+    "explanation": "Buying a long put option allows the trader to profit if the underlying asset drops. The put option increases in value as the asset price declines. In this case, if SPY drops 15% as expected, the value of the put option will increase significantly. The maximum loss is limited to the premium paid for the option, while the potential gain is substantial if SPY drops as anticipated.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": 1,
+          "instrument": "put",
+          "strike": 330,
+          "ticker": "SPY"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a long put option allows the trader to profit if the underlying asset drops. The put option increases in value as the asset price declines. In this case, if SPY drops 15% as expected, the value of the put option will increase significantly. The maximum loss is limited to the premium paid for the option, while the potential gain is substantial if SPY drops as anticipated."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:49:35.034216",
+    "user_id": "anonymous",
+    "belief": "I think the euro will outperform the dollar",
+    "explanation": "If you believe the euro will outperform the dollar, a long position in a currency forward contract on EUR/USD would allow you to benefit from a rise in the value of the euro against the dollar. This strategy aligns with your belief and has a moderate risk profile. The timeframe till expiration is set for one year to give your belief enough time to materialize.",
+    "strategy": {
+      "type": "Long Currency Forward Contract",
+      "trade_legs": [
+        {
+          "action": "Buy forward contract on EUR/USD",
+          "quantity": 1
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": 10,
+      "max_loss": 5,
+      "time_to_target": "1 year",
+      "explanation": "If you believe the euro will outperform the dollar, a long position in a currency forward contract on EUR/USD would allow you to benefit from a rise in the value of the euro against the dollar. This strategy aligns with your belief and has a moderate risk profile. The timeframe till expiration is set for one year to give your belief enough time to materialize."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:49:35.127825",
+    "user_id": "test_currency_vague",
+    "belief": "I think the euro will outperform the dollar",
+    "explanation": "If you believe the euro will outperform the dollar, a long position in a currency forward contract on EUR/USD would allow you to benefit from a rise in the value of the euro against the dollar. This strategy aligns with your belief and has a moderate risk profile. The timeframe till expiration is set for one year to give your belief enough time to materialize.",
+    "strategy": {
+      "type": "Long Currency Forward Contract",
+      "trade_legs": [
+        {
+          "action": "Buy forward contract on EUR/USD",
+          "quantity": 1
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": 10,
+      "max_loss": 5,
+      "time_to_target": "1 year",
+      "explanation": "If you believe the euro will outperform the dollar, a long position in a currency forward contract on EUR/USD would allow you to benefit from a rise in the value of the euro against the dollar. This strategy aligns with your belief and has a moderate risk profile. The timeframe till expiration is set for one year to give your belief enough time to materialize."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:50:37.660855",
+    "user_id": "anonymous",
+    "belief": "Bitcoin will double in the next year",
+    "explanation": "A long call option is an aggressive strategy that bets on the price of the underlying asset, in this case, Bitcoin, to rise. The user believes that Bitcoin will double in the next year, which is a bullish outlook and fits the long call strategy. The maximum loss in a long call strategy is the premium paid for the call option, which is 100% in this case. The target return is also 100%, aligning with the user's belief. The expiration date is set to end of next year, aligning with the user's timeframe.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 BTC call option"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "100%",
+      "max_loss": "100%",
+      "time_to_target": "1 year",
+      "explanation": "A long call option is an aggressive strategy that bets on the price of the underlying asset, in this case, Bitcoin, to rise. The user believes that Bitcoin will double in the next year, which is a bullish outlook and fits the long call strategy. The maximum loss in a long call strategy is the premium paid for the call option, which is 100% in this case. The target return is also 100%, aligning with the user's belief. The expiration date is set to end of next year, aligning with the user's timeframe."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:50:37.755675",
+    "user_id": "test_crypto",
+    "belief": "Bitcoin will double in the next year",
+    "explanation": "A long call option is an aggressive strategy that bets on the price of the underlying asset, in this case, Bitcoin, to rise. The user believes that Bitcoin will double in the next year, which is a bullish outlook and fits the long call strategy. The maximum loss in a long call strategy is the premium paid for the call option, which is 100% in this case. The target return is also 100%, aligning with the user's belief. The expiration date is set to end of next year, aligning with the user's timeframe.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        "Buy 1 BTC call option"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "100%",
+      "max_loss": "100%",
+      "time_to_target": "1 year",
+      "explanation": "A long call option is an aggressive strategy that bets on the price of the underlying asset, in this case, Bitcoin, to rise. The user believes that Bitcoin will double in the next year, which is a bullish outlook and fits the long call strategy. The maximum loss in a long call strategy is the premium paid for the call option, which is 100% in this case. The target return is also 100%, aligning with the user's belief. The expiration date is set to end of next year, aligning with the user's timeframe."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:52:02.905297",
+    "user_id": "anonymous",
+    "belief": "Oil prices are going to spike this quarter",
+    "explanation": "Given the user's belief that oil prices are going to spike this quarter, buying a call option on XLE (an ETF that tracks the performance of the energy sector, which is heavily influenced by oil prices) would be a suitable strategy. This is because if oil prices do spike, XLE is likely to increase in value as well, which would make the call option more valuable. The user has a moderate risk profile, and the maximum possible loss with a long call option is the premium paid, which can be considered a moderate level of risk. The expiration date is set to the end of the quarter, consistent with the user's timeframe.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "leg1": "buy 1 call 65 strike"
+        }
+      ],
+      "expiration": "2022-06-30",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "Given the user's belief that oil prices are going to spike this quarter, buying a call option on XLE (an ETF that tracks the performance of the energy sector, which is heavily influenced by oil prices) would be a suitable strategy. This is because if oil prices do spike, XLE is likely to increase in value as well, which would make the call option more valuable. The user has a moderate risk profile, and the maximum possible loss with a long call option is the premium paid, which can be considered a moderate level of risk. The expiration date is set to the end of the quarter, consistent with the user's timeframe."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T09:52:03.001173",
+    "user_id": "test_oil_spike",
+    "belief": "Oil prices are going to spike this quarter",
+    "explanation": "Given the user's belief that oil prices are going to spike this quarter, buying a call option on XLE (an ETF that tracks the performance of the energy sector, which is heavily influenced by oil prices) would be a suitable strategy. This is because if oil prices do spike, XLE is likely to increase in value as well, which would make the call option more valuable. The user has a moderate risk profile, and the maximum possible loss with a long call option is the premium paid, which can be considered a moderate level of risk. The expiration date is set to the end of the quarter, consistent with the user's timeframe.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "leg1": "buy 1 call 65 strike"
+        }
+      ],
+      "expiration": "2022-06-30",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "3 months",
+      "explanation": "Given the user's belief that oil prices are going to spike this quarter, buying a call option on XLE (an ETF that tracks the performance of the energy sector, which is heavily influenced by oil prices) would be a suitable strategy. This is because if oil prices do spike, XLE is likely to increase in value as well, which would make the call option more valuable. The user has a moderate risk profile, and the maximum possible loss with a long call option is the premium paid, which can be considered a moderate level of risk. The expiration date is set to the end of the quarter, consistent with the user's timeframe."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:05:52.363725",
+    "user_id": "anonymous",
+    "belief": "I want steady income over the next 3 years from U.S. Treasury bonds",
+    "explanation": "U.S. Treasury bonds are a safe and steady investment, as they are backed by the full faith and credit of the U.S. government. By purchasing the TLT ETF, which tracks the price and yield performance of the Bloomberg Barclays U.S. 20+ Year Treasury Bond Index, you can have exposure to long-term U.S. Treasury bonds. This ETF pays monthly dividends, providing a steady income stream. The target return is relatively low because Treasury bonds generally have low yields, especially in a low-interest rate environment. The risk of loss is also low because Treasury bonds are considered a safe haven investment.",
+    "strategy": {
+      "type": "buy bond ETF",
+      "trade_legs": [
+        "buy 50 TLT ETF"
+      ],
+      "expiration": "N/A",
+      "target_return": "2.5%",
+      "max_loss": "1%",
+      "time_to_target": "3 years",
+      "explanation": "U.S. Treasury bonds are a safe and steady investment, as they are backed by the full faith and credit of the U.S. government. By purchasing the TLT ETF, which tracks the price and yield performance of the Bloomberg Barclays U.S. 20+ Year Treasury Bond Index, you can have exposure to long-term U.S. Treasury bonds. This ETF pays monthly dividends, providing a steady income stream. The target return is relatively low because Treasury bonds generally have low yields, especially in a low-interest rate environment. The risk of loss is also low because Treasury bonds are considered a safe haven investment."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:05:52.450091",
+    "user_id": "test_bond_income",
+    "belief": "I want steady income over the next 3 years from U.S. Treasury bonds",
+    "explanation": "U.S. Treasury bonds are a safe and steady investment, as they are backed by the full faith and credit of the U.S. government. By purchasing the TLT ETF, which tracks the price and yield performance of the Bloomberg Barclays U.S. 20+ Year Treasury Bond Index, you can have exposure to long-term U.S. Treasury bonds. This ETF pays monthly dividends, providing a steady income stream. The target return is relatively low because Treasury bonds generally have low yields, especially in a low-interest rate environment. The risk of loss is also low because Treasury bonds are considered a safe haven investment.",
+    "strategy": {
+      "type": "buy bond ETF",
+      "trade_legs": [
+        "buy 50 TLT ETF"
+      ],
+      "expiration": "N/A",
+      "target_return": "2.5%",
+      "max_loss": "1%",
+      "time_to_target": "3 years",
+      "explanation": "U.S. Treasury bonds are a safe and steady investment, as they are backed by the full faith and credit of the U.S. government. By purchasing the TLT ETF, which tracks the price and yield performance of the Bloomberg Barclays U.S. 20+ Year Treasury Bond Index, you can have exposure to long-term U.S. Treasury bonds. This ETF pays monthly dividends, providing a steady income stream. The target return is relatively low because Treasury bonds generally have low yields, especially in a low-interest rate environment. The risk of loss is also low because Treasury bonds are considered a safe haven investment."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:06:38.636061",
+    "user_id": "anonymous",
+    "belief": "The economy is starting to recover",
+    "explanation": "If the economy is starting to recover, we can expect SPY, which tracks the S&P 500, to increase in value as well. Buying SPY directly will let us participate in any upwards movement. The risk is moderate, as we're directly exposed to any downturns in the market as well.",
+    "strategy": {
+      "type": "Buy Equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": "1",
+          "asset": "SPY"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "10%",
+      "max_loss": "10%",
+      "time_to_target": "3 months",
+      "explanation": "If the economy is starting to recover, we can expect SPY, which tracks the S&P 500, to increase in value as well. Buying SPY directly will let us participate in any upwards movement. The risk is moderate, as we're directly exposed to any downturns in the market as well."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:06:38.731064",
+    "user_id": "test_macro_recovery",
+    "belief": "The economy is starting to recover",
+    "explanation": "If the economy is starting to recover, we can expect SPY, which tracks the S&P 500, to increase in value as well. Buying SPY directly will let us participate in any upwards movement. The risk is moderate, as we're directly exposed to any downturns in the market as well.",
+    "strategy": {
+      "type": "Buy Equity",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": "1",
+          "asset": "SPY"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "10%",
+      "max_loss": "10%",
+      "time_to_target": "3 months",
+      "explanation": "If the economy is starting to recover, we can expect SPY, which tracks the S&P 500, to increase in value as well. Buying SPY directly will let us participate in any upwards movement. The risk is moderate, as we're directly exposed to any downturns in the market as well."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:07:25.738844",
+    "user_id": "anonymous",
+    "belief": "The US dollar is going to weaken against the euro",
+    "explanation": "A long put option strategy can be used when you expect the price of the underlying asset to fall. In this case, if you believe that the US dollar will weaken against the euro, you may expect the price of UUP (which tracks the price of the US dollar) to fall. Buying a put option gives you the right to sell UUP at the strike price at any time until the expiration date. If the price of UUP falls, you can buy it at the lower market price and sell it at the higher strike price, making a profit. The maximum loss is the premium paid for the option if the price of UUP does not fall below the strike price by the expiration date. The return will depend on how far the price of UUP falls below the strike price. This strategy provides a moderate level of risk as the maximum loss is limited to the premium paid for the option.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        "buy 1 put 150 strike"
+      ],
+      "expiration": "2023-12-31",
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "A long put option strategy can be used when you expect the price of the underlying asset to fall. In this case, if you believe that the US dollar will weaken against the euro, you may expect the price of UUP (which tracks the price of the US dollar) to fall. Buying a put option gives you the right to sell UUP at the strike price at any time until the expiration date. If the price of UUP falls, you can buy it at the lower market price and sell it at the higher strike price, making a profit. The maximum loss is the premium paid for the option if the price of UUP does not fall below the strike price by the expiration date. The return will depend on how far the price of UUP falls below the strike price. This strategy provides a moderate level of risk as the maximum loss is limited to the premium paid for the option."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:07:25.831302",
+    "user_id": "test_currency_eur_usd",
+    "belief": "The US dollar is going to weaken against the euro",
+    "explanation": "A long put option strategy can be used when you expect the price of the underlying asset to fall. In this case, if you believe that the US dollar will weaken against the euro, you may expect the price of UUP (which tracks the price of the US dollar) to fall. Buying a put option gives you the right to sell UUP at the strike price at any time until the expiration date. If the price of UUP falls, you can buy it at the lower market price and sell it at the higher strike price, making a profit. The maximum loss is the premium paid for the option if the price of UUP does not fall below the strike price by the expiration date. The return will depend on how far the price of UUP falls below the strike price. This strategy provides a moderate level of risk as the maximum loss is limited to the premium paid for the option.",
+    "strategy": {
+      "type": "Long Put",
+      "trade_legs": [
+        "buy 1 put 150 strike"
+      ],
+      "expiration": "2023-12-31",
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "1 year",
+      "explanation": "A long put option strategy can be used when you expect the price of the underlying asset to fall. In this case, if you believe that the US dollar will weaken against the euro, you may expect the price of UUP (which tracks the price of the US dollar) to fall. Buying a put option gives you the right to sell UUP at the strike price at any time until the expiration date. If the price of UUP falls, you can buy it at the lower market price and sell it at the higher strike price, making a profit. The maximum loss is the premium paid for the option if the price of UUP does not fall below the strike price by the expiration date. The return will depend on how far the price of UUP falls below the strike price. This strategy provides a moderate level of risk as the maximum loss is limited to the premium paid for the option."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:08:43.706388",
+    "user_id": "anonymous",
+    "belief": "I think tech stocks are going to take off soon",
+    "explanation": "Buying a long call option allows you to profit from a potential increase in the price of the underlying stock, in this case tech stocks (XLK). However, if the price does not increase as expected, the maximum loss is the premium paid for the option, hence 100%. A 6-month expiry period gives the tech stocks ample time to 'take off'. The confidence level suggests a moderate risk tolerance, hence buying a call option is a suitable strategy.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy 1 Call",
+          "ticker": "XLK",
+          "strike": "Current Market Price + 5%",
+          "expiration": "2022-09-30"
+        }
+      ],
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a long call option allows you to profit from a potential increase in the price of the underlying stock, in this case tech stocks (XLK). However, if the price does not increase as expected, the maximum loss is the premium paid for the option, hence 100%. A 6-month expiry period gives the tech stocks ample time to 'take off'. The confidence level suggests a moderate risk tolerance, hence buying a call option is a suitable strategy."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:08:43.802473",
+    "user_id": "test_tech_takeoff",
+    "belief": "I think tech stocks are going to take off soon",
+    "explanation": "Buying a long call option allows you to profit from a potential increase in the price of the underlying stock, in this case tech stocks (XLK). However, if the price does not increase as expected, the maximum loss is the premium paid for the option, hence 100%. A 6-month expiry period gives the tech stocks ample time to 'take off'. The confidence level suggests a moderate risk tolerance, hence buying a call option is a suitable strategy.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "Buy 1 Call",
+          "ticker": "XLK",
+          "strike": "Current Market Price + 5%",
+          "expiration": "2022-09-30"
+        }
+      ],
+      "target_return": "30%",
+      "max_loss": "100%",
+      "time_to_target": "6 months",
+      "explanation": "Buying a long call option allows you to profit from a potential increase in the price of the underlying stock, in this case tech stocks (XLK). However, if the price does not increase as expected, the maximum loss is the premium paid for the option, hence 100%. A 6-month expiry period gives the tech stocks ample time to 'take off'. The confidence level suggests a moderate risk tolerance, hence buying a call option is a suitable strategy."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:09:35.893493",
+    "user_id": "anonymous",
+    "belief": "I want to double my money fast",
+    "explanation": "Leveraged ETFs are designed to provide a multiple of the return on a benchmark. This strategy fits the user's belief as it provides the potential for double return with moderate risk. However, it's important to note that the losses can also be magnified. As this strategy is associated with higher risk, it's recommended to monitor the investment closely and implement stop-loss orders to manage potential losses.",
+    "strategy": {
+      "type": "Leveraged ETF Trading",
+      "trade_legs": [
+        "Buy leveraged ETFs"
+      ],
+      "expiration": "N/A",
+      "target_return": 100,
+      "max_loss": 50,
+      "time_to_target": "3-6 months",
+      "explanation": "Leveraged ETFs are designed to provide a multiple of the return on a benchmark. This strategy fits the user's belief as it provides the potential for double return with moderate risk. However, it's important to note that the losses can also be magnified. As this strategy is associated with higher risk, it's recommended to monitor the investment closely and implement stop-loss orders to manage potential losses."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:09:35.986651",
+    "user_id": "test_double_fast",
+    "belief": "I want to double my money fast",
+    "explanation": "Leveraged ETFs are designed to provide a multiple of the return on a benchmark. This strategy fits the user's belief as it provides the potential for double return with moderate risk. However, it's important to note that the losses can also be magnified. As this strategy is associated with higher risk, it's recommended to monitor the investment closely and implement stop-loss orders to manage potential losses.",
+    "strategy": {
+      "type": "Leveraged ETF Trading",
+      "trade_legs": [
+        "Buy leveraged ETFs"
+      ],
+      "expiration": "N/A",
+      "target_return": 100,
+      "max_loss": 50,
+      "time_to_target": "3-6 months",
+      "explanation": "Leveraged ETFs are designed to provide a multiple of the return on a benchmark. This strategy fits the user's belief as it provides the potential for double return with moderate risk. However, it's important to note that the losses can also be magnified. As this strategy is associated with higher risk, it's recommended to monitor the investment closely and implement stop-loss orders to manage potential losses."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:10:42.008601",
+    "user_id": "anonymous",
+    "belief": "I think AAPL will beat earnings next week",
+    "explanation": "The trading strategy is based on the belief that AAPL will beat earnings next week. If this happens, the price of AAPL is likely to rise, making a call option more valuable. The risk is moderate because the maximum loss is the premium paid for the call option, which occurs if AAPL does not increase above the strike price by the expiration date. However, the potential return is significant if AAPL does beat earnings and its price rises.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "buy 1 call option",
+          "ticker": "AAPL",
+          "strike": "current market price + 2%"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "1 week",
+      "explanation": "The trading strategy is based on the belief that AAPL will beat earnings next week. If this happens, the price of AAPL is likely to rise, making a call option more valuable. The risk is moderate because the maximum loss is the premium paid for the call option, which occurs if AAPL does not increase above the strike price by the expiration date. However, the potential return is significant if AAPL does beat earnings and its price rises."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:10:42.100572",
+    "user_id": "test_aapl_earnings",
+    "belief": "I think AAPL will beat earnings next week",
+    "explanation": "The trading strategy is based on the belief that AAPL will beat earnings next week. If this happens, the price of AAPL is likely to rise, making a call option more valuable. The risk is moderate because the maximum loss is the premium paid for the call option, which occurs if AAPL does not increase above the strike price by the expiration date. However, the potential return is significant if AAPL does beat earnings and its price rises.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "action": "buy 1 call option",
+          "ticker": "AAPL",
+          "strike": "current market price + 2%"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "100%",
+      "time_to_target": "1 week",
+      "explanation": "The trading strategy is based on the belief that AAPL will beat earnings next week. If this happens, the price of AAPL is likely to rise, making a call option more valuable. The risk is moderate because the maximum loss is the premium paid for the call option, which occurs if AAPL does not increase above the strike price by the expiration date. However, the potential return is significant if AAPL does beat earnings and its price rises."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:11:26.430892",
+    "user_id": "anonymous",
+    "belief": "The Fed is going to raise interest rates again",
+    "explanation": "As the Fed raises interest rates, bond prices are expected to decrease. However, the long-term treasury ETF (TLT) can be seen as a safe-haven asset and it may benefit from a risk-off environment caused by higher interest rates. Therefore, buying TLT could be a good strategy to hedge against other investments that may be negatively affected by the rate hike. The strategy is neutral because it does not speculate on the direction of TLT, but rather seeks to benefit from the potential increase in volatility caused by the rate hike.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "quantity": "100 shares",
+          "ticker": "TLT"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "5%",
+      "max_loss": "5%",
+      "time_to_target": "6 months",
+      "explanation": "As the Fed raises interest rates, bond prices are expected to decrease. However, the long-term treasury ETF (TLT) can be seen as a safe-haven asset and it may benefit from a risk-off environment caused by higher interest rates. Therefore, buying TLT could be a good strategy to hedge against other investments that may be negatively affected by the rate hike. The strategy is neutral because it does not speculate on the direction of TLT, but rather seeks to benefit from the potential increase in volatility caused by the rate hike."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:11:26.523859",
+    "user_id": "test_fed_hike",
+    "belief": "The Fed is going to raise interest rates again",
+    "explanation": "As the Fed raises interest rates, bond prices are expected to decrease. However, the long-term treasury ETF (TLT) can be seen as a safe-haven asset and it may benefit from a risk-off environment caused by higher interest rates. Therefore, buying TLT could be a good strategy to hedge against other investments that may be negatively affected by the rate hike. The strategy is neutral because it does not speculate on the direction of TLT, but rather seeks to benefit from the potential increase in volatility caused by the rate hike.",
+    "strategy": {
+      "type": "Buy Bond ETF",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "quantity": "100 shares",
+          "ticker": "TLT"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "5%",
+      "max_loss": "5%",
+      "time_to_target": "6 months",
+      "explanation": "As the Fed raises interest rates, bond prices are expected to decrease. However, the long-term treasury ETF (TLT) can be seen as a safe-haven asset and it may benefit from a risk-off environment caused by higher interest rates. Therefore, buying TLT could be a good strategy to hedge against other investments that may be negatively affected by the rate hike. The strategy is neutral because it does not speculate on the direction of TLT, but rather seeks to benefit from the potential increase in volatility caused by the rate hike."
+    }
+  },
+  {
+    "timestamp": "2025-07-20T10:14:55.740348",
+    "user_id": "test_fed_hike",
+    "belief": "The Fed is going to raise interest rates again",
+    "explanation": "As interest rates rise, long-term bonds like TLT typically fall in value. TBT is an inverse ETF designed to rise when Treasury bond prices fall, making it a good hedge or profit strategy during Fed rate hikes.",
+    "strategy": {
+      "type": "Inverse Bond ETF",
+      "trade_legs": [
+        {
+          "action": "buy",
+          "quantity": "100 shares",
+          "ticker": "TBT"
+        }
+      ],
+      "expiration": "N/A",
+      "target_return": "10%",
+      "max_loss": "10%",
+      "time_to_target": "3-6 months",
+      "explanation": "As interest rates rise, long-term bonds like TLT typically fall in value. TBT is an inverse ETF designed to rise when Treasury bond prices fall, making it a good hedge or profit strategy during Fed rate hikes."
+    }
   }
 ]

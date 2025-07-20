@@ -7,7 +7,7 @@ load_dotenv()
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from backend.ai_engine.ai_engine import generate_asset_basket  # ✅ Use AI engine, not direct OpenAI call
+# from backend.ai_engine.ai_engine import generate_asset_basket  # ✅ Use AI engine, not direct OpenAI call
 
 router = APIRouter()
 
@@ -30,51 +30,51 @@ class BasketResponse(BaseModel):
     estimated_return: Optional[str]
     risk_profile: Optional[str]
 
-# === 🎯 Basket Endpoint via AI Engine ===
-@router.post("/generate_basket", response_model=BasketResponse)
-@router.post("/generate_basket", response_model=BasketResponse)
-def route_generate_asset_basket(request: BasketRequest):
-    """
-    Delegates asset basket generation to the AI Engine.
-    """
-    try:
-        result = generate_asset_basket(
-            input_text=request.input_text,
-            goal=request.goal,
-            user_id=request.user_id
-        )
+# # === 🎯 Basket Endpoint via AI Engine ===
+# @router.post("/generate_basket", response_model=BasketResponse)
+# @router.post("/generate_basket", response_model=BasketResponse)
+# def route_generate_asset_basket(request: BasketRequest):
+#     """
+#     Delegates asset basket generation to the AI Engine.
+#     """
+#     try:
+#         result = generate_asset_basket(
+#             input_text=request.input_text,
+#             goal=request.goal,
+#             user_id=request.user_id
+#         )
 
-        basket_items = [BasketItem(**item) for item in result.get("basket", [])]
+#         basket_items = [BasketItem(**item) for item in result.get("basket", [])]
 
-        return BasketResponse(
-            basket=basket_items,
-            goal=result.get("goal", request.goal),
-            estimated_return=result.get("estimated_return", "unknown"),
-            risk_profile=result.get("risk_profile", "moderate")
-        )
+#         return BasketResponse(
+#             basket=basket_items,
+#             goal=result.get("goal", request.goal),
+#             estimated_return=result.get("estimated_return", "unknown"),
+#             risk_profile=result.get("risk_profile", "moderate")
+#         )
 
-    except Exception as e:
-        print("⚠️ AI Engine Basket Generation Failed:", e)
+#     except Exception as e:
+#         print("⚠️ AI Engine Basket Generation Failed:", e)
 
-        # === 🔁 Fallback: conservative 60/40 allocation
-        fallback_basket = [
-            BasketItem(
-                ticker="VTI",
-                type="stock",
-                allocation="60%",
-                rationale="Broad U.S. equity exposure for long-term growth"
-            ),
-            BasketItem(
-                ticker="BND",
-                type="bond",
-                allocation="40%",
-                rationale="Diversified bond ETF for income and stability"
-            )
-        ]
+#         # === 🔁 Fallback: conservative 60/40 allocation
+#         fallback_basket = [
+#             BasketItem(
+#                 ticker="VTI",
+#                 type="stock",
+#                 allocation="60%",
+#                 rationale="Broad U.S. equity exposure for long-term growth"
+#             ),
+#             BasketItem(
+#                 ticker="BND",
+#                 type="bond",
+#                 allocation="40%",
+#                 rationale="Diversified bond ETF for income and stability"
+#             )
+#         ]
 
-        return BasketResponse(
-            basket=fallback_basket,
-            goal=request.goal or "growth",
-            estimated_return="5-7% annually",
-            risk_profile="moderate"
-        )
+#         return BasketResponse(
+#             basket=fallback_basket,
+#             goal=request.goal or "growth",
+#             estimated_return="5-7% annually",
+#             risk_profile="moderate"
+#         )

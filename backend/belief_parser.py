@@ -34,17 +34,17 @@ SYMBOL_LOOKUP_MAP = {
     "amazon": "AMZN", "meta": "META", "facebook": "META", "google": "GOOGL", "alphabet": "GOOGL",
     "palantir": "PLTR", "amd": "AMD", "snowflake": "SNOW", "amgen": "AMGN", "stanley black & decker": "SWK",
     "stanley": "SWK", "netflix": "NFLX", "bitcoin": "BTC", "btc": "BTC", "ethereum": "ETH", "eth": "ETH",
-    "nasdaq": "QQQ", "s&p": "SPY", "sp500": "SPY", "sp 500": "SPY", "dow": "DIA", "russell": "IWM",
+    "solana": "SOL", "nasdaq": "QQQ", "s&p": "SPY", "sp500": "SPY", "sp 500": "SPY", "dow": "DIA", "russell": "IWM",
     "bonds": "TLT", "treasury": "TLT", "financials": "XLF", "banks": "XLF", "energy": "XLE", "oil": "XLE",
     "tech": "XLK", "technology": "XLK", "ark": "ARKK", "cathie wood": "ARKK", "gold": "GLD"
 }
 
 # === New: AI + Healthcare theme fallback ===
 AI_HEALTHCARE_MAP = {
-    "ai healthcare": "HART",  # Global X Health & AI ETF
+    "ai healthcare": "HART",
     "healthcare ai": "HART",
     "ai in healthcare": "HART",
-    "biotech ai": "ARKG",     # Genomics + AI
+    "biotech ai": "ARKG",
     "biotech": "ARKG",
     "healthcare": "XLV",
     "machine learning": "QQQ",
@@ -73,8 +73,7 @@ THEME_TO_TICKER_MAP = {
     "bubble": "SPY"
 }
 
-
-# === New: currency-specific logic ===
+# === Currency-specific fallback ===
 CURRENCY_LOOKUP_MAP = {
     "usd": "UUP", "dollar": "UUP", "us dollar": "UUP",
     "euro": "FXE", "eur": "FXE",
@@ -83,6 +82,7 @@ CURRENCY_LOOKUP_MAP = {
     "yuan": "CYB", "cny": "CYB"
 }
 
+# === Keywords that indicate bond strategies ===
 BOND_KEYWORDS = ["bond", "bonds", "bond ladder", "income", "fixed income", "treasury", "muni", "municipal bond"]
 
 def clean_belief(text: str) -> str:
@@ -103,23 +103,18 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         return "NVDA"
 
     # ✅ Prioritize known mappings
-    found_match = False
     for keyword, mapped_ticker in SYMBOL_LOOKUP_MAP.items():
         if keyword in cleaned_belief:
             print(f"[DEBUG][TICKER] ⚠️ Keyword match: '{keyword}' → {mapped_ticker}")
-            found_match = True
             return mapped_ticker.upper()
 
-    if not found_match:
-        print("[DEBUG][TICKER] No SYMBOL_LOOKUP_MAP match found.")
-
-   # ✅ Match currencies (e.g., USD → UUP)
+    # ✅ Match currencies
     for keyword, mapped_ticker in CURRENCY_LOOKUP_MAP.items():
         if keyword in cleaned_belief:
             print(f"[DEBUG][TICKER] Matched currency: {keyword} → {mapped_ticker}")
             return mapped_ticker.upper()
 
-    # ✅ Match broad market themes (e.g., "the market will crash" → SPY)
+    # ✅ Match broad market themes
     for theme, fallback_ticker in THEME_TO_TICKER_MAP.items():
         if theme in cleaned_belief:
             print(f"[DEBUG][TICKER] Matched theme fallback: '{theme}' → {fallback_ticker}")
@@ -131,18 +126,19 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
             print(f"[DEBUG][TICKER] Matched AI/Healthcare fallback: '{theme}' → {fallback_ticker}")
             return fallback_ticker.upper()
 
-
-    # ❌ No ticker match found
-    print("[DEBUG][TICKER] ❌ No ticker detected — returning 'UNKNOWN'")
-    # ✅ Fallback: Match if any real ticker symbol is explicitly mentioned in the belief
+    # ✅ Fallback: Real ticker match
     for symbol in ALL_TICKERS:
         if symbol.lower() in cleaned_belief.split():
             print(f"[DEBUG][TICKER] 🧠 Matched actual ticker in belief: {symbol}")
             return symbol.upper()
 
+    # ✅ Special fallback for crypto beliefs
+    if asset_class == "crypto":
+        print("[DEBUG][TICKER] Fallback for crypto belief → BTC")
+        return "BTC"
+
+    print("[DEBUG][TICKER] ❌ No ticker detected — returning 'UNKNOWN'")
     return "UNKNOWN"
-
-
 
 def detect_direction(belief: str) -> str:
     text = belief.lower()
@@ -193,7 +189,7 @@ def parse_belief(belief: str) -> dict:
             prediction = belief_model.predict(vec)[0]
             confidence = max(belief_model.predict_proba(vec)[0])
             raw_tags = re.split(r"[\n,]+", prediction)
-            tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
+            tag_list = [tag.strip().lower() for tag in raw_tags if tag.strip()]
             tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
@@ -222,20 +218,18 @@ def parse_belief(belief: str) -> dict:
             multiplier = 4.0
         goal_type = "multiply_money"
 
-    # Optional timeframe extraction (e.g. "in 6 months", "by next year")
     time_match = re.search(r'(in|within|by)\s+(the next\s+)?(\d+)\s*(day|week|month|year)s?', belief.lower())
     if time_match:
         timeframe = f"{time_match.group(3)} {time_match.group(4)}"
 
-    # === Asset class override if bond-related ===
+    # === Asset class override for bond-related beliefs ===
     lower_belief = belief.lower()
     if any(kw in lower_belief for kw in BOND_KEYWORDS) or "bond" in tag_list or "income" in tag_list:
         asset_class = "bond"
     else:
         asset_class = detect_asset_class(belief)
 
-    
-    # ✅ Debugging output to verify belief parsing
+    # ✅ Final parsed output
     print("\n[DEBUG] --- Belief Parsing Result ---")
     print(f"[DEBUG] Belief: {belief}")
     print(f"[DEBUG] Cleaned: {cleaned}")
@@ -246,11 +240,10 @@ def parse_belief(belief: str) -> dict:
     print(f"[DEBUG] Asset Class: {asset_class}")
     detected_ticker = detect_ticker(belief, asset_class)
     print(f"[DEBUG] Detected Ticker: {detected_ticker}")
-
     print(f"[DEBUG] Direction: {detect_direction(belief)}")
     print(f"[DEBUG] Confidence: {confidence}")
     print("[DEBUG] -------------------------------\n")
-    # === Final structured belief output ===
+
     return {
         "ticker": detected_ticker,
         "direction": detect_direction(belief),
@@ -261,11 +254,3 @@ def parse_belief(belief: str) -> dict:
         "multiplier": multiplier,
         "timeframe": timeframe
     }
-    cleaned = clean_belief(belief)
-    if belief_model and vectorizer:
-        try:
-            vec = vectorizer.transform([cleaned])
-            return float(max(belief_model.predict_proba(vec)[0]))
-        except Exception as e:
-            print(f"[CONFIDENCE ERROR] {e}")
-    return 0.5
