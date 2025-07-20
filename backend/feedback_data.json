@@ -25192,5 +25192,69 @@
       "notes": "\u2705 Strategy matches belief: short bonds during rising rates"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-20T10:45:45.339472",
+    "user_id": "test_loop_1",
+    "belief": "I believe TLT will fall if the Fed raises rates",
+    "strategy": {
+      "strategy": {
+        "type": "Long put",
+        "trade_legs": [
+          {
+            "action": "Buy 1 put option",
+            "ticker": "TLT",
+            "strike": "Current market price",
+            "expiration": "2023-01-20"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "20%",
+        "max_loss": "100%",
+        "time_to_target": "12 months",
+        "explanation": "A long put option strategy is appropriate for a moderately bearish view on TLT. The strategy involves buying a put option on TLT, which gives the right to sell TLT at the strike price. If TLT falls as expected when the Fed raises rates, the put option will be in the money and can be sold for a profit. The maximum loss is the premium paid for the put option, if TLT does not fall as expected. The target return of 20% is based on an anticipated moderate decrease in TLT over the next 12 months. The confidence level of 0.726 suggests a reasonable level of certainty in the user's belief."
+      },
+      "ticker": "TLT",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 85.24
+      },
+      "high_low": [
+        85.46,
+        85.1
+      ],
+      "confidence": 0.7263589761395288,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "A long put option strategy is appropriate for a moderately bearish view on TLT. The strategy involves buying a put option on TLT, which gives the right to sell TLT at the strike price. If TLT falls as expected when the Fed raises rates, the put option will be in the money and can be sold for a profit. The maximum loss is the premium paid for the put option, if TLT does not fall as expected. The target return of 20% is based on an anticipated moderate decrease in TLT over the next 12 months. The confidence level of 0.726 suggests a reasonable level of certainty in the user's belief.",
+      "user_id": "test_loop_1",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-20T10:46:38.688392",
+    "user_id": "test_loop_1",
+    "ip": "127.0.0.1",
+    "belief": "I believe TLT will fall if the Fed raises rates",
+    "strategy": "Long put",
+    "feedback": "good",
+    "risk_profile": "moderate"
   }
 ]
