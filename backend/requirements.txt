@@ -1,0 +1,64 @@
+# === Core Web Framework ===
+fastapi==0.103.2           # Main web API framework
+uvicorn==0.23.2            # ASGI server to run FastAPI apps
+starlette==0.27.0          # FastAPI dependency
+
+# === Data Science & ML ===
+scikit-learn==1.3.2        # ML model training and inference
+joblib==1.3.2              # Model serialization
+numpy==1.24.4              # Numerical computing
+pandas==1.5.3              # Data manipulation
+scipy==1.15.3              # Scientific computing
+threadpoolctl==3.6.0       # Used internally by sklearn
+Cython==0.29.36            # Required for compiling extensions (used by sklearn)
+
+# === NLP and Parsing ===
+beautifulsoup4==4.13.4     # HTML/XML parsing
+soupsieve==2.7             # CSS selectors for BeautifulSoup
+html5lib==1.1              # HTML parser
+lxml==5.4.0                # Fast XML/HTML parser
+feedparser                 # RSS feed parsing
+
+# === HTTP + Requests ===
+requests==2.32.4           # HTTP requests
+urllib3==2.5.0             # HTTP connection pooling
+idna==3.10                 # Unicode support for domains
+charset-normalizer==3.4.2  # Encoding detection
+certifi==2025.6.15         # SSL certificates
+
+# === Time & Dates ===
+python-dateutil==2.9.0.post0  # Date utilities
+pytz==2025.2                  # Timezone support
+
+# === FastAPI Enhancements ===
+python-multipart==0.0.6    # For file uploads
+anyio==3.7.1               # Concurrency
+h11==0.16.0                # HTTP core (used by uvicorn)
+click==8.2.1               # CLI support
+
+# === Typing & Validation ===
+pydantic==2.11.7           # Data validation
+pydantic_core==2.33.2      # Core engine
+typing_extensions==4.14.0  # Backports of type hints
+typing-inspection==0.4.1   # Type inspection tools
+annotated-types==0.7.0     # For annotated types in FastAPI
+
+# === Database & Storage ===
+tinydb==4.8.2              # Lightweight NoSQL database
+peewee==3.18.1             # ORM (if you use it)
+
+# === Finance ===
+yfinance==0.2.37           # Market data from Yahoo
+multitasking==0.0.11       # Async helpers (used by yfinance)
+
+# === Env Management ===
+python-dotenv==1.0.1       # ✅ Required for loading `.env` file
+
+# === GPT-4 + Strategy Engine ===
+openai>=1.0.0              # ✅ GPT-4 model integration (use `from openai import OpenAI`)
+
+# === Other Utilities ===
+appdirs==1.4.4             # Used by joblib
+frozendict==2.4.6          # Immutable dictionaries
+matplotlib>=3.7.1
+xgboost

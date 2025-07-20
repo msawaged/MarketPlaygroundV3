@@ -1,0 +1,99 @@
+# =======================
+# 🐍 PYTHON + BACKEND
+# =======================
+
+# Ignore .env file containing secrets
+.env
+
+# Virtual environments
+venv/
+.env/                      # Global env vars folder (if any)
+**/__pycache__/             # Python __pycache__ folders recursively
+*.py[cod]                  # Compiled Python files
+
+# Python shared objects, eggs, build folders
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# =======================
+# 🍎 OS + IDE
+# =======================
+
+# Mac system files
+.DS_Store
+
+# VS Code project settings
+.vscode/
+
+# =======================
+# 🤖 MODELS + DATA
+# =======================
+
+# Ignore ML model files globally (including backend)
+*.joblib
+*.pkl
+*.h5
+*.pt
+
+# =======================
+# 🧪 TEST + GENERATED FILES
+# =======================
+
+# Logs and runtime junk
+*.log
+*.tmp
+*.png
+
+# =======================
+# ✅ RETRAINING LOGS (allowed for Render visibility)
+!backend/logs/last_training_log.txt
+!backend/logs/last_training_log.json
+
+# Ignore all other backend logs
+backend/logs/
+backend/logs/news_beliefs.csv
+backend/logs/news_ingestor_log.txt
+
+# Ignore Python bytecode in routes
+backend/routes/__pycache__/
+
+# Training artifacts that change frequently
+backend/Training_Strategies.csv
+backend/feedback_data.json
+backend/strategy_log.json
+
+# User session files
+user_portfolios.json
+test_api.py
+
+# =======================
+# 🌐 FRONTEND (React)
+# =======================
+
+# Ignore frontend env and structure docs
+frontend/.env
+frontend_structure.txt
+
+# Node modules
+node_modules/
+
+# React build outputs (vite/build)
+dist/
+build/
+__pycache__/
+*.json
+*.txt
+.env
+.env
+
+# Redundant fallback exclusions
+backend/feedback_log.csv
+backend/Training_Strategies.csv
+backend/*.joblib
+backend/*.json
