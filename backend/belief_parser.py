@@ -134,6 +134,12 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
 
     # ❌ No ticker match found
     print("[DEBUG][TICKER] ❌ No ticker detected — returning 'UNKNOWN'")
+    # ✅ Fallback: Match if any real ticker symbol is explicitly mentioned in the belief
+    for symbol in ALL_TICKERS:
+        if symbol.lower() in cleaned_belief.split():
+            print(f"[DEBUG][TICKER] 🧠 Matched actual ticker in belief: {symbol}")
+            return symbol.upper()
+
     return "UNKNOWN"
 
 
