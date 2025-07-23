@@ -1,0 +1,51 @@
+/* AppTheme.css — Mobile-First Beta Styling */
+
+/* 🌌 Strategy Card Enhancement */
+.strategy-container {
+    background: rgba(22, 27, 34, 0.9); /* Semi-transparent glass */
+    border: 1px solid #3b82f6;
+    box-shadow: 0 0 18px #3b82f6aa;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(6px);
+    color: #f8fafc;
+    transition: box-shadow 0.3s ease;
+  }
+  .strategy-container:hover {
+    box-shadow: 0 0 28px #3b82f6ee;
+  }
+  
+  /* 🚀 Button Glow + Gradient */
+  button {
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+  }
+  
+  /* 🧬 Simulation Modal Glow (optional) */
+  .simulation-modal {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid #22d3ee;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 0 24px #22d3ee88;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .simulation-modal:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 32px #22d3eeaa;
+  }
+  

@@ -12,34 +12,60 @@ from datetime import datetime
 from openai import OpenAI, OpenAIError
 import openai
 
-from typing import Optional  # ✅ Required for Optional[str] in function signatures
+from typing import (
+    Optional,
+)  # ✅ Required for Optional[str] in function signatures
 from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
 from backend.belief_parser import parse_belief
-from backend.market_data import get_latest_price, get_weekly_high_low, get_option_expirations
-from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief as evaluate_goal
+from backend.market_data import (
+    get_latest_price,
+    get_weekly_high_low,
+    get_option_expirations,
+)
+from backend.ai_engine.goal_evaluator import (
+    evaluate_goal_from_belief as evaluate_goal,
+)
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
 from backend.logger.strategy_logger import log_strategy
+from backend.ai_engine.strategy_model_selector import (
+    decide_strategy_engine,
+)  # ✅ Moved here
+
 
 if not OPENAI_API_KEY:
     raise ValueError("❌ OPENAI_API_KEY not found in environment variables.")
 else:
     print(f"🔑 OpenAI key loaded: ...{OPENAI_API_KEY[-4:]}")
 
-openai.api_key = OPENAI_API_KEY
+    openai.api_key = OPENAI_API_KEY
 
-try:
-    client = OpenAI()
-except OpenAIError as e:
-    raise RuntimeError(f"❌ Failed to initialize OpenAI client: {e}")
+    try:
+        client = OpenAI()
+    except OpenAIError as e:
+        raise RuntimeError(f"❌ Failed to initialize OpenAI client: {e}")
 
-KNOWN_EQUITIES = {
-    "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "MSFT", "NFLX", "BAC", "JPM", "WMT"
-}
+        KNOWN_EQUITIES = {
+            "AAPL",
+            "TSLA",
+            "NVDA",
+            "AMZN",
+            "GOOGL",
+            "META",
+            "MSFT",
+            "NFLX",
+            "BAC",
+            "JPM",
+            "WMT",
+        }
+
 
 def clean_float(value):
-    if value is None or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
+    if value is None or (
+        isinstance(value, float) and (math.isnan(value) or math.isinf(value))
+    ):
         return None
     return value
+
 
 def is_expired(date_str):
     try:
@@ -50,7 +76,10 @@ def is_expired(date_str):
     except:
         return True
 
-def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "anonymous") -> dict:
+
+def run_ai_engine(
+    belief: str, risk_profile: str = "moderate", user_id: str = "anonymous"
+) -> dict:
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
@@ -64,22 +93,25 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
     timeframe = goal.get("timeframe")
     expiry_date = parse_timeframe_to_expiry(timeframe) if timeframe else None
 
+    # 🧠 Fallback logic if no ticker was detected from belief
     if not ticker:
         if "qqq" in tags or "nasdaq" in tags:
             ticker = "QQQ"
         elif "spy" in tags or "s&p" in tags:
             ticker = "SPY"
         else:
-            ticker = "AAPL"
+            ticker = "AAPL"  # Safe fallback
 
+    # ✅ Properly assign asset class after ticker is finalized
     if parsed_asset == "etf" and ticker.upper() in KNOWN_EQUITIES:
         asset_class = "equity"
     elif parsed_asset == "bond" and ticker.upper() == "SPY":
         asset_class = "bond"
-        ticker = "TLT"
+        ticker = "TLT"  # Safer fallback for bond beliefs
     else:
         asset_class = parsed_asset
 
+    # ✅ Get price data safely
     try:
         latest = get_latest_price(ticker)
     except Exception as e:
@@ -92,9 +124,14 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         print(f"[ERROR] get_weekly_high_low failed: {e}")
         high_low = (-1.0, -1.0)
 
-    price_info = {"latest": clean_float(latest)}
-    high_low = (clean_float(high_low[0]), clean_float(high_low[1]))
+    # ✅ Normalize price data
+    price_info = {
+        "latest": clean_float(latest),
+        "high": clean_float(high_low[0]),
+        "low": clean_float(high_low[1]),
+    }
 
+    # ✅ Detect if this is a bond ladder-style belief
     bond_tags = ["bond", "ladder", "income", "fixed income"]
     is_bond_ladder = (
         "bond ladder" in belief.lower()
@@ -102,86 +139,73 @@ def run_ai_engine(belief: str, risk_profile: str = "moderate", user_id: str = "a
         or asset_class == "bond"
     )
 
+    # ✅ Construct the base prompt for GPT strategy generation
     strategy_prompt = f"""
-You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
+    You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
 
-Include:
-- type (e.g., long call, bull put spread, buy equity, buy bond ETF)
-- trade_legs (e.g., 'buy 1 call 150 strike', 'sell 1 put 140 strike')
-- expiration (in 'YYYY-MM-DD' format or 'N/A')
-- target_return (expected gain %)
-- max_loss (worst-case loss %)
-- time_to_target (e.g., 2 weeks, 3 months)
-- explanation (why this fits belief)
+    Include:
+        - type (e.g., long call, bull put spread, buy equity, buy bond ETF)
+        - trade_legs (e.g., 'buy 1 call 150 strike', 'sell 1 put 140 strike')
+        - expiration (in 'YYYY-MM-DD' format or 'N/A')
+        - target_return (expected gain %)
+        - max_loss (worst-case loss %)
+        - time_to_target (e.g., 2 weeks, 3 months)
+        - explanation (why this fits belief)
 
-Context:
-- Ticker: {ticker}
-- Direction: {direction}
-- Asset Class: {asset_class}
-- Latest Price: {latest}
-- Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
-- Confidence: {confidence}, Risk Profile: {risk_profile}
-"""
+    Context:
+        - Ticker: {ticker}
+        - Direction: {direction}
+        - Asset Class: {asset_class}
+        - Latest Price: {latest}
+        - Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
+        - Confidence: {confidence}, Risk Profile: {risk_profile}
+    """
 
-    if is_bond_ladder:
-        strategy_prompt += """
-NOTE: The user appears interested in a bond ladder or income strategy.
-Recommend a bond ETF ladder using AGG (broad), IEF (mid-term), and SHY (short-term).
-Explain the maturity staggering, income generation, and diversification benefits clearly.
-"""
+    # === ✅ NEW: Route strategy generation through hybrid GPT/ML selector ===
+    strategy = decide_strategy_engine(
+        belief,
+        {
+            "direction": direction,
+            "ticker": ticker,
+            "tags": tags,
+            "asset_class": asset_class,
+            "goal_type": goal_type,
+            "multiplier": multiplier,
+            "timeframe": timeframe,
+            "risk_profile": risk_profile,
+            "confidence": confidence,
+            "price_info": price_info,
+        },
+    )
 
-    strategy_prompt += "\nRespond ONLY with valid JSON. Do not include markdown or extra text."
-
-    print("🧠 Calling GPT-4 to generate strategy...")
-
+    # 🧠 Optional: Compare GPT-4 strategy output for debugging (does NOT override final output)
     try:
-        response = client.chat.completions.create(
-            model=GPT_MODEL,
-            messages=[{"role": "user", "content": strategy_prompt}],
-            temperature=0.7,
-        )
-        gpt_output = response.choices[0].message.content.strip()
-        print("🧾 GPT RAW OUTPUT:\n", gpt_output)
-
-        if gpt_output.startswith("{"):
-            strategy = json.loads(gpt_output)
-            if isinstance(strategy, dict) and "strategy" in strategy:
-                strategy = strategy["strategy"]
-        else:
-            raise ValueError("❌ GPT did not return valid JSON.")
-
+        from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
+        gpt_strategy = generate_strategy_with_gpt4(belief)
+        print("\n🧠 [GPT-4 Strategy Output for Comparison Only]:")
+        print(json.dumps(gpt_strategy, indent=2))
     except Exception as e:
-        print(f"[ERROR] GPT-4 strategy generation failed: {e}")
-        strategy = {
-            "type": "error",
-            "trade_legs": [],
-            "expiration": "N/A",
-            "target_return": 0,
-            "max_loss": 0,
-            "time_to_target": "N/A",
-            "explanation": f"Failed to generate strategy: {e}"
-        }
+        print(f"[GPT DEBUG] ❌ GPT strategy generation failed: {e}")
 
-    # 🛠 Fix invalid or expired expiration from GPT
+
+    # === 🧠 FIX: Validate and sanitize expiration for options strategies ===
     if asset_class == "options":
         raw_expiry = strategy.get("expiration")
-
-        # If it's expired or not present, override it
         if is_expired(raw_expiry):
             try:
                 fallback_dates = get_option_expirations(ticker)
                 future_dates = [d for d in fallback_dates if not is_expired(d)]
-
                 if future_dates:
                     strategy["expiration"] = future_dates[0]
-                    print(f"[FIXED] Overriding bad expiration → {strategy['expiration']}")
+                    print(
+                        f"[FIXED] Overriding bad expiration → {strategy['expiration']}"
+                    )
                 else:
                     strategy["expiration"] = "N/A"
                     print(f"[WARNING] No valid future expirations found.")
             except Exception as e:
                 strategy["expiration"] = "N/A"
-                print(f"[ERROR] Failed to fetch expirations: {e}")
-
+                print(f"[ERROR] Failed to override bad expiration: {e}")
 
     # ✅ FIXED: Ensure trade_legs list is converted to a lowercase string safely
     strategy_type = strategy.get("type", "").lower()
@@ -191,9 +215,21 @@ Explain the maturity staggering, income generation, and diversification benefits
     tags = []
     if "spread" in strategy_type or "spread" in trade_legs:
         if "put" in trade_legs and "sell" in trade_legs and "buy" in trade_legs:
-            tags.append("bear put spread" if direction == "bearish" else "bull put spread")
-        elif "call" in trade_legs and "sell" in trade_legs and "buy" in trade_legs:
-            tags.append("bull call spread" if direction == "bullish" else "bear call spread")
+            tags.append(
+                "bear put spread"
+                if direction == "bearish"
+                else "bull put spread"
+            )
+        elif (
+            "call" in trade_legs
+            and "sell" in trade_legs
+            and "buy" in trade_legs
+        ):
+            tags.append(
+                "bull call spread"
+                if direction == "bullish"
+                else "bear call spread"
+            )
         else:
             tags.append("spread")
     elif "call" in strategy_type:
@@ -212,11 +248,14 @@ Explain the maturity staggering, income generation, and diversification benefits
     elif direction == "neutral" and "long put" in tags:
         direction = "bearish"
 
-    explanation = strategy.get("explanation", "Strategy explanation not available.")
+    explanation = strategy.get(
+        "explanation", "Strategy explanation not available."
+    )
     log_strategy(belief, explanation, user_id, strategy)
 
     try:
         from backend.strategy_validator import evaluate_strategy_against_belief
+
         validation = evaluate_strategy_against_belief(belief, strategy)
         print(f"[✅ VALIDATOR] {validation}")
     except Exception as e:
@@ -225,35 +264,39 @@ Explain the maturity staggering, income generation, and diversification benefits
             "valid": False,
             "would_profit": None,
             "estimated_profit_pct": None,
-            "notes": f"Validation error: {e}"
+            "notes": f"Validation error: {e}",
         }
 
-       # ✅ DEBUG — Log final strategy output for visibility
+    # ✅ DEBUG — Log final strategy output for visibility
     print("[DEBUG] Final strategy output:")
-    print(json.dumps({
-        "strategy": strategy,
-        "ticker": ticker,
-        "asset_class": asset_class,
-        "tags": tags,
-        "direction": direction,
-        "price_info": price_info,
-        "high_low": high_low,
-        "confidence": confidence,
-        "goal_type": goal_type,
-        "multiplier": multiplier,
-        "timeframe": timeframe,
-        "expiry_date": strategy.get("expiration"),
-        "risk_profile": risk_profile,
-        "explanation": explanation,
-        "user_id": user_id,
-        "validator": validation,
-        "valid": validation.get("valid"),
-        "would_profit": validation.get("would_profit"),
-        "estimated_profit_pct": validation.get("estimated_profit_pct"),
-        "notes": validation.get("notes"),
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "strategy": strategy,
+                "ticker": ticker,
+                "asset_class": asset_class,
+                "tags": tags,
+                "direction": direction,
+                "price_info": price_info,
+                "high_low": high_low,
+                "confidence": confidence,
+                "goal_type": goal_type,
+                "multiplier": multiplier,
+                "timeframe": timeframe,
+                "expiry_date": strategy.get("expiration"),
+                "risk_profile": risk_profile,
+                "explanation": explanation,
+                "user_id": user_id,
+                "validator": validation,
+                "valid": validation.get("valid"),
+                "would_profit": validation.get("would_profit"),
+                "estimated_profit_pct": validation.get("estimated_profit_pct"),
+                "notes": validation.get("notes"),
+            },
+            indent=2,
+        )
+    )
 
-   
     return {
         "strategy": strategy,
         "ticker": ticker,
@@ -276,48 +319,52 @@ Explain the maturity staggering, income generation, and diversification benefits
         "estimated_profit_pct": validation.get("estimated_profit_pct"),
         "notes": validation.get("notes"),
     }
+
+
 # === 🧠 New Function: Asset Basket Generation via GPT-4 ===
-def generate_asset_basket(input_text: str, goal: Optional[str] = None, user_id: Optional[str] = None) -> dict:
+def generate_asset_basket(
+    input_text: str, goal: Optional[str] = None, user_id: Optional[str] = None
+) -> dict:
     """
     Generates an intelligent asset basket (stocks, bonds, crypto, etc.)
     based on user input using GPT-4. Returns a parsed JSON structure.
     """
     try:
         prompt = f"""
-You are a financial advisor AI.
+        You are a financial advisor AI.
 
-A user has requested a smart asset allocation basket.
-Their input: "{input_text}"
-Goal: {goal or 'unspecified'}
+        A user has requested a smart asset allocation basket.
+        Their input: "{input_text}"
+        Goal: {goal or "unspecified"}
 
-Your task:
-- Create a diversified basket of 2–5 assets (stocks, ETFs, crypto, bonds).
-- For each: include ticker, type, allocation %, and a one-sentence rationale.
-- Also return a goal summary, estimated return range, and risk profile.
+        Your task:
+            - Create a diversified basket of 2–5 assets (stocks, ETFs, crypto, bonds).
+            - For each: include ticker, type, allocation %, and a one-sentence rationale.
+            - Also return a goal summary, estimated return range, and risk profile.
 
-Format as valid JSON:
-{{
-  "basket": [
-    {{
-      "ticker": "VTI",
-      "type": "stock",
-      "allocation": "60%",
-      "rationale": "Broad U.S. stock exposure"
-    }},
-    {{
-      "ticker": "BND",
-      "type": "bond",
-      "allocation": "40%",
-      "rationale": "Diversified bond exposure"
-    }}
-  ],
-  "goal": "moderate growth",
-  "estimated_return": "5–7% annually",
-  "risk_profile": "moderate"
-}}
+            Format as valid JSON:
+                {{
+                "basket": [
+                {{
+                "ticker": "VTI",
+                "type": "stock",
+                "allocation": "60%",
+                "rationale": "Broad U.S. stock exposure"
+                }},
+                {{
+                "ticker": "BND",
+                "type": "bond",
+                "allocation": "40%",
+                "rationale": "Diversified bond exposure"
+                }}
+                ],
+                "goal": "moderate growth",
+                "estimated_return": "5–7% annually",
+                "risk_profile": "moderate"
+                }}
 
-Only return pure JSON — no explanation, markdown, or commentary.
-"""
+                Only return pure JSON — no explanation, markdown, or commentary.
+                """
 
         print("📦 Calling GPT-4 for asset basket generation...")
 
@@ -325,11 +372,11 @@ Only return pure JSON — no explanation, markdown, or commentary.
             model=GPT_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
-            max_tokens=500
+            max_tokens=500,
         )
 
         raw_output = response.choices[0].message.content.strip()
-        print("📤 Raw GPT Output:\n", raw_output)  # 🔍 Add this line
+        print("📤 Raw GPT Output:\n", raw_output)
         parsed = json.loads(raw_output)
 
         return parsed
@@ -344,16 +391,16 @@ Only return pure JSON — no explanation, markdown, or commentary.
                     "ticker": "VTI",
                     "type": "stock",
                     "allocation": "60%",
-                    "rationale": "Broad U.S. stock exposure for long-term growth"
+                    "rationale": "Broad U.S. stock exposure for long-term growth",
                 },
                 {
                     "ticker": "BND",
                     "type": "bond",
                     "allocation": "40%",
-                    "rationale": "Bond ETF for income and capital preservation"
-                }
+                    "rationale": "Bond ETF for income and capital preservation",
+                },
             ],
             "goal": goal or "growth",
             "estimated_return": "4–6% annually",
-            "risk_profile": "moderate"
+            "risk_profile": "moderate",
         }

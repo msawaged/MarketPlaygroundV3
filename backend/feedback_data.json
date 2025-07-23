@@ -23580,5 +23580,155 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-23T05:59:22.210275",
+    "user_id": "test_equity_up",
+    "belief": "Apple stock will go up",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call",
+        "trade_legs": [
+          {
+            "leg": 1,
+            "action": "Buy",
+            "quantity": 1,
+            "instrument": "Call",
+            "ticker": "AAPL",
+            "strike": 220,
+            "expiration": "2023-06-16"
+          }
+        ],
+        "target_return": 20,
+        "max_loss": 100,
+        "time_to_target": "6 months",
+        "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 214.4
+      },
+      "high_low": [
+        214.95,
+        212.23
+      ],
+      "confidence": 0.7104163352690596,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+      "user_id": "test_equity_up",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-23T21:29:00.856908",
+    "user_id": "test_hybrid",
+    "belief": "I think NVIDIA will explode after their earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 170.78,
+        "high": 171.26,
+        "low": 169.3
+      },
+      "high_low": [
+        171.26,
+        169.3
+      ],
+      "confidence": 0.6766908217018358,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_hybrid",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-23T21:30:41.094838",
+    "user_id": "test_gpt",
+    "belief": "I believe NVDA will rise 15% in the next 2 months",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 170.78,
+        "high": 171.26,
+        "low": 169.3
+      },
+      "high_low": [
+        171.26,
+        169.3
+      ],
+      "confidence": 0.6738940111660695,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_gpt",
+      "validator": {
+        "would_profit": true,
+        "estimated_profit_pct": 50.0,
+        "valid": true,
+        "notes": "\u2705 If belief is true, strategy likely profits"
+      },
+      "valid": true,
+      "would_profit": true,
+      "estimated_profit_pct": 50.0,
+      "notes": "\u2705 If belief is true, strategy likely profits"
+    },
+    "result": "auto_generated"
   }
 ]

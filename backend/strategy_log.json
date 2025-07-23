@@ -13600,5 +13600,99 @@
       "time_to_target": "1 month",
       "explanation": "Buying a put option allows you to profit from a decrease in the price of the underlying asset. In this case, you believe that AAPL will drop sharply this month. Therefore, if AAPL does indeed drop sharply, the value of the put option will increase, allowing you to sell the option for a profit. Your maximum loss is limited to the premium paid for the option if AAPL price does not drop as expected. This strategy fits your belief because it provides a significant profit potential if your prediction is correct, while limiting your potential loss."
     }
+  },
+  {
+    "timestamp": "2025-07-23T05:59:22.173605",
+    "user_id": "anonymous",
+    "belief": "Apple stock will go up",
+    "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "leg": 1,
+          "action": "Buy",
+          "quantity": 1,
+          "instrument": "Call",
+          "ticker": "AAPL",
+          "strike": 220,
+          "expiration": "2023-06-16"
+        }
+      ],
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T05:59:22.248251",
+    "user_id": "test_equity_up",
+    "belief": "Apple stock will go up",
+    "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+    "strategy": {
+      "type": "Long Call",
+      "trade_legs": [
+        {
+          "leg": 1,
+          "action": "Buy",
+          "quantity": 1,
+          "instrument": "Call",
+          "ticker": "AAPL",
+          "strike": 220,
+          "expiration": "2023-06-16"
+        }
+      ],
+      "target_return": 20,
+      "max_loss": 100,
+      "time_to_target": "6 months",
+      "explanation": "Buying a call option is a bullish strategy that benefits from an increase in the underlying asset's price. The maximum loss is capped at the premium paid for the option. Given the user's confidence level and moderate risk profile, this strategy may be suitable as it provides unlimited profit potential if AAPL's price rises, while limiting possible losses.",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T21:29:00.819727",
+    "user_id": "anonymous",
+    "belief": "I think NVIDIA will explode after their earnings next week",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "long put",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T21:29:00.890081",
+    "user_id": "test_hybrid",
+    "belief": "I think NVIDIA will explode after their earnings next week",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "long put",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T21:30:41.055278",
+    "user_id": "anonymous",
+    "belief": "I believe NVDA will rise 15% in the next 2 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T21:30:41.120080",
+    "user_id": "test_gpt",
+    "belief": "I believe NVDA will rise 15% in the next 2 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
   }
 ]
