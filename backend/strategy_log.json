@@ -13694,5 +13694,71 @@
       "source": "ml_model",
       "expiration": "2025-08-16"
     }
+  },
+  {
+    "timestamp": "2025-07-23T23:38:58.691898",
+    "user_id": "anonymous",
+    "belief": "TSLA will explode next quarter",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T23:38:58.777490",
+    "user_id": "sandbox_test",
+    "belief": "TSLA will explode next quarter",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T23:46:11.558465",
+    "user_id": "anonymous",
+    "belief": "I think Nvidia will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-23T23:46:11.625524",
+    "user_id": "sandbox_test",
+    "belief": "I think Nvidia will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T00:16:43.694011",
+    "user_id": "anonymous",
+    "belief": "I think Nvidia will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T00:16:43.760485",
+    "user_id": "sandbox_test",
+    "belief": "I think Nvidia will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
   }
 ]

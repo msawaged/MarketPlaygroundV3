@@ -1,2 +1,3 @@
 timestamp,user_id,belief,strategy,ticker,pnl_percent,result,risk,holding_period_days,notes,tags
 2025-07-02T01:00:00,tester_001,I believe AAPL will rise,bull call spread,AAPL,25.5,win,moderate,7,corrected test row,"tech,earnings"
+2025-07-24T01:00:00,sandbox_test,I think Nvidia will double in 6 months,iron condor,NVDA,-5.2,loss,moderate,30,validator flagged as invalid,"ai,semis"
