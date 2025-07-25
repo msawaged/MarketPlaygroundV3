@@ -23873,5 +23873,278 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T12:29:32.246759",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 332.56,
+        "high": 335.7,
+        "low": 330.2
+      },
+      "high_low": [
+        335.7,
+        330.2
+      ],
+      "confidence": 0.5233811433522166,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T12:29:44.437077",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 332.56,
+        "high": 335.7,
+        "low": 330.2
+      },
+      "high_low": [
+        335.7,
+        330.2
+      ],
+      "confidence": 0.5233811433522166,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T12:30:04.737201",
+    "user_id": "test232",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 332.56,
+        "high": 335.7,
+        "low": 330.2
+      },
+      "high_low": [
+        335.7,
+        330.2
+      ],
+      "confidence": 0.5233811433522166,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test232",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T12:32:30.443322",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "bond ladder",
+        "source": "ml_model"
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0,
+        "high": null,
+        "low": null
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.3539391793299633,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T13:49:53.537997",
+    "user_id": "backend_test",
+    "belief": "I think interest rates will keep rising",
+    "strategy": {
+      "strategy": {
+        "type": "iron condor",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TLT",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 85.81,
+        "high": 85.86,
+        "low": 85.51
+      },
+      "high_low": [
+        85.86,
+        85.51
+      ],
+      "confidence": 0.4510366150780234,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "backend_test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-24T15:07:42.562506",
+    "user_id": "anonymous",
+    "belief": "tsla will go up by 25 dollars by friday",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "UUP",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 27.11,
+        "high": 27.12,
+        "low": 27.05
+      },
+      "high_low": [
+        27.12,
+        27.05
+      ],
+      "confidence": 0.49413588446614387,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "by friday",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
   }
 ]

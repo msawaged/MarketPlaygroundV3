@@ -13760,5 +13760,135 @@
       "source": "ml_model",
       "expiration": "2025-08-16"
     }
+  },
+  {
+    "timestamp": "2025-07-24T12:29:32.215189",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:29:32.278877",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:29:44.408643",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:29:44.468641",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:30:04.699578",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:30:04.774821",
+    "user_id": "test232",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:32:30.395446",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bond ladder",
+      "source": "ml_model"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T12:32:30.483829",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bond ladder",
+      "source": "ml_model"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T13:49:53.494697",
+    "user_id": "anonymous",
+    "belief": "I think interest rates will keep rising",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T13:49:53.574485",
+    "user_id": "backend_test",
+    "belief": "I think interest rates will keep rising",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T15:07:42.524559",
+    "user_id": "anonymous",
+    "belief": "tsla will go up by 25 dollars by friday",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-07-24T15:07:42.584753",
+    "user_id": "anonymous",
+    "belief": "tsla will go up by 25 dollars by friday",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
   }
 ]

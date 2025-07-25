@@ -2,14 +2,16 @@
 
 from fastapi import APIRouter
 from ib_insync import IB
+from backend.ibkr_data import get_ibkr_price  # or adjust import if needed
+
 import os
 import asyncio
 
 router = APIRouter()
 
-# ✅ IB Gateway connection details (default to port 4002 if not overridden)
+# ✅ IB Gateway connection details (default to port 4001 if not overridden)
 IB_GATEWAY_HOST = os.getenv("IB_GATEWAY_HOST", "127.0.0.1")
-IB_GATEWAY_PORT = int(os.getenv("IB_GATEWAY_PORT", 4002))  # 4002 = default for IB Gateway
+IB_GATEWAY_PORT = int(os.getenv("IB_GATEWAY_PORT", 4001))  # 4001 = default for IB Gateway
 CLIENT_ID = int(os.getenv("IB_CLIENT_ID", 1))
 
 
@@ -48,5 +50,33 @@ def test_ibkr_connection():
     except Exception as e:
         return {
             "status": "failed ❌",
+            "error": str(e)
+        }
+
+
+@router.get("/price/{symbol}")
+def fetch_ibkr_price(symbol: str):
+    """
+    ✅ Fetches the latest market price from IBKR for the provided symbol.
+    Uses ibkr_data.get_ibkr_price() for abstraction and fallback logic.
+    """
+    try:
+        price = get_ibkr_price(symbol)
+        if price is None:
+            return {
+                "symbol": symbol,
+                "price": None,
+                "error": "No data returned from IBKR"
+            }
+
+        return {
+            "symbol": symbol,
+            "price": price
+        }
+
+    except Exception as e:
+        return {
+            "symbol": symbol,
+            "price": None,
             "error": str(e)
         }

@@ -6,7 +6,7 @@ import asyncio
 
 # ✅ IBKR Gateway Config (env override or default to localhost:4002)
 IB_GATEWAY_HOST = os.getenv("IB_GATEWAY_HOST", "127.0.0.1")
-IB_GATEWAY_PORT = int(os.getenv("IB_GATEWAY_PORT", 4002))  # Paper Trading Port
+IB_GATEWAY_PORT = int(os.getenv("IB_GATEWAY_PORT", 4001))  # Paper Trading Port
 CLIENT_ID = int(os.getenv("IB_CLIENT_ID", 2))  # Use a different ID from test_connection
 
 def get_ibkr_price(ticker: str) -> float:

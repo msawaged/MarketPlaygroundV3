@@ -42,6 +42,8 @@ from backend.routes.pnl_router import router as pnl_router
 from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
+from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoints (test connection, real-time data, etc.)
+
 
 app = FastAPI(title="MarketPlayground AI Backend")
 
@@ -96,7 +98,8 @@ app.include_router(execution_router,         prefix="/alpaca",    tags=["Executi
 app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
 app.include_router(market_router,            prefix="/market",    tags=["Market"])
 app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router, prefix="/debug", tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
+app.include_router(debug_router,             prefix="/debug",     tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
+app.include_router(ibkr_router,              prefix="/ibkr",      tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
 
 
 
