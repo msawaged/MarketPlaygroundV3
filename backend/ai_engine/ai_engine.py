@@ -58,6 +58,30 @@ else:
             "WMT",
         }
 
+# === 🧠 Helper: Parse GPT output into structured strategy ===
+def parse_gpt_output_to_strategy(output: str) -> dict | None:
+    """
+    Attempts to parse GPT-4 output (string) into a structured strategy dictionary.
+
+    Returns None if parsing fails or required keys are missing.
+    """
+    try:
+        strategy = json.loads(output)
+        required_keys = {
+            "type",
+            "trade_legs",
+            "expiration",
+            "target_return",
+            "max_loss",
+            "time_to_target",
+            "explanation",
+        }
+        if all(key in strategy for key in required_keys):
+            return strategy
+    except Exception as e:
+        print(f"[GPT PARSE ERROR] Failed to parse GPT output: {e}")
+    return None
+
 
 def clean_float(value):
     if value is None or (

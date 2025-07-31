@@ -23875,219 +23875,36 @@
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-07-24T12:29:32.246759",
-    "user_id": "anonymous",
-    "belief": "TSLA WILL GO UP",
-    "strategy": {
-      "strategy": {
-        "type": "bull call spread",
-        "source": "ml_model",
-        "expiration": "2025-08-16"
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "spread"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 332.56,
-        "high": 335.7,
-        "low": 330.2
-      },
-      "high_low": [
-        335.7,
-        330.2
-      ],
-      "confidence": 0.5233811433522166,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": "2025-08-16",
-      "risk_profile": "moderate",
-      "explanation": "Strategy explanation not available.",
-      "user_id": "anonymous",
-      "validator": {
-        "would_profit": null,
-        "estimated_profit_pct": null,
-        "valid": false,
-        "notes": "\u274c Could not detect % move in belief"
-      },
-      "valid": false,
-      "would_profit": null,
-      "estimated_profit_pct": null,
-      "notes": "\u274c Could not detect % move in belief"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-07-24T12:29:44.437077",
-    "user_id": "anonymous",
-    "belief": "TSLA WILL GO UP",
-    "strategy": {
-      "strategy": {
-        "type": "bull call spread",
-        "source": "ml_model",
-        "expiration": "2025-08-16"
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "spread"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 332.56,
-        "high": 335.7,
-        "low": 330.2
-      },
-      "high_low": [
-        335.7,
-        330.2
-      ],
-      "confidence": 0.5233811433522166,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": "2025-08-16",
-      "risk_profile": "moderate",
-      "explanation": "Strategy explanation not available.",
-      "user_id": "anonymous",
-      "validator": {
-        "would_profit": null,
-        "estimated_profit_pct": null,
-        "valid": false,
-        "notes": "\u274c Could not detect % move in belief"
-      },
-      "valid": false,
-      "would_profit": null,
-      "estimated_profit_pct": null,
-      "notes": "\u274c Could not detect % move in belief"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-07-24T12:30:04.737201",
-    "user_id": "test232",
-    "belief": "TSLA WILL GO UP",
-    "strategy": {
-      "strategy": {
-        "type": "bull call spread",
-        "source": "ml_model",
-        "expiration": "2025-08-16"
-      },
-      "ticker": "TSLA",
-      "asset_class": "options",
-      "tags": [
-        "spread"
-      ],
-      "direction": "bullish",
-      "price_info": {
-        "latest": 332.56,
-        "high": 335.7,
-        "low": 330.2
-      },
-      "high_low": [
-        335.7,
-        330.2
-      ],
-      "confidence": 0.5233811433522166,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": "2025-08-16",
-      "risk_profile": "moderate",
-      "explanation": "Strategy explanation not available.",
-      "user_id": "test232",
-      "validator": {
-        "would_profit": null,
-        "estimated_profit_pct": null,
-        "valid": false,
-        "notes": "\u274c Could not detect % move in belief"
-      },
-      "valid": false,
-      "would_profit": null,
-      "estimated_profit_pct": null,
-      "notes": "\u274c Could not detect % move in belief"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-07-24T12:32:30.443322",
-    "user_id": "anonymous",
-    "belief": "I want to build a bond ladder for income",
-    "strategy": {
-      "strategy": {
-        "type": "bond ladder",
-        "source": "ml_model"
-      },
-      "ticker": "UNKNOWN",
-      "asset_class": "bond",
-      "tags": [
-        "bond"
-      ],
-      "direction": "neutral",
-      "price_info": {
-        "latest": -1.0,
-        "high": null,
-        "low": null
-      },
-      "high_low": [
-        NaN,
-        NaN
-      ],
-      "confidence": 0.3539391793299633,
-      "goal_type": "unspecified",
-      "multiplier": null,
-      "timeframe": null,
-      "expiry_date": null,
-      "risk_profile": "moderate",
-      "explanation": "Strategy explanation not available.",
-      "user_id": "anonymous",
-      "validator": {
-        "would_profit": null,
-        "estimated_profit_pct": null,
-        "valid": false,
-        "notes": "\u274c Could not detect % move in belief"
-      },
-      "valid": false,
-      "would_profit": null,
-      "estimated_profit_pct": null,
-      "notes": "\u274c Could not detect % move in belief"
-    },
-    "result": "auto_generated"
-  },
-  {
-    "timestamp": "2025-07-24T13:49:53.537997",
-    "user_id": "backend_test",
-    "belief": "I think interest rates will keep rising",
+    "timestamp": "2025-07-30T22:03:35.217113",
+    "user_id": "test_local_sync",
+    "belief": "I think AAPL will outperform the market over the next 6 months",
     "strategy": {
       "strategy": {
         "type": "iron condor",
         "source": "ml_model",
         "expiration": "2025-08-16"
       },
-      "ticker": "TLT",
+      "ticker": "ARKK",
       "asset_class": "options",
       "tags": [],
       "direction": "neutral",
       "price_info": {
-        "latest": 85.81,
-        "high": 85.86,
-        "low": 85.51
+        "latest": 75.65,
+        "high": 76.41,
+        "low": 74.75
       },
       "high_low": [
-        85.86,
-        85.51
+        76.41,
+        74.75
       ],
-      "confidence": 0.4510366150780234,
+      "confidence": 0.3791018677956122,
       "goal_type": "unspecified",
       "multiplier": null,
       "timeframe": null,
       "expiry_date": "2025-08-16",
       "risk_profile": "moderate",
       "explanation": "Strategy explanation not available.",
-      "user_id": "backend_test",
+      "user_id": "test_local_sync",
       "validator": {
         "would_profit": null,
         "estimated_profit_pct": null,
@@ -24102,38 +23919,47 @@
     "result": "auto_generated"
   },
   {
-    "timestamp": "2025-07-24T15:07:42.562506",
-    "user_id": "anonymous",
-    "belief": "tsla will go up by 25 dollars by friday",
+    "timestamp": "2025-07-30T22:03:35.793506",
+    "user_id": "test_local_sync",
+    "ip": "127.0.0.1",
+    "belief": "I think AAPL will outperform the market over the next 6 months",
+    "strategy": "{\"type\": \"call option\", \"expiration\": \"2025-08-16\", \"explanation\": \"Test explanation\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-30T22:58:10.661082",
+    "user_id": "test_local_gptml",
+    "belief": "I believe Nvidia will beat earnings next week",
     "strategy": {
       "strategy": {
-        "type": "bull call spread",
+        "type": "long put",
         "source": "ml_model",
         "expiration": "2025-08-16"
       },
-      "ticker": "UUP",
+      "ticker": "NVDA",
       "asset_class": "options",
       "tags": [
-        "spread"
+        "put"
       ],
-      "direction": "bullish",
+      "direction": "neutral",
       "price_info": {
-        "latest": 27.11,
-        "high": 27.12,
-        "low": 27.05
+        "latest": 179.27,
+        "high": 179.89,
+        "low": 176.04
       },
       "high_low": [
-        27.12,
-        27.05
+        179.89,
+        176.04
       ],
-      "confidence": 0.49413588446614387,
+      "confidence": 0.4904057424564033,
       "goal_type": "unspecified",
       "multiplier": null,
-      "timeframe": "by friday",
+      "timeframe": "next week",
       "expiry_date": "2025-08-16",
       "risk_profile": "moderate",
       "explanation": "Strategy explanation not available.",
-      "user_id": "anonymous",
+      "user_id": "test_local_gptml",
       "validator": {
         "would_profit": null,
         "estimated_profit_pct": null,
@@ -24144,6 +23970,52 @@
       "would_profit": null,
       "estimated_profit_pct": null,
       "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-30T23:25:55.234292",
+    "user_id": "test_gpt_metadata",
+    "belief": "I think Apple will rise 15% over the next 2 months due to strong iPhone sales.",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 209.05,
+        "high": 212.39,
+        "low": 207.72
+      },
+      "high_low": [
+        212.39,
+        207.72
+      ],
+      "confidence": 0.4598954427973833,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_gpt_metadata",
+      "validator": {
+        "would_profit": true,
+        "estimated_profit_pct": 50.0,
+        "valid": true,
+        "notes": "\u2705 If belief is true, strategy likely profits"
+      },
+      "valid": true,
+      "would_profit": true,
+      "estimated_profit_pct": 50.0,
+      "notes": "\u2705 If belief is true, strategy likely profits"
     },
     "result": "auto_generated"
   }
