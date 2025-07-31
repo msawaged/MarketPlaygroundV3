@@ -1,6 +1,6 @@
 # backend/ibkr_data.py
 
-from ib_insync import IB, Stock
+# from ib_insync import IB, Stock
 import os
 import asyncio
 

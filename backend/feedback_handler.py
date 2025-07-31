@@ -28,7 +28,13 @@ def load_feedback_model():
         return None
 
 # Load model once at import time to reuse
-model = load_feedback_model()
+# === 🩹 TEMP PATCH: Prevent crash if feedback model is corrupted or missing ===
+try:
+    model = load_feedback_model()
+except Exception as e:
+    print(f"[⚠️ Feedback model disabled] {e}")
+    model = None
+
 
 def predict_feedback_label(belief: str, strategy: str) -> str:
     """

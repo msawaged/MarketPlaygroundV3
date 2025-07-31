@@ -4,7 +4,12 @@
 Main FastAPI entrypoint — modular routes, CORS, AI engine, Alpaca, analytics, and ingestion toggles.
 """
 
+print("🚀 Starting FastAPI app... [checkpoint 1]")
+
+
 import os
+print("🔧 [2] OS module loaded")
+
 import traceback
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -12,21 +17,31 @@ from collections import Counter
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Query
+print("📦 [3] FastAPI core imports loaded")
+
 from backend.routes import debug_router  # ✅ THIS LINE IS REQUIRED
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
+print("📦 [4] Middleware, Pydantic, dotenv loaded")
 
 load_dotenv()
+print("🌿 [5] .env variables loaded")
+
+
 
 # === Local imports ===
+print("📦 [6] Starting local backend imports")
 from backend.user_models import init_db
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.alpaca_orders import AlpacaExecutor
 from backend.feedback_handler import save_feedback_entry
+print("✅ [7] Local imports finished")
+
 
 # === Modular route imports ===
+print("📦 [8] Starting router imports")
 from backend.routes.auth_router import router as auth_router
 from backend.routes.feedback_router import router as feedback_router
 from backend.routes.feedback_predictor import router as feedback_predictor
@@ -43,9 +58,16 @@ from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
 from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoints (test connection, real-time data, etc.)
+print("✅ [9] Router imports finished")
 
 
 app = FastAPI(title="MarketPlayground AI Backend")
+print("🚀 [10] FastAPI instance created")
+
+# === Debug: Print all loaded routes (for dev visibility) ===
+print("\n🔍 ROUTES LOADED:")
+for route in app.routes:
+    print(f"{route.path} → {route.name}")
 
 # === CORS for frontend integration ===
 app.add_middleware(
@@ -101,6 +123,7 @@ app.include_router(analytics_router,         prefix="/analytics", tags=["Analyti
 app.include_router(debug_router,             prefix="/debug",     tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
 app.include_router(ibkr_router,              prefix="/ibkr",      tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
 
+print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")
 
 
 # === Request schemas ===
@@ -124,24 +147,6 @@ def test_env():
     openai_key = os.getenv("OPENAI_API_KEY")
     return {"OPENAI_API_KEY": "Set" if openai_key else "Not Set"}
 
-@app.post("/process_belief")
-def process_belief(request: BeliefRequest) -> Dict[str, Any]:
-    try:
-        result = run_ai_engine(
-            belief=request.belief,
-            risk_profile=request.risk_profile,
-            user_id=request.user_id
-        )
-        result["user_id"] = request.user_id
-        if request.place_order:
-            executor = AlpacaExecutor()
-            result["execution_result"] = executor.execute_order(result, user_id=request.user_id)
-        return result
-    except Exception as e:
-        print("\n❌ ERROR in /process_belief:")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
     try:
@@ -153,13 +158,24 @@ async def strategy_process_belief(request: Request):
         if not belief:
             raise HTTPException(status_code=400, detail="Belief is required")
 
-        result = run_ai_engine(belief, risk_profile=risk_profile, user_id=user_id)
-        return result
+        # TEMPORARY dummy output (commented GPT/ML for now)
+        return {
+            "message": "✅ Dummy strategy response (strategy_process_belief)",
+            "user_id": user_id,
+            "strategy": {
+                "type": "Dummy Strategy",
+                "trade_legs": ["Buy 1 dummy call"],
+                "expiration": "2099-12-31",
+                "explanation": "This is a dummy placeholder from /strategy/process_belief."
+            }
+        }
 
     except Exception as e:
         print("\n❌ ERROR in /strategy/process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 @app.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
@@ -280,9 +296,12 @@ def news_ingestion_status():
     return {"paused": paused}
 
 
-if __name__ == "__main__":
-    import uvicorn
-    print("\n🔍 ROUTES LOADED:")
-    for route in app.routes:
-        print(f"{route.path} → {route.name}")
-    uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
+# if __name__ == "__main__":
+#     import uvicorn
+#     print("\n🔍 ROUTES LOADED:")
+#     for route in app.routes:
+#         print(f"{route.path} → {route.name}")
+#     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
+
+#     print("✅ ai_engine.py fully loaded")
+

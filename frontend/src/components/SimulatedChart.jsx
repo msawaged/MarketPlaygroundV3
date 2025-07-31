@@ -21,68 +21,76 @@ const SimulatedChart = ({ ticker, strategyType, price, confidence, assetClass })
     const x = [];
     const y = [];
 
-    // ✅ Options Simulation
-    if (
-      assetClass === 'option' ||
-      assetClass === 'options' ||  // fix for backend plural
-      strategyType.toLowerCase().includes('call') ||
-      strategyType.toLowerCase().includes('put') ||
-      strategyType.toLowerCase().includes('straddle')
-    ) {
-      for (let p = currentPrice * 0.5; p <= currentPrice * 1.5; p += 1) {
-        x.push(p.toFixed(2));
-        let payoff = 0;
-
-        if (strategyType === 'Long Call') {
-          const strike = currentPrice * 1.05;
-          payoff = Math.max(0, p - strike);
-        } else if (strategyType === 'Long Put') {
-          const strike = currentPrice * 0.95;
-          payoff = Math.max(0, strike - p);
-        } else if (strategyType === 'Long Straddle') {
-          const strike = currentPrice;
-          payoff = Math.max(0, p - strike) + Math.max(0, strike - p);
-        } else {
-          payoff = (p - currentPrice) * 0.5;
-        }
-
-        y.push(payoff);
-      }
-
-      return {
-        type: 'line',
-        data: {
-          labels: x,
-          datasets: [
-            {
-              label: `${strategyType} Payoff`,
-              data: y,
-              fill: 'start',
-              backgroundColor: 'rgba(0, 200, 255, 0.1)',
-              borderColor: 'rgba(0, 200, 255, 1)',
-              borderWidth: 2,
-              tension: 0.4,
-              pointRadius: 0,
-            },
-            {
-              label: 'Break-even',
-              data: Array(x.length).fill(0),
-              borderColor: 'gray',
-              borderDash: [5, 5],
-              pointRadius: 0,
-            },
-            {
-              label: 'Current Price',
-              data: x.map(label => parseFloat(label) === parseFloat(currentPrice.toFixed(2)) ? 0.01 : null),
-              backgroundColor: 'red',
-              pointRadius: 5,
-              type: 'line',
-              borderWidth: 0,
+        // ✅ Options Simulation (with net PnL logic vs live price)
+        if (
+          assetClass === 'option' ||
+          assetClass === 'options' ||  // fix for backend plural
+          strategyType.toLowerCase().includes('call') ||
+          strategyType.toLowerCase().includes('put') ||
+          strategyType.toLowerCase().includes('straddle')
+        ) {
+          const premium = currentPrice * 0.05; // Assume 5% premium
+          const strike =
+            strategyType.toLowerCase().includes('call')
+              ? currentPrice * 1.05
+              : strategyType.toLowerCase().includes('put')
+              ? currentPrice * 0.95
+              : currentPrice;
+    
+          for (let p = currentPrice * 0.5; p <= currentPrice * 1.5; p += 1) {
+            const px = parseFloat(p.toFixed(2));
+            x.push(px);
+    
+            let payoff = 0;
+            if (strategyType.toLowerCase().includes('call')) {
+              payoff = Math.max(0, px - strike) - premium;
+            } else if (strategyType.toLowerCase().includes('put')) {
+              payoff = Math.max(0, strike - px) - premium;
+            } else if (strategyType.toLowerCase().includes('straddle')) {
+              payoff = Math.abs(px - strike) - premium;
+            } else {
+              payoff = (px - currentPrice) * 0.5;
             }
-          ],
-        },
-      };
-    }
+    
+            y.push(parseFloat(payoff.toFixed(2)));
+          }
+    
+          return {
+            type: 'line',
+            data: {
+              labels: x,
+              datasets: [
+                {
+                  label: `${strategyType} Payoff (net of premium)`,
+                  data: y,
+                  fill: 'start',
+                  backgroundColor: y.map(v => v >= 0 ? 'rgba(0,255,100,0.1)' : 'rgba(255,50,50,0.1)'),
+                  borderColor: 'deepskyblue',
+                  borderWidth: 2,
+                  tension: 0.3,
+                  pointRadius: 0,
+                },
+                {
+                  label: 'Break-even Line',
+                  data: Array(x.length).fill(0),
+                  borderColor: '#888',
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                },
+                {
+                  label: 'Current Price',
+                  data: x.map(px => px === parseFloat(currentPrice.toFixed(2)) ? 0.01 : null),
+                  backgroundColor: 'red',
+                  pointRadius: 6,
+                  type: 'line',
+                  borderWidth: 0,
+                },
+              ],
+            },
+          };
+        }
+    
+          
 
     // ✅ Bonds Simulation
     if (assetClass === 'bond') {

@@ -1,4 +1,5 @@
 # backend/ai_engine/ai_engine.py
+print("🧪 ai_engine.py: Top of file loaded.")
 
 """
 Main AI Engine — Translates beliefs into trade strategies.
@@ -12,24 +13,39 @@ from datetime import datetime
 from openai import OpenAI, OpenAIError
 import openai
 
+print("🔍 ai_engine.py: All imports finished.")
+
+
 from typing import (
     Optional,
 )  # ✅ Required for Optional[str] in function signatures
 from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
+print("✅ Imported openai_config")
+
 from backend.belief_parser import parse_belief
+print("✅ Imported belief_parser")
+
 from backend.market_data import (
     get_latest_price,
     get_weekly_high_low,
     get_option_expirations,
 )
+print("✅ Imported market_data")
+
 from backend.ai_engine.goal_evaluator import (
     evaluate_goal_from_belief as evaluate_goal,
 )
+print("✅ Imported goal_evaluator")
+
 from backend.ai_engine.expiry_utils import parse_timeframe_to_expiry
+print("✅ Imported expiry_utils")
+
 from backend.logger.strategy_logger import log_strategy
-from backend.ai_engine.strategy_model_selector import (
-    decide_strategy_engine,
-)  # ✅ Moved here
+print("✅ Imported strategy_logger")
+
+from backend.ai_engine.strategy_model_selector import decide_strategy_engine
+print("✅ Imported strategy_model_selector")
+
 
 
 if not OPENAI_API_KEY:
@@ -39,24 +55,42 @@ else:
 
     openai.api_key = OPENAI_API_KEY
 
-    try:
-        client = OpenAI()
-    except OpenAIError as e:
-        raise RuntimeError(f"❌ Failed to initialize OpenAI client: {e}")
+    client = None  # Will be initialized lazily later
+    print("🧪 [Debug] OpenAI client set to None (lazy init ready)")
 
-        KNOWN_EQUITIES = {
-            "AAPL",
-            "TSLA",
-            "NVDA",
-            "AMZN",
-            "GOOGL",
-            "META",
-            "MSFT",
-            "NFLX",
-            "BAC",
-            "JPM",
-            "WMT",
-        }
+    KNOWN_EQUITIES = {
+        "AAPL",
+        "TSLA",
+        "NVDA",
+        "AMZN",
+        "GOOGL",
+        "META",
+        "MSFT",
+        "NFLX",
+        "BAC",
+        "JPM",
+        "WMT",
+    }
+
+
+ # === 🔁 Lazy Load Helper: Create OpenAI client only when needed ===
+client = None
+print("✅ [Debug] OpenAI client set to None (lazy init ready)")
+
+def get_openai_client():
+    """
+    Lazily initializes the OpenAI client only when called.
+    Prevents backend hangs or timeouts on startup.
+    """
+    global client
+    if client is None:
+        try:
+            client = OpenAI()  # ✅ not get_openai_client()
+        except OpenAIError as e:
+            raise RuntimeError(f"❌ Failed to initialize OpenAI Client: {e}")
+    return client
+
+
 
 # === 🧠 Helper: Parse GPT output into structured strategy ===
 def parse_gpt_output_to_strategy(output: str) -> dict | None:
@@ -82,6 +116,55 @@ def parse_gpt_output_to_strategy(output: str) -> dict | None:
         print(f"[GPT PARSE ERROR] Failed to parse GPT output: {e}")
     return None
 
+def attempt_gpt_strategy_parse(belief, gpt_raw_output, context) -> dict | None:
+    """
+    🧠 Soft fallback GPT strategy parser — uses keyword-based recovery from natural language output.
+    Tries to infer structure when json.loads() fails or GPT output is unstructured.
+    """
+    gpt_lower = gpt_raw_output.lower()
+    strategy = {}
+
+    if "call option" in gpt_lower:
+        strategy = {
+            "type": "Call Option",
+            "trade_legs": ["buy 1 call slightly OTM"],
+            "expiration": "N/A",
+            "target_return": "15%",
+            "max_loss": "Premium Paid",
+            "time_to_target": "1 month",
+            "explanation": gpt_raw_output.strip(),
+        }
+
+    elif "bull call spread" in gpt_lower:
+        strategy = {
+            "type": "Bull Call Spread",
+            "trade_legs": ["buy 1 call", "sell 1 higher call"],
+            "expiration": "N/A",
+            "target_return": "20%",
+            "max_loss": "Net Debit",
+            "time_to_target": "1 month",
+            "explanation": gpt_raw_output.strip(),
+        }
+
+    elif "equity" in gpt_lower or "buy stock" in gpt_lower:
+        strategy = {
+            "type": "Buy Equity",
+            "trade_legs": [f"buy 100 shares of {context.get('ticker', 'XYZ')}"],
+            "expiration": "N/A",
+            "target_return": "10%",
+            "max_loss": "10%",
+            "time_to_target": "3 months",
+            "explanation": gpt_raw_output.strip(),
+        }
+
+    if strategy:
+        print("✅ [Soft Parser] Recovered strategy from GPT prose.")
+        strategy["source"] = "gpt_soft_parse"
+        return strategy
+
+    print("[❌ Soft Parser] Failed to extract strategy from prose.")
+    return None
+
 
 def clean_float(value):
     if value is None or (
@@ -99,6 +182,27 @@ def is_expired(date_str):
         return parsed.date() < datetime.now().date()
     except:
         return True
+
+def fix_expiration(ticker: str, raw_expiry: str) -> str:
+    """
+    Validates and corrects expiration. If invalid, replaces with the next valid expiration.
+    Returns "N/A" if no valid future expirations exist.
+    """
+    try:
+        if is_expired(raw_expiry):
+            fallback_dates = get_option_expirations(ticker)
+            future_dates = [d for d in fallback_dates if not is_expired(d)]
+            if future_dates:
+                print(f"[FIXED] Overriding bad expiration → {future_dates[0]}")
+                return future_dates[0]
+            else:
+                print("[WARNING] No valid expirations found. Using 'N/A'.")
+                return "N/A"
+        return raw_expiry
+    except Exception as e:
+        print(f"[ERROR] Expiration fix failed: {e}")
+        return "N/A"
+
 
 
 def run_ai_engine(
@@ -202,34 +306,85 @@ def run_ai_engine(
         },
     )
 
-    # 🧠 Optional: Compare GPT-4 strategy output for debugging (does NOT override final output)
+        # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
     try:
         from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
-        gpt_strategy = generate_strategy_with_gpt4(belief)
-        print("\n🧠 [GPT-4 Strategy Output for Comparison Only]:")
-        print(json.dumps(gpt_strategy, indent=2))
+
+        gpt_raw_output = generate_strategy_with_gpt4(belief)
+
+        try:
+            gpt_strategy = json.loads(gpt_raw_output)
+            print("\n🧠 [GPT-4 Strategy Output for Comparison Only]:")
+            print(json.dumps(gpt_strategy, indent=2))
+
+            # === 🧠 Auto-patch straddle/strangle based on explanation text ===
+            explanation = gpt_strategy.get("explanation", "").lower()
+
+            if "straddle" in explanation and "call" in explanation and "put" in explanation:
+                print("🛠️ Auto-patching strategy as STRADDLE")
+                gpt_strategy["type"] = "Straddle"
+                gpt_strategy["trade_legs"] = ["buy 1 ATM call", "buy 1 ATM put"]
+
+            elif "strangle" in explanation and "call" in explanation and "put" in explanation:
+                print("🛠️ Auto-patching strategy as STRANGLE")
+                gpt_strategy["type"] = "Strangle"
+                gpt_strategy["trade_legs"] = ["buy 1 OTM call", "buy 1 OTM put"]
+
+            strategy = gpt_strategy
+            strategy["source"] = "gpt_json"
+
+        except json.JSONDecodeError:
+            print("[⚠️ Fallback] GPT returned invalid JSON, attempting soft parse...")
+
+            soft_strategy = attempt_gpt_strategy_parse(
+                belief,
+                gpt_raw_output,
+                {
+                    "ticker": ticker,
+                    "direction": direction,
+                    "tags": tags,
+                    "asset_class": asset_class,
+                    "goal_type": goal_type,
+                    "multiplier": multiplier,
+                    "timeframe": timeframe,
+                    "risk_profile": risk_profile,
+                    "confidence": confidence,
+                    "price_info": price_info,
+                },
+            )
+
+            if soft_strategy:
+                print("[✅ Soft Parser] Recovered strategy from GPT prose.")
+                strategy = soft_strategy
+                strategy["source"] = "gpt_soft_parse"
+            else:
+                print("[❌ Soft Parser] Failed to extract strategy from prose. Using ML fallback.")
+                from backend.ai_engine.ml_strategy_bridge import run_ml_strategy_model
+
+                strategy = run_ml_strategy_model(
+                    belief,
+                    {
+                        "direction": direction,
+                        "ticker": ticker,
+                        "tags": tags,
+                        "asset_class": asset_class,
+                        "goal_type": goal_type,
+                        "multiplier": multiplier,
+                        "timeframe": timeframe,
+                        "risk_profile": risk_profile,
+                        "confidence": confidence,
+                        "price_info": price_info,
+                    },
+                )
+
     except Exception as e:
         print(f"[GPT DEBUG] ❌ GPT strategy generation failed: {e}")
 
 
-    # === 🧠 FIX: Validate and sanitize expiration for options strategies ===
+    # === 🧠 Clean up expiration
     if asset_class == "options":
-        raw_expiry = strategy.get("expiration")
-        if is_expired(raw_expiry):
-            try:
-                fallback_dates = get_option_expirations(ticker)
-                future_dates = [d for d in fallback_dates if not is_expired(d)]
-                if future_dates:
-                    strategy["expiration"] = future_dates[0]
-                    print(
-                        f"[FIXED] Overriding bad expiration → {strategy['expiration']}"
-                    )
-                else:
-                    strategy["expiration"] = "N/A"
-                    print(f"[WARNING] No valid future expirations found.")
-            except Exception as e:
-                strategy["expiration"] = "N/A"
-                print(f"[ERROR] Failed to override bad expiration: {e}")
+        strategy["expiration"] = fix_expiration(ticker, strategy.get("expiration"))
+
 
     # ✅ FIXED: Ensure trade_legs list is converted to a lowercase string safely
     strategy_type = strategy.get("type", "").lower()
@@ -392,7 +547,7 @@ def generate_asset_basket(
 
         print("📦 Calling GPT-4 for asset basket generation...")
 
-        response = client.chat.completions.create(
+        response = get_openai_client().chat.completions.create(
             model=GPT_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
@@ -428,3 +583,5 @@ def generate_asset_basket(
             "estimated_return": "4–6% annually",
             "risk_profile": "moderate",
         }
+
+        print("✅ ai_engine.py fully loaded")

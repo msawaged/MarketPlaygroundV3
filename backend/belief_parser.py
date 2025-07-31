@@ -1,5 +1,8 @@
 # backend/belief_parser.py
 
+print("🔍 belief_parser.py: Top of file reached")
+
+
 """
 This module parses the user's belief into structured components:
 - Detects company names and tickers

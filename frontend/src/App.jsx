@@ -385,7 +385,25 @@ function MainApp() {
               marginTop: '1rem',
               boxShadow: '0 0 20px rgba(59,130,246,0.5)'
             }}>
-              <p><strong>🧠 Strategy:</strong> {response.strategy[currentIndex].type}</p>
+              <p>
+               <strong>🧠 Strategy:</strong> {response.strategy[currentIndex].type}{' '}
+                <span style={{
+                  backgroundColor: response.strategy[currentIndex].source === 'ml_model' ? '#f87171' : '#34d399',
+                  color: '#000',
+                  padding: '0.2rem 0.5rem',
+                  marginLeft: '0.5rem',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  fontSize: '0.8rem'
+                }}>
+                  {response.strategy[currentIndex].source === 'ml_model'
+                    ? '📊 ML Model'
+                    : response.strategy[currentIndex].source === 'gpt_soft_parse'
+                    ? '🧬 GPT Parsed'
+                    : '✅ GPT JSON'}
+                </span>
+              </p>
+
               <p><strong>📉 Type:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.instrument || parseOptionType(response.strategy[currentIndex].trade_legs?.[0])}</p>
               <p><strong>💥 Strike:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.strike || parseStrike(response.strategy[currentIndex].trade_legs?.[0])}</p>
               <p><strong>🧾 Quantity:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.quantity || parseQuantity(response.strategy[currentIndex].trade_legs?.[0])}</p>
@@ -393,7 +411,26 @@ function MainApp() {
               <p><strong>📝 Description:</strong> {response.strategy[currentIndex].description}</p>
               <p><strong>📌 Tags:</strong> {response.tags?.join(', ') || 'N/A'}</p>
               <p><strong>🎯 Ticker:</strong> {response.ticker}</p>
-              <p><strong>📊 Asset Class:</strong> {response.asset_class}</p>
+              <p>
+                <strong>🧠 Asset Class:</strong>{' '}
+                <span style={{
+                  backgroundColor:
+                    response.asset_class === 'options' ? '#0ea5e9' :
+                    response.asset_class === 'equity' ? '#10b981' :
+                    response.asset_class === 'bonds' ? '#6366f1' :
+                    response.asset_class === 'crypto' ? '#ec4899' :
+                    '#94a3b8',
+                  color: 'white',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.85rem',
+                  marginLeft: '0.5rem'
+                }}>
+                  {response.asset_class.toUpperCase()}
+                </span>
+              </p>
+
+
                       {/* ✅ Extra breakdown for option strategies */}
         {response.asset_class === "options" && response.strategy?.trade_legs && (
           <div style={{
@@ -410,7 +447,16 @@ function MainApp() {
             <p><strong>Strike:</strong> {response.strategy.trade_legs[0].strike || parseStrike(response.strategy.trade_legs[0])}</p>
             <p><strong>Quantity:</strong> {response.strategy.trade_legs[0].quantity || parseQuantity(response.strategy.trade_legs[0])}</p>
             <p><strong>Expiration:</strong> {response.strategy.expiration}</p>
-            <p><strong>Confidence:</strong> {(response.confidence * 100).toFixed(1)}%</p>
+            <p>
+              <strong>🧠 Confidence:</strong>{' '}
+              <span style={{
+                color: response.confidence > 0.7 ? '#22c55e' : response.confidence > 0.4 ? '#facc15' : '#f87171',
+                fontWeight: 'bold'
+              }}>
+                {(response.confidence * 100).toFixed(1)}%
+              </span>
+            </p>
+            
           </div>
         )}
 

@@ -24018,5 +24018,1409 @@
       "notes": "\u2705 If belief is true, strategy likely profits"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T10:28:08.819302",
+    "user_id": "test_gpt_parse",
+    "belief": "Apple will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 209.05,
+        "high": 212.39,
+        "low": 207.72
+      },
+      "high_low": [
+        212.39,
+        207.72
+      ],
+      "confidence": 0.4686432521042356,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_gpt_parse",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T10:53:19.254409",
+    "user_id": "test_gpt_fallback",
+    "belief": "Apple will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 209.05,
+        "high": 212.39,
+        "low": 207.72
+      },
+      "high_low": [
+        212.39,
+        207.72
+      ],
+      "confidence": 0.4686432521042356,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_gpt_fallback",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T10:59:20.965405",
+    "user_id": "test_gpt_fallback",
+    "belief": "Apple will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-08",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "next week",
+        "explanation": "Trading Strategy:\n\nAs you believe Apple will beat earnings next week, the best trading strategy would be a bullish one. Here is an example of an options strategy that could be useful in this situation:\n\n1. Long Call Option: You can buy a call option on Apple stocks. The strike price should be near the current market price of Apple stocks. The expiration date should be at least a week or two after the earnings announcement to give the market enough time to react to the news.\n\nEntry: Enter the trade by buying a call option with a strike price near the current market price. The premium you pay for this option is your maximum risk.\n\nPrice Levels: Monitor the price levels of Apple stock after the earnings announcement. If the price goes up, the value of your call option will also increase.\n\nExpected Profit: Your profit is potentially unlimited. It will depend on how much above the strike price the stock price goes before the option expires. \n\nRisk: Your risk is limited to the premium you paid for the option. If the stock price doesn't go above the strike price before the option expires, you may lose the entire premium.\n\n2. Bull Call Spread: Alternatively, you could implement a bull call spread strategy if you want to limit your risk and reduce the cost of the trade. This involves buying a call option and selling another call option with a higher strike price but same expiration date.\n\nEntry: Enter the trade by buying a call option with a strike price near the current market price and selling a call option with a higher strike price.\n\nPrice Levels: Monitor the price levels of Apple stock after the earnings announcement. If the price goes above the strike price of the call option you sold, your profit will be capped.\n\nExpected Profit: Your profit is limited to the difference between the two strike prices minus the net premium paid.\n\nRisk: Your risk is limited to the net premium paid for the spread. This strategy can be less risky than a long call option but your profit potential is also limited. \n\nRemember, all investments involve risks, including the loss of principal. Consider your risk tolerance and investment objectives before making any investment decisions.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 209.05,
+        "high": 212.39,
+        "low": 207.72
+      },
+      "high_low": [
+        212.39,
+        207.72
+      ],
+      "confidence": 0.4686432521042356,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-08-08",
+      "risk_profile": "moderate",
+      "explanation": "Trading Strategy:\n\nAs you believe Apple will beat earnings next week, the best trading strategy would be a bullish one. Here is an example of an options strategy that could be useful in this situation:\n\n1. Long Call Option: You can buy a call option on Apple stocks. The strike price should be near the current market price of Apple stocks. The expiration date should be at least a week or two after the earnings announcement to give the market enough time to react to the news.\n\nEntry: Enter the trade by buying a call option with a strike price near the current market price. The premium you pay for this option is your maximum risk.\n\nPrice Levels: Monitor the price levels of Apple stock after the earnings announcement. If the price goes up, the value of your call option will also increase.\n\nExpected Profit: Your profit is potentially unlimited. It will depend on how much above the strike price the stock price goes before the option expires. \n\nRisk: Your risk is limited to the premium you paid for the option. If the stock price doesn't go above the strike price before the option expires, you may lose the entire premium.\n\n2. Bull Call Spread: Alternatively, you could implement a bull call spread strategy if you want to limit your risk and reduce the cost of the trade. This involves buying a call option and selling another call option with a higher strike price but same expiration date.\n\nEntry: Enter the trade by buying a call option with a strike price near the current market price and selling a call option with a higher strike price.\n\nPrice Levels: Monitor the price levels of Apple stock after the earnings announcement. If the price goes above the strike price of the call option you sold, your profit will be capped.\n\nExpected Profit: Your profit is limited to the difference between the two strike prices minus the net premium paid.\n\nRisk: Your risk is limited to the net premium paid for the spread. This strategy can be less risky than a long call option but your profit potential is also limited. \n\nRemember, all investments involve risks, including the loss of principal. Consider your risk tolerance and investment objectives before making any investment decisions.",
+      "user_id": "test_gpt_fallback",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T11:10:53.093889",
+    "user_id": "test_case_1",
+    "belief": "I believe Nvidia will surge after their AI chip launch next quarter",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-01",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "next quarter",
+        "explanation": "Strategy:\n\n1. Entry: Buy \"in the money\" (ITM) call options on Nvidia (NVDA). ITM options are those with a strike price below the current market price of the underlying asset. They have a higher premium than out of the money options but are less risky since they already have intrinsic value. \n\n2. Price Levels: Choose a strike price that is reasonably below the current market price of NVDA. For example, if NVDA is currently trading at $200, you might consider buying call options with a strike price of $190. The expiration date should be after the AI chip launch, so you have the opportunity to capitalize on the surge you anticipate.\n\n3. Expected Profit: Your profit will be the difference between the market price of NVDA at expiration and the strike price, minus the premium you paid for the option. For example, if NVDA surges to $220 at expiration, your profit per option would be ($220-$190)-premium.\n\n4. Risk Logic: Your maximum risk is the premium you pay for the option. Even if NVDA's price falls, you cannot lose more than what you paid for the option. However, be aware that if NVDA's price does not exceed the strike price plus the premium by expiration, you will lose some or all of your investment. \n\n5. Exit Strategy: If NVDA's price surges as you anticipate, you can sell the option for a profit before expiration. If NVDA's price does not increase as much as you hoped, you can minimize your losses by selling the option before expiration. \n\n6. Consideration: Keep up with Nvidia's news and updates. Any indication that the AI chip launch will be delayed or unsuccessful could cause NVDA's price to fall, which would decrease the value of your call options. \n\nRemember, options can expire worthless, so it's important to monitor your position and be prepared to adjust your strategy if market conditions change.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 179.27,
+        "high": 179.89,
+        "low": 176.04
+      },
+      "high_low": [
+        179.89,
+        176.04
+      ],
+      "confidence": 0.5592853940737702,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next quarter",
+      "expiry_date": "2025-08-01",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\n1. Entry: Buy \"in the money\" (ITM) call options on Nvidia (NVDA). ITM options are those with a strike price below the current market price of the underlying asset. They have a higher premium than out of the money options but are less risky since they already have intrinsic value. \n\n2. Price Levels: Choose a strike price that is reasonably below the current market price of NVDA. For example, if NVDA is currently trading at $200, you might consider buying call options with a strike price of $190. The expiration date should be after the AI chip launch, so you have the opportunity to capitalize on the surge you anticipate.\n\n3. Expected Profit: Your profit will be the difference between the market price of NVDA at expiration and the strike price, minus the premium you paid for the option. For example, if NVDA surges to $220 at expiration, your profit per option would be ($220-$190)-premium.\n\n4. Risk Logic: Your maximum risk is the premium you pay for the option. Even if NVDA's price falls, you cannot lose more than what you paid for the option. However, be aware that if NVDA's price does not exceed the strike price plus the premium by expiration, you will lose some or all of your investment. \n\n5. Exit Strategy: If NVDA's price surges as you anticipate, you can sell the option for a profit before expiration. If NVDA's price does not increase as much as you hoped, you can minimize your losses by selling the option before expiration. \n\n6. Consideration: Keep up with Nvidia's news and updates. Any indication that the AI chip launch will be delayed or unsuccessful could cause NVDA's price to fall, which would decrease the value of your call options. \n\nRemember, options can expire worthless, so it's important to monitor your position and be prepared to adjust your strategy if market conditions change.",
+      "user_id": "test_case_1",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T12:17:58.755355",
+    "user_id": "local_test",
+    "belief": "Tesla will beat earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy: Long Call Options on Tesla\n\nGiven your bullish outlook on Tesla, a long call options strategy would be suitable. This strategy involves purchasing call options on Tesla's stock. \n\nHere's how it works:\n\n1. Entry: Purchase Tesla call options with a strike price slightly above the current market price. The expiration date should be after the earnings announcement to take advantage of potential price increases.\n\n2. Price Levels: Monitor Tesla's stock price after the earnings announcement. If the price rises above the strike price, the options are 'in the money' and can be exercised for a profit. \n\n3. Expected Profit: The profit potential is theoretically unlimited because Tesla's stock price can rise indefinitely. The profit would be the difference between the stock price at expiration and the strike price, minus the premium paid for the option.\n\n4. Risk Logic: The risk is limited to the premium paid for the call options. If Tesla's stock price doesn't exceed the strike price before expiration, the options will expire worthless and the entire premium would be lost.\n\nPlease consider that options trading carries significant risk and isn't suitable for all investors. You should carefully consider your own financial situation and consult with a financial advisor before making any investment decisions.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.04,
+        "high": 324.45,
+        "low": 311.62
+      },
+      "high_low": [
+        324.45,
+        311.62
+      ],
+      "confidence": 0.5414567329272904,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy: Long Call Options on Tesla\n\nGiven your bullish outlook on Tesla, a long call options strategy would be suitable. This strategy involves purchasing call options on Tesla's stock. \n\nHere's how it works:\n\n1. Entry: Purchase Tesla call options with a strike price slightly above the current market price. The expiration date should be after the earnings announcement to take advantage of potential price increases.\n\n2. Price Levels: Monitor Tesla's stock price after the earnings announcement. If the price rises above the strike price, the options are 'in the money' and can be exercised for a profit. \n\n3. Expected Profit: The profit potential is theoretically unlimited because Tesla's stock price can rise indefinitely. The profit would be the difference between the stock price at expiration and the strike price, minus the premium paid for the option.\n\n4. Risk Logic: The risk is limited to the premium paid for the call options. If Tesla's stock price doesn't exceed the strike price before expiration, the options will expire worthless and the entire premium would be lost.\n\nPlease consider that options trading carries significant risk and isn't suitable for all investors. You should carefully consider your own financial situation and consult with a financial advisor before making any investment decisions.",
+      "user_id": "local_test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T12:22:22.543215",
+    "user_id": "anonymous",
+    "belief": "Tesla will beat earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your belief that Tesla will beat earnings, a bullish options strategy would be appropriate. One such strategy is buying a Call option.\n\n1. Entry: First, identify an appropriate Strike Price. This should be a price you believe Tesla will exceed after the earnings announcement. For instance, if Tesla is currently trading at $600, you might choose a Strike Price of $650. Then, purchase a Call option with this Strike Price that expires 2-4 weeks after the earnings announcement. This provides enough time for the market to react to the earnings beat.\n\n2. Expected Profit: If Tesla does indeed beat earnings and the stock price rises above your Strike Price, your Call option will be \"in the money.\" You can then exercise your option to buy shares of Tesla at the Strike Price, which will be lower than the current market price. Your profit will be the difference between the two prices, minus the premium you paid for the option.\n\n3. Risk: The risk in this strategy is limited to the premium you paid for the option. If Tesla does not beat earnings or the market does not react positively, the stock price may not rise above your Strike Price. In this case, your option would expire worthless and you would lose the premium paid.\n\nRemember, while options can provide significant leverage and potential profits, they also come with substantial risk and are not suitable for all investors. Always consider your own risk tolerance and investment objectives before trading options.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.04,
+        "high": 324.45,
+        "low": 311.62
+      },
+      "high_low": [
+        324.45,
+        311.62
+      ],
+      "confidence": 0.5414567329272904,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your belief that Tesla will beat earnings, a bullish options strategy would be appropriate. One such strategy is buying a Call option.\n\n1. Entry: First, identify an appropriate Strike Price. This should be a price you believe Tesla will exceed after the earnings announcement. For instance, if Tesla is currently trading at $600, you might choose a Strike Price of $650. Then, purchase a Call option with this Strike Price that expires 2-4 weeks after the earnings announcement. This provides enough time for the market to react to the earnings beat.\n\n2. Expected Profit: If Tesla does indeed beat earnings and the stock price rises above your Strike Price, your Call option will be \"in the money.\" You can then exercise your option to buy shares of Tesla at the Strike Price, which will be lower than the current market price. Your profit will be the difference between the two prices, minus the premium you paid for the option.\n\n3. Risk: The risk in this strategy is limited to the premium you paid for the option. If Tesla does not beat earnings or the market does not react positively, the stock price may not rise above your Strike Price. In this case, your option would expire worthless and you would lose the premium paid.\n\nRemember, while options can provide significant leverage and potential profits, they also come with substantial risk and are not suitable for all investors. Always consider your own risk tolerance and investment objectives before trading options.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T12:22:55.813656",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "Tesla will beat earnings",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-31T13:11:10.796359",
+    "user_id": "anonymous",
+    "belief": "tsla will beat earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nBuy Call options on Tesla Inc. (TSLA) that expire one or two weeks after the earnings announcement. \n\nPrice Levels & Entry: \nFirst, look at the implied volatility of the options. If the implied volatility is high, it means the market is expecting a large move in the stock price, and hence, the options will be expensive. If the implied volatility is low, the options will be cheaper. \n\nFor this strategy, it's best to buy options that are slightly out-of-the-money (OTM). For example, if TSLA is trading at $600, go for the $620 Call options. The strike price should depend on your belief of how much TSLA will beat earnings by.\n\nExpected Profit/Risk Logic: \nIf TSLA does beat earnings and the stock price jumps, the value of your Call options will increase significantly, and you could make a large profit. \n\nHowever, if TSLA does not beat earnings or the stock price does not move as much as expected, the value of the Call options could decrease significantly. The maximum risk in this strategy is the premium paid for the Call options, which would be lost if TSLA does not beat earnings or if the stock price does not increase.\n\nRemember to close out your position before the options expire, as options can expire worthless if they are out-of-the-money. You can either sell the options for a profit if TSLA beats earnings or cut your losses if it does not. \n\nThis strategy is for investors who are highly confident in their belief and are willing to take on significant risk for the potential of high returns.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.04,
+        "high": 324.45,
+        "low": 311.62
+      },
+      "high_low": [
+        324.45,
+        311.62
+      ],
+      "confidence": 0.5573546738096814,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nBuy Call options on Tesla Inc. (TSLA) that expire one or two weeks after the earnings announcement. \n\nPrice Levels & Entry: \nFirst, look at the implied volatility of the options. If the implied volatility is high, it means the market is expecting a large move in the stock price, and hence, the options will be expensive. If the implied volatility is low, the options will be cheaper. \n\nFor this strategy, it's best to buy options that are slightly out-of-the-money (OTM). For example, if TSLA is trading at $600, go for the $620 Call options. The strike price should depend on your belief of how much TSLA will beat earnings by.\n\nExpected Profit/Risk Logic: \nIf TSLA does beat earnings and the stock price jumps, the value of your Call options will increase significantly, and you could make a large profit. \n\nHowever, if TSLA does not beat earnings or the stock price does not move as much as expected, the value of the Call options could decrease significantly. The maximum risk in this strategy is the premium paid for the Call options, which would be lost if TSLA does not beat earnings or if the stock price does not increase.\n\nRemember to close out your position before the options expire, as options can expire worthless if they are out-of-the-money. You can either sell the options for a profit if TSLA beats earnings or cut your losses if it does not. \n\nThis strategy is for investors who are highly confident in their belief and are willing to take on significant risk for the potential of high returns.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T13:11:38.576373",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "tsla will beat earnings",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-31T13:15:24.813099",
+    "user_id": "test_strangle",
+    "belief": "I expect major volatility for TSLA in the next few weeks, but I don\u2019t know if it will go up or down",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy: Long Straddle Options Strategy on TSLA\n\n1. Entry: Buy a call option and a put option on TSLA. Both options should have the same strike price and expiration date. The strike price should be as close as possible to the current trading price of TSLA. \n\n2. Price Levels: If TSLA stock price moves significantly in either direction, the value of one option will increase while the other will decrease. However, the gain from the profitable option should offset the loss from the other, resulting in a net profit.\n\n3. Expected Profit/Risk Logic: The maximum risk is the total premium paid for both options. The break-even points are the strike price plus the total premium paid and the strike price minus the total premium paid. If TSLA price at expiration is between these two levels, you will incur a loss; if it's outside these levels, you will make a profit. The farther the price moves from the strike price, the higher your profit. As such, this strategy is profitable in a highly volatile market, which is what you expect for TSLA. \n\n4. Risk Management: Monitor the stock price closely. If it doesn't show the expected volatility, consider exiting the strategy early to reduce potential losses. Keep in mind that options are time-sensitive and their value will decrease as the expiration date approaches if TSLA price stays close to the strike price. \n\nRemember, this strategy does not predict direction, it takes advantage of increased volatility. Therefore, it is crucial that a significant price move occurs, regardless of the direction.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "DIA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 444.76,
+        "high": 447.38,
+        "low": 442.61
+      },
+      "high_low": [
+        447.38,
+        442.61
+      ],
+      "confidence": 0.3736754757123801,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy: Long Straddle Options Strategy on TSLA\n\n1. Entry: Buy a call option and a put option on TSLA. Both options should have the same strike price and expiration date. The strike price should be as close as possible to the current trading price of TSLA. \n\n2. Price Levels: If TSLA stock price moves significantly in either direction, the value of one option will increase while the other will decrease. However, the gain from the profitable option should offset the loss from the other, resulting in a net profit.\n\n3. Expected Profit/Risk Logic: The maximum risk is the total premium paid for both options. The break-even points are the strike price plus the total premium paid and the strike price minus the total premium paid. If TSLA price at expiration is between these two levels, you will incur a loss; if it's outside these levels, you will make a profit. The farther the price moves from the strike price, the higher your profit. As such, this strategy is profitable in a highly volatile market, which is what you expect for TSLA. \n\n4. Risk Management: Monitor the stock price closely. If it doesn't show the expected volatility, consider exiting the strategy early to reduce potential losses. Keep in mind that options are time-sensitive and their value will decrease as the expiration date approaches if TSLA price stays close to the strike price. \n\nRemember, this strategy does not predict direction, it takes advantage of increased volatility. Therefore, it is crucial that a significant price move occurs, regardless of the direction.",
+      "user_id": "test_strangle",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T13:26:13.053251",
+    "user_id": "anonymous",
+    "belief": "\"I think TSLA will move a lot after earnings, but I\u2019m not sure if it will go up or down.\"",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Trading Strategy:\n\nGiven your uncertainty about the direction of TSLA's movement post-earnings, a good strategy to implement is a long straddle.\n\nHere's how to implement it:\n\n1. Buy an at-the-money (ATM) TSLA call option. This gives you the right to buy TSLA shares at the strike price on or before the option expiration date.\n2. Simultaneously, buy an at-the-money TSLA put option. This gives you the right to sell TSLA shares at the strike price on or before the option expiration date.\n\nThese options should have the same strike price and expiration date. The strike price should be as close as possible to the current trading price of TSLA. The expiration date should be shortly after the earnings announcement, to take advantage of the expected volatility.\n\nIn terms of risk/profit logic:\n\n1. Profit: The straddle strategy profits when the price of TSLA makes a big move either up or down. The more the price moves, the higher your potential profit. If the price goes up, your call option increases in value; if the price goes down, your put option does. You'd need to sell your options to realize the profit.\n\n2. Risk: The maximum risk is the total cost of the straddle (i.e., the premiums paid for the call and put options). You'd lose this amount if TSLA's price doesn't move or moves very little, as both options would expire worthless. \n\nRemember that options can expire worthless and you should only invest money that you can afford to lose. Also, this strategy involves buying options, so your broker may require you to have a certain level of trading experience or keep a minimum amount in your account.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "DIA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 444.76,
+        "high": 447.38,
+        "low": 442.61
+      },
+      "high_low": [
+        447.38,
+        442.61
+      ],
+      "confidence": 0.5540953143828962,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Trading Strategy:\n\nGiven your uncertainty about the direction of TSLA's movement post-earnings, a good strategy to implement is a long straddle.\n\nHere's how to implement it:\n\n1. Buy an at-the-money (ATM) TSLA call option. This gives you the right to buy TSLA shares at the strike price on or before the option expiration date.\n2. Simultaneously, buy an at-the-money TSLA put option. This gives you the right to sell TSLA shares at the strike price on or before the option expiration date.\n\nThese options should have the same strike price and expiration date. The strike price should be as close as possible to the current trading price of TSLA. The expiration date should be shortly after the earnings announcement, to take advantage of the expected volatility.\n\nIn terms of risk/profit logic:\n\n1. Profit: The straddle strategy profits when the price of TSLA makes a big move either up or down. The more the price moves, the higher your potential profit. If the price goes up, your call option increases in value; if the price goes down, your put option does. You'd need to sell your options to realize the profit.\n\n2. Risk: The maximum risk is the total cost of the straddle (i.e., the premiums paid for the call and put options). You'd lose this amount if TSLA's price doesn't move or moves very little, as both options would expire worthless. \n\nRemember that options can expire worthless and you should only invest money that you can afford to lose. Also, this strategy involves buying options, so your broker may require you to have a certain level of trading experience or keep a minimum amount in your account.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T13:27:37.077619",
+    "user_id": "anonymous",
+    "ip": "127.0.0.1",
+    "belief": "\"I think TSLA will move a lot after earnings, but I\u2019m not sure if it will go up or down.\"",
+    "strategy": "Call Option",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-31T19:19:29.371908",
+    "user_id": "test_feedback_user",
+    "belief": "I think TSLA will double by next year",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 310.11,
+        "high": 321.37,
+        "low": 306.1
+      },
+      "high_low": [
+        321.37,
+        306.1
+      ],
+      "confidence": 0.47213692781228817,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next year",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_feedback_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T19:21:50.061641",
+    "user_id": "test_feedback_user",
+    "ip": "127.0.0.1",
+    "belief": "I think TSLA will double by next year",
+    "strategy": "Buy 1 call option at 2x strike expiring in 12 months",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-31T19:25:16.289987",
+    "user_id": "test_feedback_user",
+    "ip": "127.0.0.1",
+    "belief": "I think TSLA will double by next year",
+    "strategy": "Buy 1 call option at 2x strike expiring in 12 months",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-07-31T20:44:11.758020",
+    "user_id": "test_feedback_user",
+    "belief": "I think TSLA will double by next year",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your belief, a straightforward option strategy would be to purchase long-term call options on TSLA. Here's the strategy:\n\n1. Identify an Option: Look for a call option on TSLA that expires at least a year from now. This is known as a LEAP (Long Term Equity Anticipation Security). The strike price should be near the current trading price of TSLA. \n\n2. Entry: Buy the call option. The price you pay for the option is known as the premium. \n\n3. Expected Profit: If TSLA doubles by next year as you anticipate, the call option will allow you to buy TSLA at a much lower price (the strike price) than it is actually trading at. You can then immediately sell the stocks at the higher price to make a profit. \n\n4. Risk Logic: Your risk is limited to the premium you pay for the call option. If TSLA does not increase as you expect, the most you can lose is the premium. \n\nPricing levels will depend on the specific option you choose, but the basic strategy remains the same. This strategy leverages your bullish belief about TSLA's future performance, while limiting your downside risk. \n\nRemember, options can be complex and carry high risk. Carefully consider your own risk tolerance and consult with a financial advisor before proceeding.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 308.27,
+        "high": 321.37,
+        "low": 306.1
+      },
+      "high_low": [
+        321.37,
+        306.1
+      ],
+      "confidence": 0.47213692781228817,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next year",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your belief, a straightforward option strategy would be to purchase long-term call options on TSLA. Here's the strategy:\n\n1. Identify an Option: Look for a call option on TSLA that expires at least a year from now. This is known as a LEAP (Long Term Equity Anticipation Security). The strike price should be near the current trading price of TSLA. \n\n2. Entry: Buy the call option. The price you pay for the option is known as the premium. \n\n3. Expected Profit: If TSLA doubles by next year as you anticipate, the call option will allow you to buy TSLA at a much lower price (the strike price) than it is actually trading at. You can then immediately sell the stocks at the higher price to make a profit. \n\n4. Risk Logic: Your risk is limited to the premium you pay for the call option. If TSLA does not increase as you expect, the most you can lose is the premium. \n\nPricing levels will depend on the specific option you choose, but the basic strategy remains the same. This strategy leverages your bullish belief about TSLA's future performance, while limiting your downside risk. \n\nRemember, options can be complex and carry high risk. Carefully consider your own risk tolerance and consult with a financial advisor before proceeding.",
+      "user_id": "test_feedback_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T21:26:43.400790",
+    "user_id": "prebeta_test_nvda",
+    "belief": "I believe NVDA will drop 10% after earnings",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 177.87,
+        "high": 183.3,
+        "low": 175.93
+      },
+      "high_low": [
+        183.3,
+        175.93
+      ],
+      "confidence": 0.6026661288297789,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "prebeta_test_nvda",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T21:52:49.145811",
+    "user_id": "test_prebeta_validation_1",
+    "belief": "I believe AAPL will surge 20% in the next 3 months",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your bullish outlook on AAPL, you might want to consider a long call option strategy. Here is a step-by-step guide:\n\n1. Entry: Purchase a slightly out-of-the-money call option with an expiry date around 3 months away. The strike price should be slightly higher than the current AAPL price. For example, if AAPL is trading at $150, you could buy a call option with a strike price of $155.\n\n2. Price Levels: Monitor AAPL's price closely. If the price of AAPL rises above your strike price ($155 in our example) plus the premium you paid for the option, you're in the profit zone.\n\n3. Expected Profit: Your profit potential is theoretically unlimited. The higher AAPL's price goes, the more money you make. Your profit will be the difference between the stock's market price and your strike price, less the premium you paid.\n\n4. Risk Logic: Your risk is limited to the premium you paid for the option. If AAPL doesn't rise as you expect and stays below the strike price at expiry, the option would expire worthless and you would lose the premium you paid.\n\nRemember, options trading involves significant risk and isn't suitable for all investors. Be sure to understand all risks before entering into any options trade.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 207.57,
+        "high": 209.84,
+        "low": 207.16
+      },
+      "high_low": [
+        209.84,
+        207.16
+      ],
+      "confidence": 0.45662187590962694,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your bullish outlook on AAPL, you might want to consider a long call option strategy. Here is a step-by-step guide:\n\n1. Entry: Purchase a slightly out-of-the-money call option with an expiry date around 3 months away. The strike price should be slightly higher than the current AAPL price. For example, if AAPL is trading at $150, you could buy a call option with a strike price of $155.\n\n2. Price Levels: Monitor AAPL's price closely. If the price of AAPL rises above your strike price ($155 in our example) plus the premium you paid for the option, you're in the profit zone.\n\n3. Expected Profit: Your profit potential is theoretically unlimited. The higher AAPL's price goes, the more money you make. Your profit will be the difference between the stock's market price and your strike price, less the premium you paid.\n\n4. Risk Logic: Your risk is limited to the premium you paid for the option. If AAPL doesn't rise as you expect and stays below the strike price at expiry, the option would expire worthless and you would lose the premium you paid.\n\nRemember, options trading involves significant risk and isn't suitable for all investors. Be sure to understand all risks before entering into any options trade.",
+      "user_id": "test_prebeta_validation_1",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T21:57:40.909779",
+    "user_id": "test_edge_no_ticker",
+    "belief": "The electric vehicle market is about to explode due to new regulations.",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "N/A",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nInvest in call options for electric vehicle (EV) companies like Tesla (TSLA), NIO, and Xpeng (XPEV), and ETFs that track EV and renewable energy sectors like the Global X Autonomous & Electric Vehicles ETF (DRIV). \n\n1. Entry: Identify call options for TSLA, NIO, and XPEV with a strike price that's slightly above the current market price, and an expiration date 6 to 12 months into the future to give the market time to react to the new regulations. At the same time, buy shares of the DRIV ETF to provide broader exposure to the industry.\n\n2. Price Levels: Monitor these assets closely. If the prices increase substantially due to positive news about the electric vehicle market, consider selling the options to realize a profit. If the prices decrease, you may want to hold onto the options longer and wait for a potential rebound.\n\n3. Expected Profit/Risk: The potential profit from this strategy is high, as options can provide significant leverage. If the electric vehicle market does explode, the value of the call options and the DRIV ETF should increase substantially. However, the risk is also significant. If the market does not perform as expected, you could lose the entire premium paid for the call options. The ETF provides some diversification to mitigate this risk, but its value could also decrease if the overall market for electric vehicles does not perform well.\n\n4. Risk Management: Keep a close eye on developments in the electric vehicle market and adjust your positions as necessary. Consider setting stop-loss orders to limit potential losses, especially for the options. Set a profit target for each position to ensure you lock in gains when they are available. If the market moves against your prediction, consider exiting the positions early to limit potential losses.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "ARKK",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 75.33,
+        "high": 77.28,
+        "low": 75.01
+      },
+      "high_low": [
+        77.28,
+        75.01
+      ],
+      "confidence": 0.48194508393636865,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nInvest in call options for electric vehicle (EV) companies like Tesla (TSLA), NIO, and Xpeng (XPEV), and ETFs that track EV and renewable energy sectors like the Global X Autonomous & Electric Vehicles ETF (DRIV). \n\n1. Entry: Identify call options for TSLA, NIO, and XPEV with a strike price that's slightly above the current market price, and an expiration date 6 to 12 months into the future to give the market time to react to the new regulations. At the same time, buy shares of the DRIV ETF to provide broader exposure to the industry.\n\n2. Price Levels: Monitor these assets closely. If the prices increase substantially due to positive news about the electric vehicle market, consider selling the options to realize a profit. If the prices decrease, you may want to hold onto the options longer and wait for a potential rebound.\n\n3. Expected Profit/Risk: The potential profit from this strategy is high, as options can provide significant leverage. If the electric vehicle market does explode, the value of the call options and the DRIV ETF should increase substantially. However, the risk is also significant. If the market does not perform as expected, you could lose the entire premium paid for the call options. The ETF provides some diversification to mitigate this risk, but its value could also decrease if the overall market for electric vehicles does not perform well.\n\n4. Risk Management: Keep a close eye on developments in the electric vehicle market and adjust your positions as necessary. Consider setting stop-loss orders to limit potential losses, especially for the options. Set a profit target for each position to ensure you lock in gains when they are available. If the market moves against your prediction, consider exiting the positions early to limit potential losses.",
+      "user_id": "test_edge_no_ticker",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:00:18.206114",
+    "user_id": "test_edge_multi_ticker",
+    "belief": "I think AI chipmakers like NVDA and AMD are going to dominate the market this year.",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\n1. Long Call Options on NVDA and AMD: Since you're bullish on these stocks, you should consider buying call options on both NVDA and AMD. The strike price will depend on your risk tolerance and market expectations. Choose a strike price at or slightly above the current market price and an expiry date that gives the market enough time to move in the direction you're expecting. \n\n2. Long Stock: You could also consider buying the actual stocks of NVDA and AMD. This allows you to profit directly from any increase in the share price. \n\n3. ETFs: Consider investing in a technology or semiconductor ETF that has a significant weighting towards NVDA and AMD. This will give you exposure to these stocks, while also providing some diversification benefits. \n\n4. Protective Puts: To protect against downside risk, consider buying put options on NVDA and AMD with a strike price below the current market price. If the market moves against you, these put options will increase in value, offsetting some of your losses. \n\nEntry: \n\nEnter these positions when you see a positive momentum or a significant pullback in the stock price. \n\nExpected Profit/Risk:\n\nThe potential profit from the call options and long stock positions is theoretically unlimited, as it depends on how much the stock price increases. The ETF will also increase in value, but its return will be diluted by its other holdings. \n\nThe risk is that the stock price doesn't increase as much as you're expecting or even falls. In this case, your call options could expire worthless and you could lose the premium you paid for them. The long stock positions could also decrease in value. The protective puts will help to mitigate these losses, but they also come with a cost. \n\nThis strategy is suitable if you're highly confident in your market view and are willing to take on a significant amount of risk for potentially high returns.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "AMD",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 176.31,
+        "high": 182.5,
+        "low": 173.0
+      },
+      "high_low": [
+        182.5,
+        173.0
+      ],
+      "confidence": 0.3610332636916647,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this year",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\n1. Long Call Options on NVDA and AMD: Since you're bullish on these stocks, you should consider buying call options on both NVDA and AMD. The strike price will depend on your risk tolerance and market expectations. Choose a strike price at or slightly above the current market price and an expiry date that gives the market enough time to move in the direction you're expecting. \n\n2. Long Stock: You could also consider buying the actual stocks of NVDA and AMD. This allows you to profit directly from any increase in the share price. \n\n3. ETFs: Consider investing in a technology or semiconductor ETF that has a significant weighting towards NVDA and AMD. This will give you exposure to these stocks, while also providing some diversification benefits. \n\n4. Protective Puts: To protect against downside risk, consider buying put options on NVDA and AMD with a strike price below the current market price. If the market moves against you, these put options will increase in value, offsetting some of your losses. \n\nEntry: \n\nEnter these positions when you see a positive momentum or a significant pullback in the stock price. \n\nExpected Profit/Risk:\n\nThe potential profit from the call options and long stock positions is theoretically unlimited, as it depends on how much the stock price increases. The ETF will also increase in value, but its return will be diluted by its other holdings. \n\nThe risk is that the stock price doesn't increase as much as you're expecting or even falls. In this case, your call options could expire worthless and you could lose the premium you paid for them. The long stock positions could also decrease in value. The protective puts will help to mitigate these losses, but they also come with a cost. \n\nThis strategy is suitable if you're highly confident in your market view and are willing to take on a significant amount of risk for potentially high returns.",
+      "user_id": "test_edge_multi_ticker",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:10:19.518234",
+    "user_id": "test_vague_belief",
+    "belief": "I\u2019ve got a feeling the market\u2019s gonna move soon. Not sure why, but it feels right.",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Given your uncertainty about the direction of the market, an option strategy known as a straddle might be a good fit for your belief. A straddle is a strategy where you simultaneously buy a call option and a put option with the same strike price and expiration date. \n\nHere's how it works:\n\n1. Identify an underlying asset (for instance, an ETF tracking the S&P 500 index).\n2. Buy a call option and a put option on the same underlying asset. The call gives you the right to buy the asset at a specified price (the strike price), while the put gives you the right to sell it at the same price. Make sure both options have the same strike price and expiration date. The strike price should be as close as possible to the current price of the asset.\n3. If the price of the asset moves significantly in either direction, one of your options will become valuable. If the price rises, your call option allows you to buy the asset at a discount. If the price falls, your put option allows you to sell the asset at a premium. The profit from one option should more than offset the cost of buying both options.\n\nThis strategy has unlimited upside potential and limited downside risk (the total cost of buying the options). However, the price of the asset needs to move significantly in one direction for you to make a profit. If the price doesn't change much, you may lose the total cost of the options.\n\nKeep in mind that options can be complicated and carry significant risk. Make sure to consider your risk tolerance and consult with a financial advisor before executing this or any strategy.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "ARKK",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 75.33,
+        "high": 77.28,
+        "low": 75.01
+      },
+      "high_low": [
+        77.28,
+        75.01
+      ],
+      "confidence": 0.40390455921504814,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Given your uncertainty about the direction of the market, an option strategy known as a straddle might be a good fit for your belief. A straddle is a strategy where you simultaneously buy a call option and a put option with the same strike price and expiration date. \n\nHere's how it works:\n\n1. Identify an underlying asset (for instance, an ETF tracking the S&P 500 index).\n2. Buy a call option and a put option on the same underlying asset. The call gives you the right to buy the asset at a specified price (the strike price), while the put gives you the right to sell it at the same price. Make sure both options have the same strike price and expiration date. The strike price should be as close as possible to the current price of the asset.\n3. If the price of the asset moves significantly in either direction, one of your options will become valuable. If the price rises, your call option allows you to buy the asset at a discount. If the price falls, your put option allows you to sell the asset at a premium. The profit from one option should more than offset the cost of buying both options.\n\nThis strategy has unlimited upside potential and limited downside risk (the total cost of buying the options). However, the price of the asset needs to move significantly in one direction for you to make a profit. If the price doesn't change much, you may lose the total cost of the options.\n\nKeep in mind that options can be complicated and carry significant risk. Make sure to consider your risk tolerance and consult with a financial advisor before executing this or any strategy.",
+      "user_id": "test_vague_belief",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:14:33.910900",
+    "user_id": "test_legacy_ticker",
+    "belief": "I believe Facebook stock (ticker FB) is going to rally 20% by next quarter.",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "N/A",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your bullish outlook on Facebook (FB), a straightforward strategy would be to simply buy the stock. However, to potentially increase your return and limit risk, you might consider a call options strategy.\n\n1. **Long Call Option Strategy:** This involves buying call options on FB. If you expect the stock to rally 20% by next quarter, you would likely be looking at buying a call option with a strike price near the current stock price and an expiration date after the end of the next quarter. \n\n    Entry: Buy call options with a strike price near the current FB stock price, and with an expiration date after the end of the next quarter.\n\n    Expected Profit/Risk Logic: If FB shares rise as expected, the call options will increase in value and can be sold for a profit. The risk in this strategy is limited to the premium paid for the options. The break-even point will be the strike price plus the premium paid for the option. \n\n2. **Bull Call Spread Strategy:** This strategy involves buying a call option and selling another call option with a higher strike price, but with the same expiration date. This will lower your upfront cost, but it will also cap your potential profit.\n\n    Entry: Buy a call option with a strike price near the current FB stock price, and sell a call option with a higher strike price (this could be at a level where you expect the 20% rally to reach).\n\n    Expected Profit/Risk Logic: The maximum profit is achieved if FB stock is at or above the higher strike price at expiration. The profit would be the difference between the two strike prices, minus the net premium paid. The maximum risk is the net premium paid. This strategy would break-even if FB stock is at the lower strike price plus the net premium paid at expiration.\n\nRemember, options trading involves significant risk and is not suitable for all investors. Make sure you fully understand the risks and potential rewards before entering any trades.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "META",
+      "asset_class": "equity",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 773.44,
+        "high": 784.75,
+        "low": 765.51
+      },
+      "high_low": [
+        784.75,
+        765.51
+      ],
+      "confidence": 0.4114532368346778,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next quarter",
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your bullish outlook on Facebook (FB), a straightforward strategy would be to simply buy the stock. However, to potentially increase your return and limit risk, you might consider a call options strategy.\n\n1. **Long Call Option Strategy:** This involves buying call options on FB. If you expect the stock to rally 20% by next quarter, you would likely be looking at buying a call option with a strike price near the current stock price and an expiration date after the end of the next quarter. \n\n    Entry: Buy call options with a strike price near the current FB stock price, and with an expiration date after the end of the next quarter.\n\n    Expected Profit/Risk Logic: If FB shares rise as expected, the call options will increase in value and can be sold for a profit. The risk in this strategy is limited to the premium paid for the options. The break-even point will be the strike price plus the premium paid for the option. \n\n2. **Bull Call Spread Strategy:** This strategy involves buying a call option and selling another call option with a higher strike price, but with the same expiration date. This will lower your upfront cost, but it will also cap your potential profit.\n\n    Entry: Buy a call option with a strike price near the current FB stock price, and sell a call option with a higher strike price (this could be at a level where you expect the 20% rally to reach).\n\n    Expected Profit/Risk Logic: The maximum profit is achieved if FB stock is at or above the higher strike price at expiration. The profit would be the difference between the two strike prices, minus the net premium paid. The maximum risk is the net premium paid. This strategy would break-even if FB stock is at the lower strike price plus the net premium paid at expiration.\n\nRemember, options trading involves significant risk and is not suitable for all investors. Make sure you fully understand the risks and potential rewards before entering any trades.",
+      "user_id": "test_legacy_ticker",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:20:05.080364",
+    "user_id": "test_green_energy_pop",
+    "belief": "I think green energy is about to pop.",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "N/A",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\n1. Identify the leading green energy ETFs, such as Invesco WilderHill Clean Energy ETF (PBW) and iShares Global Clean Energy ETF (ICLN). These ETFs provide broad exposure to companies in the renewable energy sector.\n\n2. If you believe the green energy sector is about to pop, you may consider a long call option strategy. You can buy call options on these ETFs with a strike price slightly above the current market price. \n\n3. Choose an expiration date that gives the market enough time to move in the direction you are predicting. This could be several months to a year out, depending on your market view.\n\n4. Entry: Buy the call options at the current market price. Your maximum loss is limited to the premium paid for these options. \n\n5. Expected Profit: If the ETFs rise as you predict, the options will increase in value. You can sell these options at a higher price than you paid, pocketing the difference as profit. Your profit is theoretically unlimited, as it increases as the price of the underlying ETF rises.\n\n6. Risk: Options can be risky, as they can become worthless if the ETFs do not rise above the strike price by the expiration date. You could lose the entire premium paid for the options. \n\n7. To manage this risk, consider setting a stop-loss order at a price level where you would want to cut your losses and exit the trade. \n\n8. As a complement to the options strategy, you could also invest a portion of your portfolio directly into the green energy ETFs. This gives you exposure to potential upside movement in the sector, while limiting your downside risk to the amount invested.\n\nRemember, all investments involve risk, and past performance is no guarantee of future results. Always do your own research and consider your own risk tolerance before making any trades.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "XLE",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 87.21,
+        "high": 88.22,
+        "low": 86.76
+      },
+      "high_low": [
+        88.22,
+        86.76
+      ],
+      "confidence": 0.39507499569963483,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "N/A",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\n1. Identify the leading green energy ETFs, such as Invesco WilderHill Clean Energy ETF (PBW) and iShares Global Clean Energy ETF (ICLN). These ETFs provide broad exposure to companies in the renewable energy sector.\n\n2. If you believe the green energy sector is about to pop, you may consider a long call option strategy. You can buy call options on these ETFs with a strike price slightly above the current market price. \n\n3. Choose an expiration date that gives the market enough time to move in the direction you are predicting. This could be several months to a year out, depending on your market view.\n\n4. Entry: Buy the call options at the current market price. Your maximum loss is limited to the premium paid for these options. \n\n5. Expected Profit: If the ETFs rise as you predict, the options will increase in value. You can sell these options at a higher price than you paid, pocketing the difference as profit. Your profit is theoretically unlimited, as it increases as the price of the underlying ETF rises.\n\n6. Risk: Options can be risky, as they can become worthless if the ETFs do not rise above the strike price by the expiration date. You could lose the entire premium paid for the options. \n\n7. To manage this risk, consider setting a stop-loss order at a price level where you would want to cut your losses and exit the trade. \n\n8. As a complement to the options strategy, you could also invest a portion of your portfolio directly into the green energy ETFs. This gives you exposure to potential upside movement in the sector, while limiting your downside risk to the amount invested.\n\nRemember, all investments involve risk, and past performance is no guarantee of future results. Always do your own research and consider your own risk tolerance before making any trades.",
+      "user_id": "test_green_energy_pop",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:24:03.132593",
+    "user_id": "test_crypto_bearish",
+    "belief": "I think Ethereum is going to crash before October.",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "ETH",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 35.17,
+        "high": 35.97,
+        "low": 35.15
+      },
+      "high_low": [
+        35.97,
+        35.15
+      ],
+      "confidence": 0.351212018306845,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_crypto_bearish",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:41:48.641151",
+    "user_id": "ml_model_test_01",
+    "belief": "I think Tesla will crash 20% after the next earnings report.",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.27,
+        "high": 321.37,
+        "low": 306.1
+      },
+      "high_low": [
+        321.37,
+        306.1
+      ],
+      "confidence": 0.4673071754116374,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "ml_model_test_01",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:43:41.256572",
+    "user_id": "ml_model_test_01",
+    "belief": "I think Tesla will crash 20% after the next earnings report.",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.27,
+        "high": 321.37,
+        "low": 306.1
+      },
+      "high_low": [
+        321.37,
+        306.1
+      ],
+      "confidence": 0.4673071754116374,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "ml_model_test_01",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:48:44.412277",
+    "user_id": "test_etf_bull",
+    "belief": "I think clean energy ETFs will soar this quarter",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\n1. Identify a Clean Energy ETF: You can go for a popular ETF like iShares Global Clean Energy ETF (ICLN). \n\n2. Buy Call Options: As you believe that the price of clean energy ETFs will rise, you could buy call options on the ICLN. These options give you the right to buy the ETF at a predetermined price (strike price) before a specific date (expiration date). \n\n3. Choose Strike Price and Expiration Date: If the current price of ICLN is $20, for example, you might buy a call option with a strike price of $22 and an expiration date three months from now. This means that you're betting the price will rise above $22 within the next three months.\n\n4. Profit/Risk Logic: Your profit potential is technically unlimited, as it depends on how much the ETF price rises. If the price rises to $30, for example, you can exercise your option to buy at $22 and then sell at the market price of $30, making an $8 profit per share minus the premium you paid. If the price doesn't rise as you expect, your maximum loss is the premium you paid for the option. Therefore, this strategy has a high risk/reward ratio.\n\n5. Exit Strategy: If the price of the ETF rises significantly, you might want to sell the option before the expiration date to take your profits. If the price doesn't rise or falls, you might want to let the option expire worthless, in which case you only lose the premium you paid.\n\nPlease remember that options can expire worthless and they are risky investments. Always do your own research before making any investment decisions.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "XLE",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 87.21,
+        "high": 88.22,
+        "low": 86.76
+      },
+      "high_low": [
+        88.22,
+        86.76
+      ],
+      "confidence": 0.5552417130494658,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this quarter",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\n1. Identify a Clean Energy ETF: You can go for a popular ETF like iShares Global Clean Energy ETF (ICLN). \n\n2. Buy Call Options: As you believe that the price of clean energy ETFs will rise, you could buy call options on the ICLN. These options give you the right to buy the ETF at a predetermined price (strike price) before a specific date (expiration date). \n\n3. Choose Strike Price and Expiration Date: If the current price of ICLN is $20, for example, you might buy a call option with a strike price of $22 and an expiration date three months from now. This means that you're betting the price will rise above $22 within the next three months.\n\n4. Profit/Risk Logic: Your profit potential is technically unlimited, as it depends on how much the ETF price rises. If the price rises to $30, for example, you can exercise your option to buy at $22 and then sell at the market price of $30, making an $8 profit per share minus the premium you paid. If the price doesn't rise as you expect, your maximum loss is the premium you paid for the option. Therefore, this strategy has a high risk/reward ratio.\n\n5. Exit Strategy: If the price of the ETF rises significantly, you might want to sell the option before the expiration date to take your profits. If the price doesn't rise or falls, you might want to let the option expire worthless, in which case you only lose the premium you paid.\n\nPlease remember that options can expire worthless and they are risky investments. Always do your own research before making any investment decisions.",
+      "user_id": "test_etf_bull",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:51:45.966965",
+    "user_id": "test_commodity_bear",
+    "belief": "I believe oil will tank before year end",
+    "strategy": {
+      "strategy": {
+        "type": "long put",
+        "source": "ml_model",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "XLE",
+      "asset_class": "options",
+      "tags": [
+        "put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 87.21,
+        "high": 88.22,
+        "low": 86.76
+      },
+      "high_low": [
+        88.22,
+        86.76
+      ],
+      "confidence": 0.49952660707300633,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_commodity_bear",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:54:20.626200",
+    "user_id": "test_bond_safe_income",
+    "belief": "I want a safe way to earn income from government bonds",
+    "strategy": {
+      "strategy": {
+        "type": "bond ladder",
+        "source": "ml_model"
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 86.92,
+        "high": 87.41,
+        "low": 86.84
+      },
+      "high_low": [
+        87.41,
+        86.84
+      ],
+      "confidence": 0.3904718177731032,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_bond_safe_income",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:57:15.407535",
+    "user_id": "test_currency_yen",
+    "belief": "I think the Japanese yen will strengthen this year",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your belief that the Japanese yen will strengthen this year, a suitable investment strategy could involve purchasing a bullish ETF that tracks the performance of the yen relative to other currencies, particularly the USD. \n\n1. Purchase Long Position in FXY: The Invesco CurrencyShares Japanese Yen Trust (FXY) is a popular ETF that allows you to take a position on the Japanese yen without buying the currency directly. This ETF rises in value as the yen strengthens against the US dollar. You can enter a long position in FXY at current market price.\n\n2. Options Play: Additionally, you could also purchase call options on FXY. Buy a call option with a strike price slightly above the current price of FXY, with an expiration date later in the year. This strategy profits if FXY (and therefore the yen) increases in value.\n\n3. Set Stop-Loss Orders: To manage risk, set a stop-loss order on the ETF position and the options play. This order will automatically sell your position if the price drops to a certain level, limiting your potential losses.\n\nExpected Profit/Risk Logic: If the yen does indeed strengthen over the year, both the long position on FXY and the call options will increase in value. Your profit will be the amount of appreciation multiplied by the number of shares (for the ETF) or contracts (for the options). The risk in this strategy lies in the yen not strengthening as expected, or even weakening, which would lead to losses on both positions. However, the stop-loss orders will limit these potential losses.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "FXY",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 61.08,
+        "high": 61.25,
+        "low": 61.03
+      },
+      "high_low": [
+        61.25,
+        61.03
+      ],
+      "confidence": 0.43906972048539394,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "this year",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your belief that the Japanese yen will strengthen this year, a suitable investment strategy could involve purchasing a bullish ETF that tracks the performance of the yen relative to other currencies, particularly the USD. \n\n1. Purchase Long Position in FXY: The Invesco CurrencyShares Japanese Yen Trust (FXY) is a popular ETF that allows you to take a position on the Japanese yen without buying the currency directly. This ETF rises in value as the yen strengthens against the US dollar. You can enter a long position in FXY at current market price.\n\n2. Options Play: Additionally, you could also purchase call options on FXY. Buy a call option with a strike price slightly above the current price of FXY, with an expiration date later in the year. This strategy profits if FXY (and therefore the yen) increases in value.\n\n3. Set Stop-Loss Orders: To manage risk, set a stop-loss order on the ETF position and the options play. This order will automatically sell your position if the price drops to a certain level, limiting your potential losses.\n\nExpected Profit/Risk Logic: If the yen does indeed strengthen over the year, both the long position on FXY and the call options will increase in value. Your profit will be the amount of appreciation multiplied by the number of shares (for the ETF) or contracts (for the options). The risk in this strategy lies in the yen not strengthening as expected, or even weakening, which would lead to losses on both positions. However, the stop-loss orders will limit these potential losses.",
+      "user_id": "test_currency_yen",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T22:59:58.042785",
+    "user_id": "test_etf_bullish",
+    "belief": "I think QQQ will climb 10% by December",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your belief that the QQQ ETF will rise 10% by December, a bullish call option strategy could be suitable. Here is a possible trading strategy:\n\n1. Buy a call option: A call option gives you the right, but not the obligation, to buy QQQ at a certain price (the strike price) by a certain date (the expiration date). \n\n2. Entry: Identify the current price of QQQ. Let's say it is $350. You believe that the price will increase by 10% by December. So, you could buy a call option with a strike price slightly above the current price (out of the money), say at $360, expiring in December. This will cost less than buying an option at the money or in the money.\n\n3. Expected profit: If your prediction is correct and QQQ increases by 10% by December, the ETF would be priced at $385 ($350 + 10%). At this price, your call option would be worth at least $25 ($385 - $360), less the cost of the option. This is your potential profit.\n\n4. Risk: Your maximum risk is the cost of the call option. If QQQ does not increase as you predict and does not reach the strike price of the call option by the expiration date, the option will expire worthless and you lose the premium you paid.\n\n5. Exit: You should plan to exit the position before the option's expiration date to avoid paying any additional fees or facing potential losses due to time decay. This could be when QQQ reaches your target price of $385, or if the option increases in value by a certain percentage before that.\n\nRemember, options can be complex and risky, so make sure you fully understand them before trading.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "QQQ",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 565.01,
+        "high": 574.63,
+        "low": 563.87
+      },
+      "high_low": [
+        574.63,
+        563.87
+      ],
+      "confidence": 0.5732314712166917,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your belief that the QQQ ETF will rise 10% by December, a bullish call option strategy could be suitable. Here is a possible trading strategy:\n\n1. Buy a call option: A call option gives you the right, but not the obligation, to buy QQQ at a certain price (the strike price) by a certain date (the expiration date). \n\n2. Entry: Identify the current price of QQQ. Let's say it is $350. You believe that the price will increase by 10% by December. So, you could buy a call option with a strike price slightly above the current price (out of the money), say at $360, expiring in December. This will cost less than buying an option at the money or in the money.\n\n3. Expected profit: If your prediction is correct and QQQ increases by 10% by December, the ETF would be priced at $385 ($350 + 10%). At this price, your call option would be worth at least $25 ($385 - $360), less the cost of the option. This is your potential profit.\n\n4. Risk: Your maximum risk is the cost of the call option. If QQQ does not increase as you predict and does not reach the strike price of the call option by the expiration date, the option will expire worthless and you lose the premium you paid.\n\n5. Exit: You should plan to exit the position before the option's expiration date to avoid paying any additional fees or facing potential losses due to time decay. This could be when QQQ reaches your target price of $385, or if the option increases in value by a certain percentage before that.\n\nRemember, options can be complex and risky, so make sure you fully understand them before trading.",
+      "user_id": "test_etf_bullish",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T23:03:16.076134",
+    "user_id": "test_bonds_retirement",
+    "belief": "I want a safe strategy using bonds for retirement income",
+    "strategy": {
+      "strategy": {
+        "type": "bond ladder",
+        "source": "ml_model"
+      },
+      "ticker": "TLT",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 86.92,
+        "high": 87.41,
+        "low": 86.84
+      },
+      "high_low": [
+        87.41,
+        86.84
+      ],
+      "confidence": 0.39303966706050636,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Strategy explanation not available.",
+      "user_id": "test_bonds_retirement",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
   }
 ]

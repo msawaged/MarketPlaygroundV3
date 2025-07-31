@@ -1,7 +1,7 @@
 # backend/routes/ibkr_router.py
 
 from fastapi import APIRouter
-from ib_insync import IB
+# from ib_insync import IB
 from backend.ibkr_data import get_ibkr_price  # or adjust import if needed
 
 import os
