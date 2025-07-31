@@ -25422,5 +25422,58 @@
       "notes": "\u274c Could not detect % move in belief"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-07-31T23:25:20.287804",
+    "user_id": "pre_beta_final_test",
+    "belief": "I believe Microsoft will rally 20% after earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          "buy 1 call slightly OTM"
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Strategy:\n\nGiven your belief that Microsoft (MSFT) will rally 20% after the earnings announcement, a simple yet effective strategy would be to purchase a long call option.\n\n1. Identify the Strike Price: Choose a strike price that is close to the current trading price of MSFT. \n\n2. Choose the Expiration Date: Given that you are expecting a rally post earnings, select an expiration date that is at least one month after the earnings announcement. This gives the stock enough time to make the move you are expecting.\n\n3. Entry: Purchase the call option at the current market price. \n\nExpected Profit/Risk Logic: \n\nThe maximum risk is limited to the premium paid for the option. You would lose this amount if MSFT does not move at all or falls after the earnings announcement. \n\nThe profit potential, on the other hand, is theoretically unlimited. You start to make a profit when MSFT rises above your strike price plus the premium paid. \n\nFor example, if MSFT is trading at $200, and you buy a call option with a strike price of $200 for a premium of $5, you begin to profit when MSFT rises above $205 ($200 + $5). If MSFT rises to $240 (20% increase), the profit is $35 per share ($240 - $205), minus the initial premium paid.\n\nPlease note that options can be risky and it's important to only invest what you can afford to lose. Consider consulting with a financial advisor before making investment decisions.",
+        "source": "gpt_soft_parse"
+      },
+      "ticker": "MSFT",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 533.5,
+        "high": 555.45,
+        "low": 531.9
+      },
+      "high_low": [
+        555.45,
+        531.9
+      ],
+      "confidence": 0.6188714395325293,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Strategy:\n\nGiven your belief that Microsoft (MSFT) will rally 20% after the earnings announcement, a simple yet effective strategy would be to purchase a long call option.\n\n1. Identify the Strike Price: Choose a strike price that is close to the current trading price of MSFT. \n\n2. Choose the Expiration Date: Given that you are expecting a rally post earnings, select an expiration date that is at least one month after the earnings announcement. This gives the stock enough time to make the move you are expecting.\n\n3. Entry: Purchase the call option at the current market price. \n\nExpected Profit/Risk Logic: \n\nThe maximum risk is limited to the premium paid for the option. You would lose this amount if MSFT does not move at all or falls after the earnings announcement. \n\nThe profit potential, on the other hand, is theoretically unlimited. You start to make a profit when MSFT rises above your strike price plus the premium paid. \n\nFor example, if MSFT is trading at $200, and you buy a call option with a strike price of $200 for a premium of $5, you begin to profit when MSFT rises above $205 ($200 + $5). If MSFT rises to $240 (20% increase), the profit is $35 per share ($240 - $205), minus the initial premium paid.\n\nPlease note that options can be risky and it's important to only invest what you can afford to lose. Consider consulting with a financial advisor before making investment decisions.",
+      "user_id": "pre_beta_final_test",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
   }
 ]
