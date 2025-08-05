@@ -14690,5 +14690,1228 @@
       "explanation": "Strategy:\n\nGiven your belief that Microsoft (MSFT) will rally 20% after the earnings announcement, a simple yet effective strategy would be to purchase a long call option.\n\n1. Identify the Strike Price: Choose a strike price that is close to the current trading price of MSFT. \n\n2. Choose the Expiration Date: Given that you are expecting a rally post earnings, select an expiration date that is at least one month after the earnings announcement. This gives the stock enough time to make the move you are expecting.\n\n3. Entry: Purchase the call option at the current market price. \n\nExpected Profit/Risk Logic: \n\nThe maximum risk is limited to the premium paid for the option. You would lose this amount if MSFT does not move at all or falls after the earnings announcement. \n\nThe profit potential, on the other hand, is theoretically unlimited. You start to make a profit when MSFT rises above your strike price plus the premium paid. \n\nFor example, if MSFT is trading at $200, and you buy a call option with a strike price of $200 for a premium of $5, you begin to profit when MSFT rises above $205 ($200 + $5). If MSFT rises to $240 (20% increase), the profit is $35 per share ($240 - $205), minus the initial premium paid.\n\nPlease note that options can be risky and it's important to only invest what you can afford to lose. Consider consulting with a financial advisor before making investment decisions.",
       "source": "gpt_soft_parse"
     }
+  },
+  {
+    "timestamp": "2025-07-31T23:54:41.027843",
+    "user_id": "anonymous",
+    "belief": "I believe AAPL will trade sideways for the next month",
+    "explanation": "Strategy: Iron Condor Options Strategy\n\nThe Iron Condor is a strategy that is best used when you expect the underlying asset to have low volatility or trade within a specific range. In this case, since you believe AAPL will trade sideways for the next month, an Iron Condor could be a good strategy to adopt.\n\nHere's how it works:\n\n1. Sell an out-of-the-money put option (lower strike) - this will be your lower bound. The strike price should be below the current price and you believe AAPL will not fall below this price.\n\n2. At the same time, sell an out-of-the-money call option (higher strike) - this will be your upper bound. The strike price should be above the current price and you believe AAPL will not rise above this price.\n\n3. Simultaneously, buy an even further out-of-the-money put option (lower than the put option you sold) to limit potential losses if AAPL falls significantly.\n\n4. Also, buy an even further out-of-the-money call option (higher than the call option you sold) to limit potential losses if AAPL rises significantly.\n\nThe goal here is to receive premium from selling the call and put options, then use some of that premium to buy further out-of-the-money call and put options for protection. \n\nThe max profit is the net premium received after setting up the trade. You make a profit as long as AAPL stays within the range set by the sold call and put strike prices.\n\nThe risk is limited to the difference between the strike prices of the sold and bought options (either call or put side), minus the net premium received. \n\nThe Iron Condor strategy is a limited risk, limited reward strategy, and it is best used in a market you believe will experience low volatility.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        "buy 1 call slightly OTM"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "15%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "Strategy: Iron Condor Options Strategy\n\nThe Iron Condor is a strategy that is best used when you expect the underlying asset to have low volatility or trade within a specific range. In this case, since you believe AAPL will trade sideways for the next month, an Iron Condor could be a good strategy to adopt.\n\nHere's how it works:\n\n1. Sell an out-of-the-money put option (lower strike) - this will be your lower bound. The strike price should be below the current price and you believe AAPL will not fall below this price.\n\n2. At the same time, sell an out-of-the-money call option (higher strike) - this will be your upper bound. The strike price should be above the current price and you believe AAPL will not rise above this price.\n\n3. Simultaneously, buy an even further out-of-the-money put option (lower than the put option you sold) to limit potential losses if AAPL falls significantly.\n\n4. Also, buy an even further out-of-the-money call option (higher than the call option you sold) to limit potential losses if AAPL rises significantly.\n\nThe goal here is to receive premium from selling the call and put options, then use some of that premium to buy further out-of-the-money call and put options for protection. \n\nThe max profit is the net premium received after setting up the trade. You make a profit as long as AAPL stays within the range set by the sold call and put strike prices.\n\nThe risk is limited to the difference between the strike prices of the sold and bought options (either call or put side), minus the net premium received. \n\nThe Iron Condor strategy is a limited risk, limited reward strategy, and it is best used in a market you believe will experience low volatility.",
+      "source": "gpt_soft_parse"
+    }
+  },
+  {
+    "timestamp": "2025-07-31T23:54:41.121390",
+    "user_id": "test_retrain_trigger",
+    "belief": "I believe AAPL will trade sideways for the next month",
+    "explanation": "Strategy: Iron Condor Options Strategy\n\nThe Iron Condor is a strategy that is best used when you expect the underlying asset to have low volatility or trade within a specific range. In this case, since you believe AAPL will trade sideways for the next month, an Iron Condor could be a good strategy to adopt.\n\nHere's how it works:\n\n1. Sell an out-of-the-money put option (lower strike) - this will be your lower bound. The strike price should be below the current price and you believe AAPL will not fall below this price.\n\n2. At the same time, sell an out-of-the-money call option (higher strike) - this will be your upper bound. The strike price should be above the current price and you believe AAPL will not rise above this price.\n\n3. Simultaneously, buy an even further out-of-the-money put option (lower than the put option you sold) to limit potential losses if AAPL falls significantly.\n\n4. Also, buy an even further out-of-the-money call option (higher than the call option you sold) to limit potential losses if AAPL rises significantly.\n\nThe goal here is to receive premium from selling the call and put options, then use some of that premium to buy further out-of-the-money call and put options for protection. \n\nThe max profit is the net premium received after setting up the trade. You make a profit as long as AAPL stays within the range set by the sold call and put strike prices.\n\nThe risk is limited to the difference between the strike prices of the sold and bought options (either call or put side), minus the net premium received. \n\nThe Iron Condor strategy is a limited risk, limited reward strategy, and it is best used in a market you believe will experience low volatility.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        "buy 1 call slightly OTM"
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "15%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "Strategy: Iron Condor Options Strategy\n\nThe Iron Condor is a strategy that is best used when you expect the underlying asset to have low volatility or trade within a specific range. In this case, since you believe AAPL will trade sideways for the next month, an Iron Condor could be a good strategy to adopt.\n\nHere's how it works:\n\n1. Sell an out-of-the-money put option (lower strike) - this will be your lower bound. The strike price should be below the current price and you believe AAPL will not fall below this price.\n\n2. At the same time, sell an out-of-the-money call option (higher strike) - this will be your upper bound. The strike price should be above the current price and you believe AAPL will not rise above this price.\n\n3. Simultaneously, buy an even further out-of-the-money put option (lower than the put option you sold) to limit potential losses if AAPL falls significantly.\n\n4. Also, buy an even further out-of-the-money call option (higher than the call option you sold) to limit potential losses if AAPL rises significantly.\n\nThe goal here is to receive premium from selling the call and put options, then use some of that premium to buy further out-of-the-money call and put options for protection. \n\nThe max profit is the net premium received after setting up the trade. You make a profit as long as AAPL stays within the range set by the sold call and put strike prices.\n\nThe risk is limited to the difference between the strike prices of the sold and bought options (either call or put side), minus the net premium received. \n\nThe Iron Condor strategy is a limited risk, limited reward strategy, and it is best used in a market you believe will experience low volatility.",
+      "source": "gpt_soft_parse"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T10:56:11.159726",
+    "user_id": "anonymous",
+    "belief": "I think TSLA will double in the next 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T10:56:18.833080",
+    "user_id": "test_mp310",
+    "belief": "I think TSLA will double in the next 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T10:59:31.518174",
+    "user_id": "anonymous",
+    "belief": "Apple will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T10:59:31.609995",
+    "user_id": "debug_ai_engine",
+    "belief": "Apple will double in 6 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "iron condor",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:03:21.709908",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will rally 20% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:03:21.802221",
+    "user_id": "test_gpt_debug",
+    "belief": "I think Tesla will rally 20% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:16:56.717754",
+    "user_id": "anonymous",
+    "belief": "Tesla will jump 30% in the next 2 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:16:56.801079",
+    "user_id": "debug_explainer",
+    "belief": "Tesla will jump 30% in the next 2 months",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:34:52.420756",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will rally 30% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:34:52.513220",
+    "user_id": "explanation_debug",
+    "belief": "I think Tesla will rally 30% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:37:37.442972",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will rally 30% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:37:37.546816",
+    "user_id": "explanation_debug",
+    "belief": "I think Tesla will rally 30% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "bull call spread",
+      "source": "ml_model",
+      "expiration": "2025-08-16"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:50:18.117393",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will rally 20% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:50:18.202522",
+    "user_id": "test_gpt_debug",
+    "belief": "I think Tesla will rally 20% before earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:56:17.094631",
+    "user_id": "anonymous",
+    "belief": "Tesla will beat earnings next week",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "800"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T11:56:17.187458",
+    "user_id": "anonymous",
+    "belief": "Tesla will beat earnings next week",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "800"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:03:30.014841",
+    "user_id": "anonymous",
+    "belief": "I believe TSLA will double over the next year due to strong earnings momentum.",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "100%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 year"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:03:30.105614",
+    "user_id": "test_option_a_fix",
+    "belief": "I believe TSLA will double over the next year due to strong earnings momentum.",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "100%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 year",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:08:33.855299",
+    "user_id": "anonymous",
+    "belief": "I think AAPL will rise 10% over the next month",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:08:33.947838",
+    "user_id": "test_fallback_patch",
+    "belief": "I think AAPL will rise 10% over the next month",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:12:52.005566",
+    "user_id": "anonymous",
+    "belief": "I think AAPL will rise 10% over the next month",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:12:52.098548",
+    "user_id": "test_fallback_patch",
+    "belief": "I think AAPL will rise 10% over the next month",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:16:42.402716",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "10%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After earnings"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:16:42.497283",
+    "user_id": "debug_final_fix_test",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "10%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After earnings",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:19:47.370117",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:19:47.462691",
+    "user_id": "debug_final_fix_test",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:21:59.249962",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price + 10%"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:21:59.336984",
+    "user_id": "debug_final_fix_test",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price + 10%"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:30:33.817595",
+    "user_id": "anonymous",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:30:33.913753",
+    "user_id": "debug_final_fix_test",
+    "belief": "I think Tesla will jump 10% after earnings",
+    "explanation": "Strategy explanation not available.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "10% above current price"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:35:51.445933",
+    "user_id": "anonymous",
+    "belief": "I think Apple will beat earnings and rise 10%",
+    "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T12:35:51.620890",
+    "user_id": "test_explainer",
+    "belief": "I think Apple will beat earnings and rise 10%",
+    "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "AAPL",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:02:53.814112",
+    "user_id": "anonymous",
+    "belief": "I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "TBD"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:02:53.915593",
+    "user_id": "anonymous",
+    "belief": "I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "TBD"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:10:56.226733",
+    "user_id": "anonymous",
+    "belief": "\"I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "250"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:10:56.320098",
+    "user_id": "anonymous",
+    "belief": "\"I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "250"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:16:36.534308",
+    "user_id": "anonymous",
+    "belief": "\"I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "Expected Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After AI announcement",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:16:36.627351",
+    "user_id": "anonymous",
+    "belief": "\"I believe Microsoft will rally after their AI announcement next month",
+    "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "MSFT",
+          "option_type": "Call",
+          "strike_price": "Expected Market Price"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After AI announcement",
+      "explanation": "This strategy profits if MSFT rises post-AI announcement and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:19:26.034502",
+    "user_id": "anonymous",
+    "belief": "\"Gold will outperform equities over the next year as inflation returns\"",
+    "explanation": "This strategy profits if gold outperforms equities over the next year due to inflation and limits loss to the difference in performance between gold and equities.",
+    "strategy": {
+      "type": "Long Gold/Short Equities",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "GLD",
+          "asset_type": "ETF"
+        },
+        {
+          "action": "Sell to Open",
+          "ticker": "SPY",
+          "asset_type": "ETF"
+        }
+      ],
+      "expiration": "2023-12-31",
+      "target_return": "20%",
+      "max_loss": "Not Defined",
+      "time_to_target": "1 year",
+      "explanation": "This strategy profits if gold outperforms equities over the next year due to inflation and limits loss to the difference in performance between gold and equities."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T13:19:26.135724",
+    "user_id": "anonymous",
+    "belief": "\"Gold will outperform equities over the next year as inflation returns\"",
+    "explanation": "This strategy profits if gold outperforms equities over the next year due to inflation and limits loss to the difference in performance between gold and equities.",
+    "strategy": {
+      "type": "Long Gold/Short Equities",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "GLD",
+          "asset_type": "ETF"
+        },
+        {
+          "action": "Sell to Open",
+          "ticker": "SPY",
+          "asset_type": "ETF"
+        }
+      ],
+      "expiration": "2023-12-31",
+      "target_return": "20%",
+      "max_loss": "Not Defined",
+      "time_to_target": "1 year",
+      "explanation": "This strategy profits if gold outperforms equities over the next year due to inflation and limits loss to the difference in performance between gold and equities."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T14:53:30.366803",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "explanation": "This strategy profits if NVDA doubles in value within a month and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "NVDA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2022-09-30",
+      "target_return": "100%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if NVDA doubles in value within a month and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T14:53:30.472496",
+    "user_id": "anonymous",
+    "belief": "I want to 2x my money on NVDA this month",
+    "explanation": "This strategy profits if NVDA doubles in value within a month and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "NVDA",
+          "option_type": "Call",
+          "strike_price": "Current Market Price"
+        }
+      ],
+      "expiration": "2022-09-30",
+      "target_return": "100%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "1 month",
+      "explanation": "This strategy profits if NVDA doubles in value within a month and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T16:22:02.454579",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T16:22:02.561028",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T16:34:40.557038",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T16:34:40.661961",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:31:36.760047",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:31:36.865319",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:32:33.211316",
+    "user_id": "anonymous",
+    "belief": "TSLA will go up after earnings",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "To Be Determined"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After Earnings",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:32:33.313380",
+    "user_id": "anonymous",
+    "belief": "TSLA will go up after earnings",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "To Be Determined"
+        }
+      ],
+      "expiration": "2025-08-16",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "After Earnings",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:40:48.069009",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "This strategy provides a steady income stream with bonds maturing each year, reinvesting proceeds into new bonds to maintain the ladder structure.",
+    "strategy": {
+      "type": "Bond Ladder",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "Bond A",
+          "maturity_date": "2023-01-01",
+          "yield": "2.5%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond B",
+          "maturity_date": "2024-01-01",
+          "yield": "2.7%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond C",
+          "maturity_date": "2025-01-01",
+          "yield": "3.0%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond D",
+          "maturity_date": "2026-01-01",
+          "yield": "3.2%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond E",
+          "maturity_date": "2027-01-01",
+          "yield": "3.5%"
+        }
+      ],
+      "target_return": "3.0% average yield",
+      "max_loss": "Default Risk",
+      "time_to_target": "5 years",
+      "explanation": "This strategy provides a steady income stream with bonds maturing each year, reinvesting proceeds into new bonds to maintain the ladder structure."
+    }
+  },
+  {
+    "timestamp": "2025-08-02T18:40:48.179538",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "explanation": "This strategy provides a steady income stream with bonds maturing each year, reinvesting proceeds into new bonds to maintain the ladder structure.",
+    "strategy": {
+      "type": "Bond Ladder",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "Bond A",
+          "maturity_date": "2023-01-01",
+          "yield": "2.5%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond B",
+          "maturity_date": "2024-01-01",
+          "yield": "2.7%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond C",
+          "maturity_date": "2025-01-01",
+          "yield": "3.0%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond D",
+          "maturity_date": "2026-01-01",
+          "yield": "3.2%"
+        },
+        {
+          "action": "Buy",
+          "ticker": "Bond E",
+          "maturity_date": "2027-01-01",
+          "yield": "3.5%"
+        }
+      ],
+      "target_return": "3.0% average yield",
+      "max_loss": "Default Risk",
+      "time_to_target": "5 years",
+      "explanation": "This strategy provides a steady income stream with bonds maturing each year, reinvesting proceeds into new bonds to maintain the ladder structure."
+    }
+  },
+  {
+    "timestamp": "2025-08-03T15:35:48.221455",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-03T15:35:48.343188",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-05T00:32:15.893120",
+    "user_id": "anonymous",
+    "belief": "emand of potatoas is going up",
+    "explanation": "This strategy profits if the demand for potatoes rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "POTATO",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if the demand for potatoes rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-05T00:32:15.997168",
+    "user_id": "anonymous",
+    "belief": "emand of potatoas is going up",
+    "explanation": "This strategy profits if the demand for potatoes rises and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "POTATO",
+          "option_type": "Call",
+          "strike_price": "150"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if the demand for potatoes rises and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-05T00:33:17.241709",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
+  },
+  {
+    "timestamp": "2025-08-05T00:33:17.346781",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid.",
+    "strategy": {
+      "type": "Call Option",
+      "trade_legs": [
+        {
+          "action": "Buy to Open",
+          "ticker": "TSLA",
+          "option_type": "Call",
+          "strike_price": "700"
+        }
+      ],
+      "expiration": "2025-09-20",
+      "target_return": "20%",
+      "max_loss": "Premium Paid",
+      "time_to_target": "2 weeks",
+      "explanation": "This strategy profits if TSLA rises post-earnings and limits loss to premium paid."
+    }
   }
 ]

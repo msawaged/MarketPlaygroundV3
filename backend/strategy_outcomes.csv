@@ -1,3 +1,9 @@
 timestamp,user_id,belief,strategy,ticker,pnl_percent,result,risk,holding_period_days,notes,tags
-2025-07-02T01:00:00,tester_001,I believe AAPL will rise,bull call spread,AAPL,25.5,win,moderate,7,corrected test row,"tech,earnings"
-2025-07-24T01:00:00,sandbox_test,I think Nvidia will double in 6 months,iron condor,NVDA,-5.2,loss,moderate,30,validator flagged as invalid,"ai,semis"
+2025-08-01,test1,"I believe AAPL will rise 10% this month",bull call spread,AAPL,12.5,win,moderate,30,,tech
+2025-08-01,test2,"I think TSLA will drop after earnings",bear put spread,TSLA,-8.3,loss,high,14,,earnings
+2025-08-01,test3,"I expect SPY to stay flat",straddle,SPY,3.2,win,low,7,,index
+2025-08-01,test4,"Gold volatility is rising",iron condor,GLD,4.9,win,moderate,21,,metals
+2025-08-01,test5,"Crypto recovery incoming",long crypto,BTC,20.1,win,high,30,,crypto
+2025-08-01,test6,"USD will weaken",long forex eur/usd,EURUSD,1.8,win,moderate,14,,currency
+2025-08-01,test7,"Futures rally expected",long futures,ES,6.7,win,moderate,10,,futures
+2025-08-01,test8,"Bond rates dropping",short bond ladder,TLT,2.3,win,low,60,,bonds

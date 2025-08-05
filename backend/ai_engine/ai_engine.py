@@ -12,6 +12,7 @@ import math
 from datetime import datetime
 from openai import OpenAI, OpenAIError
 import openai
+from backend.ai_engine.strategy_explainer import generate_strategy_explainer
 
 print("🔍 ai_engine.py: All imports finished.")
 
@@ -93,7 +94,11 @@ def get_openai_client():
 
 
 # === 🧠 Helper: Parse GPT output into structured strategy ===
-def parse_gpt_output_to_strategy(output: str) -> dict | None:
+# def parse_gpt_output_to_strategy(output: str) -> dict | None:
+from typing import Optional
+
+def parse_gpt_output_to_strategy(output: str) -> Optional[dict]:
+
     """
     Attempts to parse GPT-4 output (string) into a structured strategy dictionary.
 
@@ -332,6 +337,8 @@ def run_ai_engine(
 
             strategy = gpt_strategy
             strategy["source"] = "gpt_json"
+            strategy["explanation"] = generate_strategy_explainer(belief, strategy)
+
 
         except json.JSONDecodeError:
             print("[⚠️ Fallback] GPT returned invalid JSON, attempting soft parse...")
@@ -376,6 +383,10 @@ def run_ai_engine(
                         "price_info": price_info,
                     },
                 )
+                
+                strategy["explanation"] = generate_strategy_explainer(belief, strategy)
+
+
 
     except Exception as e:
         print(f"[GPT DEBUG] ❌ GPT strategy generation failed: {e}")
@@ -445,6 +456,30 @@ def run_ai_engine(
             "estimated_profit_pct": None,
             "notes": f"Validation error: {e}",
         }
+
+        # ✅ FINAL FIX: Ensure explanation is set if missing (e.g. GPT timeout cases)
+    if "explanation" not in strategy or not isinstance(strategy["explanation"], str) or not strategy["explanation"].strip():
+        print("⚠️ Explanation missing — generating now via fallback GPT call...")
+        try:
+            fallback_explainer = generate_strategy_explainer(belief, strategy)
+
+            explanation_str = None
+            if isinstance(fallback_explainer, dict):
+                explanation_str = fallback_explainer.get("explanation") if isinstance(fallback_explainer, dict) else str(fallback_explainer)
+            elif isinstance(fallback_explainer, str):
+                explanation_str = fallback_explainer
+
+            if explanation_str and isinstance(explanation_str, str):
+                strategy["explanation"] = explanation_str
+            else:
+                strategy["explanation"] = "Strategy explanation not available."
+
+            print("✅ [Auto Explanation Injected]")
+        except Exception as e:
+            print(f"[❌] Explanation generation failed: {e}")
+            strategy["explanation"] = f"Explanation unavailable due to error: {e}"
+
+
 
     # ✅ DEBUG — Log final strategy output for visibility
     print("[DEBUG] Final strategy output:")

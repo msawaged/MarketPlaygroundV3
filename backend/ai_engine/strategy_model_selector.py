@@ -30,14 +30,15 @@ def decide_strategy_engine(belief: str, metadata: dict, method: str = "hybrid") 
         dict: strategy dictionary
     """
     if method == "gpt":
-        return generate_strategy_with_gpt4(belief, metadata)
+        return generate_strategy_with_gpt4(belief)
+
 
     elif method == "ml":
         return predict_strategy_with_ml(belief, metadata)
 
     elif method == "hybrid":
         try:
-            strategy = generate_strategy_with_gpt4(belief, metadata)
+            strategy = generate_strategy_with_gpt4(belief)
             if strategy and isinstance(strategy, dict):
                 return strategy
             raise ValueError("GPT returned invalid structure")

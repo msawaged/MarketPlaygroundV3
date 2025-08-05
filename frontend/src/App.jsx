@@ -17,13 +17,14 @@ const parseOptionType = (leg) => {
 };
 
 const parseStrike = (leg) => {
-  const match = leg.match(/(\d+\.?\d*)/);
+  if (typeof leg !== 'object' || !leg.strike_price) return 'N/A';
+  const match = leg.strike_price.toString().match(/(\d+\.?\d+)/);
   return match ? `${match[1]} strike` : 'N/A';
 };
 
 const parseQuantity = (leg) => {
-  const match = leg.match(/(buy|sell)\s*(\d+)/i);
-  return match ? `${match[2]} (${match[1]})` : 'N/A';
+  if (typeof leg !== 'object' || !leg.action || !leg.quantity) return 'N/A';
+  return `${leg.quantity} (${leg.action})`;
 };
 
 
@@ -467,6 +468,54 @@ function MainApp() {
               <p><strong>🎯 Goal:</strong> {response.goal_type} {response.multiplier ? `(${response.multiplier}x)` : ''}</p>
               <p><strong>🧘 Risk Profile:</strong> {response.risk_profile}</p>
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
+
+{/* 👇 INSERT THE NEW BLOCK HERE — flush with the rest of the breakdown */}
+{response.strategy?.trade_legs?.length > 0 && (
+  <>
+    <h4 style={{ color: '#fff', fontWeight: 'bold' }}>📈 Trade Legs</h4>
+    {response.strategy.trade_legs.map((leg, idx) => {
+      const isOption = !!leg.option_type;
+      const isEquity = !leg.option_type && !!leg.entry_price;
+
+      return (
+        <div
+          key={idx}
+          style={{
+            backgroundColor: '#0f172a',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            borderRadius: '8px',
+            border: '1px solid #333',
+          }}
+        >
+          <p style={{ color: '#fff' }}>
+            <strong>🦵 Leg {idx + 1}:</strong> {leg.action || 'N/A'}
+          </p>
+          <p style={{ color: '#fff' }}>🏷️ Ticker: {leg.ticker || 'N/A'}</p>
+
+          {isOption && (
+            <>
+              <p style={{ color: '#fff' }}>📝 Option Type: {leg.option_type}</p>
+              <p style={{ color: '#fff' }}>💥 Strike Price: {leg.strike_price}</p>
+              <p style={{ color: '#fff' }}>📅 Expiry: {leg.expiration || 'N/A'}</p>
+            </>
+          )}
+
+          {isEquity && (
+            <>
+              <p style={{ color: '#fff' }}>💲 Entry Price: {leg.entry_price}</p>
+              <p style={{ color: '#fff' }}>🔢 Quantity: {leg.quantity}</p>
+            </>
+          )}
+        </div>
+      );
+    })}
+  </>
+)}
+
+
+
+
 
               {/* ✅ Conditionally show the Execute Trade button if we have a strategy */}
 {response && response.strategy && (

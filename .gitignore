@@ -97,3 +97,7 @@ backend/feedback_log.csv
 backend/Training_Strategies.csv
 backend/*.joblib
 backend/*.json
+backend/temp.csv
+backend/fixed.csv
+backend/strategy_outcomes 2.csv
+fixed.csv

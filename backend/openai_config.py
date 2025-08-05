@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 # ✅ Step 1: Load .env file
 # Always load from backend/.env explicitly to avoid ambiguity
-load_dotenv(dotenv_path="backend/.env")
+load_dotenv()
 
 # ✅ Step 2: Load API key from environment
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
