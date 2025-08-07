@@ -4,6 +4,7 @@ print("🧪 ai_engine.py: Top of file loaded.")
 """
 Main AI Engine — Translates beliefs into trade strategies.
 Includes GPT-4 integration, goal parsing, bond logic, robust fallback handling.
+MINIMAL FIXES APPLIED by Claude
 """
 
 import os
@@ -17,9 +18,7 @@ from backend.ai_engine.strategy_explainer import generate_strategy_explainer
 print("🔍 ai_engine.py: All imports finished.")
 
 
-from typing import (
-    Optional,
-)  # ✅ Required for Optional[str] in function signatures
+from typing import Optional
 from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
 print("✅ Imported openai_config")
 
@@ -94,11 +93,7 @@ def get_openai_client():
 
 
 # === 🧠 Helper: Parse GPT output into structured strategy ===
-# def parse_gpt_output_to_strategy(output: str) -> dict | None:
-from typing import Optional
-
 def parse_gpt_output_to_strategy(output: str) -> Optional[dict]:
-
     """
     Attempts to parse GPT-4 output (string) into a structured strategy dictionary.
 
@@ -121,7 +116,7 @@ def parse_gpt_output_to_strategy(output: str) -> Optional[dict]:
         print(f"[GPT PARSE ERROR] Failed to parse GPT output: {e}")
     return None
 
-def attempt_gpt_strategy_parse(belief, gpt_raw_output, context) -> dict | None:
+def attempt_gpt_strategy_parse(belief, gpt_raw_output, context) -> Optional[dict]:
     """
     🧠 Soft fallback GPT strategy parser — uses keyword-based recovery from natural language output.
     Tries to infer structure when json.loads() fails or GPT output is unstructured.
@@ -311,7 +306,7 @@ def run_ai_engine(
         },
     )
 
-        # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
+    # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
     try:
         from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
 
@@ -457,7 +452,7 @@ def run_ai_engine(
             "notes": f"Validation error: {e}",
         }
 
-        # ✅ FINAL FIX: Ensure explanation is set if missing (e.g. GPT timeout cases)
+    # ✅ FINAL FIX: Ensure explanation is set if missing (e.g. GPT timeout cases)
     if "explanation" not in strategy or not isinstance(strategy["explanation"], str) or not strategy["explanation"].strip():
         print("⚠️ Explanation missing — generating now via fallback GPT call...")
         try:
@@ -534,6 +529,22 @@ def run_ai_engine(
         "notes": validation.get("notes"),
     }
 
+# === 🔒 Helper Function: Safe JSON serialization ===
+def safe_json(data):
+    """Recursively sanitize data for JSON compliance (NaN → None, etc)."""
+    def fix_value(val):
+        if isinstance(val, float):
+            if math.isnan(val) or math.isinf(val):
+                return None
+        return val
+
+    if isinstance(data, dict):
+        return {k: safe_json(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [safe_json(item) for item in data]
+    else:
+        return fix_value(data)
+
 
 # === 🧠 New Function: Asset Basket Generation via GPT-4 ===
 def generate_asset_basket(
@@ -590,10 +601,48 @@ def generate_asset_basket(
         )
 
         raw_output = response.choices[0].message.content.strip()
-        print("📤 Raw GPT Output:\n", raw_output)
-        parsed = json.loads(raw_output)
+        print("🧠 Raw GPT Output:\n", raw_output)
 
-        return parsed
+        try:
+            # ✅ Attempt to parse GPT output into JSON
+            parsed = json.loads(raw_output)
+            # ✅ STEP 1 — Sanitize and validate basket items
+            if "basket" in parsed and isinstance(parsed["basket"], list):
+                clean_basket = []
+                seen_tickers = set()
+
+                for item in parsed["basket"]:
+                    ticker = item.get("ticker", "").strip().upper()
+                    alloc = item.get("allocation", "").strip().replace("%", "")
+
+                    if not ticker or not alloc or not alloc.replace(".", "").isdigit():
+                        print(f"[❌ INVALID] Skipping malformed item: {item}")
+                        continue
+
+                    if ticker in seen_tickers:
+                        print(f"[⚠️ DUPLICATE] Skipping duplicate ticker: {ticker}")
+                        continue
+
+                    seen_tickers.add(ticker)
+                    clean_basket.append(item)
+
+                parsed["basket"] = clean_basket
+                print(f"[✅ CLEANED] Final basket: {parsed['basket']}")
+            else:
+                print(f"[❌ ERROR] No valid basket structure returned.")
+                parsed["basket"] = []
+
+            # ✅ Apply safety conversion (fix None, NaN, etc.)
+            return safe_json(parsed)
+
+        except json.JSONDecodeError as e:
+            # ❌ Catch and log any failure in parsing GPT's response
+            print(f"❌ JSON Decode Error in GPT response: {e}")
+            # ✅ Return safe fallback instead of crashing the app
+            return {
+                "basket": [],
+                "error": "Invalid GPT output — failed to parse."
+            }
 
     except Exception as e:
         print(f"[❌] GPT-4 asset basket generation failed: {e}")
@@ -619,4 +668,32 @@ def generate_asset_basket(
             "risk_profile": "moderate",
         }
 
-        print("✅ ai_engine.py fully loaded")
+
+# === FIXED: New Function: Unified Trading Strategy Generator (ML + GPT + Logging) ===
+def generate_trading_strategy(belief: str, user_id: str = "anonymous") -> dict:
+    """
+    Generates a full trading strategy from a belief using the existing run_ai_engine function.
+    This is a simplified wrapper that uses the working components.
+    """
+    try:
+        # Use the existing working run_ai_engine function
+        result = run_ai_engine(belief, "moderate", user_id)
+        print("✅ Strategy successfully generated and logged.")
+        return result
+
+    except Exception as e:
+        print(f"❌ generate_trading_strategy failed: {e}")
+        return {
+            "error": f"Strategy generation failed: {e}",
+            "strategy": None,
+            "user_id": user_id
+        }
+
+
+print("✅ ai_engine.py fully loaded")
+
+# ✅ For test visibility
+print(f"📤 [ai_engine.py] generate_trading_strategy = {generate_trading_strategy}")
+
+# ✅ Optional: limit __all__ export scope
+__all__ = ["generate_trading_strategy", "run_ai_engine", "generate_asset_basket"]

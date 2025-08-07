@@ -32,7 +32,6 @@ class BasketResponse(BaseModel):
 
 # === 🎯 Basket Endpoint via AI Engine ===
 @router.post("/generate_basket", response_model=BasketResponse)
-@router.post("/generate_basket", response_model=BasketResponse)
 def route_generate_asset_basket(request: BasketRequest):
     """
     Delegates asset basket generation to the AI Engine.

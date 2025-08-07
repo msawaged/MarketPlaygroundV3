@@ -1,9 +1,152 @@
-timestamp,user_id,belief,strategy,ticker,pnl_percent,result,risk,holding_period_days,notes,tags
-2025-08-01,test1,"I believe AAPL will rise 10% this month",bull call spread,AAPL,12.5,win,moderate,30,,tech
-2025-08-01,test2,"I think TSLA will drop after earnings",bear put spread,TSLA,-8.3,loss,high,14,,earnings
-2025-08-01,test3,"I expect SPY to stay flat",straddle,SPY,3.2,win,low,7,,index
-2025-08-01,test4,"Gold volatility is rising",iron condor,GLD,4.9,win,moderate,21,,metals
-2025-08-01,test5,"Crypto recovery incoming",long crypto,BTC,20.1,win,high,30,,crypto
-2025-08-01,test6,"USD will weaken",long forex eur/usd,EURUSD,1.8,win,moderate,14,,currency
-2025-08-01,test7,"Futures rally expected",long futures,ES,6.7,win,moderate,10,,futures
-2025-08-01,test8,"Bond rates dropping",short bond ladder,TLT,2.3,win,low,60,,bonds
+belief,strategy,asset_class
+I believe energy will outperform,long futures,forex
+I believe market will stay flat,iron condor,options
+Expecting crypto adoption accelerating,long crypto,stocks
+Market will stay flat,iron condor,forex
+I believe market crash incoming,bear put spread,stocks
+Dollar will weaken,long crypto,options
+Market crash incoming,bear put spread,options
+AI stocks undervalued,long crypto,crypto
+Expecting energy will outperform,long futures,forex
+Dollar will weaken,long forex eur/usd,bonds
+I believe fed will cut rates,bull call spread,options
+I believe tech stocks will rally,bull call spread,options
+Energy will outperform,long futures,futures
+Expecting market will stay flat,iron condor,futures
+Expecting fed will cut rates,long crypto,options
+Expecting ai stocks undervalued,long crypto,forex
+Crypto adoption accelerating,bull call spread,options
+High volatility expected,iron condor,bonds
+Expecting high volatility expected,iron condor,futures
+I believe market will stay flat,iron condor,crypto
+Expecting market will stay flat,iron condor,stocks
+Expecting dollar will weaken,long crypto,options
+Market will stay flat,iron condor,options
+I believe ai stocks undervalued,bull call spread,stocks
+Expecting recession fears growing,bear put spread,futures
+Expecting market will stay flat,butterfly spread,options
+I believe market crash incoming,bear put spread,stocks
+Expecting ai stocks undervalued,bull call spread,stocks
+Expecting fed will cut rates,bull call spread,bonds
+Expecting tech stocks will rally,covered call,bonds
+Fed will cut rates,long futures,options
+Market will stay flat,iron condor,options
+High volatility expected,iron condor,forex
+Recession fears growing,protective put,bonds
+Expecting tech stocks will rally,covered call,options
+Crypto adoption accelerating,bull call spread,bonds
+Dollar will weaken,long crypto,crypto
+Expecting ai stocks undervalued,long crypto,options
+I believe recession fears growing,protective put,forex
+Crypto adoption accelerating,bull call spread,bonds
+I believe fed will cut rates,bull call spread,options
+Expecting recession fears growing,bear put spread,stocks
+Expecting market crash incoming,bear put spread,futures
+Recession fears growing,bear put spread,crypto
+Expecting market crash incoming,bear put spread,stocks
+Market will stay flat,butterfly spread,options
+I believe ai stocks undervalued,bull call spread,stocks
+Expecting energy will outperform,bull call spread,stocks
+High volatility expected,straddle,bonds
+I believe market will stay flat,iron condor,stocks
+I believe dollar will weaken,long crypto,futures
+Market will stay flat,iron condor,bonds
+I believe high volatility expected,iron condor,forex
+Tech stocks will rally,long crypto,crypto
+I believe recession fears growing,bear put spread,forex
+Expecting market crash incoming,collar,stocks
+I believe high volatility expected,iron condor,crypto
+I believe ai stocks undervalued,long crypto,bonds
+Expecting tech stocks will rally,covered call,futures
+Expecting high volatility expected,straddle,bonds
+Dollar will weaken,long crypto,bonds
+Expecting tech stocks will rally,bull call spread,bonds
+Fed will cut rates,long crypto,stocks
+Expecting energy will outperform,long futures,stocks
+AI stocks undervalued,long crypto,bonds
+Expecting crypto adoption accelerating,bull call spread,forex
+Market crash incoming,protective put,bonds
+Market will stay flat,iron condor,bonds
+Recession fears growing,bear put spread,stocks
+Expecting market will stay flat,iron condor,forex
+Expecting ai stocks undervalued,long crypto,options
+Energy will outperform,bull call spread,crypto
+I believe market will stay flat,butterfly spread,options
+I believe fed will cut rates,long futures,forex
+Tech stocks will rally,covered call,stocks
+Expecting ai stocks undervalued,long crypto,stocks
+Expecting crypto adoption accelerating,long crypto,options
+I believe high volatility expected,iron condor,crypto
+Market crash incoming,protective put,options
+Fed will cut rates,bull call spread,options
+I believe energy will outperform,bull call spread,futures
+Expecting market will stay flat,butterfly spread,forex
+Expecting high volatility expected,iron condor,stocks
+Tech stocks will rally,bull call spread,options
+I believe market crash incoming,collar,stocks
+Market will stay flat,butterfly spread,crypto
+Expecting market will stay flat,butterfly spread,bonds
+Fed will cut rates,long crypto,futures
+I believe market crash incoming,bear put spread,forex
+Expecting fed will cut rates,bull call spread,bonds
+I believe energy will outperform,long futures,forex
+I believe high volatility expected,iron condor,forex
+Expecting tech stocks will rally,bull call spread,crypto
+I believe recession fears growing,protective put,crypto
+AI stocks undervalued,bull call spread,forex
+AI stocks undervalued,bull call spread,bonds
+Expecting energy will outperform,bull call spread,options
+Expecting market crash incoming,protective put,stocks
+Energy will outperform,bull call spread,bonds
+Expecting high volatility expected,iron condor,crypto
+Market will stay flat,butterfly spread,forex
+I believe crypto adoption accelerating,long crypto,options
+Expecting ai stocks undervalued,long crypto,bonds
+AI stocks undervalued,bull call spread,options
+Recession fears growing,protective put,bonds
+I believe high volatility expected,straddle,futures
+Crypto adoption accelerating,long crypto,crypto
+I believe ai stocks undervalued,bull call spread,crypto
+High volatility expected,straddle,stocks
+Dollar will weaken,long forex eur/usd,bonds
+Fed will cut rates,bull call spread,forex
+Expecting energy will outperform,long futures,forex
+Expecting recession fears growing,protective put,futures
+Expecting market crash incoming,collar,crypto
+Expecting market will stay flat,butterfly spread,options
+Fed will cut rates,long crypto,crypto
+I believe fed will cut rates,long futures,forex
+I believe dollar will weaken,long crypto,bonds
+Expecting ai stocks undervalued,bull call spread,options
+I believe fed will cut rates,bull call spread,bonds
+Market will stay flat,iron condor,stocks
+I believe dollar will weaken,long crypto,bonds
+Expecting ai stocks undervalued,bull call spread,stocks
+I believe fed will cut rates,long futures,stocks
+Expecting market will stay flat,iron condor,options
+I believe dollar will weaken,long crypto,bonds
+Expecting market will stay flat,iron condor,options
+Expecting recession fears growing,bear put spread,options
+Expecting dollar will weaken,long crypto,crypto
+I believe energy will outperform,bull call spread,crypto
+I believe market crash incoming,bear put spread,stocks
+I believe tech stocks will rally,bull call spread,futures
+I believe crypto adoption accelerating,long crypto,stocks
+Expecting dollar will weaken,long forex eur/usd,forex
+I believe tech stocks will rally,bull call spread,futures
+Expecting recession fears growing,protective put,crypto
+Market crash incoming,bear put spread,futures
+I believe ai stocks undervalued,long crypto,forex
+Market crash incoming,collar,futures
+Recession fears growing,bear put spread,options
+I believe fed will cut rates,bull call spread,crypto
+Expecting high volatility expected,straddle,bonds
+Tech stocks will rally,bull call spread,forex
+Expecting energy will outperform,long futures,stocks
+I believe high volatility expected,iron condor,options
+Expecting fed will cut rates,long futures,futures
+Energy will outperform,long futures,futures
+I believe market crash incoming,protective put,options
+Expecting recession fears growing,protective put,forex
+Expecting ai stocks undervalued,bull call spread,options
+2025-08-07 18:53:44,test,Bitcoin will hit new highs,Call Option,BTC,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback

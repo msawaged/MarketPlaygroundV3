@@ -6,9 +6,11 @@ import json
 import subprocess
 import requests
 import csv
+import traceback  # ✅ FIXED: Added missing import
 from collections import Counter
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi import Request
 
 router = APIRouter()
 
@@ -242,3 +244,53 @@ def retrain_status():
             return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading retrain status: {str(e)}")
+
+
+@router.post("/test_ml_strategy")
+async def test_ml_strategy(request: Request):
+    """
+    🧪 POST /debug/test_ml_strategy
+    Test ML strategy generation directly with a belief.
+    ✅ FIXED: Properly wraps args into metadata dict
+    """
+    try:
+        data = await request.json()
+        belief = data.get("belief", "")
+        user_id = data.get("user_id", "ml_test_user")
+
+        print(f"\n🧪 [ML DEBUG] Running ML strategy for belief: {belief}")
+
+        # === Step 1: Belief parsing
+        from backend.belief_parser import parse_belief
+        parsed = parse_belief(belief)
+        print(f"✅ Parsed belief: {parsed}")
+
+        # === Step 2: Generate strategy using ML
+        from backend.ai_engine.ml_strategy_bridge import generate_strategy_from_ml
+        
+        # ✅ FIXED: Wrap individual args into metadata dict
+        metadata = {
+            "tags": parsed["tags"],
+            "asset_class": parsed["asset_class"],
+            "direction": parsed["direction"],
+            "goal_type": parsed["goal_type"],
+            "timeframe": parsed["timeframe"],
+            "risk_profile": "moderate"
+        }
+        
+        strategy = generate_strategy_from_ml(belief=belief, metadata=metadata)
+        print(f"✅ Strategy: {strategy}")
+
+        return {
+            "belief": belief,
+            "parsed": parsed,
+            "strategy": strategy
+        }
+
+    except Exception as e:
+        print("❌ ERROR in /test_ml_strategy:")
+        traceback.print_exc()
+        return {
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }

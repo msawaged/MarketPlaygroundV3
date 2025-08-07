@@ -43,9 +43,19 @@ def predict_strategy_with_ml(belief: str, metadata: dict = {}) -> dict:
         print(f"[ERROR] Failed to predict with ML model: {e}")
         return {"error": "prediction failed"}
 
+        
+
 def run_ml_strategy_model(belief: str, metadata: dict = {}) -> dict:
     """
     Public interface to run the ML strategy model.
     Mirrors the structure expected by the strategy engine.
     """
     return predict_strategy_with_ml(belief, metadata)
+
+# ✅ Add the missing export used in debug_router.py
+def generate_strategy_from_ml(belief: str, metadata: dict = {}) -> dict:
+    """
+    Entry point expected by debug_router — same as run_ml_strategy_model.
+    """
+    print(f"🧪 [ML DEBUG] Running generate_strategy_from_ml with belief: {belief}")
+    return run_ml_strategy_model(belief, metadata)

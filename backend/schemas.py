@@ -3,6 +3,7 @@
 
 from pydantic import BaseModel, validator
 from typing import Optional
+from typing import Union
 
 # --- 🔐 User Authentication ---
 class UserAuth(BaseModel):
@@ -17,18 +18,15 @@ class BeliefRequest(BaseModel):
 # --- 🧠 Feedback Submission (used for model retraining) ---
 class FeedbackRequest(BaseModel):
     belief: str                      # Original belief statement
-    strategy: str                    # Strategy returned by the AI
-    feedback: str                    # Accepts: "good", "bad", "positive", or "negative" (mapped internally)
+    strategy: Union[str, dict]       # ✅ Accepts both raw strings and structured strategy dicts
+    feedback: str                    # Accepts: "good", "bad", "positive", or "negative"
     user_id: Optional[str] = None    # Who submitted the feedback (manual or auto-ingested)
     source: Optional[str] = None     # e.g. "news_ingestor", "manual", "user"
-    confidence: Optional[float] = None  # Model's confidence in the strategy (0.0 to 1.0)
-    risk_profile: Optional[str] = "moderate"  # ✅ Add this line
+    confidence: Optional[float] = None
+    risk_profile: Optional[str] = "moderate"
 
     @validator("feedback")
     def normalize_feedback(cls, value):
-        """
-        Accepts flexible feedback input and normalizes it to 'good' or 'bad'.
-        """
         val = value.lower().strip()
         if val in ["good", "positive"]:
             return "good"

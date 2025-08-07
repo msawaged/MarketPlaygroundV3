@@ -30,7 +30,7 @@ FEEDBACK_URL = f"{BASE_URL}/feedback/submit_feedback"
 
 # === 📁 File Paths ===
 RAW_LOG_PATH = os.path.join("backend", "logs", "news_beliefs.csv")
-TRAINING_PATH = os.path.join("backend", "Training_Strategies.csv")
+TRAINING_PATH = os.path.join("strategy_outcomes.csv")
 DEBUG_LOG_PATH = os.path.join("backend", "logs", "news_ingestor_debug.log")
 
 # === 📰 RSS Sources ===

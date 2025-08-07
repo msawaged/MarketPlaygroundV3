@@ -21,6 +21,7 @@ from .train_belief_model import train_belief_model
 from .train_asset_model import train_asset_model
 from .train_smarter_strategy_model import train_strategy_model
 from .feedback_trainer import train_feedback_model, train_strategy_classifier_from_feedback
+from .ai_engine.strategy_training_pipeline import main as train_strategy_pipeline
 
 from backend.utils.logger import write_training_log
 
@@ -73,6 +74,17 @@ def train_all_models():
         log_output += "✅ Strategy-from-feedback classifier retrained\n"
     except Exception as e:
         log_output += f"❌ Failed to train strategy-from-feedback classifier: {e}\n{traceback.format_exc()}\n"
+
+    # ADD THIS ENTIRE BLOCK:
+    # Step 6: Strategy Training Pipeline
+    try:
+        train_strategy_pipeline()
+        log_output += "✅ Strategy training pipeline retrained\n"
+    except Exception as e:
+        log_output += f"❌ Failed to train strategy pipeline: {e}\n{traceback.format_exc()}\n"
+
+    # Write all logs to central training log file
+
 
     # Write all logs to central training log file
     write_training_log(log_output + "\n✅ All model training steps completed.")

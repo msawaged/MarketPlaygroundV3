@@ -4,6 +4,8 @@ import os
 import json
 import joblib
 from datetime import datetime
+import csv
+
 
 # === File Paths ===
 # Base directory of this script
@@ -14,6 +16,10 @@ FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback_data.json")
 
 # Serialized ML model file for feedback prediction
 MODEL_FILE = os.path.join(BASE_DIR, "feedback_model.joblib")
+
+# Path to append feedback into strategy training CSV
+CSV_FILE = os.path.join(BASE_DIR, "../strategy_outcomes.csv")
+
 
 def load_feedback_model():
     """
@@ -133,6 +139,27 @@ def save_feedback(belief: str, strategy: str, feedback: str = None, user_id: str
     data.append(feedback_entry)
     with open(FEEDBACK_FILE, "w") as f:
         json.dump(data, f, indent=2)
+
+    # ✅ Append to strategy_outcomes.csv if possible
+    try:
+        with open(CSV_FILE, mode="a", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([
+                datetime.utcnow().isoformat(),
+                user_id,
+                belief,
+                strategy,
+                kwargs.get("ticker", "N/A"),
+                kwargs.get("pnl_percent", "N/A"),
+                feedback,
+                kwargs.get("risk", "moderate"),
+                kwargs.get("holding_period_days", "N/A"),
+                kwargs.get("notes", ""),
+                ",".join(kwargs.get("tags", [])) if isinstance(kwargs.get("tags"), list) else kwargs.get("tags", "")
+            ])
+            print("🟩 Feedback also appended to strategy_outcomes.csv")
+    except Exception as e:
+        print(f"⚠️ Could not write to strategy_outcomes.csv: {e}")
 
     print(f"✅ Feedback saved to file for user: {user_id}")
 

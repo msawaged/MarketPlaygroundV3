@@ -9,6 +9,7 @@ from backend.feedback_handler import save_feedback_entry
 from backend.logger.strategy_logger import log_strategy
 from backend.alpaca_orders import AlpacaExecutor
 from backend.utils.logger import write_training_log  # ✅ CORRECT Supabase logger
+from backend.strategy_outcome_logger import log_strategy_outcome  # 🆕 ADD THIS IMPORT
 
 import pandas as pd
 import os
@@ -54,6 +55,28 @@ def process_belief(request: BeliefRequest):
         request.user_id,
         result.get("strategy", {})
     )
+
+    # 🆕 ADD THIS: Log every strategy to strategy_outcomes.csv
+    try:
+        # Extract strategy details
+        strategy_data = result.get("strategy", {})
+        ticker = result.get("ticker", "UNKNOWN")
+        
+        # Log the strategy outcome (without PnL since it hasn't been executed yet)
+        log_strategy_outcome(
+            strategy=strategy_data,
+            belief=request.belief,
+            ticker=ticker,
+            pnl_percent=0.0,  # Will be updated when feedback/outcome is provided
+            result="pending",  # Initial status
+            notes="Strategy generated - awaiting execution/feedback",
+            user_id=request.user_id,
+            holding_period_days=None
+        )
+        print(f"🟩 Strategy logged to outcomes: {strategy_data.get('type', 'unknown')} for {ticker}")
+        
+    except Exception as e:
+        print(f"⚠️ Failed to log strategy outcome: {e}")
 
     # ✅ Log strategy event to Supabase
     try:

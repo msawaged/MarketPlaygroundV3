@@ -72,32 +72,35 @@ backend/strategy_log.json
 user_portfolios.json
 test_api.py
 
-# =======================
 # 🌐 FRONTEND (React)
-# =======================
 
-# Ignore frontend env and structure docs
 frontend/.env
 frontend_structure.txt
 
-# Node modules
 node_modules/
-
-# React build outputs (vite/build)
 dist/
 build/
-__pycache__/
-*.json
-*.txt
-.env
-.env
 
-# Redundant fallback exclusions
-backend/feedback_log.csv
+# Remove aggressive JSON and TXT ignore
+# *.json     ⛔️ NO — blocks package.json, config files
+# *.txt      ⛔️ NO — blocks Render logs, training logs
+
+# Block specific frontend or backend junk JSON files instead:
+frontend/feedback_log.json
+frontend/old_feedback_dump.json
+backend/temp.json
+backend/feedback_data.json
+backend/strategy_log.json
+
+# Block known non-critical CSVs only:
 backend/Training_Strategies.csv
-backend/*.joblib
-backend/*.json
-backend/temp.csv
 backend/fixed.csv
 backend/strategy_outcomes 2.csv
 fixed.csv
+
+# ML models and artifacts
+backend/*.joblib
+backend/*.pkl
+
+# Redundant
+__pycache__/

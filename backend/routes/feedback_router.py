@@ -77,18 +77,31 @@ def log_feedback_csv(entry: dict):
 
 # ✅ POST /submit_feedback
 @router.post("/submit_feedback")
-@router.post("/submit_feedback")
 def submit_feedback(payload: FeedbackRequest, request: Request):
+    # 🧠 Normalize strategy to string if it came in as a dict
+    strategy_str = (
+        json.dumps(payload.strategy)
+        if isinstance(payload.strategy, dict)
+        else payload.strategy
+    )
 
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": payload.user_id,
         "ip": request.client.host,
         "belief": payload.belief,
-        "strategy": payload.strategy,
+        "strategy": strategy_str,
         "feedback": payload.feedback,
         "risk_profile": payload.risk_profile
     }
+
+    save_feedback_entry(entry)
+    log_feedback_csv(entry)
+    if payload.feedback == "good":
+        append_training_example(payload.belief, strategy_str, payload.risk_profile)
+
+    return {"message": "✅ Feedback received. Thank you!"}
+
 
     # Save raw JSON + training CSV (if good)
     save_feedback_entry(entry)

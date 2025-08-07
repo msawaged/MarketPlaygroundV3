@@ -27179,5 +27179,2395 @@
     "strategy": "Call Option",
     "feedback": "good",
     "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-05T16:55:57.495179",
+    "user_id": "qa_test_user",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "150"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 203.74,
+        "high": 205.34,
+        "low": 202.16
+      },
+      "high_low": [
+        205.34,
+        202.16
+      ],
+      "confidence": 0.5092448474128914,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+      "user_id": "qa_test_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-05T16:59:58.345134",
+    "user_id": "qa_test_user",
+    "ip": "127.0.0.1",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"AAPL\", \"option_type\": \"Call\", \"strike_price\": \"150\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if AAPL rises post-earnings and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-05T18:02:40.431402",
+    "user_id": "curl_test_user_1",
+    "belief": "I think NVDA will surge 12% after earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "12%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "After Earnings",
+        "explanation": "This strategy profits if NVDA surges 12% post-earnings and limits loss to premium paid."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 178.95,
+        "high": 180.91,
+        "low": 175.9
+      },
+      "high_low": [
+        180.91,
+        175.9
+      ],
+      "confidence": 0.76329417447876,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if NVDA surges 12% post-earnings and limits loss to premium paid.",
+      "user_id": "curl_test_user_1",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-05T18:06:55.711298",
+    "user_id": "curl_test_user_3",
+    "belief": "I think the Japanese yen will weaken against the dollar",
+    "strategy": {
+      "strategy": {
+        "type": "Forex Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "USD/JPY",
+            "option_type": "Put",
+            "strike_price": "110"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if the Japanese yen weakens against the dollar and limits loss to premium paid."
+      },
+      "ticker": "UUP",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 27.55,
+        "high": 27.63,
+        "low": 27.52
+      },
+      "high_low": [
+        27.63,
+        27.52
+      ],
+      "confidence": 0.4223449654214635,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if the Japanese yen weakens against the dollar and limits loss to premium paid.",
+      "user_id": "curl_test_user_3",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-05T18:09:34.209577",
+    "user_id": "curl_test_user_4",
+    "belief": "If Trump wins, defense stocks like RTX and LMT will soar",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "RTX",
+            "option_type": "Call",
+            "strike_price": "Market"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "LMT",
+            "option_type": "Call",
+            "strike_price": "Market"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if RTX and LMT rise post-election and limits loss to premium paid."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": -1.0,
+        "high": null,
+        "low": null
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.4887816298860278,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if RTX and LMT rise post-election and limits loss to premium paid.",
+      "user_id": "curl_test_user_4",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-05T19:08:02.166757",
+    "user_id": "final_strategy_test",
+    "belief": "I think NVDA will rally 15% after earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 week",
+        "explanation": "This strategy profits if NVDA rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 178.09,
+        "high": 180.91,
+        "low": 175.9
+      },
+      "high_low": [
+        180.91,
+        175.9
+      ],
+      "confidence": 0.6684639549864153,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if NVDA rises post-earnings and limits loss to premium paid.",
+      "user_id": "final_strategy_test",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-05T19:17:28.170874",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "I think NVDA will rally 15% after earnings next week",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"NVDA\", \"option_type\": \"Call\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"15%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"1 week\", \"explanation\": \"This strategy profits if NVDA rises post-earnings and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-05T19:38:38.380676",
+    "user_id": "test_prebeta",
+    "ip": "127.0.0.1",
+    "belief": "I believe NVDA will rally 15% after earnings",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"NVDA\", \"option_type\": \"Call\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"15%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"1 week\", \"explanation\": \"This strategy profits if NVDA rises post-earnings.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-05T19:50:59.705347",
+    "user_id": "test_prebeta",
+    "ip": "127.0.0.1",
+    "belief": "I believe NVDA will rally 15% after earnings",
+    "strategy": "Call Option",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-05T23:56:29.377327",
+    "user_id": "test_prebeta",
+    "ip": "127.0.0.1",
+    "belief": "I believe NVDA will rally 15% after earnings",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"NVDA\", \"option_type\": \"Call\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"15%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"1 week\", \"explanation\": \"This strategy profits if NVDA rises post-earnings.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:06:36.442440",
+    "user_id": "simulation_batch",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "150"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 202.92,
+        "high": 205.34,
+        "low": 202.16
+      },
+      "high_low": [
+        205.34,
+        202.16
+      ],
+      "confidence": 0.5092448474128914,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:07:52.148754",
+    "user_id": "simulation_batch",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "150"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 202.92,
+        "high": 205.34,
+        "low": 202.16
+      },
+      "high_low": [
+        205.34,
+        202.16
+      ],
+      "confidence": 0.5092448474128914,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:07:52.882937",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"AAPL\", \"option_type\": \"Call\", \"strike_price\": \"150\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if AAPL rises post-earnings and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:08:03.162183",
+    "user_id": "simulation_batch",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:08:03.680364",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": "{\"type\": \"Put Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"TSLA\", \"option_type\": \"Put\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"10%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if TSLA drops 10% and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:08:13.600630",
+    "user_id": "simulation_batch",
+    "belief": "Gold will rise due to inflation",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "GLD",
+            "option_type": "Call",
+            "strike_price": "200"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if Gold rises due to inflation and limits loss to premium paid."
+      },
+      "ticker": "GLD",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 311.16,
+        "high": 312.24,
+        "low": 310.22
+      },
+      "high_low": [
+        312.24,
+        310.22
+      ],
+      "confidence": 0.49527025672018204,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if Gold rises due to inflation and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:05.018332",
+    "user_id": "simulation_batch",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "150"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 202.92,
+        "high": 205.34,
+        "low": 202.16
+      },
+      "high_low": [
+        205.34,
+        202.16
+      ],
+      "confidence": 0.5092448474128914,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next week",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if AAPL rises post-earnings and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:05.508149",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "I think AAPL will beat earnings next week",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"AAPL\", \"option_type\": \"Call\", \"strike_price\": \"150\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if AAPL rises post-earnings and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:16.484276",
+    "user_id": "simulation_batch",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:16.816307",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": "{\"type\": \"Put Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"TSLA\", \"option_type\": \"Put\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"10%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if TSLA drops by 10% and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:24.763570",
+    "user_id": "simulation_batch",
+    "belief": "Gold will rise due to inflation",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "GLD",
+            "option_type": "Call",
+            "strike_price": "200"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if Gold rises due to inflation and limits loss to premium paid."
+      },
+      "ticker": "GLD",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 311.16,
+        "high": 312.24,
+        "low": 310.22
+      },
+      "high_low": [
+        312.24,
+        310.22
+      ],
+      "confidence": 0.49527025672018204,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if Gold rises due to inflation and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:25.241856",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Gold will rise due to inflation",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"GLD\", \"option_type\": \"Call\", \"strike_price\": \"200\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if Gold rises due to inflation and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:33.940639",
+    "user_id": "simulation_batch",
+    "belief": "The US dollar will weaken against the Euro",
+    "strategy": {
+      "strategy": {
+        "type": "Forex Trade",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "ticker": "EUR/USD",
+            "option_type": "Spot",
+            "strike_price": "Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Initial Investment",
+        "time_to_target": "Until Expiration",
+        "explanation": "This strategy profits if the US dollar weakens against the Euro and limits loss to the initial investment."
+      },
+      "ticker": "UUP",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 27.56,
+        "high": 27.63,
+        "low": 27.52
+      },
+      "high_low": [
+        27.63,
+        27.52
+      ],
+      "confidence": 0.41778782353725774,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if the US dollar weakens against the Euro and limits loss to the initial investment.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:34.253046",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "The US dollar will weaken against the Euro",
+    "strategy": "{\"type\": \"Forex Trade\", \"trade_legs\": [{\"action\": \"Buy\", \"ticker\": \"EUR/USD\", \"option_type\": \"Spot\", \"strike_price\": \"Market Price\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Initial Investment\", \"time_to_target\": \"Until Expiration\", \"explanation\": \"This strategy profits if the US dollar weakens against the Euro and limits loss to the initial investment.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:44.094777",
+    "user_id": "simulation_batch",
+    "belief": "Bitcoin will double in 6 months",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "BTC",
+            "option_type": "Call",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "100%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "6 months",
+        "explanation": "This strategy profits if Bitcoin doubles in 6 months and limits loss to premium paid."
+      },
+      "ticker": "BTC",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 50.32,
+        "high": 50.76,
+        "low": 49.87
+      },
+      "high_low": [
+        50.76,
+        49.87
+      ],
+      "confidence": 0.4586943192417358,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "in 6 month",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if Bitcoin doubles in 6 months and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:44.517611",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Bitcoin will double in 6 months",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"BTC\", \"option_type\": \"Call\", \"strike_price\": \"Current Market Price\"}], \"expiration\": \"2025-08-16\", \"target_return\": \"100%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"6 months\", \"explanation\": \"This strategy profits if Bitcoin doubles in 6 months and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:53.617943",
+    "user_id": "simulation_batch",
+    "belief": "Oil prices are going to crash due to oversupply",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Put",
+            "strike_price": "50"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if OIL prices crash due to oversupply and limits loss to premium paid."
+      },
+      "ticker": "XLE",
+      "asset_class": "etf",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 85.51,
+        "high": 85.62,
+        "low": 84.34
+      },
+      "high_low": [
+        85.62,
+        84.34
+      ],
+      "confidence": 0.37823921529729104,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if OIL prices crash due to oversupply and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:09:54.038593",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Oil prices are going to crash due to oversupply",
+    "strategy": "{\"type\": \"Put Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"OIL\", \"option_type\": \"Put\", \"strike_price\": \"50\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if OIL prices crash due to oversupply and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:02.655918",
+    "user_id": "simulation_batch",
+    "belief": "The Fed will raise interest rates",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TLT",
+            "option_type": "Put",
+            "strike_price": "140"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TLT falls when interest rates rise and limits loss to premium paid."
+      },
+      "ticker": "TLT",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 88.33,
+        "high": 88.45,
+        "low": 87.78
+      },
+      "high_low": [
+        88.45,
+        87.78
+      ],
+      "confidence": 0.5415000328822792,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TLT falls when interest rates rise and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:03.088257",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "The Fed will raise interest rates",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"TLT\", \"option_type\": \"Put\", \"strike_price\": \"140\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if TLT falls when interest rates rise and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:13.931452",
+    "user_id": "simulation_batch",
+    "belief": "Healthcare stocks are undervalued right now",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "XLV",
+            "option_type": "Call",
+            "strike_price": "100"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if healthcare stocks rise due to being undervalued and limits loss to premium paid."
+      },
+      "ticker": "XLV",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 132.5,
+        "high": 132.95,
+        "low": 132.04
+      },
+      "high_low": [
+        132.95,
+        132.04
+      ],
+      "confidence": 0.45081878196529357,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if healthcare stocks rise due to being undervalued and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:14.245103",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "Healthcare stocks are undervalued right now",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"XLV\", \"option_type\": \"Call\", \"strike_price\": \"100\"}], \"expiration\": \"2025-09-20\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"2 weeks\", \"explanation\": \"This strategy profits if healthcare stocks rise due to being undervalued and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:26.158257",
+    "user_id": "simulation_batch",
+    "belief": "I expect bond yields to keep rising",
+    "strategy": {
+      "strategy": {
+        "type": "Bond ETF Short",
+        "trade_legs": [
+          {
+            "action": "Sell to Open",
+            "ticker": "TLT",
+            "option_type": "Put",
+            "strike_price": "140"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Unlimited",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if bond yields rise (and bond prices fall) and risk is unlimited."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0,
+        "high": null,
+        "low": null
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.4285450973685427,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if bond yields rise (and bond prices fall) and risk is unlimited.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:35.238674",
+    "user_id": "simulation_batch",
+    "belief": "NVIDIA will outperform after its next earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "TBD"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "After next earnings",
+        "explanation": "This strategy profits if NVIDIA rises post-earnings and limits loss to premium paid."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 178.26,
+        "high": 180.26,
+        "low": 175.9
+      },
+      "high_low": [
+        180.26,
+        175.9
+      ],
+      "confidence": 0.5926459888858727,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if NVIDIA rises post-earnings and limits loss to premium paid.",
+      "user_id": "simulation_batch",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:10:35.591875",
+    "user_id": "simulation_batch",
+    "ip": "127.0.0.1",
+    "belief": "NVIDIA will outperform after its next earnings",
+    "strategy": "{\"type\": \"Call Option\", \"trade_legs\": [{\"action\": \"Buy to Open\", \"ticker\": \"NVDA\", \"option_type\": \"Call\", \"strike_price\": \"TBD\"}], \"expiration\": \"2025-08-16\", \"target_return\": \"20%\", \"max_loss\": \"Premium Paid\", \"time_to_target\": \"After next earnings\", \"explanation\": \"This strategy profits if NVIDIA rises post-earnings and limits loss to premium paid.\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-06T00:30:44.953434",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops as predicted and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops as predicted and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:34:39.919314",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "Until stock drops 10%",
+        "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:36:42.469822",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:38:11.550630",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "700"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:40:16.398522",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops by 10% and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:43:06.110668",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops in value and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops in value and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:48:55.462663",
+    "user_id": "ml_post_train",
+    "belief": "Tesla stock is overvalued and will drop 10%",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "10%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.4159418996449318,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA drops 10% and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:54:15.973415",
+    "user_id": "ml_post_train",
+    "belief": "Oil prices will surge due to war tensions",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Call",
+            "strike_price": "100"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if oil prices surge due to war tensions and limits loss to premium paid."
+      },
+      "ticker": "XLE",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 85.51,
+        "high": 85.62,
+        "low": 84.34
+      },
+      "high_low": [
+        85.62,
+        84.34
+      ],
+      "confidence": 0.5967060830914253,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if oil prices surge due to war tensions and limits loss to premium paid.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T00:56:25.858565",
+    "user_id": "ml_post_train",
+    "belief": "The Japanese yen will weaken against the dollar",
+    "strategy": {
+      "strategy": {
+        "type": "Forex Trade",
+        "trade_legs": [
+          {
+            "action": "Sell",
+            "ticker": "JPYUSD",
+            "option_type": "Spot",
+            "strike_price": "Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Initial Investment",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if the Japanese yen weakens against the dollar and limits loss to the initial investment."
+      },
+      "ticker": "UUP",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 27.56,
+        "high": 27.63,
+        "low": 27.52
+      },
+      "high_low": [
+        27.63,
+        27.52
+      ],
+      "confidence": 0.4143952066050856,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if the Japanese yen weakens against the dollar and limits loss to the initial investment.",
+      "user_id": "ml_post_train",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T01:04:44.850199",
+    "user_id": "anonymous",
+    "belief": "I want to build a bond ladder for income",
+    "strategy": {
+      "strategy": {
+        "type": "Bond Ladder",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "ticker": "US Treasury Bond",
+            "maturity_date": "2023-09-20",
+            "yield": "2%"
+          },
+          {
+            "action": "Buy",
+            "ticker": "US Treasury Bond",
+            "maturity_date": "2024-09-20",
+            "yield": "2.5%"
+          },
+          {
+            "action": "Buy",
+            "ticker": "US Treasury Bond",
+            "maturity_date": "2025-09-20",
+            "yield": "3%"
+          }
+        ],
+        "target_return": "2.5%",
+        "max_loss": "Default Risk",
+        "time_to_target": "5 years",
+        "explanation": "This strategy provides a steady income stream and diversifies risk by purchasing bonds that mature at different times."
+      },
+      "ticker": "UNKNOWN",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": -1.0,
+        "high": null,
+        "low": null
+      },
+      "high_low": [
+        NaN,
+        NaN
+      ],
+      "confidence": 0.337292312589167,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "This strategy provides a steady income stream and diversifies risk by purchasing bonds that mature at different times.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T01:05:29.299402",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "700"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 308.72,
+        "high": 312.45,
+        "low": 305.5
+      },
+      "high_low": [
+        312.45,
+        305.5
+      ],
+      "confidence": 0.5363355358978419,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T20:37:35.491659",
+    "user_id": "claude_debug_test",
+    "belief": "I believe Tesla will rise 15% over the next 2 months",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "15%"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 months",
+        "explanation": "This strategy profits if TSLA rises by 15% over the next 2 months and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.91,
+        "high": 320.47,
+        "low": 306.93
+      },
+      "high_low": [
+        320.47,
+        306.93
+      ],
+      "confidence": 0.4168762671634162,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA rises by 15% over the next 2 months and limits loss to premium paid.",
+      "user_id": "claude_debug_test",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T20:48:31.544862",
+    "user_id": "push_test_user",
+    "belief": "I think TSLA will rise 15% in 2 months",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "15%"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "15%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 months",
+        "explanation": "This strategy profits if TSLA rises 15% in 2 months and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.91,
+        "high": 320.47,
+        "low": 306.93
+      },
+      "high_low": [
+        320.47,
+        306.93
+      ],
+      "confidence": 0.48915060572286356,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "in 2 month",
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA rises 15% in 2 months and limits loss to premium paid.",
+      "user_id": "push_test_user",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T20:52:26.929590",
+    "user_id": "edge_test_user",
+    "belief": "Gold will explode soon due to BRICS de-dollarization",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "GLD",
+            "option_type": "Call",
+            "strike_price": "200"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if Gold rises due to BRICS de-dollarization and limits loss to premium paid."
+      },
+      "ticker": "GLD",
+      "asset_class": "etf",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 310.5,
+        "high": 311.24,
+        "low": 309.84
+      },
+      "high_low": [
+        311.24,
+        309.84
+      ],
+      "confidence": 0.5265256019678296,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if Gold rises due to BRICS de-dollarization and limits loss to premium paid.",
+      "user_id": "edge_test_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T21:00:53.194393",
+    "user_id": "ml_loop_test_user",
+    "belief": "I think Nvidia will drop 10% after earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "10% below market"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if NVDA drops post-earnings and limits loss to premium paid."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 179.42,
+        "high": 179.9,
+        "low": 176.25
+      },
+      "high_low": [
+        179.9,
+        176.25
+      ],
+      "confidence": 0.5942788949464249,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if NVDA drops post-earnings and limits loss to premium paid.",
+      "user_id": "ml_loop_test_user",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-06T21:03:53.382295",
+    "user_id": "ml_loop_test_user",
+    "belief": "I think Nvidia will drop 10% after earnings",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "10% below current price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if NVDA drops post-earnings and limits loss to premium paid."
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 179.42,
+        "high": 179.9,
+        "low": 176.25
+      },
+      "high_low": [
+        179.9,
+        176.25
+      ],
+      "confidence": 0.5942788949464249,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if NVDA drops post-earnings and limits loss to premium paid.",
+      "user_id": "ml_loop_test_user",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-07T10:55:51.375438",
+    "user_id": "anonymous",
+    "belief": "TSLA WILL GO UP",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "700"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if TSLA rises and limits loss to premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 319.91,
+        "high": 320.47,
+        "low": 306.93
+      },
+      "high_low": [
+        320.47,
+        306.93
+      ],
+      "confidence": 0.5363355358978419,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if TSLA rises and limits loss to premium paid.",
+      "user_id": "anonymous",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-07T11:06:08.616843",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "hmmm idk maybe markets go sideways",
+    "strategy": "{\"type\": \"iron condor\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:13:41.146834",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "I think gold will stay flat for the next 6 months",
+    "strategy": "{\"type\": \"iron condor\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:41.784666",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "I think TSLA is going to pop 20% this month",
+    "strategy": "{\"type\": \"long call\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:41.921029",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "I expect AMZN to stay rangebound through earnings",
+    "strategy": "{\"type\": \"iron condor\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.017671",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "SPY is overbought and could fall 5%",
+    "strategy": "{\"type\": \"long put\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.119057",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "The Euro will strengthen against the dollar",
+    "strategy": "{\"type\": \"long forex eur/usd\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.214171",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "NVDA will collapse post-earnings",
+    "strategy": "{\"type\": \"bear put spread\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.315538",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "AAPL has upside momentum going into the iPhone release",
+    "strategy": "{\"type\": \"bull call spread\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.417879",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "ARKK probably won\u2019t move much this week",
+    "strategy": "{\"type\": \"iron condor\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.519964",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "Gold is due for a rally",
+    "strategy": "{\"type\": \"buy equity\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T11:17:42.650452",
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "belief": "Treasury yields are spiking \u2014 TLT should drop",
+    "strategy": "{\"type\": \"long put\", \"source\": \"ml_model\"}",
+    "feedback": "good",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T14:18:54.250204",
+    "user_id": "logtest1",
+    "ip": "127.0.0.1",
+    "belief": "I think NVDA will dump after earnings",
+    "strategy": "bear put spread",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T14:40:13.089451",
+    "user_id": "logtest1",
+    "ip": "127.0.0.1",
+    "belief": "I think NVDA will dump after earnings",
+    "strategy": "bear put spread",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-07T14:40:57.003745",
+    "user_id": "logtest2",
+    "ip": "127.0.0.1",
+    "belief": "I think TSLA will soar after the Cybertruck news",
+    "strategy": "bull call spread",
+    "feedback": "good",
+    "risk_profile": "high"
+  },
+  {
+    "timestamp": "2025-08-07T18:53:44.891183",
+    "user_id": "test",
+    "belief": "Bitcoin will hit new highs",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "BTC",
+            "option_type": "Call",
+            "strike_price": "60000"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "This strategy profits if Bitcoin rises to new highs and limits loss to premium paid."
+      },
+      "ticker": "BTC",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 51.56,
+        "high": 51.79,
+        "low": 51.25
+      },
+      "high_low": [
+        51.79,
+        51.25
+      ],
+      "confidence": 0.5233666314820876,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This strategy profits if Bitcoin rises to new highs and limits loss to premium paid.",
+      "user_id": "test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief"
+    },
+    "result": "auto_generated"
   }
 ]
