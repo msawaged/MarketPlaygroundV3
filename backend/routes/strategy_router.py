@@ -3,13 +3,15 @@
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
+import math
+import json
 
 from backend.ai_engine.ai_engine import run_ai_engine
 from backend.feedback_handler import save_feedback_entry
 from backend.logger.strategy_logger import log_strategy
 from backend.alpaca_orders import AlpacaExecutor
-from backend.utils.logger import write_training_log  # ✅ CORRECT Supabase logger
-from backend.strategy_outcome_logger import log_strategy_outcome  # 🆕 ADD THIS IMPORT
+from backend.utils.logger import write_training_log
+from backend.strategy_outcome_logger import log_strategy_outcome
 
 import pandas as pd
 import os
@@ -17,7 +19,21 @@ from datetime import datetime
 
 router = APIRouter()
 
-# === 📦 Request Schemas ===
+def sanitize_json_values(obj):
+    """
+    Recursively clean inf/nan values that break JSON serialization
+    """
+    if isinstance(obj, dict):
+        return {k: sanitize_json_values(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_json_values(item) for item in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    else:
+        return obj
+
 class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
@@ -31,11 +47,10 @@ class FeedbackRequest(BaseModel):
 
 class OutcomeRequest(BaseModel):
     belief: str
-    result: str  # "win" or "loss"
+    result: str
     pnl_percent: float
     user_id: Optional[str] = "anonymous"
 
-# === 🎯 POST /strategy/process_belief ===
 @router.post("/process_belief")
 def process_belief(request: BeliefRequest):
     """
@@ -44,11 +59,11 @@ def process_belief(request: BeliefRequest):
     """
     result = run_ai_engine(request.belief)
     result["user_id"] = request.user_id
+    
+    result = sanitize_json_values(result)
 
-    # ✅ Log to feedback file
     save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
 
-    # ✅ Log to local strategy history file
     log_strategy(
         request.belief,
         result.get("explanation", "No explanation"),
@@ -56,19 +71,16 @@ def process_belief(request: BeliefRequest):
         result.get("strategy", {})
     )
 
-    # 🆕 ADD THIS: Log every strategy to strategy_outcomes.csv
     try:
-        # Extract strategy details
         strategy_data = result.get("strategy", {})
         ticker = result.get("ticker", "UNKNOWN")
         
-        # Log the strategy outcome (without PnL since it hasn't been executed yet)
         log_strategy_outcome(
             strategy=strategy_data,
             belief=request.belief,
             ticker=ticker,
-            pnl_percent=0.0,  # Will be updated when feedback/outcome is provided
-            result="pending",  # Initial status
+            pnl_percent=0.0,
+            result="pending",
             notes="Strategy generated - awaiting execution/feedback",
             user_id=request.user_id,
             holding_period_days=None
@@ -78,7 +90,6 @@ def process_belief(request: BeliefRequest):
     except Exception as e:
         print(f"⚠️ Failed to log strategy outcome: {e}")
 
-    # ✅ Log strategy event to Supabase
     try:
         write_training_log(
             message=f"[STRATEGY GENERATED]\nBelief: {request.belief}\nUser: {request.user_id}\nStrategy: {result.get('strategy', {})}",
@@ -87,7 +98,6 @@ def process_belief(request: BeliefRequest):
     except Exception as e:
         print(f"[SUPABASE LOG ERROR] {e}")
 
-    # ✅ Optional trade execution
     if request.place_order:
         executor = AlpacaExecutor()
         execution_response = executor.execute_order(result, request.user_id)
@@ -95,7 +105,6 @@ def process_belief(request: BeliefRequest):
 
     return result
 
-# === 💬 POST /strategy/submit_feedback ===
 @router.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):
     """
@@ -104,7 +113,6 @@ def submit_feedback(request: FeedbackRequest):
     save_feedback_entry(request.belief, request.strategy, request.feedback, request.user_id)
     return {"message": "✅ Feedback saved"}
 
-# === 🧠 POST /strategy/mark_outcome ===
 @router.post("/mark_outcome")
 def mark_strategy_outcome(request: OutcomeRequest):
     """
@@ -123,7 +131,6 @@ def mark_strategy_outcome(request: OutcomeRequest):
             "user_id": request.user_id
         }
 
-        # Append to file
         df = pd.DataFrame([outcome_entry])
         df.to_csv(path, mode="a", index=False, header=not exists)
 
@@ -132,7 +139,6 @@ def mark_strategy_outcome(request: OutcomeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error logging outcome: {str(e)}")
 
-# === 📈 GET /strategy/summary ===
 @router.get("/summary")
 def strategy_summary(user_id: Optional[str] = Query(default=None)):
     """
