@@ -9,19 +9,20 @@ This script sequentially retrains all machine learning models used in the backen
 3. Smart Strategy Predictor
 4. Feedback Quality Classifier
 5. Strategy Classifier trained from Feedback History
+6. Strategy Training Pipeline
 
 Each model training step logs status to the central training log for tracking.
 """
 
 import os
 import traceback
+import subprocess
 
 # Import individual training functions for modularity and clarity
 from .train_belief_model import train_belief_model
 from .train_asset_model import train_asset_model
 from .train_smarter_strategy_model import train_strategy_model
 from .feedback_trainer import train_feedback_model, train_strategy_classifier_from_feedback
-from .ai_engine.strategy_training_pipeline import main as train_strategy_pipeline
 
 from backend.utils.logger import write_training_log
 
@@ -75,16 +76,27 @@ def train_all_models():
     except Exception as e:
         log_output += f"❌ Failed to train strategy-from-feedback classifier: {e}\n{traceback.format_exc()}\n"
 
-    # ADD THIS ENTIRE BLOCK:
     # Step 6: Strategy Training Pipeline
     try:
-        train_strategy_pipeline()
-        log_output += "✅ Strategy training pipeline retrained\n"
+        # Run strategy training pipeline as subprocess to avoid import issues
+        strategy_pipeline_path = os.path.join(base_dir, "ai_engine", "strategy_training_pipeline.py")
+        result = subprocess.run(
+            ["python", strategy_pipeline_path], 
+            cwd=base_dir,
+            capture_output=True, 
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        if result.returncode == 0:
+            log_output += "✅ Strategy training pipeline retrained\n"
+        else:
+            log_output += f"❌ Strategy pipeline failed: {result.stderr}\n"
+            
+    except subprocess.TimeoutExpired:
+        log_output += "❌ Strategy pipeline timed out (>5 minutes)\n"
     except Exception as e:
         log_output += f"❌ Failed to train strategy pipeline: {e}\n{traceback.format_exc()}\n"
-
-    # Write all logs to central training log file
-
 
     # Write all logs to central training log file
     write_training_log(log_output + "\n✅ All model training steps completed.")
