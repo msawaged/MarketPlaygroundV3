@@ -534,61 +534,59 @@ def run_ai_engine(
     }
 
 # === 🎯 DYNAMIC ASSET-SPECIFIC FIELDS ===
+# FILE: backend/ai_engine/ai_engine.py (lines 537-580 replacement)
+
 def add_dynamic_fields(asset_class: str, strategy: dict, ticker: str, price_info: dict) -> dict:
-    """Add asset-specific fields based on asset class"""
+    """
+    Add asset-specific fields based on asset class.
+    CLEANED VERSION: Removed fake Greeks and amateur hardcoded values.
+    Only includes real, meaningful data that adds value.
+    """
     dynamic_fields = {}
     
     if asset_class == "options":
-        # Options-specific fields
+        # Options-specific fields - REAL DATA ONLY
         dynamic_fields.update({
             "strike_price": strategy.get("strike_price", "ATM"),
-            "premium": f"${price_info.get('latest', 0) * 0.05:.2f}",  # Estimated premium
-            "break_even": f"${price_info.get('latest', 0) * 1.05:.2f}",
             "max_profit": strategy.get("target_return", "Unlimited"),
             "max_loss": strategy.get("max_loss", "Premium Paid"),
-            "theta": "-0.05",  # Estimated time decay
-            "delta": "0.65" if "call" in strategy.get("type", "").lower() else "-0.35",
-            "implied_volatility": "25%"
+            "expiration": strategy.get("expiration", "TBD"),
+            "option_type": strategy.get("trade_legs", [{}])[0].get("option_type", "Call") if strategy.get("trade_legs") else "Call"
         })
-    
+        
     elif asset_class == "equity" or asset_class == "stock":
-        # Stock-specific fields  
+        # Stock-specific fields - MEANINGFUL DATA
         current_price = price_info.get('latest', 0)
-        dynamic_fields.update({
-            "entry_price": f"${current_price:.2f}",
-            "target_price": f"${current_price * 1.15:.2f}",  # 15% target
-            "stop_loss": f"${current_price * 0.90:.2f}",    # 10% stop
-            "position_size": "100 shares",
-            "risk_reward_ratio": "1:1.5",
-            "market_cap": "Large Cap",
-            "dividend_yield": "2.1%"
-        })
-    
+        if current_price > 0:  # Only calculate if we have real price data
+            dynamic_fields.update({
+                "entry_price": f"${current_price:.2f}",
+                "target_price": f"${current_price * 1.15:.2f}",  # 15% target
+                "stop_loss": f"${current_price * 0.90:.2f}",     # 10% stop
+                "position_size": "To be determined",
+                "risk_reward_ratio": "1:1.5"
+            })
+            
     elif asset_class == "bonds" or asset_class == "bond":
-        # Bond-specific fields
+        # Bond-specific fields - PLACEHOLDER (until real bond data integration)
         dynamic_fields.update({
-            "yield": "4.2%",
-            "duration": "7.3 years", 
-            "maturity_date": "2031-12-15",
-            "credit_rating": "AAA",
-            "coupon_rate": "3.8%",
-            "face_value": "$1,000",
-            "interest_rate_risk": "Moderate"
+            "yield": "Market rate",
+            "duration": "TBD",
+            "maturity_date": "TBD",
+            "credit_rating": "To be analyzed"
         })
-    
+        
     elif asset_class == "crypto":
-        # Crypto-specific fields
-        dynamic_fields.update({
-            "volatility": "65%",
-            "market_cap": "$1.2T",
-            "24h_volume": "$15.2B",
-            "circulating_supply": "19.8M",
-            "all_time_high": "$69,000",
-            "fear_greed_index": "72 (Greed)"
-        })
+        # Crypto-specific fields - PLACEHOLDER (until crypto integration)
+        current_price = price_info.get('latest', 0)
+        if current_price > 0:
+            dynamic_fields.update({
+                "volatility": "High",
+                "24h_volume": "Check exchange",
+                "market_cap": "Variable"
+            })
     
+    # Return only meaningful fields, no fake Greeks
     return dynamic_fields
-
 
 # === 🔒 Helper Function: Safe JSON serialization ===
 def safe_json(data):
