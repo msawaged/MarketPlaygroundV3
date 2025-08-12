@@ -100,7 +100,7 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
     ticker_matches = re.findall(ticker_pattern, belief.upper())
     
     # Filter out common false positives
-    false_positives = {"THE", "AND", "OR", "BUT", "FOR", "IN", "ON", "AT", "TO", "UP", "GO", "BUY", "SELL"}
+    false_positives = {"THE", "AND", "OR", "BUT", "FOR", "IN", "ON", "AT", "TO", "UP", "GO", "BUY", "SELL", "THINK", "WILL", "I"}
     valid_tickers = [t for t in ticker_matches if t not in false_positives and len(t) >= 2]
     
     if valid_tickers:
