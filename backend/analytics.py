@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from io import BytesIO
 from fastapi.responses import StreamingResponse
-from portfolio_handler import get_portfolio
-from feedback_handler import load_feedback_model
+from backend.portfolio_handler import get_portfolio
+from backend.feedback_handler import load_feedback_model
 
 def summarize_user_portfolio(user_id: str):
     """

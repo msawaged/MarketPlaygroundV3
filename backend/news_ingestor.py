@@ -15,7 +15,7 @@ import csv
 import random
 import sys
 import time
-from utils.logger import write_training_log
+from backend.utils.logger import write_training_log
 
 # === 🔐 Supabase Configuration ===
 SUPABASE_URL = os.getenv("SUPABASE_URL")

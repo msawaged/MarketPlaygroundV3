@@ -74,7 +74,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:3001"
+        "http://localhost:3001",
+        "http://10.0.0.61:3000",
+        "http://10.0.0.61:3001"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -158,23 +160,14 @@ async def strategy_process_belief(request: Request):
         if not belief:
             raise HTTPException(status_code=400, detail="Belief is required")
 
-        # TEMPORARY dummy output (commented GPT/ML for now)
-        return {
-            "message": "✅ Dummy strategy response (strategy_process_belief)",
-            "user_id": user_id,
-            "strategy": {
-                "type": "Dummy Strategy",
-                "trade_legs": ["Buy 1 dummy call"],
-                "expiration": "2099-12-31",
-                "explanation": "This is a dummy placeholder from /strategy/process_belief."
-            }
-        }
+        # 🔥 CALL YOUR REAL AI ENGINE - NO MORE DUMMY SHIT!
+        result = run_ai_engine(belief, user_id, risk_profile)
+        return result
 
     except Exception as e:
         print("\n❌ ERROR in /strategy/process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @app.post("/submit_feedback")
@@ -190,7 +183,7 @@ def submit_feedback(request: FeedbackRequest):
 @app.post("/force_retrain", response_class=PlainTextResponse)
 def force_retrain_now():
     try:
-        from backend.train_all_models import train_all_models
+        from train_all_models import train_all_models
         train_all_models()
         return "✅ Forced model retraining completed."
     except Exception as e:
@@ -200,7 +193,7 @@ def force_retrain_now():
 @app.post("/retrain", response_class=PlainTextResponse)
 def retrain_from_ingestor():
     try:
-        from backend.train_all_models import train_all_models
+        from train_all_models import train_all_models
         train_all_models()
         return "✅ Retraining triggered by news ingestor."
     except Exception as e:
@@ -304,4 +297,3 @@ def news_ingestion_status():
 #     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
 
 #     print("✅ ai_engine.py fully loaded")
-

@@ -1,6 +1,6 @@
 # backend/gpt_test_driver.py
 
-from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
+from ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
 
 if __name__ == "__main__":
     test_belief = "I believe TSLA will rise 20% over the next 3 months due to strong earnings and EV demand"

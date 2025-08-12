@@ -17,7 +17,7 @@ import hashlib
 from datetime import datetime
 import feedparser
 
-from backend.train_all_models import train_all_models
+from train_all_models import train_all_models
 
 # === CONFIG ===
 RSS_FEEDS = [

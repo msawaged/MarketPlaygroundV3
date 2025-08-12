@@ -1,5 +1,5 @@
 # backend/auth_handler.py
-from backend.user_models import add_user, verify_user
+from user_models import add_user, verify_user
 
 def handle_signup(username: str, password: str):
     if add_user(username, password):

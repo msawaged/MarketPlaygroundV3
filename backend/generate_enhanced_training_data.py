@@ -1,7 +1,7 @@
 # backend/generate_enhanced_training_data.py
 
 import csv
-from belief_parser import detect_ticker, detect_direction, detect_confidence
+from backend.belief_parser import detect_ticker, detect_direction, detect_confidence
 
 INPUT_FILE = "backend/Training_Strategies.csv"
 OUTPUT_FILE = "backend/Training_Strategies_Enhanced.csv"

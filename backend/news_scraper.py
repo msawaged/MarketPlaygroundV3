@@ -4,7 +4,7 @@ import os
 import json
 import feedparser
 from datetime import datetime
-from backend.news_entity_parser import extract_entities_from_belief
+from news_entity_parser import extract_entities_from_belief
 
 # RSS feeds to try
 RSS_FEEDS = [

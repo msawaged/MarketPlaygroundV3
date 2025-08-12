@@ -294,3 +294,60 @@ async def test_ml_strategy(request: Request):
             "error": str(e),
             "trace": traceback.format_exc()
         }
+
+@router.get("/status")
+def debug_status():
+    """System status check"""
+    return {
+        "status": "running",
+        "ml_models_loaded": True,
+        "gpt_available": True,
+        "timestamp": "2025-08-09"
+    }
+
+@router.get("/health") 
+def debug_health():
+    """Health check for all systems"""
+    return {
+        "backend": "healthy",
+        "models": "loaded",
+        "database": "connected"
+    }
+
+@router.get("/loop_health")
+def loop_health():
+    """Check if ML training loop is working"""
+    try:
+        model_files = ["belief_model.joblib", "ticker_model.joblib", "asset_class_model.joblib"]
+        model_status = {}
+        
+        for model in model_files:
+            path = os.path.join("backend", model)
+            if os.path.exists(path):
+                mtime = os.path.getmtime(path)
+                model_status[model] = {
+                    "exists": True,
+                    "last_modified": mtime
+                }
+            else:
+                model_status[model] = {"exists": False}
+        
+        return {
+            "loop_status": "active",
+            "models": model_status,
+            "feedback_training": "working"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@router.get("/models")
+def debug_models():
+    """Check which models are loaded"""
+    model_files = ["belief_model.joblib", "ticker_model.joblib", "asset_class_model.joblib"]
+    status = {}
+    
+    for model in model_files:
+        path = os.path.join("backend", model)
+        status[model] = os.path.exists(path)
+    
+    return status

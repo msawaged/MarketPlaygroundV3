@@ -8,7 +8,7 @@ import StrategyOpsPage from './components/StrategyOpsPage'; // ⬅️ new route 
 import HotTradesPage from './components/HotTrades'; // ✅ NEW: Hot Trades route import
 import ToolSelectorPage from './components/ToolSelectorPage';
 import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
-
+import ChatInterface from './components/ChatInterface';
 
 // ✅ Option parsing helpers
 const parseOptionType = (leg) => {
@@ -649,6 +649,7 @@ export default function App() {
   {/* ✅ Tool selector page */}
   <Route path="/select-tool" element={<ToolSelectorPage />} />
   <Route path="/basket-builder" element={<BasketBuilderPage />} />
+  <Route path="/chat" element={<ChatInterface />} />
 
   {/* ✅ Main strategy page (what used to be your default app) */}
   <Route path="/generator" element={<MainApp />} />

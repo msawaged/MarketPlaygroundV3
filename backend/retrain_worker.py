@@ -7,7 +7,7 @@ import json
 import pandas as pd
 from datetime import datetime
 
-from backend.train_all_models import train_all_models
+from train_all_models import train_all_models
 from backend.utils.logger import write_training_log
 
 # === Directory setup ===
