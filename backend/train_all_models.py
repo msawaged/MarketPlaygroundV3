@@ -19,10 +19,10 @@ import traceback
 import subprocess
 
 # Import individual training functions for modularity and clarity
-from .train_belief_model import train_belief_model
-from .train_asset_model import train_asset_model
-from .train_smarter_strategy_model import train_strategy_model
-from .feedback_trainer import train_feedback_model, train_strategy_classifier_from_feedback
+from train_belief_model import train_belief_model
+from train_asset_model import train_asset_model
+from train_smarter_strategy_model import train_strategy_model
+from feedback_trainer import train_feedback_model, train_strategy_classifier_from_feedback
 
 from backend.utils.logger import write_training_log
 
