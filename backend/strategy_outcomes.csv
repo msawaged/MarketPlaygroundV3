@@ -1,4 +1,4 @@
-belief,strategy,asset_class
+timestamp,user_id,belief,strategy,ticker,confidence,status,outcome,notes
 I believe energy will outperform,long futures,forex
 I believe market will stay flat,iron condor,options
 Expecting crypto adoption accelerating,long crypto,stocks
@@ -149,3 +149,58 @@ Energy will outperform,long futures,futures
 I believe market crash incoming,protective put,options
 Expecting recession fears growing,protective put,forex
 Expecting ai stocks undervalued,bull call spread,options
+2025-08-07 20:04:53,test,AI stocks will dominate 2025,Call Option,UNKNOWN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 21:44:18,chat_user,tsla will beat next earnings,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 21:46:19,chat_user,the demand of sugar will rise,Call Option,UNKNOWN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 22:22:28,chat_user,oil prices in europe will surge,Call Option,XLE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 22:30:22,chat_user,build me a bond ladder,Bond Ladder,UNKNOWN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 22:48:02,chat_user,i want a butterfly option on tsla,Butterfly Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 22:48:36,chat_user,i want an iorn condor on tesla,Iron Condor,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 23:09:55,chat_user,tsla will beat earnings,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 23:37:46,test_user,Tesla will go up,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 23:52:23,chat_user,Tesla's going up,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-07 23:56:47,chat_user,Tesla will beat earnings ,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 00:11:46,chat_user,Double my money on corn ,Call Option,UNKNOWN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 00:19:56,chat_user,Corn demand will go up,Call Option,UNKNOWN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 13:50:40,chat_user,Corn will explode,Call Option,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 17:55:50,chat_user,Corn will explode,Call Option,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 18:05:01,chat_user,Need a bond ladder for steady growrh,Bond Ladder,TLT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 19:19:20,chat_user,Corn will explode,Call Option,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 20:24:54,chat_user,Corn will explode,Call Option,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 20:25:45,chat_user,Oil demand will go up in the next months ,Call Option,USO,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 23:54:26,chat_user,Tesla goes up,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 23:55:31,chat_user,Coffee beans are in demand,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-08 23:57:30,chat_user,Give me a straddle on Tesla ,Straddle,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 00:27:29,chat_user,Idk which way oil prices are going,Straddle,USO,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 01:27:42,chat_user,Conflict will cause oil demand,Call Option,USO,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 16:46:55,chat_user,tsla is going up ,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 16:47:43,chat_user,i think online retail will start hitting highs,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 16:48:34,chat_user,i think retail sales for clothes are going to fall in the next 2 months,Put Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 17:17:02,chat_user,tsla is going up,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 17:33:55,chat_user,I think housing will stay flat untill summer of next year,Real Estate ETF,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-09 17:35:07,chat_user,I think housing will stay flat untill summer of next year,Real Estate Investment Trust,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 14:22:32,chat_user,Tsla will beat earnings,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 14:23:22,chat_user,Tsla will beat earnings,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 15:23:09,chat_user,i. think gold will surge in the next 3 months,Call Option,GLD,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 15:24:02,chat_user,potatos demand is going up ,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 15:28:21,chat_user,I’m not sure the directions of oil prices,Straddle,USO,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 15:39:34,chat_user,Tsla is going to crash,Put Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 16:09:38,chat_user,tsla will beat earnings,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 16:22:18,chat_user,Tsla is crashing soon,Put Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 17:12:39,chat_user,Online retail is surging end of 2025,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 17:26:20,chat_user,i think oil prices. will rise by end of 2025,Call Option,USO,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 17:27:10,chat_user,tsla will beat earnings next earnings call ,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 17:30:34,chat_user,i want a moderate growth bond ladder ,Bond Ladder,TLT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 17:36:33,chat_user,potatoes in euroupe price will rise i want to capture a profit,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-10 19:49:40,chat_user,soda in america has skyrocketed,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-11 02:20:39,chat_user,i want a 10% return on bonds annualy ,Bond Investment,TLT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-11 02:21:10,chat_user,tsla will go up ,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-11 03:31:19,chat_user,tsla will beat earnings,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-11 22:52:41,test,NVDA will moon,Call Option,NVDA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-11 23:51:36,loop_test_user,I think AAPL will rally 15% over the next 3 months,Call Option,THINK,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:03:57,loop_test_user,I think AAPL will rally 15% over the next 3 months,Call Option,THINK,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:11:04,loop_test_user,I think AAPL will rally 15% over the next 3 months,Call Option,THINK,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:27:54,stress_test,Tesla will crash 20%,Put Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:28:17,stress_test,Bitcoin will moon,Call Option,WILL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:35:54,final_test,Production ready test,Call Option,READY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 01:36:45,final_test,Production ready test,Call Option,READY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback

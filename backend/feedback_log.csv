@@ -40,3 +40,16 @@ timestamp,user_id,ip,belief,strategy,feedback,risk_profile
 2025-08-07T14:18:54.250204,logtest1,127.0.0.1,I think NVDA will dump after earnings,bear put spread,bad,moderate
 2025-08-07T14:40:13.089451,logtest1,127.0.0.1,I think NVDA will dump after earnings,bear put spread,bad,moderate
 2025-08-07T14:40:57.003745,logtest2,127.0.0.1,I think TSLA will soar after the Cybertruck news,bull call spread,good,high
+2025-08-07T23:52:47.652449,chat_user,10.0.0.160,Tesla's going up,Call Option,bad,moderate
+2025-08-08T00:12:24.191285,chat_user,10.0.0.160,Double my money on corn ,Call Option,bad,moderate
+2025-08-08T00:20:13.232967,chat_user,10.0.0.160,Corn demand will go up,Call Option,bad,moderate
+2025-08-08T18:05:30.335091,chat_user,10.0.0.160,Need a bond ladder for steady growrh,Bond Ladder,good,moderate
+2025-08-09T00:28:10.730035,chat_user,10.0.0.160,Idk which way oil prices are going,Straddle,bad,moderate
+2025-08-09T16:47:08.427990,chat_user,127.0.0.1,tsla is going up ,Call Option,good,moderate
+2025-08-09T17:35:27.065304,chat_user,10.0.0.160,I think housing will stay flat untill summer of next year,Real Estate Investment Trust,good,moderate
+2025-08-10T17:31:04.594866,chat_user,127.0.0.1,i want a moderate growth bond ladder ,Bond Ladder,good,moderate
+2025-08-10T19:50:08.155672,chat_user,127.0.0.1,soda in america has skyrocketed,Call Option,good,moderate
+2025-08-11T23:52:13.260566,,127.0.0.1,I think AAPL will rally 15% over the next 3 months,Call Option,good,moderate
+2025-08-12T01:05:50.214418,,127.0.0.1,I think AAPL will rally 15% over the next 3 months,Call Option,good,moderate
+2025-08-12T01:06:21.623487,,127.0.0.1,I think NVDA will crash,Put Option,bad,moderate
+2025-08-12T01:28:01.439593,,127.0.0.1,Tesla will crash 20%,Put Option,good,moderate
