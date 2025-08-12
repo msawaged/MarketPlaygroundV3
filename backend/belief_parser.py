@@ -100,7 +100,38 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
     ticker_matches = re.findall(ticker_pattern, belief.upper())
     
     # Filter out common false positives
-    false_positives = {"THE", "AND", "OR", "BUT", "FOR", "IN", "ON", "AT", "TO", "UP", "GO", "BUY", "SELL", "THINK", "WILL", "I"}
+    # Filter out common false positives
+    false_positives = {
+        "THE", "AND", "OR", "BUT", "FOR", "IN", "ON", "AT", "TO", "UP", "GO", "BUY", "SELL", 
+        "THINK", "WILL", "I", "HIT", "MOON", "DROP", "FALL", "RISE", "JUMP", "RUN", "TANK", 
+        "SOAR", "AFTER", "BEFORE", "WHEN", "WHERE", "WHY", "HOW", "WHAT", "WHO", "CAN", 
+        "COULD", "WOULD", "SHOULD", "MIGHT", "MAY", "MUST", "SHALL", "HAVE", "HAS", "HAD",
+        "IS", "ARE", "WAS", "WERE", "BE", "BEEN", "BEING", "DO", "DOES", "DID", "DONE",
+        "GET", "GOT", "GIVE", "GAVE", "TAKE", "TOOK", "MAKE", "MADE", "COME", "CAME",
+        "LOOK", "SEEMS", "FEEL", "FEELS", "LIKE", "LOVE", "WANT", "NEED", "KNOW", "SAY",
+        "SAID", "TELL", "TOLD", "ASK", "ASKED", "SHOW", "SEEN", "SEE", "FIND", "FOUND",
+        "CALL", "CALLS", "WORK", "WORKS", "TRY", "TRIES", "HELP", "HELPS", "MOVE", "MOVES",
+        "TURN", "TURNS", "KEEP", "KEEPS", "START", "STARTS", "STOP", "STOPS", "PLAY", "PLAYS",
+        "RUN", "RUNS", "WALK", "WALKS", "TALK", "TALKS", "READ", "READS", "WRITE", "WRITES",
+        "HEAR", "HEARS", "LISTEN", "FOLLOW", "OPEN", "OPENS", "CLOSE", "CLOSES", "LEAVE",
+        "LEAVES", "STAY", "STAYS", "LIVE", "LIVES", "DIE", "DIES", "KILL", "KILLS", "EAT",
+        "EATS", "DRINK", "DRINKS", "SLEEP", "SLEEPS", "WAKE", "WAKES", "SIT", "SITS", "STAND",
+        "STANDS", "LIE", "LIES", "WIN", "WINS", "LOSE", "LOSES", "FIGHT", "FIGHTS", "PEACE",
+        "WAR", "WARS", "HOPE", "HOPES", "FEAR", "FEARS", "HAPPY", "SAD", "GOOD", "BAD",
+        "BIG", "SMALL", "LONG", "SHORT", "HIGH", "LOW", "FAST", "SLOW", "HOT", "COLD",
+        "OLD", "NEW", "YOUNG", "EASY", "HARD", "RIGHT", "WRONG", "TRUE", "FALSE", "REAL",
+        "FAKE", "SAME", "DIFFERENT", "FULL", "EMPTY", "RICH", "POOR", "FREE", "BUSY",
+        "EARLY", "LATE", "SOON", "NEVER", "ALWAYS", "OFTEN", "SOMETIMES", "RARELY", "MAYBE",
+        "PROBABLY", "DEFINITELY", "CERTAINLY", "POSSIBLY", "LIKELY", "UNLIKELY", "SURE",
+        "UNSURE", "CLEAR", "UNCLEAR", "OBVIOUS", "HIDDEN", "SIMPLE", "COMPLEX", "EASY",
+        "DIFFICULT", "POSSIBLE", "IMPOSSIBLE", "LEGAL", "ILLEGAL", "SAFE", "DANGEROUS",
+        "HEALTHY", "SICK", "STRONG", "WEAK", "SMART", "STUPID", "FUNNY", "SERIOUS",
+        "NICE", "MEAN", "KIND", "CRUEL", "FAIR", "UNFAIR", "JUST", "UNJUST", "HONEST",
+        "DISHONEST", "LOYAL", "DISLOYAL", "PATIENT", "IMPATIENT", "CALM", "ANGRY",
+        "EXCITED", "BORED", "INTERESTED", "UNINTERESTED", "SURPRISED", "SHOCKED",
+        "CONFUSED", "UNDERSTANDING", "WORRIED", "RELAXED", "STRESSED", "PEACEFUL",
+        "TESLA", "APPLE", "MICROSOFT", "NVIDIA", "AMAZON", "GOOGLE", "FACEBOOK", "NETFLIX", "BITCOIN", "ETHEREUM"
+    }
     valid_tickers = [t for t in ticker_matches if t not in false_positives and len(t) >= 2]
     
     if valid_tickers:
