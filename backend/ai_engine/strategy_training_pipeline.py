@@ -4,7 +4,7 @@
 This script trains a simple ML model that maps (belief + metadata) text to strategy types.
 It saves a vectorizer and classifier to be used in real-time strategy generation fallback.
 """
-
+import json
 import os
 import pandas as pd
 import joblib
@@ -16,13 +16,13 @@ from sklearn.metrics import classification_report
 
 # === Define paths ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_FILE = os.path.join(BASE_DIR, "..", "strategy_outcomes.csv")
+CSV_FILE = os.path.join(BASE_DIR, "..", "feedback_log.csv")
 MODEL_FILE = os.path.join(BASE_DIR, "multi_strategy_model.joblib")
 VECTORIZER_FILE = os.path.join(BASE_DIR, "multi_vectorizer.joblib")
 
 print("🔄 [1] Loading strategy data...")
 if not os.path.exists(CSV_FILE):
-    raise FileNotFoundError(f"❌ strategy_outcomes.csv not found at: {CSV_FILE}")
+    raise FileNotFoundError(f"❌ feedback_log.csv not found at: {CSV_FILE}")
 
 df = pd.read_csv(CSV_FILE)
 
