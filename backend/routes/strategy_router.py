@@ -54,56 +54,98 @@ class OutcomeRequest(BaseModel):
 @router.post("/process_belief")
 def process_belief(request: BeliefRequest):
     """
+    🔧 ENHANCED WITH PERFORMANCE MONITORING
     Generates strategy from belief, logs strategy to file and Supabase,
     and optionally executes via Alpaca.
     """
-    result = run_ai_engine(request.belief)
-    result["user_id"] = request.user_id
+    # 📊 PERFORMANCE MONITORING: Debug print to confirm this function is called
+    print("🚨 REAL STRATEGY FUNCTION CALLED! (strategy_router.py)")
     
-    result = sanitize_json_values(result)
-
-    save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
-
-    log_strategy(
-        request.belief,
-        result.get("explanation", "No explanation"),
-        request.user_id,
-        result.get("strategy", {})
-    )
-
+    # 📊 PERFORMANCE MONITORING: Import metrics storage and start timer
+    from backend.routes.debug_router import METRICS
+    import time
+    start = time.perf_counter()
+    
     try:
-        strategy_data = result.get("strategy", {})
-        ticker = result.get("ticker", "UNKNOWN")
+        # 🤖 AI ENGINE: Generate strategy from user belief
+        result = run_ai_engine(request.belief)
+        result["user_id"] = request.user_id
         
-        log_strategy_outcome(
-            strategy=strategy_data,
-            belief=request.belief,
-            ticker=ticker,
-            pnl_percent=0.0,
-            result="pending",
-            notes="Strategy generated - awaiting execution/feedback",
-            user_id=request.user_id,
-            holding_period_days=None
+        # 🧹 DATA CLEANING: Remove inf/nan values that break JSON
+        result = sanitize_json_values(result)
+
+        # 💾 FEEDBACK SYSTEM: Auto-save strategy generation as feedback
+        save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
+
+        # 📝 STRATEGY LOGGING: Log to strategy files for analysis
+        log_strategy(
+            request.belief,
+            result.get("explanation", "No explanation"),
+            request.user_id,
+            result.get("strategy", {})
         )
-        print(f"🟩 Strategy logged to outcomes: {strategy_data.get('type', 'unknown')} for {ticker}")
+
+        # 📊 OUTCOME TRACKING: Log initial strategy outcome (pending state)
+        try:
+            strategy_data = result.get("strategy", {})
+            ticker = result.get("ticker", "UNKNOWN")
+            
+            log_strategy_outcome(
+                strategy=strategy_data,
+                belief=request.belief,
+                ticker=ticker,
+                pnl_percent=0.0,
+                result="pending",
+                notes="Strategy generated - awaiting execution/feedback",
+                user_id=request.user_id,
+                holding_period_days=None
+            )
+            print(f"🟩 Strategy logged to outcomes: {strategy_data.get('type', 'unknown')} for {ticker}")
+            
+        except Exception as e:
+            print(f"⚠️ Failed to log strategy outcome: {e}")
+
+        # 🗂️ TRAINING LOG: Save to Supabase for ML training data
+        try:
+            write_training_log(
+                message=f"[STRATEGY GENERATED]\nBelief: {request.belief}\nUser: {request.user_id}\nStrategy: {result.get('strategy', {})}",
+                source="strategy_router"
+            )
+        except Exception as e:
+            print(f"[SUPABASE LOG ERROR] {e}")
+
+        # 📈 TRADE EXECUTION: Execute trade via Alpaca if requested
+        if request.place_order:
+            executor = AlpacaExecutor()
+            execution_response = executor.execute_order(result, request.user_id)
+            result["execution_result"] = execution_response
+
+        # 📊 PERFORMANCE MONITORING: Log successful completion with timing
+        duration = (time.perf_counter() - start) * 1000
+        METRICS["response_times"].append(duration)
+        METRICS["logs"].append({
+            "level": "SUCCESS",
+            "message": f"process_belief completed - {duration:.0f}ms",
+            "duration": f"{duration:.0f}ms",
+            "timestamp": time.strftime("%H:%M:%S")
+        })
         
+        print(f"🔧 [DEBUG] SUCCESS! Duration: {duration:.0f}ms, Total logs: {len(METRICS['logs'])}")
+        return result
+
     except Exception as e:
-        print(f"⚠️ Failed to log strategy outcome: {e}")
-
-    try:
-        write_training_log(
-            message=f"[STRATEGY GENERATED]\nBelief: {request.belief}\nUser: {request.user_id}\nStrategy: {result.get('strategy', {})}",
-            source="strategy_router"
-        )
-    except Exception as e:
-        print(f"[SUPABASE LOG ERROR] {e}")
-
-    if request.place_order:
-        executor = AlpacaExecutor()
-        execution_response = executor.execute_order(result, request.user_id)
-        result["execution_result"] = execution_response
-
-    return result
+        # 📊 PERFORMANCE MONITORING: Log error with timing and details
+        duration = (time.perf_counter() - start) * 1000
+        METRICS["error_counts"][type(e).__name__] += 1
+        METRICS["logs"].append({
+            "level": "ERROR",
+            "message": f"process_belief failed: {str(e)[:50]}",
+            "duration": f"{duration:.0f}ms", 
+            "timestamp": time.strftime("%H:%M:%S")
+        })
+        
+        print(f"🔧 [DEBUG] ERROR! {type(e).__name__}: {str(e)[:50]}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/submit_feedback")
 def submit_feedback(request: FeedbackRequest):

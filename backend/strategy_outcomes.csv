@@ -211,3 +211,42 @@ Expecting ai stocks undervalued,bull call spread,options
 2025-08-12 07:32:53,test1,NVDA will rally 25% in 3 months,Call Option,NVDA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
 2025-08-12 07:33:03,test2,I think TSLA puts look good,Put Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
 2025-08-12 07:33:21,test3,SPY iron condor range bound,Iron Condor,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 07:37:24,chat_user,i want to make money off war in gaza,Call Option,WANT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 13:58:42,test_local,I think Tesla will surge 20% over the next 3 months after strong EV sales,Call Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 14:00:06,enhanced_test,I think NVDA will rally 30% before earnings due to AI chip demand,Call Option,NVDA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 14:02:54,test_local,I think Apple will beat earnings next quarter and rally 15%,Call Option,APPLE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 14:05:44,test_local,I think Apple will beat earnings next quarter and rally 15%,Call Option,APPLE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 14:06:43,step1_test,AAPL will hit $200 by Christmas,Long Call Spread,AAPL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 14:11:13,test_local,I think Tesla will surge 20% over the next 3 months after strong EV sales,Call Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 20:27:14,chat_user,LIQUOUR SALES WILL CONTINUE TO DECLINE FOR A LONG TIME,Put Option,SALES,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:03:56,fake_greeks_elimination_test,AAPL will hit $250 by year end,Long Call Spread,AAPL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:07:59,test1,NVDA will drop 15% after earnings,Put Option,NVDA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:08:26,test2,SPY will stay range bound between 630-640,Iron Condor,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:08:47,test3,TSLA puts look attractive at current levels,Put Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:09:08,test4,Bitcoin will hit 100k by end of year,Long Position,HIT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:09:27,test5,Oil prices will surge 30% on supply concerns,Futures Contract,OIL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:36:35,ticker_fix_test,Bitcoin will hit 100k,Long Position,BTC,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:37:43,tesla_fix_test,Tesla will moon after earnings,Call Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:41:35,tesla_fix_test2,Tesla will moon after earnings,Call Option,AFTER,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:56:57,tesla_fix_test2,Tesla will moon after earnings,Call Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 21:58:34,final_test,Tesla will moon after earnings,Call Option,TESLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 22:03:02,ticker_fixed_test,Tesla will moon after earnings,Call Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-12 22:03:59,bitcoin_test,Bitcoin will hit 100k,Long Position,BTC,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:00:44,elite_chat_user,how can i moderatly grow my money at roughly 10% per annum,Diversified Portfolio,GROW,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:13:28,test_user,TSLA will hit $300,Long Put Spread,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:17:47,debug_test,Apple will hit $200,Long Call Spread,AAPL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:24:02,decorator_test,Netflix will rise to $600,Call Option,NFLX,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:27:08,final_test,Tesla will reach $400,Long Position,REACH,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 21:32:59,manual_test,TSLA will hit $350,Long Put,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 22:00:54,manual_test,TSLA will hit $350,Put Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 22:09:08,final_final_test,AAPL will reach $250,Long Call Spread,AAPL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 22:15:28,route_test,MSFT will hit $400,Long Call Spread,MSFT,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 22:24:31,monitoring_test,Google will reach $200,Put Option,REACH,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-13 23:41:15,elite_chat_user,Corn demand is going up in Europe s,Futures Contract,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-14 23:51:40,elite_chat_user,potato demand in europe will surge in the next three months,Commodity Futures,SURGE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 00:26:26,elite_chat_user,potato demand is rising in Europe,Commodity Futures,FXE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 00:30:55,elite_chat_user,po5q5o demand will rise in europe,Long Position,FXE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 00:48:29,elite_chat_user,Potato demand is going up in europe,Commodity Futures,GOING,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 01:43:50,elite_chat_user,Electricity in Oklahoma is gonna go e,Long Position,GONNA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 01:48:35,elite_chat_user,Tsla is crashing,Put Option,TSLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2025-08-15 12:21:09,elite_chat_user,Corn is gonna go up,Futures Contract,CORN,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
