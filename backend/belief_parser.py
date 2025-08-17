@@ -179,14 +179,97 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
 
 
 def detect_direction(belief: str) -> str:
+    """
+    Enhanced direction detection with expanded keywords and price target logic
+    """
     text = belief.lower()
-    bearish_words = ["down", "drop", "fall", "bear", "crash", "tank", "recession", "weaken"]
-    bullish_words = ["up", "rise", "bull", "skyrocket", "jump", "explode", "rally", "soar", "strengthen"]
-
+    
+    # Expanded keyword lists based on real user language
+    bearish_words = [
+        "down", "drop", "fall", "bear", "crash", "tank", "recession", "weaken",
+        "decline", "plummet", "tumble", "sink", "collapse", "crater", "dump",
+        "short", "puts", "bearish", "sell", "negative", "bad", "terrible",
+        "overvalued", "bubble", "correction", "pullback", "dip"
+    ]
+    
+    bullish_words = [
+        "up", "rise", "bull", "skyrocket", "jump", "explode", "rally", "soar", "strengthen",
+        "moon", "hit", "reach", "target", "climb", "pump", "breakout", "surge",
+        "long", "calls", "bullish", "buy", "positive", "good", "strong",
+        "undervalued", "growth", "momentum", "rocket", "blast", "spike"
+    ]
+    
+    # Check for explicit bearish keywords first
     if any(word in text for word in bearish_words):
         return "bearish"
-    elif any(word in text for word in bullish_words):
+    
+    # Check for explicit bullish keywords
+    if any(word in text for word in bullish_words):
         return "bullish"
+    
+    # Price target logic - extract numbers and infer direction
+    import re
+    
+    # Look for price targets like "will hit 250", "to 100k", "reach $500"
+    price_patterns = [
+        r'(?:hit|reach|target|to|at)\s+\$?(\d+(?:,\d+)*(?:\.\d+)?)[k]?',
+        r'\$(\d+(?:,\d+)*(?:\.\d+)?)[k]?\s+(?:target|goal)',
+        r'(\d+(?:,\d+)*(?:\.\d+)?)[k]?\s+(?:by|within)'
+    ]
+    
+    for pattern in price_patterns:
+        matches = re.findall(pattern, text)
+        if matches:
+            # Found a price target - assume bullish unless context suggests otherwise
+            target_str = matches[0].replace(',', '')
+            try:
+                target_price = float(target_str)
+                # Handle 'k' notation (e.g., "100k" = 100000)
+                if 'k' in text and target_price < 1000:
+                    target_price *= 1000
+                
+                # If we have a reasonable price target, assume bullish intent
+                if target_price > 0:
+                    print(f"[DIRECTION] Price target detected: {target_price} - assuming bullish")
+                    return "bullish"
+            except ValueError:
+                pass
+    
+    # Check for percentage moves
+    pct_patterns = [
+        r'(\d+)%?\s+(?:gain|increase|up)',
+        r'(?:gain|increase|up)\s+(\d+)%?',
+        r'(\d+)%?\s+(?:loss|decrease|down)',
+        r'(?:loss|decrease|down)\s+(\d+)%?'
+    ]
+    
+    for i, pattern in enumerate(pct_patterns):
+        matches = re.findall(pattern, text)
+        if matches:
+            # First two patterns are bullish, last two are bearish
+            direction = "bullish" if i < 2 else "bearish"
+            print(f"[DIRECTION] Percentage move detected - {direction}")
+            return direction
+    
+    # Contextual analysis - check for positive/negative sentiment
+    positive_context = [
+        "good", "great", "excellent", "strong", "solid", "promising",
+        "optimistic", "confident", "bright", "positive", "favorable"
+    ]
+    
+    negative_context = [
+        "bad", "terrible", "weak", "poor", "concerning", "worried",
+        "pessimistic", "negative", "unfavorable", "risky", "dangerous"
+    ]
+    
+    if any(word in text for word in positive_context):
+        return "bullish"
+    
+    if any(word in text for word in negative_context):
+        return "bearish"
+    
+    # Default to neutral if no clear direction detected
+    print(f"[DIRECTION] No clear direction detected in: '{belief}' - defaulting to neutral")
     return "neutral"
 
 def detect_asset_class(raw_belief: str) -> str:

@@ -1,12 +1,14 @@
 # FILE: backend/ai_engine/gpt4_strategy_generator.py
 """
 GPT-4 Strategy Generator — Isolated GPT wrapper that turns beliefs into trading strategies.
-ENHANCED VERSION: Professional-grade prompts for institutional-level analysis
+ENHANCED VERSION: Professional-grade prompts with MARKET PRICE CONTEXT
 """
 
 import os
 import json
 from typing import Optional
+import yfinance as yf
+import re
 
 from backend.openai_config import OPENAI_API_KEY, GPT_MODEL
 import openai
@@ -32,10 +34,185 @@ def initialize_openai_client():
     return client
 
 
-def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
+def extract_ticker_from_belief(belief: str) -> Optional[str]:
+    """
+    Extract ticker symbol from user belief using multiple methods.
+    
+    Args:
+        belief (str): User's market belief
+        
+    Returns:
+        Optional[str]: Ticker symbol if found, None otherwise
+    """
+    # Common ticker patterns
+    ticker_patterns = [
+        r'\b([A-Z]{1,5})\b',  # 1-5 uppercase letters
+        r'\$([A-Z]{1,5})\b',  # $TICKER format
+    ]
+    
+    # Company name to ticker mapping (expand as needed)
+    company_mappings = {
+        'tesla': 'TSLA',
+        'apple': 'AAPL', 
+        'microsoft': 'MSFT',
+        'amazon': 'AMZN',
+        'google': 'GOOGL',
+        'nvidia': 'NVDA',
+        'meta': 'META',
+        'netflix': 'NFLX',
+        'spotify': 'SPOT',
+        'uber': 'UBER',
+        'bitcoin': 'BTC-USD',
+        'ethereum': 'ETH-USD'
+    }
+    
+    belief_lower = belief.lower()
+    
+    # Check company name mappings first
+    for company, ticker in company_mappings.items():
+        if company in belief_lower:
+            return ticker
+    
+    # Then check ticker patterns
+    for pattern in ticker_patterns:
+        matches = re.findall(pattern, belief.upper())
+        if matches:
+            # Return first valid ticker (could add validation here)
+            return matches[0]
+    
+    return None
 
+
+def get_current_price(ticker: str) -> Optional[float]:
+    """
+    Fetch current market price for given ticker.
+    
+    Args:
+        ticker (str): Stock ticker symbol
+        
+    Returns:
+        Optional[float]: Current price or None if failed
+    """
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        
+        # Try multiple price fields
+        price_fields = ['currentPrice', 'regularMarketPrice', 'previousClose']
+        
+        for field in price_fields:
+            if field in info and info[field]:
+                price = float(info[field])
+                print(f"📊 {ticker} current price: ${price:.2f}")
+                return price
+                
+        print(f"⚠️ Could not fetch price for {ticker}")
+        return None
+        
+    except Exception as e:
+        print(f"❌ Error fetching price for {ticker}: {e}")
+        return None
+
+
+def get_strike_guidelines(current_price: float, sentiment: str) -> dict:
+    """
+    Generate strike price guidelines based on current price and sentiment.
+    
+    Args:
+        current_price (float): Current stock price
+        sentiment (str): 'bullish', 'bearish', or 'neutral'
+        
+    Returns:
+        dict: Strike price guidelines and reasoning
+    """
+    if sentiment.lower() in ['bullish', 'bull', 'up', 'rise', 'increase']:
+        # For bullish sentiment: ATM to slightly OTM calls
+        atm_strike = round(current_price, 0)
+        otm_strike = round(current_price * 1.05, 0)  # 5% OTM
+        
+        return {
+            'sentiment': 'bullish',
+            'recommended_strikes': f"${atm_strike:.0f} - ${otm_strike:.0f}",
+            'strategy_type': 'Call Options',
+            'reasoning': f"With {current_price:.2f} current price, ATM-OTM calls provide optimal leverage for upward movement"
+        }
+        
+    elif sentiment.lower() in ['bearish', 'bear', 'down', 'fall', 'decrease']:
+        # For bearish sentiment: ATM to slightly OTM puts
+        atm_strike = round(current_price, 0)
+        otm_strike = round(current_price * 0.95, 0)  # 5% OTM
+        
+        return {
+            'sentiment': 'bearish', 
+            'recommended_strikes': f"${otm_strike:.0f} - ${atm_strike:.0f}",
+            'strategy_type': 'Put Options',
+            'reasoning': f"With {current_price:.2f} current price, ATM-OTM puts provide optimal leverage for downward movement"
+        }
+        
+    else:
+        # Neutral/unclear sentiment
+        return {
+            'sentiment': 'neutral',
+            'recommended_strikes': f"${current_price*0.95:.0f} - ${current_price*1.05:.0f}",
+            'strategy_type': 'Neutral Strategy',
+            'reasoning': f"Current price ${current_price:.2f} - consider range-bound strategies"
+        }
+
+
+def validate_strategy_logic(strategy: dict, current_price: float, belief: str) -> bool:
+    """
+    Validate that the generated strategy makes logical sense.
+    
+    Args:
+        strategy (dict): Generated strategy
+        current_price (float): Current market price
+        belief (str): Original user belief
+        
+    Returns:
+        bool: True if strategy is logical, False otherwise
+    """
+    try:
+        trade_legs = strategy.get('trade_legs', [])
+        if not trade_legs:
+            print("❌ Validation failed: No trade legs found")
+            return False
+            
+        # Check for bullish belief with calls
+        belief_lower = belief.lower()
+        is_bullish = any(word in belief_lower for word in ['up', 'rise', 'bull', 'increase', 'moon'])
+        is_bearish = any(word in belief_lower for word in ['down', 'fall', 'bear', 'decrease', 'crash'])
+        
+        for leg in trade_legs:
+            strike_price = float(leg.get('strike_price', 0))
+            option_type = leg.get('option_type', '').lower()
+            
+            # Validate strike price is reasonable (within 20% of current price)
+            price_diff_pct = abs(strike_price - current_price) / current_price
+            if price_diff_pct > 0.20:
+                print(f"❌ Validation failed: Strike ${strike_price} too far from current ${current_price:.2f}")
+                return False
+                
+            # Validate sentiment alignment
+            if is_bullish and option_type == 'put':
+                print("❌ Validation failed: Bullish belief with put options")
+                return False
+                
+            if is_bearish and option_type == 'call':
+                print("❌ Validation failed: Bearish belief with call options") 
+                return False
+        
+        print("✅ Strategy validation passed")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Validation error: {e}")
+        return False
+
+
+def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
     """
     Send the user belief to GPT-4 with ENHANCED institutional-grade prompts.
+    NOW INCLUDES: Current market price context and strike price guidelines
     
     Args:
         belief (str): User's market belief/thesis
@@ -43,32 +220,50 @@ def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
     Returns:
         Optional[dict]: Detailed strategy dict with professional analysis,
                        or None if GPT fails or response is invalid
-                       
-    Enhanced Features:
-        - Professional system prompt positioning GPT as elite strategist
-        - Detailed example with 100+ word explanations
-        - Higher token limit (800) for comprehensive analysis
-        - Increased temperature (0.6) for more creative insights
-        - Specific requirements for technical analysis and risk management
     """
     openai_client = initialize_openai_client()
     if not openai_client:
         print("⚠️ OpenAI client unavailable. Aborting GPT-4 strategy generation.")
         return None
 
-    # 🎯 ENHANCED SYSTEM PROMPT: Positions GPT as institutional-grade strategist
-    # This dramatically improves the quality and depth of analysis
+    # 📊 EXTRACT TICKER AND FETCH CURRENT PRICE
+    ticker = extract_ticker_from_belief(belief)
+    current_price = None
+    strike_guidelines = None
+    
+    if ticker:
+        current_price = get_current_price(ticker)
+        if current_price:
+            # Determine sentiment and get guidelines
+            sentiment = 'bullish' if any(word in belief.lower() for word in ['up', 'rise', 'bull', 'increase']) else 'bearish' if any(word in belief.lower() for word in ['down', 'fall', 'bear', 'decrease']) else 'neutral'
+            strike_guidelines = get_strike_guidelines(current_price, sentiment)
+
+    # 🎯 ENHANCED SYSTEM PROMPT: Now includes price awareness
     system_prompt = (
         "You are an elite institutional trading strategist with 20+ years of experience. "
-        "Provide sophisticated, detailed trading strategies with deep market insights. "
+        "You have access to real-time market data and must consider current prices when selecting strikes. "
+        "Provide sophisticated, detailed trading strategies with deep market insights that align with current market context. "
         "Your analysis should include technical, fundamental, and risk considerations. "
         "Always format output as valid JSON with comprehensive explanations."
     )
 
-    # 📝 ENHANCED USER PROMPT: Provides detailed example and specific requirements
-    # The example explanation is now 100+ words with professional analysis
+    # 🔥 ENHANCED USER PROMPT: Now includes current price context
+    market_context = ""
+    if current_price and strike_guidelines:
+        market_context = (
+            f"\n\n📊 CURRENT MARKET CONTEXT:\n"
+            f"Ticker: {ticker}\n"
+            f"Current Price: ${current_price:.2f}\n"
+            f"Detected Sentiment: {strike_guidelines['sentiment']}\n"
+            f"Recommended Strike Range: {strike_guidelines['recommended_strikes']}\n"
+            f"Strategy Focus: {strike_guidelines['strategy_type']}\n"
+            f"Reasoning: {strike_guidelines['reasoning']}\n\n"
+            f"⚠️ CRITICAL: Select strike prices that make sense relative to ${current_price:.2f}. "
+            f"For bullish views, use ATM-OTM calls. For bearish views, use ATM-OTM puts.\n"
+        )
+
     user_prompt = (
-        f"Belief: {belief}\n\n"
+        f"Belief: {belief}{market_context}\n"
         "Provide a detailed trading strategy in this JSON format:\n"
         "{\n"
         '  "type": "Call Option",\n'
@@ -82,41 +277,46 @@ def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
         '  "explanation": "Given the current market environment and technical indicators, this call option strategy capitalizes on anticipated earnings momentum in AAPL. The strike price at $150 provides optimal risk-reward positioning above current resistance levels. Key catalysts include strong iPhone sales guidance and AI integration announcements. Risk management involves limiting loss to premium ($2.50/share) while targeting 20% returns within the 2-week window. This strategy benefits from positive gamma and delta exposure while maintaining defined risk parameters. Exit criteria: 50% profit target or 2 days before expiration to avoid theta decay."\n'
         "}\n\n"
         "Requirements:\n"
+        "- Use the current price context provided above when selecting strikes\n"
         "- Explanation must be 100+ words with specific market reasoning\n"
         "- Include technical analysis, catalysts, and risk management\n"
         "- Mention specific price targets and exit criteria\n"
+        "- Strike prices must be logical relative to current market price\n"
         "- Only output valid JSON, no markdown or extra text"
     )
 
     try:
-        print("🚀 Sending belief to GPT-4...")
+        print("🚀 Sending belief to GPT-4 with market context...")
         
-        # 🔧 ENHANCED API CALL: Higher limits for better analysis
         response = openai_client.chat.completions.create(
             model=GPT_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.6,  # 📈 INCREASED: More creative and varied analysis
-            max_tokens=800,   # 📈 INCREASED: Allow for longer, detailed explanations
+            temperature=0.6,
+            max_tokens=800,
         )
 
         gpt_output = response.choices[0].message.content.strip()
-        print(f"📥 GPT raw output:\n{gpt_output}\n")
+        print(f"🔥 GPT raw output:\n{gpt_output}\n")
 
         # 🔍 JSON PARSING: Attempt to parse GPT response as valid JSON
         strategy = json.loads(gpt_output)
-        print("✅ Successfully parsed GPT-4 output into strategy.")
+        
+        # 🛡️ VALIDATION: Check if strategy makes logical sense
+        if current_price and not validate_strategy_logic(strategy, current_price, belief):
+            print("❌ Strategy failed validation - regenerating...")
+            return None
+            
+        print("✅ Successfully parsed and validated GPT-4 strategy.")
         return strategy
 
     except json.JSONDecodeError as je:
-        # 🚨 JSON ERROR: GPT returned invalid JSON format
         print(f"❌ Failed to parse GPT-4 output as JSON: {je}")
         print("🔍 GPT raw response for manual review:\n", gpt_output)
         return None
 
     except Exception as e:
-        # 🚨 GENERAL ERROR: API call failed or other issue
         print(f"❌ GPT-4 strategy generation failed: {e}")
         return None
