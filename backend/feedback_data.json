@@ -36208,5 +36208,197 @@
       "option_type": "Call"
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-17T00:05:40.248487",
+    "user_id": "test",
+    "belief": "Tesla will hit 300",
+    "strategy": {
+      "strategy": {
+        "type": "Long Position",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "quantity": "100"
+          }
+        ],
+        "target_price": "300",
+        "stop_loss": "250",
+        "time_to_target": "6 months",
+        "explanation": "Given the current market conditions and technical indicators, this long position strategy on Tesla is based on the anticipation of the stock price reaching $300. The recent support level for TSLA has been observed at $250, thus providing a good risk-reward ratio. The price target of $300 is based on the Fibonacci retracement levels and historical resistance. Key market catalysts that could drive the price up include successful launches of new products, positive earnings reports, and advancements in their autonomous driving technology. Risk management involves setting a stop loss at $250 to limit potential losses. The time frame for this strategy is six months, after which the position should be reassessed. Exit criteria: Sell when the price hits the target of $300 or the stop loss of $250.",
+        "expiration": "2025-08-16"
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 330.56,
+        "high": 339.3,
+        "low": 327.02
+      },
+      "high_low": [
+        339.3,
+        327.02
+      ],
+      "confidence": 0.5087727320824605,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Given the current market conditions and technical indicators, this long position strategy on Tesla is based on the anticipation of the stock price reaching $300. The recent support level for TSLA has been observed at $250, thus providing a good risk-reward ratio. The price target of $300 is based on the Fibonacci retracement levels and historical resistance. Key market catalysts that could drive the price up include successful launches of new products, positive earnings reports, and advancements in their autonomous driving technology. Risk management involves setting a stop loss at $250 to limit potential losses. The time frame for this strategy is six months, after which the position should be reassessed. Exit criteria: Sell when the price hits the target of $300 or the stop loss of $250.",
+      "user_id": "test",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "Unlimited",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-08-16",
+      "option_type": "Call"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-17T00:17:04.374427",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "Tesla will hit 300",
+    "strategy": "Long Position",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-08-17T00:25:16.539075",
+    "user_id": "elite_chat_user",
+    "belief": "Tesla will hit 300",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "400"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "30%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "3 months",
+        "explanation": "This trading strategy leverages the belief that Tesla (TSLA) will depreciate to $300. The put option provides a right to sell TSLA at $400, which is profitable if the price falls below this level. The technical analysis indicates overbought conditions on the RSI and a potential bearish reversal pattern on the candlestick chart. Fundamental analysis supports this view with concerns about increasing competition in the EV market and potential supply chain disruptions. Risk is managed by the amount of premium paid for the option. The target return is 30% and the time to target is within 3 months. Exit criteria include either achieving the target return or the option's time decay nearing expiration."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 330.56,
+        "high": 339.3,
+        "low": 327.02
+      },
+      "high_low": [
+        339.3,
+        327.02
+      ],
+      "confidence": 0.5087727320824605,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "This trading strategy leverages the belief that Tesla (TSLA) will depreciate to $300. The put option provides a right to sell TSLA at $400, which is profitable if the price falls below this level. The technical analysis indicates overbought conditions on the RSI and a potential bearish reversal pattern on the candlestick chart. Fundamental analysis supports this view with concerns about increasing competition in the EV market and potential supply chain disruptions. Risk is managed by the amount of premium paid for the option. The target return is 30% and the time to target is within 3 months. Exit criteria include either achieving the target return or the option's time decay nearing expiration.",
+      "user_id": "elite_chat_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-08-16",
+      "option_type": "Put"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-08-17T00:26:12.014719",
+    "user_id": "elite_chat_user",
+    "belief": "tsla will hit 300",
+    "strategy": {
+      "strategy": {
+        "type": "Put Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Put",
+            "strike_price": "350"
+          }
+        ],
+        "expiration": "2025-08-16",
+        "target_return": "30%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "6 months",
+        "explanation": "Based on the belief that TSLA will hit 300, this strategy involves buying a put option with a strike price of $350. The technical analysis shows a bearish trend with TSLA facing resistance at current levels. The fundamental analysis highlights potential risks including increased competition, production challenges and regulatory scrutiny. The catalyst for this strategy is the expected release of competitors' electric vehicle models in the next six months, which could impact TSLA's market share. Risk management involves limiting loss to the premium paid while targeting a 30% return. The exit criteria include either reaching the target return or two weeks before expiration to avoid time decay. This strategy benefits from the potential downside movement in TSLA's price while limiting risk to the premium paid."
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long put"
+      ],
+      "direction": "bearish",
+      "price_info": {
+        "latest": 330.56,
+        "high": 339.3,
+        "low": 327.02
+      },
+      "high_low": [
+        339.3,
+        327.02
+      ],
+      "confidence": 0.5205203433858943,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-08-16",
+      "risk_profile": "moderate",
+      "explanation": "Based on the belief that TSLA will hit 300, this strategy involves buying a put option with a strike price of $350. The technical analysis shows a bearish trend with TSLA facing resistance at current levels. The fundamental analysis highlights potential risks including increased competition, production challenges and regulatory scrutiny. The catalyst for this strategy is the expected release of competitors' electric vehicle models in the next six months, which could impact TSLA's market share. Risk management involves limiting loss to the premium paid while targeting a 30% return. The exit criteria include either reaching the target return or two weeks before expiration to avoid time decay. This strategy benefits from the potential downside movement in TSLA's price while limiting risk to the premium paid.",
+      "user_id": "elite_chat_user",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-08-16",
+      "option_type": "Put"
+    },
+    "result": "auto_generated"
   }
 ]
