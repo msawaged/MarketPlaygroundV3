@@ -18,7 +18,7 @@ FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback_data.json")
 MODEL_FILE = os.path.join(BASE_DIR, "feedback_model.joblib")
 
 # Path to append feedback into strategy training CSV
-CSV_FILE = os.path.join(BASE_DIR, "../strategy_outcomes.csv")
+CSV_FILE = os.path.join(BASE_DIR, "strategy_outcomes.csv")
 
 
 def load_feedback_model():

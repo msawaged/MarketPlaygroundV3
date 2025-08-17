@@ -249,9 +249,24 @@ class PaperTradingEngine:
                 orders = []
                 total_cost = Decimal('0.00')
                 
+                # Extract investment amount from strategy data
+                target_investment = strategy_data.get('investment_amount', 1000)  # Default $1000 if not specified
+
                 for leg in trade_legs:
                     action = leg.get('action', '').lower()
-                    quantity = int(leg.get('quantity', 1))
+                    
+                    # Calculate optimal position size based on investment amount
+                    if 'buy' in action:
+                        # For stocks: quantity = investment_amount / price (rounded down)
+                        if strategy_data.get('asset_class') == 'options':
+                            # For options: account for premium costs
+                            estimated_premium = current_price * 0.05  # Rough premium estimate
+                            quantity = max(1, int(target_investment / (estimated_premium * 100)))  # Options are per 100 shares
+                        else:
+                            # For stocks: direct calculation
+                            quantity = max(1, int(target_investment / current_price))
+                    else:
+                        quantity = int(leg.get('quantity', 1))  # Keep original for sell orders
                     
                     # Determine position type
                     if 'buy' in action:
@@ -446,8 +461,9 @@ class PaperTradingEngine:
             
             for pos in positions:
                 current_price = self._get_real_market_price(pos['ticker'])
-                market_value = pos['quantity'] * current_price
-                unrealized_pnl = market_value - (pos['quantity'] * pos['avg_price'])
+                market_value = Decimal(str(pos['quantity'])) * current_price
+                unrealized_pnl = market_value - (Decimal(str(pos['quantity'])) * Decimal(str(pos['avg_price'])))
+
                 
                 # Update position in database
                 conn.execute("""
@@ -464,7 +480,7 @@ class PaperTradingEngine:
                     'current_price': float(current_price),
                     'market_value': float(market_value),
                     'unrealized_pnl': float(unrealized_pnl),
-                    'unrealized_pnl_pct': float((unrealized_pnl / (pos['quantity'] * pos['avg_price'])) * 100),
+                    'unrealized_pnl_pct': float((unrealized_pnl / (Decimal(str(pos['quantity'])) * Decimal(str(pos['avg_price'])))) * 100),
                     'strategy_id': pos['strategy_id'],
                     'belief': pos['belief'],
                     'opened_at': pos['opened_at']
@@ -605,5 +621,78 @@ class PaperTradingEngine:
                 logger.error(f"Failed to close position: {e}")
                 return {"status": "error", "message": f"Failed to close position: {str(e)}"}
 
+    def evaluate_strategy_performance(self, evaluation_days: int = 7):
+        """
+        Auto-evaluate paper trading positions to generate ML training data.
+        Replaces manual feedback buttons with objective market performance.
+        """
+        # Calculate cutoff date for mature positions
+        cutoff_date = datetime.now() - timedelta(days=evaluation_days)
+        
+        training_labels = []
+        
+        with self._get_db_connection() as conn:
+            # Get positions old enough to evaluate
+            positions = conn.execute("""
+                SELECT * FROM positions 
+                WHERE opened_at < ?
+            """, (cutoff_date,)).fetchall()
+            
+            for pos in positions:
+                # Get current market price
+                current_price = self._get_real_market_price(pos['ticker'])
+                
+                # Calculate P&L percentage
+                entry_price = Decimal(str(pos['avg_price']))
+                pnl_pct = ((current_price - entry_price) / entry_price) * 100
+                
+                # Auto-generate training label based on performance
+                if pnl_pct >= 5.0:
+                    label = "good"
+                elif pnl_pct <= -5.0:
+                    label = "bad"
+                else:
+                    label = "neutral"
+                
+                # Store training data
+                training_labels.append({
+                    'belief': pos['belief'],
+                    'strategy': pos['strategy_id'],
+                    'feedback': label,
+                    'pnl_pct': float(pnl_pct),
+                    'auto_generated': True
+                })
+        
+        return training_labels
+
+    def process_automatic_feedback(self, evaluation_days: int = 7):
+        """
+        Process paper trading performance and send to ML training pipeline.
+        Integrates with existing feedback_handler system.
+        """
+        from backend.feedback_handler import save_feedback_entry
+        
+        # Get performance evaluations
+        training_data = self.evaluate_strategy_performance(evaluation_days)
+        
+        processed_count = 0
+        for result in training_data:
+            # Send to existing feedback system with metadata
+            save_feedback_entry(
+                belief=result['belief'],
+                strategy=result['strategy'], 
+                result=result['feedback'],
+                user_id="auto_evaluation",
+                pnl_percent=result['pnl_pct'],
+                source="paper_trading_performance",
+                auto_generated=True,
+                confidence=abs(result['pnl_pct']) / 10.0,  # Scale confidence
+                notes=f"Auto-evaluated after {evaluation_days} days"
+            )
+            processed_count += 1
+        
+        return {"processed": processed_count, "message": f"Added {processed_count} automatic feedback entries"}    
+
 # Create the singleton instance
 paper_engine = PaperTradingEngine()
+

@@ -1118,7 +1118,32 @@ const EnhancedChatInterface = () => {
           👎 Improve
         </motion.button>
         <motion.button 
-          onClick={() => alert(`🚀 Executing: ${message.strategy.type} on ${message.strategy.ticker} with $${investmentAmount[message.id]}`)}
+          onClick={async () => {
+            try {
+              const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: 'demo_user',
+                    strategy_data: {
+                      ...message.strategy,
+                      investment_amount: investmentAmount[message.id]
+                    },
+                    belief: inputValue || 'User strategy execution'
+                  })
+              });
+              
+              const result = await response.json();
+              
+              if (result.status === 'success') {
+                alert(`Trade executed: ${result.message}`);
+              } else {
+                alert(`Trade failed: ${result.message}`);
+              }
+            } catch (error) {
+              alert(`Error: ${error.message}`);
+            }
+          }}
           className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.05, y: -2 }}
