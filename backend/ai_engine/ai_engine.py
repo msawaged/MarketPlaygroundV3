@@ -6,7 +6,7 @@ Main AI Engine — Translates beliefs into trade strategies.
 Includes GPT-4 integration, goal parsing, bond logic, robust fallback handling.
 MINIMAL FIXES APPLIED by Claude
 """
-
+import time
 import os
 import json
 import math
@@ -208,6 +208,7 @@ def fix_expiration(ticker: str, raw_expiry: str) -> str:
 def run_ai_engine(
     belief: str, risk_profile: str = "moderate", user_id: str = "anonymous"
 ) -> dict:
+    start_time = time.time()  # ADD THIS LINE HERE
     parsed = parse_belief(belief)
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
@@ -305,12 +306,27 @@ def run_ai_engine(
             "price_info": price_info,
         },
     )
+    
+    # 🚫 CRITICAL PRODUCTION FIX: Check if sentiment validation blocked the strategy
+    if strategy is None:
+        print("🚫 STRATEGY BLOCKED: Sentiment validation prevented misaligned strategy")
+        return {
+            "error": "Strategy blocked due to sentiment misalignment",
+            "strategy": None,
+            "ticker": ticker,
+            "direction": direction,
+            "user_id": user_id,
+            "processing_time": time.time() - start_time,
+            "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+        }
 
     # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
     try:
-        from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
-
-        gpt_raw_output = generate_strategy_with_gpt4(belief)
+        from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_validation
+        
+        # Get sentiment from belief parser for validation
+        detected_sentiment = direction  # Use the direction already parsed above
+        gpt_raw_output = generate_strategy_with_validation(belief, detected_sentiment)
 
         try:
             gpt_strategy = json.loads(gpt_raw_output)

@@ -320,3 +320,71 @@ def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
     except Exception as e:
         print(f"❌ GPT-4 strategy generation failed: {e}")
         return None
+
+def validate_strategy_sentiment_alignment(strategy_data: dict, user_belief: str, detected_sentiment: str) -> bool:
+    """
+    Validates that the generated strategy aligns with user sentiment.
+    Prevents bullish beliefs from generating bearish/neutral strategies.
+    """
+    
+    strategy_type = strategy_data.get('type', '').lower()
+    trade_legs = strategy_data.get('trade_legs', [])
+    
+    # Define strategy sentiment mappings
+    bullish_strategies = ['call option', 'long call', 'bull call spread', 'bull put spread']
+    bearish_strategies = ['put option', 'long put', 'bear call spread', 'bear put spread']
+    neutral_strategies = ['iron condor', 'iron butterfly', 'straddle', 'strangle']
+    
+    # Check for direct sentiment misalignment
+    if detected_sentiment == 'bullish':
+        if any(bearish in strategy_type for bearish in bearish_strategies):
+            print(f"❌ VALIDATION FAILED: Bullish belief '{user_belief}' generated bearish strategy '{strategy_type}'")
+            return False
+        if any(neutral in strategy_type for neutral in neutral_strategies):
+            print(f"❌ VALIDATION FAILED: Bullish belief '{user_belief}' generated neutral strategy '{strategy_type}'")
+            return False
+    
+    elif detected_sentiment == 'bearish':
+        if any(bullish in strategy_type for bullish in bullish_strategies):
+            print(f"❌ VALIDATION FAILED: Bearish belief '{user_belief}' generated bullish strategy '{strategy_type}'")
+            return False
+    
+    # Check trade legs for option types
+    for leg in trade_legs:
+        option_type = leg.get('option_type', '').lower()
+        if detected_sentiment == 'bullish' and option_type == 'put':
+            print(f"❌ VALIDATION FAILED: Bullish belief with put options")
+            return False
+        elif detected_sentiment == 'bearish' and option_type == 'call':
+            print(f"❌ VALIDATION FAILED: Bearish belief with call options")
+            return False
+    
+    print(f"✅ VALIDATION PASSED: {detected_sentiment} belief aligned with {strategy_type}")
+    return True
+
+
+def generate_strategy_with_validation(belief: str, detected_sentiment: str) -> Optional[dict]:
+    """
+    Enhanced strategy generation with strict sentiment validation.
+    Replaces the existing generate_strategy_with_gpt4 function.
+    """
+    
+    try:
+        # Get GPT-4 strategy response
+        gpt_response = generate_strategy_with_gpt4(belief)
+        
+        if not gpt_response:
+            print("❌ GPT-4 failed to generate strategy")
+            return None
+        
+        # CRITICAL: Validate sentiment alignment
+        if not validate_strategy_sentiment_alignment(gpt_response, belief, detected_sentiment):
+            print(f"🚫 BLOCKING MISALIGNED STRATEGY: {gpt_response.get('type', 'Unknown')}")
+            return None
+        
+        print(f"✅ VALIDATED STRATEGY: {gpt_response.get('type', 'Unknown')} for {detected_sentiment} sentiment")
+        return gpt_response
+        
+    except Exception as e:
+        print(f"❌ Strategy generation error: {str(e)}")
+        return None       
