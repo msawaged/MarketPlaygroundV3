@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // ADD THIS IMPORT WITH YOUR OTHER IMPORTS
 import DebugDashboard from './DebugDashboard';
 import BottomNavigation from './BottomNavigation'; // ← ADD THIS LINE
+import { PortfolioModal } from './PortfolioComponents';
 
 // 🌐 BACKEND URL CONFIGURATION - Same as your original
 const BACKEND_URL = window.location.hostname === 'localhost' 
@@ -634,6 +635,7 @@ const EnhancedChatInterface = () => {
   // ⏳ LOADING STATE
   const [isLoading, setIsLoading] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState({});
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   
   // 📍 REF FOR AUTO-SCROLLING
   const messagesEndRef = useRef(null);
@@ -1267,14 +1269,20 @@ const EnhancedChatInterface = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* 🔧 DEBUG DASHBOARD - MOVED TO TOP RIGHT TO AVOID INPUT OVERLAP */}
-      <div className="fixed top-20 right-4 z-50">
-        <DebugDashboard BACKEND_URL={BACKEND_URL} />
-      </div>
       
+      {/* Portfolio Modal */}
+      {showPortfolioModal && (
+        <PortfolioModal
+          isOpen={showPortfolioModal}
+          onClose={() => setShowPortfolioModal(false)}
+          BACKEND_URL={BACKEND_URL}
+        />
+      )}
+     
       {/* 📱 PERSISTENT BOTTOM NAVIGATION */}
-      <BottomNavigation />
+      <BottomNavigation 
+      onPortfolioClick={() => setShowPortfolioModal(true)}
+    />
     </div>
   );
 };

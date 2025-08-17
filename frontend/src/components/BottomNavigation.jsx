@@ -20,7 +20,7 @@ import { Home, TrendingUp, BarChart3, User, Zap } from 'lucide-react';
  * - Smooth animations and visual feedback
  * - Dark theme integration
  */
-const BottomNavigation = () => {
+const BottomNavigation = ({ onPortfolioClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,7 +78,13 @@ const BottomNavigation = () => {
           return (
             <button
               key={item.id}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                if (item.id === 'portfolio' && onPortfolioClick) {
+                  onPortfolioClick();
+                } else {
+                  navigate(item.path);
+                }
+              }}
               className="flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-0 flex-1 group relative"
             >
               {/* ACTIVE BACKGROUND GLOW */}
