@@ -10,6 +10,7 @@ import time
 import os
 import json
 import math
+from backend.risk_management.position_sizing import add_risk_management_to_strategy
 from datetime import datetime
 from openai import OpenAI, OpenAIError
 import openai
@@ -525,7 +526,8 @@ def run_ai_engine(
     print("🔍 CHECKPOINT: About to add dynamic fields!")
     asset_specific_fields = add_dynamic_fields(asset_class, strategy, ticker, price_info)
     
-    return {
+    # Build the result first
+    result = {
         "strategy": strategy,
         "ticker": ticker,
         "asset_class": asset_class,
@@ -548,6 +550,12 @@ def run_ai_engine(
         "notes": validation.get("notes"),
         **asset_specific_fields
     }
+    
+    # Add risk management before returning strategy
+    if result.get('strategy'):
+        result = add_risk_management_to_strategy(result, user_id)
+    
+    return result
 
 # === 🎯 DYNAMIC ASSET-SPECIFIC FIELDS ===
 # FILE: backend/ai_engine/ai_engine.py (lines 537-580 replacement)
