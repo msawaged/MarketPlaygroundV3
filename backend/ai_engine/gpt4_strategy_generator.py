@@ -321,46 +321,78 @@ def generate_strategy_with_gpt4(belief: str) -> Optional[dict]:
         print(f"❌ GPT-4 strategy generation failed: {e}")
         return None
 
-def validate_strategy_sentiment_alignment(strategy_data: dict, user_belief: str, detected_sentiment: str) -> bool:
+def validate_strategy_sentiment_alignment(strategy_data: dict, user_belief: str, detected_sentiment: str) -> dict:
     """
     Validates that the generated strategy aligns with user sentiment.
     Prevents bullish beliefs from generating bearish/neutral strategies.
-    """
     
+    Returns:
+        dict: Either the original strategy or an error response
+    """
     strategy_type = strategy_data.get('type', '').lower()
-    trade_legs = strategy_data.get('trade_legs', [])
     
     # Define strategy sentiment mappings
-    bullish_strategies = ['call option', 'long call', 'bull call spread', 'bull put spread']
-    bearish_strategies = ['put option', 'long put', 'bear call spread', 'bear put spread']
-    neutral_strategies = ['iron condor', 'iron butterfly', 'straddle', 'strangle']
+    bullish_strategies = [
+        'long call', 'bull call spread', 'call spread', 'bull spread',
+        'long stock', 'covered call', 'cash secured put', 'call option'
+    ]
     
-    # Check for direct sentiment misalignment
-    if detected_sentiment == 'bullish':
-        if any(bearish in strategy_type for bearish in bearish_strategies):
-            print(f"❌ VALIDATION FAILED: Bullish belief '{user_belief}' generated bearish strategy '{strategy_type}'")
-            return False
-        if any(neutral in strategy_type for neutral in neutral_strategies):
-            print(f"❌ VALIDATION FAILED: Bullish belief '{user_belief}' generated neutral strategy '{strategy_type}'")
-            return False
+    bearish_strategies = [
+        'long put', 'bear put spread', 'put spread', 'bear spread', 
+        'short stock', 'protective put', 'short call', 'put option'
+    ]
     
-    elif detected_sentiment == 'bearish':
-        if any(bullish in strategy_type for bullish in bullish_strategies):
-            print(f"❌ VALIDATION FAILED: Bearish belief '{user_belief}' generated bullish strategy '{strategy_type}'")
-            return False
+    neutral_strategies = [
+        'iron condor', 'iron butterfly', 'straddle', 'strangle',
+        'butterfly', 'condor', 'calendar spread'
+    ]
     
-    # Check trade legs for option types
-    for leg in trade_legs:
-        option_type = leg.get('option_type', '').lower()
-        if detected_sentiment == 'bullish' and option_type == 'put':
-            print(f"❌ VALIDATION FAILED: Bullish belief with put options")
-            return False
-        elif detected_sentiment == 'bearish' and option_type == 'call':
-            print(f"❌ VALIDATION FAILED: Bearish belief with call options")
-            return False
+    # Check for sentiment-strategy misalignment
+    if detected_sentiment == 'bullish' and any(neutral in strategy_type for neutral in neutral_strategies):
+        return {
+            "error": "SENTIMENT_STRATEGY_MISMATCH",
+            "message": f"Your belief '{user_belief}' suggests a bullish outlook, but the system generated a neutral {strategy_type} strategy. This misalignment has been blocked for your protection.",
+            "detected_sentiment": detected_sentiment,
+            "blocked_strategy": strategy_type,
+            "suggested_action": "Try rephrasing with stronger bullish language like 'will rally' or 'going up'"
+        }
+    
+    if detected_sentiment == 'bearish' and any(neutral in strategy_type for neutral in neutral_strategies):
+        return {
+            "error": "SENTIMENT_STRATEGY_MISMATCH", 
+            "message": f"Your belief '{user_belief}' suggests a bearish outlook, but the system generated a neutral {strategy_type} strategy. This misalignment has been blocked for your protection.",
+            "detected_sentiment": detected_sentiment,
+            "blocked_strategy": strategy_type,
+            "suggested_action": "Try rephrasing with stronger bearish language like 'will crash' or 'going down'"
+        }
+    
+    if detected_sentiment == 'bullish' and any(bearish in strategy_type for bearish in bearish_strategies):
+        return {
+            "error": "SENTIMENT_STRATEGY_MISMATCH",
+            "message": f"DANGEROUS MISMATCH: Your bullish belief '{user_belief}' generated a bearish {strategy_type} strategy. This could cause significant losses and has been blocked.",
+            "detected_sentiment": detected_sentiment,
+            "blocked_strategy": strategy_type,
+            "suggested_action": "Contact support immediately - this should not happen"
+        }
+    
+    if detected_sentiment == 'bearish' and any(bullish in strategy_type for bullish in bullish_strategies):
+        return {
+            "error": "SENTIMENT_STRATEGY_MISMATCH",
+            "message": f"DANGEROUS MISMATCH: Your bearish belief '{user_belief}' generated a bullish {strategy_type} strategy. This could cause significant losses and has been blocked.",
+            "detected_sentiment": detected_sentiment,
+            "blocked_strategy": strategy_type,
+            "suggested_action": "Contact support immediately - this should not happen"
+        }
+    
+    # Strategy aligns with sentiment - return original with validation confirmation
+    strategy_data["sentiment_validation"] = {
+        "status": "PASSED",
+        "detected_sentiment": detected_sentiment,
+        "strategy_alignment": "CONFIRMED"
+    }
     
     print(f"✅ VALIDATION PASSED: {detected_sentiment} belief aligned with {strategy_type}")
-    return True
+    return strategy_data
 
 
 def generate_strategy_with_validation(belief: str, detected_sentiment: str) -> Optional[dict]:

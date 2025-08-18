@@ -60,8 +60,10 @@ from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
 from backend.routes.debug_router import router as debug_router
 from backend.routes.ibkr_router import router as ibkr_router
+from backend.routes.trade_confirmation_router import router as trade_confirmation_router  # Trade confirmation for live money safety
 from backend.routes.paper_trading_router import router as paper_trading_router  # ← ADD THIS LINE
 from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoints (test connection, real-time data, etc.)
+from backend.routes.market_events_router import router as market_events_router  # Market events and upcoming catalysts
 print("✅ [9] Router imports finished")
 
 
@@ -112,23 +114,25 @@ if not os.path.exists(strategy_csv_path):
 
 # === Register routers ===
 
-app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
-app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
-app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
-app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfolio"])
-app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
-app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
-app.include_router(news_router,              prefix="/news",      tags=["News"])
-app.include_router(hot_trades_router,                             tags=["Hot Trades"])
-app.include_router(basket_router,            prefix="/basket",    tags=["Asset Baskets"])  # ✅ Basket routes now live
-app.include_router(alpaca_router,            prefix="/alpaca",    tags=["Alpaca"])
-app.include_router(execution_router,         prefix="/alpaca",    tags=["Execution"])
-app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
-app.include_router(market_router,            prefix="/market",    tags=["Market"])
-app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router,             prefix="/debug",     tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
-app.include_router(ibkr_router,              prefix="/ibkr",      tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
+app.include_router(auth_router,              prefix="/auth",              tags=["Auth"])
+app.include_router(feedback_router,          prefix="/feedback",          tags=["Feedback"])
+app.include_router(feedback_predictor,       prefix="/predict",           tags=["Predictor"])
+app.include_router(portfolio_router,         prefix="/portfolio",         tags=["Portfolio"])
+app.include_router(strategy_router,          prefix="/strategy",          tags=["Strategy"])
+app.include_router(strategy_logger_router,   prefix="/strategy",          tags=["Strategy Logger"])
+app.include_router(news_router,              prefix="/news",              tags=["News"])
+app.include_router(hot_trades_router,                                     tags=["Hot Trades"])
+app.include_router(basket_router,            prefix="/basket",            tags=["Asset Baskets"])  # ✅ Basket routes now live
+app.include_router(alpaca_router,            prefix="/alpaca",            tags=["Alpaca"])
+app.include_router(execution_router,         prefix="/alpaca",            tags=["Execution"])
+app.include_router(pnl_router,               prefix="/pnl",               tags=["PnL"])
+app.include_router(market_router,            prefix="/market",            tags=["Market"])
+app.include_router(analytics_router,         prefix="/analytics",         tags=["Analytics"])
+app.include_router(debug_router,             prefix="/debug",             tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
+app.include_router(ibkr_router,              prefix="/ibkr",              tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
 app.include_router(paper_trading_router,     prefix="/api/paper-trading", tags=["Paper Trading"])  # ← ADD THIS LINE
+app.include_router(trade_confirmation_router,                             tags=["Trade Confirmation"])  # Live trading safety barrier
+app.include_router(market_events_router)  # Market events calendar and event-driven strategies
 
 print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")
 

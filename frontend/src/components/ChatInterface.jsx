@@ -9,6 +9,80 @@ import DebugDashboard from './DebugDashboard';
 import BottomNavigation from './BottomNavigation'; // ← ADD THIS LINE
 import { PortfolioModal } from './PortfolioComponents';
 
+// Sentiment Validation Error Component
+const SentimentErrorMessage = ({ error, onRetry, originalBelief }) => {
+  const getSuggestions = (error) => {
+    if (error.detected_sentiment === 'bullish') {
+      return [
+        `${originalBelief.split(' ')[0]} will rally strongly`,
+        `${originalBelief.split(' ')[0]} is going to moon`,
+        `Very bullish on ${originalBelief.split(' ')[0]} - strong upside`
+      ];
+    } else if (error.detected_sentiment === 'bearish') {
+      return [
+        `${originalBelief.split(' ')[0]} will crash`,
+        `${originalBelief.split(' ')[0]} is heading down fast`,
+        `Very bearish on ${originalBelief.split(' ')[0]} - strong downside`
+      ];
+    }
+    return [
+      `Try being more specific about direction`,
+      `Add words like "rally", "surge", "crash", or "tank"`
+    ];
+  };
+
+  const suggestions = getSuggestions(error);
+
+  return (
+    <div className="mb-4 p-4 bg-gradient-to-r from-red-900/50 to-orange-900/50 rounded-xl border border-red-500/30">
+      {/* Error Header */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+        </div>
+        <div className="flex-1">
+          <h4 className="text-red-400 font-semibold text-sm mb-1">
+            Strategy Blocked for Your Protection
+          </h4>
+          <p className="text-red-300 text-xs leading-relaxed">
+            {error.message}
+          </p>
+        </div>
+      </div>
+
+      {/* Suggestions */}
+      <div className="mb-4">
+        <h5 className="text-orange-400 font-medium text-xs mb-2">
+          Try rephrasing with stronger language:
+        </h5>
+        <div className="space-y-2">
+          {suggestions.map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => onRetry(suggestion)}
+              className="w-full text-left p-2 bg-orange-900/30 hover:bg-orange-800/40 rounded-lg border border-orange-700/30 text-orange-200 text-xs transition-colors"
+            >
+              "{suggestion}"
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onRetry(originalBelief)}
+          className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-xs py-2 px-3 rounded-lg font-medium transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // 🌐 BACKEND URL CONFIGURATION - Same as your original
 const BACKEND_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:8000' 
@@ -636,6 +710,11 @@ const EnhancedChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState({});
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+
+  // Add this retry function here:
+  const handleRetryMessage = (newBelief) => {
+  setInputValue(newBelief);
+};
   
   // 📍 REF FOR AUTO-SCROLLING
   const messagesEndRef = useRef(null);
@@ -680,6 +759,18 @@ const EnhancedChatInterface = () => {
 
       const data = await res.json();
       console.log('📥 Backend Response:', data);
+
+      // Check for sentiment validation error
+      if (data.error === "Strategy blocked due to sentiment misalignment") {
+        const errorMessage = {
+          id: Date.now() + 1,
+          type: 'ai',
+          content: `🚫 ${data.reason || "Strategy blocked due to sentiment misalignment"}`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        return;
+      }
 
       // 🤖 CREATE ENHANCED AI RESPONSE MESSAGE
       const aiResponse = {
@@ -745,8 +836,14 @@ const EnhancedChatInterface = () => {
       
       const errorMessage = {
         id: Date.now() + 1,
-        type: 'ai',
-        content: '🚨 Oops! My quantum processors hiccupped. The strategy engine is recalibrating - try that belief again!',
+        type: 'error',
+        content: 'Strategy generation failed',
+        errorData: {
+          message: error.message || 'An unexpected error occurred. Please try again.',
+          detected_sentiment: 'unknown',
+          blocked_strategy: 'system error',
+          original_belief: belief
+        },
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
