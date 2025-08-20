@@ -1,0 +1,59 @@
+/* App.css — Dark mode UI cleanup */
+body {
+    background-color: #0d1117;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  input, textarea {
+    background-color: #161b22;
+    color: #ffffff;
+    border: 1px solid #30363d;
+    padding: 0.5rem;
+    border-radius: 6px;
+  }
+  
+  button {
+    border-radius: 6px;
+  }
+  
+  h1, h2, h3 {
+    color: #f0f6fc;
+  }
+  
+  form, .strategy-container {
+    background-color: #161b22;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  }
+  
+  .strategy-container p {
+    color: #c9d1d9;
+    line-height: 1.5;
+  }
+  
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  /* Force visibility of output */
+.strategy-container {
+    opacity: 1 !important;
+    color: #ffffff;
+  }
+  
+  /* Fix simulation button visibility */
+  button.simulate-btn {
+    background-color: #1f6feb;
+    color: white;
+    font-weight: bold;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    margin-top: 1rem;
+    cursor: pointer;
+  }
+  

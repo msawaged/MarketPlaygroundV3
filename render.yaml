@@ -1,0 +1,53 @@
+# render.yaml — Defines all services for Render deployment of MarketPlayground
+
+services:
+  # 🚀 Main FastAPI Web Service
+  - type: web
+    name: marketplayground-backend
+    env: python
+    plan: starter
+    rootDir: .
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "PYTHONPATH=./ uvicorn backend.app:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  # 🔁 Background Model Retraining Worker
+  - type: worker
+    name: retrain-worker
+    env: python
+    plan: starter
+    rootDir: .
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "PYTHONPATH=./ python backend/retrain_worker.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  # 📰 News Ingestor (Runs Automatically Every Hour via Render Cron)
+  - type: worker
+    name: news-ingestor
+    env: python
+    plan: starter
+    schedule: "hourly"  # ⏱️ Native Render scheduler triggers this job once per hour
+    rootDir: .
+    buildCommand: "pip install -r backend/requirements-news.txt"
+    startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  # 🧠 Belief Feeder (Feeds Beliefs into the AI Pipeline)
+  - type: worker
+    name: belief-feeder
+    env: python
+    plan: starter
+    rootDir: .
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "PYTHONPATH=./ python backend/belief_feeder.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
