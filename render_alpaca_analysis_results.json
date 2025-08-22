@@ -1,0 +1,201 @@
+{
+  "timestamp": "2025-08-22T14:38:37.122776",
+  "environment": {
+    "python_version": "3.9.13 (main, Aug 25 2022, 18:29:29) \n[Clang 12.0.0 ]",
+    "memory_available": 333,
+    "process_memory": 28
+  },
+  "performance_tests": {
+    "connection_patterns": {
+      "render_production": {
+        "/alpaca/account": {
+          "status_code": 200,
+          "response_time_ms": 434.24,
+          "success": true,
+          "response_size_bytes": 16
+        },
+        "/alpaca/orders": {
+          "status_code": 200,
+          "response_time_ms": 356.46,
+          "success": true,
+          "response_size_bytes": 13
+        },
+        "/market/price?ticker=AAPL": {
+          "status_code": 200,
+          "response_time_ms": 387.4,
+          "success": true,
+          "response_size_bytes": 39
+        },
+        "/market/price?ticker=TSLA": {
+          "status_code": 200,
+          "response_time_ms": 311.79,
+          "success": true,
+          "response_size_bytes": 39
+        },
+        "/debug/logs/latest": {
+          "status_code": 405,
+          "response_time_ms": 175.47,
+          "success": false,
+          "response_size_bytes": 31
+        }
+      },
+      "local_development": {
+        "/alpaca/account": {
+          "status_code": 200,
+          "response_time_ms": 303.77,
+          "success": true,
+          "response_size_bytes": 16
+        },
+        "/alpaca/orders": {
+          "status_code": 200,
+          "response_time_ms": 230.78,
+          "success": true,
+          "response_size_bytes": 13
+        },
+        "/market/price?ticker=AAPL": {
+          "status_code": 200,
+          "response_time_ms": 259.53,
+          "success": true,
+          "response_size_bytes": 39
+        },
+        "/market/price?ticker=TSLA": {
+          "status_code": 200,
+          "response_time_ms": 668.27,
+          "success": true,
+          "response_size_bytes": 39
+        },
+        "/debug/logs/latest": {
+          "status_code": 200,
+          "response_time_ms": 4.4,
+          "success": true,
+          "response_size_bytes": 255
+        }
+      },
+      "concurrent_performance": {}
+    },
+    "memory_usage": {
+      "memory_before_mb": 25,
+      "memory_after_mb": 25,
+      "memory_growth_mb": 0,
+      "memory_samples": [
+        {
+          "call": 1,
+          "endpoint": "/alpaca/account",
+          "memory_mb": 25,
+          "response_size": 16
+        },
+        {
+          "call": 2,
+          "endpoint": "/alpaca/orders",
+          "memory_mb": 25,
+          "response_size": 13
+        },
+        {
+          "call": 3,
+          "endpoint": "/market/price?ticker=AAPL",
+          "memory_mb": 25,
+          "response_size": 39
+        },
+        {
+          "call": 4,
+          "endpoint": "/market/price?ticker=TSLA",
+          "memory_mb": 25,
+          "response_size": 39
+        },
+        {
+          "call": 5,
+          "endpoint": "/market/price?ticker=SPY",
+          "memory_mb": 25,
+          "response_size": 38
+        },
+        {
+          "call": 6,
+          "endpoint": "/market/price?ticker=NVDA",
+          "memory_mb": 25,
+          "response_size": 39
+        }
+      ],
+      "memory_efficient": true
+    },
+    "startup_performance": {
+      "import_time": 0,
+      "connection_establishment": 0,
+      "first_api_call": 528.31,
+      "total_cold_start": 528.31,
+      "warm_vs_cold_improvement": 23.33
+    },
+    "geographic_latency": {
+      "paper_api": {
+        "latency_ms": 527.69,
+        "accessible": true,
+        "status_code": 403
+      },
+      "live_api": {
+        "latency_ms": 708.33,
+        "accessible": true,
+        "status_code": 403
+      },
+      "data_api": {
+        "latency_ms": 260.43,
+        "accessible": true,
+        "status_code": 403
+      }
+    },
+    "render_constraints": {
+      "starter_plan_limits": {
+        "memory_limit_mb": 512,
+        "cpu_cores": 0.1,
+        "concurrent_connections": 20,
+        "timeout_limit_seconds": 30
+      },
+      "current_usage": {
+        "memory_usage_mb": 25,
+        "memory_available_mb": 352
+      },
+      "memory_usage_percent": 4.9
+    }
+  },
+  "recommendations": [],
+  "optimization_recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Connection Management",
+      "issue": "No connection pooling for Alpaca API calls",
+      "recommendation": "Implement requests.Session() with connection pooling",
+      "implementation": "\n# Add to alpaca_client.py:\nimport requests\nsession = requests.Session()\nsession.mount('https://', requests.adapters.HTTPAdapter(\n    pool_connections=5, pool_maxsize=10, max_retries=3\n))\n\ndef get_account_info():\n    response = session.get(f\"{ALPACA_BASE_URL}/v2/account\", headers=HEADERS)\n    return response.json()\n            ",
+      "expected_improvement": "20-40% reduction in connection overhead"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Request Timeouts",
+      "issue": "No explicit timeouts on Alpaca API calls",
+      "recommendation": "Add appropriate timeouts for all Alpaca requests",
+      "implementation": "\n# Update all requests with timeouts:\nresponse = requests.get(url, headers=HEADERS, timeout=(5, 10))  # 5s connect, 10s read\n            ",
+      "expected_improvement": "Prevent hanging requests in Render environment"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Memory Management",
+      "issue": "Large JSON responses loaded entirely into memory",
+      "recommendation": "Stream large responses and implement response size limits",
+      "implementation": "\n# Add response size checking:\nresponse = requests.get(url, headers=HEADERS, stream=True)\nif int(response.headers.get('content-length', 0)) > 1024*1024:  # 1MB limit\n    response.close()\n    return {\"error\": \"Response too large\"}\n            ",
+      "expected_improvement": "Reduce memory usage by 30-50%"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Response Caching",
+      "issue": "No caching of frequently accessed Alpaca data",
+      "recommendation": "Implement Redis or in-memory caching for account info",
+      "implementation": "\nfrom functools import lru_cache\nimport time\n\n@lru_cache(maxsize=128)\ndef cached_account_info(cache_key):\n    return get_account_info()\n\ndef get_cached_account(ttl=300):  # 5 minute cache\n    cache_key = int(time.time() // ttl)\n    return cached_account_info(cache_key)\n            ",
+      "expected_improvement": "80% reduction in redundant API calls"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Error Resilience",
+      "issue": "No circuit breaker pattern for Alpaca API failures",
+      "recommendation": "Implement circuit breaker with exponential backoff",
+      "implementation": "\nimport time\nfrom datetime import datetime, timedelta\n\nclass AlpacaCircuitBreaker:\n    def __init__(self, failure_threshold=5, recovery_timeout=60):\n        self.failure_count = 0\n        self.failure_threshold = failure_threshold\n        self.recovery_timeout = recovery_timeout\n        self.last_failure_time = None\n        self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN\n    \n    def call(self, func, *args, **kwargs):\n        if self.state == 'OPEN':\n            if datetime.now() - self.last_failure_time > timedelta(seconds=self.recovery_timeout):\n                self.state = 'HALF_OPEN'\n            else:\n                raise Exception(\"Circuit breaker is OPEN\")\n        \n        try:\n            result = func(*args, **kwargs)\n            if self.state == 'HALF_OPEN':\n                self.state = 'CLOSED'\n                self.failure_count = 0\n            return result\n        except Exception as e:\n            self.failure_count += 1\n            self.last_failure_time = datetime.now()\n            if self.failure_count >= self.failure_threshold:\n                self.state = 'OPEN'\n            raise e\n            ",
+      "expected_improvement": "Graceful degradation during Alpaca outages"
+    }
+  ]
+}
