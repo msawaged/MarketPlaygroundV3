@@ -156,7 +156,7 @@ class RiskManager:
         if account_balance < self.min_account_balance:
             warnings.append(f"Account balance below recommended minimum of ${self.min_account_balance}")
         
-        investment_percentage = (position_size['max_investment'] / account_balance) * 100
+        investment_percentage = (position_size['max_investment'] / account_balance) * 100 if account_balance > 0 else 0
         if investment_percentage > 5:
             warnings.append(f"This trade represents {investment_percentage:.1f}% of your account")
         
