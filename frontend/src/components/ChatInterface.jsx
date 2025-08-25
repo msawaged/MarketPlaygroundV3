@@ -90,137 +90,264 @@ const BACKEND_URL = window.location.hostname === 'localhost'
     ? `http://${window.location.hostname}:8000`
     : 'https://marketplayground-backend.onrender.com';
 
-// 📊 DRAMATIC PULSING STOCK TICKER - ENHANCED
+// 📊 LIVE ELITE STOCK TICKER — FINAL VERSION
+const EliteLiveSymbolsKey = 'mp_elite_symbols';
+
 const EliteStockTicker = () => {
-    const [position, setPosition] = useState(0);
-    const [tickerData, setTickerData] = useState([
-      { symbol: 'SPY', price: 637.18, change: 1.25, changePercent: 0.20 },
-      { symbol: 'AAPL', price: 150.25, change: -0.75, changePercent: -0.50 },
-      { symbol: 'TSLA', price: 245.67, change: 2.13, changePercent: 0.87 },
-      { symbol: 'NVDA', price: 892.45, change: 15.23, changePercent: 1.74 },
-      { symbol: 'BTC-USD', price: 45230.12, change: 523.45, changePercent: 1.17 }
-    ]);
-  
-    // 🔄 ANIMATE TICKER MOVEMENT + DRAMATIC PRICE UPDATES
-    useEffect(() => {
-      const priceInterval = setInterval(() => {
-        setTickerData(prev => prev.map(stock => ({
-          ...stock,
-          price: stock.price * (1 + (Math.random() - 0.5) * 0.003), // Bigger moves
-          change: stock.change + (Math.random() - 0.5) * 0.2,
-          changePercent: stock.changePercent + (Math.random() - 0.5) * 0.1
-        })));
-      }, 2000); // Faster updates
-  
-      const moveInterval = setInterval(() => {
-        setPosition(prev => prev <= -100 ? 100 : prev - 0.5);
-      }, 50);
-  
-      return () => {
-        clearInterval(priceInterval);
-        clearInterval(moveInterval);
-      };
-    }, []);
-  
-    return (
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white py-3 overflow-hidden relative border-b-2 border-blue-400/40 shadow-xl">
-        {/* ✨ NEW: Animated background pulse */}
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10"
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        />
+  const [position, setPosition] = useState(0);
+  const [symbols, setSymbols] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(EliteLiveSymbolsKey) || '["SPY","AAPL","TSLA","NVDA"]');
+      return Array.isArray(saved) && saved.length ? saved : ["SPY","AAPL","TSLA","NVDA"];
+    } catch { return ["SPY","AAPL","TSLA","NVDA"]; }
+  });
+  const [tickerData, setTickerData] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const abortRef = useRef(null);
+
+  // persist symbols
+  useEffect(() => {
+    localStorage.setItem(EliteLiveSymbolsKey, JSON.stringify(symbols));
+  }, [symbols]);
+
+  const fetchPrices = async (list) => {
+    if (!list?.length) { setTickerData([]); return; }
+    try {
+      setLoading(true);
+      const url = `${BACKEND_URL}/ticker/prices?tickers=${encodeURIComponent(list.join(','))}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+  // ───────────────────────────────────────────────────────────────
+  // 🔧 PATCH — Preserve Requested Order & Drop Unknowns
+  // • Build a symbol→row map from API result
+  // • Reconstruct in the same order as `list` (the request array)
+  // • Filter out any symbols the API didn’t return
+  // ───────────────────────────────────────────────────────────────
+  const norm = (data || []).map((d) => ({
+    symbol: d.symbol,
+    price: typeof d.price === 'number' ? d.price : null,
+    change: typeof d.change === 'number' ? d.change : 0,
+    changePercent: typeof d.changePercent === 'number' ? d.changePercent : 0,
+  }));
+
+const bySym = Object.fromEntries(norm.map(r => [r.symbol, r]));
+const ordered = (list || []).map(s => bySym[s]).filter(Boolean);
+
+setTickerData(ordered);
+
+    } catch (e) {
+      console.error('EliteTicker fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPrices(symbols); }, [symbols]);
+
+  useEffect(() => {
+    if (!symbols.length) return;
+    const id = setInterval(() => fetchPrices(symbols), 30_000);
+    return () => clearInterval(id);
+  }, [symbols]);
+
+  // simple marquee
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPosition(prev => prev <= -100 ? 100 : prev - 0.4);
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
+  // suggestions (debounced)
+  useEffect(() => {
+    const q = searchInput.trim();
+    if (!q) { setSuggestions([]); return; }
+    const id = setTimeout(async () => {
+      try {
+        if (abortRef.current) abortRef.current.abort();
+        const ctrl = new AbortController();
+        abortRef.current = ctrl;
+        const url = `${BACKEND_URL}/ticker/search?query=${encodeURIComponent(q)}&limit=10`;
+        const r = await fetch(url, { signal: ctrl.signal });
+        const s = await r.json();
+        setSuggestions(Array.isArray(s) ? s : []);
+      } catch { setSuggestions([]); }
+    }, 250);
+    return () => clearTimeout(id);
+  }, [searchInput]);
+
+  // ───────────────────────────────────────────────────────────────
+  // 🔧 PATCH — Ticker Input Validation (reject non-tickers)
+  // • Accept only [A-Z0-9.-] up to 6 chars (typical US symbol shape)
+  // • Drop invalid strings (prevents “AI Trading Strategist” etc.)
+  // ───────────────────────────────────────────────────────────────
+  const addSymbol = (sym) => {
+    const S = (sym || '').toUpperCase().trim();
+    if (!S) return;
+
+    // Allowable shapes: e.g., AAPL, BRK.B, RDS-A, MSFT, SPY
+    const VALID = /^[A-Z0-9.\-]{1,6}$/;
+    if (!VALID.test(S)) {
+      if (DEBUG_TICKER) console.warn('[EliteTicker] rejected non-ticker:', S);
+      setSearchInput('');
+      setSuggestions([]);
+      return;
+    }
+
+    if (!symbols.includes(S)) {
+      setSymbols((prev) => [...prev, S]);
+    }
+
+    setSearchInput('');
+    setSuggestions([]);
+  };
+
+
+  const removeSymbol = (sym) => setSymbols(prev => prev.filter(s => s !== sym));
+
+  // const canAdd = Boolean(searchInput && searchInput.trim());
+  // DEBUG: make state explicit so we can see what's happening
+const canAdd = (searchInput ?? '').trim().length > 0;
+// console.log('[EliteTicker] canAdd =', canAdd, 'searchInput =', JSON.stringify(searchInput));
+
+// 🔧 PATCH 4.1 — Debug flag (declare in JS, not inside JSX)
+const DEBUG_TICKER = false; // flip to true to show symbol chips
+
+
+  return (
+    <div className="relative z-50 bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white py-3 overflow-hidden border-b-2 border-blue-400/40 shadow-xl">
+      {/* background tint */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none z-0" />
+
+      {/* Search/Add row */}
+      <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
+        {/* <input
+          value={searchInput}
+          onChange={(e)=>setSearchInput(e.target.value)}
+          onKeyDown={(e)=>{ if(e.key==='Enter'){ suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput); }}}
+          placeholder="Add ticker (AAPL, TSLA)…"
+          className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
+        /> */}
         
-        {/* 📱 SCROLLING TICKER */}
-        <div 
-          className="flex space-x-8 whitespace-nowrap transition-transform duration-75 ease-linear relative z-10"
-          style={{ transform: `translateX(${position}%)` }}
+        <input
+          value={searchInput}
+          onChange={(e) => {
+            const v = e.target.value;
+            console.log('[EliteTicker] onChange ->', JSON.stringify(v), 'len:', v.length, 'trim:', v.trim().length);
+            setSearchInput(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            console.log('[EliteTicker] Enter pressed with', JSON.stringify(searchInput));
+            suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
+          }
+        }}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="Add ticker (AAPL, TSLA)…"
+        className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
+      />
+
+
+        {/* <button
+          type="button"
+          onClick={()=>addSymbol(searchInput)}
+          disabled={!canAdd}
+          className={`px-3 py-2 rounded text-sm ${canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}
         >
-          {/* 🔄 TRIPLE DATA FOR SEAMLESS LOOP */}
-          {[...tickerData, ...tickerData, ...tickerData].map((stock, index) => (
-            <motion.div 
-              key={index} 
-              className="flex items-center space-x-3 whitespace-nowrap"
-              whileHover={{ 
-                scale: 1.08, 
-                y: -3,
-                filter: "brightness(1.4) drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))"
-              }}
-              transition={{ duration: 0.2, type: "spring", stiffness: 400 }}
+          Add
+        </button> */}
+
+        <button
+        type="button"
+        onClick={() => {
+        console.log('[EliteTicker] Add clicked with', JSON.stringify(searchInput));
+        addSymbol(searchInput);
+      }}
+      disabled={false} // TEMP: force-enabled so we can click even if canAdd is false
+      className={`px-3 py-2 rounded text-sm ${canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+    >
+      {canAdd ? 'Add' : 'Add (debug)'}
+    </button>
+
+      </div>
+
+      {/* 🔧 PATCH 4.1 — Debug Chips Toggleable with Flag */}
+
+      {DEBUG_TICKER && symbols.length > 0 && (
+        <div className="relative z-20 px-3 pb-2 flex gap-2 flex-wrap text-xs">
+          {symbols.map(s => (
+            <span
+              key={s}
+              className="px-2 py-1 bg-slate-800 border border-slate-700 rounded"
             >
-              {/* 🏷️ STOCK SYMBOL WITH DRAMATIC GLOW */}
-              <motion.span 
-                className="font-bold text-blue-400"
-                animate={{ 
-                  filter: [
-                    "drop-shadow(0 0 3px rgba(59, 130, 246, 0.8))",
-                    "drop-shadow(0 0 12px rgba(59, 130, 246, 1))",
-                    "drop-shadow(0 0 3px rgba(59, 130, 246, 0.8))"
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {stock.symbol}
-              </motion.span>
-              
-              {/* 💲 CURRENT PRICE WITH PULSE */}
-              <motion.span 
-                className="font-semibold text-white"
-                animate={{ scale: [1, 1.03, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                ${stock.price.toLocaleString(undefined, {maximumFractionDigits: 2})}
-              </motion.span>
-              
-              {/* 📈📉 ANIMATED PRICE CHANGE */}
-              <motion.span 
-                className={stock.change >= 0 ? 'text-green-400' : 'text-red-400'}
-                animate={{ 
-                  scale: [1, 1.15, 1],
-                  filter: stock.change >= 0 
-                    ? [
-                        "drop-shadow(0 0 2px rgba(34, 197, 94, 0.6))",
-                        "drop-shadow(0 0 8px rgba(34, 197, 94, 1))",
-                        "drop-shadow(0 0 2px rgba(34, 197, 94, 0.6))"
-                      ]
-                    : [
-                        "drop-shadow(0 0 2px rgba(239, 68, 68, 0.6))",
-                        "drop-shadow(0 0 8px rgba(239, 68, 68, 1))",
-                        "drop-shadow(0 0 2px rgba(239, 68, 68, 0.6))"
-                      ]
-                }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                {stock.change >= 0 ? '▲' : '▼'} {Math.abs(stock.change).toFixed(2)}
-              </motion.span>
-              
-              {/* ✨ ENHANCED PERCENTAGE BADGE WITH DRAMATIC GLOW */}
-              <motion.span 
-                className={`text-xs px-3 py-1 rounded-full font-semibold border backdrop-blur-sm ${
-                  stock.change >= 0 
-                    ? 'bg-green-500/30 text-green-300 border-green-400/50' 
-                    : 'bg-red-500/30 text-red-300 border-red-400/50'
-                }`}
-                style={{ 
-                  boxShadow: stock.change >= 0 
-                    ? '0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 10px rgba(34, 197, 94, 0.2)'
-                    : '0 0 15px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(239, 68, 68, 0.2)'
-                }}
-                whileHover={{ 
-                  scale: 1.1,
-                  boxShadow: stock.change >= 0 
-                    ? '0 0 25px rgba(34, 197, 94, 0.6), inset 0 0 15px rgba(34, 197, 94, 0.3)'
-                    : '0 0 25px rgba(239, 68, 68, 0.6), inset 0 0 15px rgba(239, 68, 68, 0.3)'
-                }}
-              >
-                ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-              </motion.span>
-            </motion.div>
+              {s}
+            </span>
           ))}
         </div>
+      )}
+
+
+
+      {/* Suggestions dropdown */}
+      {suggestions.length > 0 && (
+        <div className="absolute left-3 top-14 z-50 w-64 bg-slate-800 border border-slate-700 rounded shadow max-h-56 overflow-auto">
+          {suggestions.map(s => (
+            <div key={s} onClick={()=>addSymbol(s)} className="px-3 py-2 hover:bg-slate-700 cursor-pointer">{s}</div>
+          ))}
+        </div>
+      )}
+
+      {/* Scrolling ticker strip */}
+      <div
+        className="relative z-20 flex space-x-8 whitespace-nowrap transition-transform duration-75 ease-linear px-3"
+        style={{ transform: `translateX(${position}%)` }}
+      >
+        {[...tickerData, ...tickerData, ...tickerData].map((stock, index) => {
+          const up = (stock.change ?? 0) >= 0;
+          return (
+            <div key={`${stock.symbol}-${index}`} className="flex items-center space-x-3 whitespace-nowrap">
+              <span className="font-bold text-blue-400">{stock.symbol}</span>
+              <span className="font-semibold">
+                {stock.price != null ? `$${Number(stock.price).toLocaleString(undefined, {maximumFractionDigits: 2})}` : '--'}
+              </span>
+              <span className={up ? 'text-green-400' : 'text-red-400'}>
+                {stock.change != null ? (up ? '▲' : '▼') : ''}{' '}
+                {stock.change != null ? Math.abs(Number(stock.change)).toFixed(2) : '--'}
+              </span>
+              <span
+                className={`text-xs px-3 py-1 rounded-full font-semibold border ${
+                  up ? 'bg-green-500/30 text-green-300 border-green-400/50'
+                     : 'bg-red-500/30 text-red-300 border-red-400/50'
+                }`}
+              >
+                {stock.changePercent != null ? `(${up ? '+' : ''}${Number(stock.changePercent).toFixed(2)}%)` : '(--%)'}
+              </span>
+              <button
+                onClick={()=>removeSymbol(stock.symbol)}
+                className="ml-1 text-slate-400 hover:text-red-400"
+                aria-label={`Remove ${stock.symbol}`}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
       </div>
-    );
-  };
+
+      {/* Loading badge */}
+      {loading && (
+        <div className="absolute right-3 top-3 text-xs text-slate-300 bg-slate-800/70 rounded px-2 py-1 z-20">
+          updating…
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 
 // 🔥 INTERACTIVE P&L CHART WITH TOUCH CONTROLS + ALL YOUR ORIGINAL CHART TYPES
 const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetClass, strikePrice, direction }) => {

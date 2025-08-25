@@ -64,6 +64,10 @@ from backend.routes.trade_confirmation_router import router as trade_confirmatio
 from backend.routes.paper_trading_router import router as paper_trading_router  # ← ADD THIS LINE
 from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoints (test connection, real-time data, etc.)
 from backend.routes.market_events_router import router as market_events_router  # Market events and upcoming catalysts
+from backend.routes.alpaca_probe_router import ROUTER as alpaca_probe_router
+from backend.routes.market_ticker_router import ROUTER as market_ticker_router
+
+
 print("✅ [9] Router imports finished")
 
 
@@ -133,6 +137,9 @@ app.include_router(ibkr_router,              prefix="/ibkr",              tags=[
 app.include_router(paper_trading_router,     prefix="/api/paper-trading", tags=["Paper Trading"])  # ← ADD THIS LINE
 app.include_router(trade_confirmation_router,                             tags=["Trade Confirmation"])  # Live trading safety barrier
 app.include_router(market_events_router)  # Market events calendar and event-driven strategies
+app.include_router(alpaca_probe_router)
+app.include_router(market_ticker_router)
+
 
 print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")
 
