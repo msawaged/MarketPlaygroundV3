@@ -7,6 +7,7 @@ Includes GPT-4 integration, goal parsing, bond logic, robust fallback handling.
 MINIMAL FIXES APPLIED by Claude
 """
 import time
+import re
 import os
 import json
 import math
@@ -166,6 +167,48 @@ def attempt_gpt_strategy_parse(belief, gpt_raw_output, context) -> Optional[dict
     print("[❌ Soft Parser] Failed to extract strategy from prose.")
     return None
 
+# === JSON hardening helpers ===
+def coerce_json(s):
+    """
+    Accepts str or dict. If a str has markdown fences or extra prose,
+    remove the fences and extract the first {…} JSON block.
+    """
+    if isinstance(s, dict):
+        return s
+    if not isinstance(s, str):
+        raise TypeError("coerce_json expects str or dict")
+
+    # Remove ```json fences and plain ```
+    cleaned = re.sub(r"```(?:json)?|```", "", s).strip()
+
+    # Attempt to find the first complete JSON object in the cleaned string
+    start = cleaned.find('{')
+    end = cleaned.rfind('}')
+    if start != -1 and end != -1:
+        try:
+            return json.loads(cleaned[start:end+1])
+        except Exception:
+            pass
+
+    # Fallback: try to parse the entire cleaned string
+    return json.loads(cleaned)
+
+def parse_strategy_json(payload):
+    """
+    Robustly parse OpenAI output that may be a dict or a string with fences.
+    Returns a Python dict or raises on unrecoverable errors.
+    """
+    if isinstance(payload, dict):
+        return payload
+    if isinstance(payload, str):
+        try:
+            return json.loads(payload)
+        except Exception:
+            return coerce_json(payload)
+    raise TypeError("parse_strategy_json received unsupported type")
+
+
+
 
 def clean_float(value):
     if value is None or (
@@ -321,70 +364,68 @@ def run_ai_engine(
             "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
         }
 
+        # === ✅ GPT CALL GUARD =======================================================
+    # Only call GPT here if we *need* it:
+    #   - No strategy yet (strategy is None), OR
+    #   - The selector returned an ML-based strategy (source starts with "ml"),
+    #     in which case we allow GPT to augment/replace once.
+    # This prevents duplicate "Sending belief to GPT-4..." calls per request.
+    _should_call_gpt = (
+        strategy is None
+        or (isinstance(strategy, dict) and str(strategy.get("source", "")).lower().startswith("ml"))
+    )
+    # ============================================================================
+
     # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
-    try:
-        from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_validation
-        
-        # Get sentiment from belief parser for validation
-        detected_sentiment = direction  # Use the direction already parsed above
-        gpt_raw_output = generate_strategy_with_validation(belief, detected_sentiment)
-
+    if _should_call_gpt:
         try:
-            gpt_strategy = json.loads(gpt_raw_output)
-            print("\n🧠 [GPT-4 Strategy Output for Comparison Only]:")
-            print(json.dumps(gpt_strategy, indent=2))
+            from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_validation
 
-            # === 🧠 Auto-patch straddle/strangle based on explanation text ===
-            explanation = gpt_strategy.get("explanation", "").lower()
+            # Get sentiment from belief parser for validation
+            detected_sentiment = direction  # Use the direction already parsed above
+            gpt_raw_output = generate_strategy_with_validation(belief, detected_sentiment)
 
-            if "straddle" in explanation and "call" in explanation and "put" in explanation:
-                print("🛠️ Auto-patching strategy as STRADDLE")
-                gpt_strategy["type"] = "Straddle"
-                gpt_strategy["trade_legs"] = ["buy 1 ATM call", "buy 1 ATM put"]
+            try:
+                gpt_strategy = parse_strategy_json(gpt_raw_output)
+                print("\n🧠 [GPT-4 Strategy Output for Comparison Only]:")
+                print(json.dumps(gpt_strategy, indent=2))
 
-            elif "strangle" in explanation and "call" in explanation and "put" in explanation:
-                print("🛠️ Auto-patching strategy as STRANGLE")
-                gpt_strategy["type"] = "Strangle"
-                gpt_strategy["trade_legs"] = ["buy 1 OTM call", "buy 1 OTM put"]
+                # === 🧠 Auto-patch straddle/strangle based on explanation text ===
+                explanation = gpt_strategy.get("explanation", "").lower()
+                if "straddle" in explanation and "call" in explanation and "put" in explanation:
+                    print("🛠️ Auto-patching strategy as STRADDLE")
+                    gpt_strategy["type"] = "Straddle"
+                    gpt_strategy["trade_legs"] = ["buy 1 ATM call", "buy 1 ATM put"]
+                elif "strangle" in explanation and "call" in explanation and "put" in explanation:
+                    print("🛠️ Auto-patching strategy as STRANGLE")
+                    gpt_strategy["type"] = "Strangle"
+                    gpt_strategy["trade_legs"] = ["buy 1 OTM call", "buy 1 OTM put"]
 
-            strategy = gpt_strategy
-            strategy["source"] = "gpt_json"
-            strategy["explanation"] = generate_strategy_explainer(belief, strategy)
+                strategy = gpt_strategy
+                strategy["source"] = "gpt_json"
 
+                # Keep any existing string explanation; normalize dict → string to avoid .get() errors
+                if isinstance(strategy.get("explanation"), dict):
+                    strategy["explanation"] = json.dumps(strategy["explanation"])
 
-        except json.JSONDecodeError:
-            print("[⚠️ Fallback] GPT returned invalid JSON, attempting soft parse...")
+                try:
+                    _expl = generate_strategy_explainer(belief, strategy)
+                    if isinstance(_expl, dict):
+                        strategy["explanation"] = str(_expl.get("explanation", _expl))
+                    elif isinstance(_expl, str):
+                        strategy["explanation"] = _expl
+                except Exception as e:
+                    print(f"[Explainer] failed: {e}")  # leave existing explanation as-is
 
-            soft_strategy = attempt_gpt_strategy_parse(
-                belief,
-                gpt_raw_output,
-                {
-                    "ticker": ticker,
-                    "direction": direction,
-                    "tags": tags,
-                    "asset_class": asset_class,
-                    "goal_type": goal_type,
-                    "multiplier": multiplier,
-                    "timeframe": timeframe,
-                    "risk_profile": risk_profile,
-                    "confidence": confidence,
-                    "price_info": price_info,
-                },
-            )
+            except json.JSONDecodeError:
+                print("[⚠️ Fallback] GPT returned invalid JSON, attempting soft parse...")
 
-            if soft_strategy:
-                print("[✅ Soft Parser] Recovered strategy from GPT prose.")
-                strategy = soft_strategy
-                strategy["source"] = "gpt_soft_parse"
-            else:
-                print("[❌ Soft Parser] Failed to extract strategy from prose. Using ML fallback.")
-                from backend.ai_engine.ml_strategy_bridge import run_ml_strategy_model
-
-                strategy = run_ml_strategy_model(
+                soft_strategy = attempt_gpt_strategy_parse(
                     belief,
+                    gpt_raw_output,
                     {
-                        "direction": direction,
                         "ticker": ticker,
+                        "direction": direction,
                         "tags": tags,
                         "asset_class": asset_class,
                         "goal_type": goal_type,
@@ -395,13 +436,37 @@ def run_ai_engine(
                         "price_info": price_info,
                     },
                 )
-                
-                strategy["explanation"] = generate_strategy_explainer(belief, strategy)
+
+                if soft_strategy:
+                    print("[✅ Soft Parser] Recovered strategy from GPT prose.")
+                    strategy = soft_strategy
+                    strategy["source"] = "gpt_soft_parse"
+                else:
+                    print("[❌ Soft Parser] Failed to extract strategy from prose. Using ML fallback.")
+                    from backend.ai_engine.ml_strategy_bridge import run_ml_strategy_model
+
+                    strategy = run_ml_strategy_model(
+                        belief,
+                        {
+                            "direction": direction,
+                            "ticker": ticker,
+                            "tags": tags,
+                            "asset_class": asset_class,
+                            "goal_type": goal_type,
+                            "multiplier": multiplier,
+                            "timeframe": timeframe,
+                            "risk_profile": risk_profile,
+                            "confidence": confidence,
+                            "price_info": price_info,
+                        },
+                    )
+                    strategy["explanation"] = generate_strategy_explainer(belief, strategy)
+
+        except Exception as e:
+            print(f"[GPT DEBUG] ❌ GPT strategy generation failed: {e}")
+    # else: skipped GPT because selector already produced a non-ML strategy
 
 
-
-    except Exception as e:
-        print(f"[GPT DEBUG] ❌ GPT strategy generation failed: {e}")
 
 
     # === 🧠 Clean up expiration
