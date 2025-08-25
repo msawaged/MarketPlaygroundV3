@@ -33,14 +33,46 @@ except Exception as e:
 
 # === Fallback keyword-to-ticker maps ===
 SYMBOL_LOOKUP_MAP = {
-    "tesla": "TSLA", "apple": "AAPL", "microsoft": "MSFT", "nvidia": "NVDA",
-    "amazon": "AMZN", "meta": "META", "facebook": "META", "google": "GOOGL", "alphabet": "GOOGL",
-    "palantir": "PLTR", "amd": "AMD", "snowflake": "SNOW", "amgen": "AMGN", "stanley black & decker": "SWK",
-    "stanley": "SWK", "netflix": "NFLX", "bitcoin": "BTC", "btc": "BTC", "ethereum": "ETH", "eth": "ETH",
-    "nasdaq": "QQQ", "s&p": "SPY", "sp500": "SPY", "sp 500": "SPY", "dow": "DIA", "russell": "IWM",
-    "bonds": "TLT", "treasury": "TLT", "financials": "XLF", "banks": "XLF", "energy": "XLE", "oil": "XLE",
-    "tech": "XLK", "technology": "XLK", "ark": "ARKK", "cathie wood": "ARKK", "gold": "GLD"
+    "tesla": "TSLA",
+    "apple": "AAPL",
+    "microsoft": "MSFT",
+    "nvidia": "NVDA",
+    "amazon": "AMZN",
+    "meta": "META",
+    "facebook": "META",
+    "google": "GOOGL",
+    "alphabet": "GOOGL",
+    "palantir": "PLTR",
+    "amd": "AMD",
+    "snowflake": "SNOW",
+    "amgen": "AMGN",
+    "stanley black & decker": "SWK",
+    # removed "stanley" alone to avoid partial matches
+    "netflix": "NFLX",
+    "bitcoin": "BTC",
+    "btc": "BTC",
+    "ethereum": "ETH",
+    "eth": "ETH",
+    "nasdaq": "QQQ",
+    "s&p 500": "SPY",  # consolidates "sp500" and "sp 500"
+    "dow": "DIA",
+    "russell": "IWM",
+    "bonds": "TLT",
+    "treasury": "TLT",
+    "financials": "XLF",
+    "banks": "XLF",
+    "energy": "XLE",
+    "oil": "XLE",
+    "tech": "XLK",
+    "technology": "XLK",
+    # removed "ark"; optional specific mapping:
+    "ark invest": "ARKK",  # if you want to trigger ARKK only on a clear phrase
+    "cathie wood": "ARKK",
+    "gold": "GLD",
+    # add "war" only if you actually want to map "war tensions" to the WAR ETF
+    # "war": "WAR",
 }
+
 
 # === New: AI + Healthcare theme fallback ===
 AI_HEALTHCARE_MAP = {
@@ -141,15 +173,18 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         else:
             print(f"[PARSER] Rejected direct match (not tradable): {tt}")
 
-    # 🎯 STEP 2: Company name to ticker mapping
+   # 🎯 STEP 2: Company name to ticker mapping (whole-word match)
     for company, ticker in SYMBOL_LOOKUP_MAP.items():
-        if company in belief_lower:
+        # match only on whole words to avoid substrings (e.g. 'ark' in 'war tensions')
+        pattern = r'\b' + re.escape(company) + r'\b'
+        if re.search(pattern, belief_lower):
             tt = normalize_ticker(ticker)
             if is_tradable_symbol(tt):
                 print(f"🎯 Company name match: {company} → {tt}")
                 return tt
             else:
                 print(f"[PARSER] Rejected company map (not tradable): {company}→{tt}")
+
 
     # 🎯 STEP 3: AI/Healthcare theme mapping
     for theme, ticker in AI_HEALTHCARE_MAP.items():
