@@ -117,6 +117,20 @@ CURRENCY_LOOKUP_MAP = {
     "yuan": "CYB", "cny": "CYB"
 }
 
+# === New: sector-specific ETF mapping ===
+SECTOR_ETF_MAP = {
+    "electricity": "XLU",    # Utilities Select Sector SPDR Fund
+    "utility": "XLU",
+    "utilities": "XLU",
+    "power": "XLU",
+    "energy": "XLE",        # Energy Select Sector SPDR Fund
+    "renewable": "ICLN",    # iShares Global Clean Energy ETF
+    "solar": "TAN",         # Invesco Solar ETF
+    "wind": "FAN",          # First Trust Global Wind Energy ETF
+    # Add more sector keywords and representative ETFs as needed
+}
+
+
 BOND_KEYWORDS = ["bond", "bonds", "bond ladder", "income", "fixed income", "treasury", "muni", "municipal bond"]
 
 def clean_belief(text: str) -> str:
@@ -215,6 +229,17 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
                 return tt
             else:
                 print(f"[PARSER] Rejected currency map (not tradable): {currency}→{tt}")
+
+    # 🎯 STEP 5.5: Sector-specific ETF mapping
+    for sector, ticker in SECTOR_ETF_MAP.items():
+        if sector in belief_lower:
+            tt = normalize_ticker(ticker)
+            if is_tradable_symbol(tt):
+                print(f"🎯 Sector keyword match: {sector} → {tt}")
+                return tt
+            else:
+                print(f"[PARSER] Rejected sector map (not tradable): {sector}→{tt}")
+
 
     # 🎯 STEP 6: Asset class specific defaults (validate each default)
     if asset_class == "bond":

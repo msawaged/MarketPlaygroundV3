@@ -105,12 +105,19 @@ const EliteStockTicker = () => {
   const [searchInput, setSearchInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // 🔸 Step 1: new state for the add‑ticker modal and its search
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [modalSearchInput, setModalSearchInput] = useState('');
+  const [modalSuggestions, setModalSuggestions] = useState([]);
+
   const abortRef = useRef(null);
 
   // persist symbols
   useEffect(() => {
     localStorage.setItem(EliteLiveSymbolsKey, JSON.stringify(symbols));
   }, [symbols]);
+
 
   const fetchPrices = async (list) => {
     if (!list?.length) { setTickerData([]); return; }
@@ -177,7 +184,28 @@ setTickerData(ordered);
     }, 250);
     return () => clearTimeout(id);
   }, [searchInput]);
+  // 🔽 ADD THIS EFFECT RIGHT BELOW THE ONE ABOVE 🔽
+  // This watches the modalSearchInput and fetches suggestions for the modal’s search box.
+  useEffect(() => {
+    const q = modalSearchInput.trim();
+    if (!q) {
+      setModalSuggestions([]);
+      return;
+    }
+    const id = setTimeout(async () => {
+      try {
+        const url = `${BACKEND_URL}/ticker/search?query=${encodeURIComponent(q)}&limit=10`;
+        const resp = await fetch(url);
+        const results = await resp.json();
+        setModalSuggestions(Array.isArray(results) ? results : []);
+      } catch {
+        setModalSuggestions([]);
+      }
+    }, 250);
+    return () => clearTimeout(id);
+  }, [modalSearchInput]);
 
+  
   // ───────────────────────────────────────────────────────────────
   // 🔧 PATCH — Ticker Input Validation (reject non-tickers)
   // • Accept only [A-Z0-9.-] up to 6 chars (typical US symbol shape)
@@ -221,58 +249,81 @@ const DEBUG_TICKER = false; // flip to true to show symbol chips
       {/* background tint */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none z-0" />
 
-      {/* Search/Add row */}
-      <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
-        {/* <input
-          value={searchInput}
-          onChange={(e)=>setSearchInput(e.target.value)}
-          onKeyDown={(e)=>{ if(e.key==='Enter'){ suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput); }}}
-          placeholder="Add ticker (AAPL, TSLA)…"
-          className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
-        /> */}
-        
-        <input
-          value={searchInput}
-          onChange={(e) => {
-            const v = e.target.value;
-            console.log('[EliteTicker] onChange ->', JSON.stringify(v), 'len:', v.length, 'trim:', v.trim().length);
-            setSearchInput(v);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            console.log('[EliteTicker] Enter pressed with', JSON.stringify(searchInput));
-            suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
-          }
-        }}
-        autoComplete="off"
-        spellCheck={false}
-        placeholder="Add ticker (AAPL, TSLA)…"
-        className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
-      />
-
-
-        {/* <button
-          type="button"
-          onClick={()=>addSymbol(searchInput)}
-          disabled={!canAdd}
-          className={`px-3 py-2 rounded text-sm ${canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}
-        >
-          Add
-        </button> */}
-
-        <button
-        type="button"
-        onClick={() => {
-        console.log('[EliteTicker] Add clicked with', JSON.stringify(searchInput));
-        addSymbol(searchInput);
-      }}
-      disabled={false} // TEMP: force-enabled so we can click even if canAdd is false
-      className={`px-3 py-2 rounded text-sm ${canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'}`}
-    >
-      {canAdd ? 'Add' : 'Add (debug)'}
-    </button>
-
+      {/* 🔧 PATCH B — Compact floating “+ Add” button */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-0">
+        <div className="pointer-events-auto absolute right-2 -top-2 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs shadow"
+          >
+            + Add
+          </button>
+        </div>
       </div>
+
+
+      {/* Search/Add row */}
+  <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
+  {/* ORIGINAL INPUT AND BUTTON (commented out for reference)
+  <input
+    value={searchInput}
+    onChange={(e) => setSearchInput(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') {
+        suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
+      }
+    }}
+    placeholder="Add ticker (AAPL, TSLA)…"
+    className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
+  />
+  <button
+    type="button"
+    onClick={() => addSymbol(searchInput)}
+    disabled={!canAdd}
+    className={`px-3 py-2 rounded text-sm ${
+      canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'
+    }`}
+  >
+    Add
+  </button>
+  */}
+
+  {/* ENHANCED INPUT WITH DEBUG LOGGING */}
+  <input
+    value={searchInput}
+    onChange={(e) => {
+      const v = e.target.value;
+      console.log('[EliteTicker] onChange ->', JSON.stringify(v), 'len:', v.length, 'trim:', v.trim().length);
+      setSearchInput(v);
+    }}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') {
+        console.log('[EliteTicker] Enter pressed with', JSON.stringify(searchInput));
+        suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
+      }
+    }}
+    autoComplete="off"
+    spellCheck={false}
+    placeholder="Add ticker (AAPL, TSLA)…"
+    className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
+  />
+
+  {/* ENHANCED BUTTON */}
+  <button
+    type="button"
+    onClick={() => {
+      console.log('[EliteTicker] Add clicked with', JSON.stringify(searchInput));
+      addSymbol(searchInput);
+    }}
+    className={`px-3 py-2 rounded text-sm ${
+      canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
+    }`}
+  >
+    {canAdd ? 'Add' : 'Add (debug)'}
+  </button>
+</div>
+
 
       {/* 🔧 PATCH 4.1 — Debug Chips Toggleable with Flag */}
 
@@ -291,14 +342,14 @@ const DEBUG_TICKER = false; // flip to true to show symbol chips
 
 
 
-      {/* Suggestions dropdown */}
+      {/* Suggestions dropdown
       {suggestions.length > 0 && (
         <div className="absolute left-3 top-14 z-50 w-64 bg-slate-800 border border-slate-700 rounded shadow max-h-56 overflow-auto">
           {suggestions.map(s => (
             <div key={s} onClick={()=>addSymbol(s)} className="px-3 py-2 hover:bg-slate-700 cursor-pointer">{s}</div>
           ))}
         </div>
-      )}
+      )} */}
 
       {/* Scrolling ticker strip */}
       <div
