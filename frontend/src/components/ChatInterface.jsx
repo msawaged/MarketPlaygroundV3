@@ -224,57 +224,14 @@ const EliteStockTicker = () => {
 
   const removeSymbol = (sym) => setSymbols(prev => prev.filter(s => s !== sym));
 
-  const canAdd = (searchInput ?? '').trim().length > 0;
-
   return (
     <div className="relative z-50 bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white py-3 overflow-hidden border-b-2 border-blue-400/40 shadow-xl">
       {/* background tint */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none z-0" />
 
-      {/* Compact floating "+ Add" button */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-0">
-        <div className="pointer-events-auto absolute right-2 -top-2 flex gap-2">
-          <button
-            type="button"
-            onClick={() => setShowAddModal(true)}
-            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs shadow"
-          >
-            + Add
-          </button>
-        </div>
-      </div>
 
-      {/* Search/Add row */}
-      <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
-        <input
-          value={searchInput}
-          onChange={(e) => {
-            const v = e.target.value;
-            setSearchInput(v);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
-            }
-          }}
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="Add ticker (AAPL, TSLA)…"
-          className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
-        />
 
-        <button
-          type="button"
-          onClick={() => {
-            addSymbol(searchInput);
-          }}
-          className={`px-3 py-2 rounded text-sm ${
-            canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
-          }`}
-        >
-          {canAdd ? 'Add' : 'Add'}
-        </button>
-      </div>
+      {/* Search/Add row removed – we now use only the floating "+ Add" button + modal */}
 
       {/* Ticker management modal */}
       {showAddModal && (
@@ -1119,6 +1076,13 @@ const EnhancedChatInterface = () => {
               transition={{ repeat: Infinity, duration: 2 }}
             />
             <span className="text-xs text-green-400 font-semibold">LIVE</span>
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="ml-3 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs rounded-full shadow"
+            >
+              Manage Ticker Strip
+            </button>
           </div>
         </div>
       </motion.div>
