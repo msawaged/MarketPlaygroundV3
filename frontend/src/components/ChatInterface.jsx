@@ -291,10 +291,12 @@ const EliteStockTicker = () => {
         </div>
       )}
 
-      {/* Scrolling ticker strip */}
+      {/* Scrolling ticker strip - double tap to manage */}
       <div
-        className="relative z-20 flex space-x-8 whitespace-nowrap transition-transform duration-75 ease-linear px-3"
+        className="relative z-20 flex space-x-8 whitespace-nowrap transition-transform duration-75 ease-linear px-3 cursor-pointer"
         style={{ transform: `translateX(${position}%)` }}
+        onDoubleClick={() => setShowAddModal(true)}
+        title="Double-click to manage tickers"
       >
         {[...tickerData, ...tickerData, ...tickerData].map((stock, index) => {
           const up = (stock.change ?? 0) >= 0;
@@ -1076,13 +1078,6 @@ const EnhancedChatInterface = () => {
               transition={{ repeat: Infinity, duration: 2 }}
             />
             <span className="text-xs text-green-400 font-semibold">LIVE</span>
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="ml-3 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs rounded-full shadow"
-            >
-              Manage Ticker Strip
-            </button>
           </div>
         </div>
       </motion.div>
