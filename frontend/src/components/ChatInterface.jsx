@@ -106,7 +106,7 @@ const EliteStockTicker = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔸 Step 1: new state for the add‑ticker modal and its search
+  // Step 1: new state for the add‑ticker modal and its search
   const [showAddModal, setShowAddModal] = useState(false);
   const [modalSearchInput, setModalSearchInput] = useState('');
   const [modalSuggestions, setModalSuggestions] = useState([]);
@@ -118,7 +118,6 @@ const EliteStockTicker = () => {
     localStorage.setItem(EliteLiveSymbolsKey, JSON.stringify(symbols));
   }, [symbols]);
 
-
   const fetchPrices = async (list) => {
     if (!list?.length) { setTickerData([]); return; }
     try {
@@ -126,23 +125,18 @@ const EliteStockTicker = () => {
       const url = `${BACKEND_URL}/ticker/prices?tickers=${encodeURIComponent(list.join(','))}`;
       const resp = await fetch(url);
       const data = await resp.json();
-  // ───────────────────────────────────────────────────────────────
-  // 🔧 PATCH — Preserve Requested Order & Drop Unknowns
-  // • Build a symbol→row map from API result
-  // • Reconstruct in the same order as `list` (the request array)
-  // • Filter out any symbols the API didn’t return
-  // ───────────────────────────────────────────────────────────────
-  const norm = (data || []).map((d) => ({
-    symbol: d.symbol,
-    price: typeof d.price === 'number' ? d.price : null,
-    change: typeof d.change === 'number' ? d.change : 0,
-    changePercent: typeof d.changePercent === 'number' ? d.changePercent : 0,
-  }));
+      
+      const norm = (data || []).map((d) => ({
+        symbol: d.symbol,
+        price: typeof d.price === 'number' ? d.price : null,
+        change: typeof d.change === 'number' ? d.change : 0,
+        changePercent: typeof d.changePercent === 'number' ? d.changePercent : 0,
+      }));
 
-const bySym = Object.fromEntries(norm.map(r => [r.symbol, r]));
-const ordered = (list || []).map(s => bySym[s]).filter(Boolean);
+      const bySym = Object.fromEntries(norm.map(r => [r.symbol, r]));
+      const ordered = (list || []).map(s => bySym[s]).filter(Boolean);
 
-setTickerData(ordered);
+      setTickerData(ordered);
 
     } catch (e) {
       console.error('EliteTicker fetch error:', e);
@@ -184,8 +178,8 @@ setTickerData(ordered);
     }, 250);
     return () => clearTimeout(id);
   }, [searchInput]);
-  // 🔽 ADD THIS EFFECT RIGHT BELOW THE ONE ABOVE 🔽
-  // This watches the modalSearchInput and fetches suggestions for the modal’s search box.
+
+  // Modal search suggestions
   useEffect(() => {
     const q = modalSearchInput.trim();
     if (!q) {
@@ -205,12 +199,6 @@ setTickerData(ordered);
     return () => clearTimeout(id);
   }, [modalSearchInput]);
 
-  
-  // ───────────────────────────────────────────────────────────────
-  // 🔧 PATCH — Ticker Input Validation (reject non-tickers)
-  // • Accept only [A-Z0-9.-] up to 6 chars (typical US symbol shape)
-  // • Drop invalid strings (prevents “AI Trading Strategist” etc.)
-  // ───────────────────────────────────────────────────────────────
   const addSymbol = (sym) => {
     const S = (sym || '').toUpperCase().trim();
     if (!S) return;
@@ -218,9 +206,9 @@ setTickerData(ordered);
     // Allowable shapes: e.g., AAPL, BRK.B, RDS-A, MSFT, SPY
     const VALID = /^[A-Z0-9.\-]{1,6}$/;
     if (!VALID.test(S)) {
-      if (DEBUG_TICKER) console.warn('[EliteTicker] rejected non-ticker:', S);
       setSearchInput('');
       setSuggestions([]);
+      setModalSearchInput('');
       return;
     }
 
@@ -230,26 +218,20 @@ setTickerData(ordered);
 
     setSearchInput('');
     setSuggestions([]);
+    setModalSearchInput('');
+    setShowAddModal(false);
   };
-
 
   const removeSymbol = (sym) => setSymbols(prev => prev.filter(s => s !== sym));
 
-  // const canAdd = Boolean(searchInput && searchInput.trim());
-  // DEBUG: make state explicit so we can see what's happening
-const canAdd = (searchInput ?? '').trim().length > 0;
-// console.log('[EliteTicker] canAdd =', canAdd, 'searchInput =', JSON.stringify(searchInput));
-
-// 🔧 PATCH 4.1 — Debug flag (declare in JS, not inside JSX)
-const DEBUG_TICKER = false; // flip to true to show symbol chips
-
+  const canAdd = (searchInput ?? '').trim().length > 0;
 
   return (
     <div className="relative z-50 bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white py-3 overflow-hidden border-b-2 border-blue-400/40 shadow-xl">
       {/* background tint */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none z-0" />
 
-      {/* 🔧 PATCH B — Compact floating “+ Add” button */}
+      {/* Compact floating "+ Add" button */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-0">
         <div className="pointer-events-auto absolute right-2 -top-2 flex gap-2">
           <button
@@ -262,94 +244,95 @@ const DEBUG_TICKER = false; // flip to true to show symbol chips
         </div>
       </div>
 
-
       {/* Search/Add row */}
-  <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
-  {/* ORIGINAL INPUT AND BUTTON (commented out for reference)
-  <input
-    value={searchInput}
-    onChange={(e) => setSearchInput(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter') {
-        suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
-      }
-    }}
-    placeholder="Add ticker (AAPL, TSLA)…"
-    className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
-  />
-  <button
-    type="button"
-    onClick={() => addSymbol(searchInput)}
-    disabled={!canAdd}
-    className={`px-3 py-2 rounded text-sm ${
-      canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'
-    }`}
-  >
-    Add
-  </button>
-  */}
+      <div className="relative z-20 px-3 pb-2 flex items-center gap-2">
+        <input
+          value={searchInput}
+          onChange={(e) => {
+            const v = e.target.value;
+            setSearchInput(v);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
+            }
+          }}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder="Add ticker (AAPL, TSLA)…"
+          className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
+        />
 
-  {/* ENHANCED INPUT WITH DEBUG LOGGING */}
-  <input
-    value={searchInput}
-    onChange={(e) => {
-      const v = e.target.value;
-      console.log('[EliteTicker] onChange ->', JSON.stringify(v), 'len:', v.length, 'trim:', v.trim().length);
-      setSearchInput(v);
-    }}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter') {
-        console.log('[EliteTicker] Enter pressed with', JSON.stringify(searchInput));
-        suggestions[0] ? addSymbol(suggestions[0]) : addSymbol(searchInput);
-      }
-    }}
-    autoComplete="off"
-    spellCheck={false}
-    placeholder="Add ticker (AAPL, TSLA)…"
-    className="flex-1 bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm placeholder-slate-400"
-  />
+        <button
+          type="button"
+          onClick={() => {
+            addSymbol(searchInput);
+          }}
+          className={`px-3 py-2 rounded text-sm ${
+            canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
+          }`}
+        >
+          {canAdd ? 'Add' : 'Add'}
+        </button>
+      </div>
 
-  {/* ENHANCED BUTTON */}
-  <button
-    type="button"
-    onClick={() => {
-      console.log('[EliteTicker] Add clicked with', JSON.stringify(searchInput));
-      addSymbol(searchInput);
-    }}
-    className={`px-3 py-2 rounded text-sm ${
-      canAdd ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
-    }`}
-  >
-    {canAdd ? 'Add' : 'Add (debug)'}
-  </button>
-</div>
-
-
-      {/* 🔧 PATCH 4.1 — Debug Chips Toggleable with Flag */}
-
-      {DEBUG_TICKER && symbols.length > 0 && (
-        <div className="relative z-20 px-3 pb-2 flex gap-2 flex-wrap text-xs">
-          {symbols.map(s => (
-            <span
-              key={s}
-              className="px-2 py-1 bg-slate-800 border border-slate-700 rounded"
-            >
-              {s}
-            </span>
-          ))}
+      {/* Ticker management modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+          <div className="bg-slate-800 p-4 rounded-lg w-80 max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-white mb-3">Manage Tickers</h3>
+            
+            {/* Search for new tickers in the modal */}
+            <input
+              value={modalSearchInput}
+              onChange={(e) => setModalSearchInput(e.target.value)}
+              placeholder="Search ticker…"
+              className="w-full mb-2 bg-slate-700 border border-slate-600 rounded px-3 py-2 text-sm text-white placeholder-slate-400"
+            />
+            
+            {/* Modal suggestions */}
+            {modalSuggestions.length > 0 && (
+              <div className="mb-3 max-h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded">
+                {modalSuggestions.map((s) => (
+                  <div
+                    key={s}
+                    onClick={() => addSymbol(s)}
+                    className="px-3 py-2 hover:bg-slate-600 cursor-pointer text-white text-sm"
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* List current tickers with remove buttons */}
+            <div className="space-y-2 mb-3">
+              <h4 className="text-sm font-semibold text-white">Current Tickers</h4>
+              {symbols.map((sym) => (
+                <div key={sym} className="flex items-center justify-between text-white bg-slate-700 px-3 py-2 rounded">
+                  <span>{sym}</span>
+                  <button
+                    onClick={() => removeSymbol(sym)}
+                    className="px-2 py-1 text-sm text-red-400 hover:text-red-500"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            {/* Modal close button */}
+            <div className="text-right">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-
-
-      {/* Suggestions dropdown
-      {suggestions.length > 0 && (
-        <div className="absolute left-3 top-14 z-50 w-64 bg-slate-800 border border-slate-700 rounded shadow max-h-56 overflow-auto">
-          {suggestions.map(s => (
-            <div key={s} onClick={()=>addSymbol(s)} className="px-3 py-2 hover:bg-slate-700 cursor-pointer">{s}</div>
-          ))}
-        </div>
-      )} */}
 
       {/* Scrolling ticker strip */}
       <div
@@ -398,9 +381,7 @@ const DEBUG_TICKER = false; // flip to true to show symbol chips
   );
 };
 
-
-
-// 🔥 INTERACTIVE P&L CHART WITH TOUCH CONTROLS + ALL YOUR ORIGINAL CHART TYPES
+// INTERACTIVE P&L CHART WITH TOUCH CONTROLS + ALL YOUR ORIGINAL CHART TYPES
 const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetClass, strikePrice, direction }) => {
   const [touchStrike, setTouchStrike] = useState(parseFloat(strikePrice) || 700);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -410,7 +391,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
   const currentPrice = parseFloat(price) || 637;
   const premium = currentPrice * 0.05;
 
-  // 🔄 ANIMATION LOOP FOR DYNAMIC EFFECTS (from your original)
+  // ANIMATION LOOP FOR DYNAMIC EFFECTS (from your original)
   useEffect(() => {
     const interval = setInterval(() => {
       setAnimationFrame(prev => (prev + 1) % 360);
@@ -418,7 +399,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     return () => clearInterval(interval);
   }, []);
 
-  // 📈 Generate P&L curve with touch strike (ENHANCED)
+  // Generate P&L curve with touch strike (ENHANCED)
   const generatePnLCurve = useCallback(() => {
     const points = [];
     for (let i = 0; i <= 100; i++) {
@@ -436,7 +417,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     return points;
   }, [touchStrike, currentPrice, premium, strategyType]);
 
-  // 👆 Handle touch interactions
+  // Handle touch interactions
   const handleChartTouch = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = ((event.touches?.[0]?.clientX || event.clientX) - rect.left) / rect.width;
@@ -461,7 +442,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     }
   };
 
-  // 📊 OPTIONS CHART: P&L DIAGRAM (ENHANCED FROM YOUR ORIGINAL)
+  // OPTIONS CHART: P&L DIAGRAM (ENHANCED FROM YOUR ORIGINAL)
   const renderOptionsChart = () => {
     const pnlPoints = generatePnLCurve();
     const maxPnl = Math.max(...pnlPoints.map(p => p.pnl));
@@ -479,7 +460,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           onMouseLeave={() => setShowTooltip(false)}
           onTouchEnd={() => setShowTooltip(false)}
         >
-          {/* 🌊 GRADIENT BACKGROUND */}
+          {/* GRADIENT BACKGROUND */}
           <defs>
             <linearGradient id="pnlGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3"/>
@@ -495,7 +476,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             </filter>
           </defs>
 
-          {/* 📈 P&L CURVE WITH GLOW */}
+          {/* P&L CURVE WITH GLOW */}
           <motion.polyline
             fill="none"
             stroke={strategyType.toLowerCase().includes('put') ? "#ef4444" : "#22c55e"}
@@ -511,10 +492,10 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             transition={{ duration: 1, ease: "easeInOut" }}
           />
 
-          {/* 🎯 BREAKEVEN LINE */}
+          {/* BREAKEVEN LINE */}
           <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,4" />
           
-          {/* 💥 ADJUSTABLE STRIKE PRICE INDICATOR */}
+          {/* ADJUSTABLE STRIKE PRICE INDICATOR */}
           <motion.line 
             x1={((touchStrike - currentPrice * 0.5) / (currentPrice * 0.5)) * 100 + "%"} 
             y1="0" 
@@ -527,10 +508,10 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
           
-          {/* 📍 CURRENT PRICE INDICATOR */}
+          {/* CURRENT PRICE INDICATOR */}
           <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#3b82f6" strokeWidth="2" strokeDasharray="2,2" />
 
-          {/* 🎯 INTERACTIVE TOOLTIP */}
+          {/* INTERACTIVE TOOLTIP */}
           {showTooltip && tooltipData && (
             <motion.g
               initial={{ opacity: 0, scale: 0 }}
@@ -565,7 +546,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           )}
         </svg>
 
-        {/* 📊 CHART LABELS */}
+        {/* CHART LABELS */}
         <div className="absolute top-2 left-2 text-xs text-green-400 font-bold">Profit Zone</div>
         <div className="absolute bottom-8 left-2 text-xs text-red-400 font-bold">Loss Zone</div>
         <div className="absolute top-2 right-2 text-xs text-yellow-400 font-bold">
@@ -581,7 +562,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     );
   };
 
-  // 📈 STOCKS/ETF CHART: PRICE TARGETS (ENHANCED FROM YOUR ORIGINAL)
+  // STOCKS/ETF CHART: PRICE TARGETS (ENHANCED FROM YOUR ORIGINAL)
   const renderStockChart = () => {
     const targetHigh = currentPrice * (direction === 'bullish' ? 1.15 : 0.95);
     const targetLow = currentPrice * (direction === 'bullish' ? 0.95 : 1.05);
@@ -589,7 +570,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     return (
       <div className="h-48 bg-slate-700/50 rounded-lg p-4 relative overflow-hidden">
         <div className="flex items-end justify-center h-full space-x-1">
-          {/* 📊 ANIMATED PRICE BARS WITH TARGETS */}
+          {/* ANIMATED PRICE BARS WITH TARGETS */}
           {Array.from({ length: 20 }, (_, i) => {
             const height = 30 + Math.sin((animationFrame + i * 30) * 0.02) * 20 + (confidence * 40);
             const isTarget = i === 5 || i === 15;
@@ -617,32 +598,32 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           })}
         </div>
         
-        {/* 🎯 ENHANCED PRICE TARGET LABELS */}
+        {/* ENHANCED PRICE TARGET LABELS */}
         <div className="absolute top-2 left-2 text-xs">
-          <div className="text-green-400 font-bold">🎯 Target: ${targetHigh.toFixed(0)}</div>
+          <div className="text-green-400 font-bold">Target: ${targetHigh.toFixed(0)}</div>
           <div className="text-blue-400">Current: ${currentPrice}</div>
         </div>
         <div className="absolute bottom-8 left-2 text-xs">
-          <div className="text-red-400 font-bold">🛡️ Support: ${targetLow.toFixed(0)}</div>
+          <div className="text-red-400 font-bold">Support: ${targetLow.toFixed(0)}</div>
           <div className="text-yellow-400">Confidence: {(confidence * 100).toFixed(0)}%</div>
         </div>
         <div className="absolute top-2 right-2 text-xs text-slate-300">
           <div className="bg-black/50 px-2 py-1 rounded">
-            📈 {direction.toUpperCase()}
+            {direction.toUpperCase()}
           </div>
         </div>
       </div>
     );
   };
 
-  // 🏛️ BONDS CHART: YIELD CURVE (ENHANCED FROM YOUR ORIGINAL)
+  // BONDS CHART: YIELD CURVE (ENHANCED FROM YOUR ORIGINAL)
   const renderBondsChart = () => {
     const yieldCurve = [2.1, 2.3, 2.7, 3.1, 3.4, 3.6, 3.8, 4.0];
     
     return (
       <div className="h-48 bg-slate-700/50 rounded-lg p-4 relative overflow-hidden">
         <svg width="100%" height="100%" className="absolute inset-0">
-          {/* 🌊 ANIMATED BACKGROUND GRID */}
+          {/* ANIMATED BACKGROUND GRID */}
           <defs>
             <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
               <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#374151" strokeWidth="0.5"/>
@@ -650,7 +631,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" opacity="0.3"/>
 
-          {/* 📈 ANIMATED YIELD CURVE */}
+          {/* ANIMATED YIELD CURVE */}
           <motion.polyline
             fill="none"
             stroke="#8b5cf6"
@@ -665,7 +646,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             transition={{ duration: 2, ease: "easeInOut" }}
           />
           
-          {/* 📊 INTERACTIVE YIELD POINTS */}
+          {/* INTERACTIVE YIELD POINTS */}
           {yieldCurve.map((yield_, index) => {
             const x = (index / (yieldCurve.length - 1)) * 90 + 5;
             const y = ((4.5 - yield_) / 2.5) * 70 + 15;
@@ -689,9 +670,9 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </text>
         </svg>
         
-        {/* 📊 BOND METRICS */}
+        {/* BOND METRICS */}
         <div className="absolute top-2 left-2 text-xs space-y-1">
-          <div className="text-purple-400 font-bold">💎 Bond Analysis</div>
+          <div className="text-purple-400 font-bold">Bond Analysis</div>
           <div className="text-slate-300">Duration: {(confidence * 10).toFixed(1)} years</div>
           <div className="text-slate-300">Rating: AA+</div>
         </div>
@@ -699,12 +680,12 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     );
   };
 
-  // 🪙 CRYPTO CHART: VOLATILITY BANDS (ENHANCED FROM YOUR ORIGINAL)
+  // CRYPTO CHART: VOLATILITY BANDS (ENHANCED FROM YOUR ORIGINAL)
   const renderCryptoChart = () => {
     return (
       <div className="h-48 bg-slate-700/50 rounded-lg p-4 relative overflow-hidden">
         <div className="relative w-full h-full">
-          {/* 🌊 ANIMATED VOLATILITY WAVES */}
+          {/* ANIMATED VOLATILITY WAVES */}
           {Array.from({ length: 7 }, (_, i) => (
             <motion.div
               key={i}
@@ -728,7 +709,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             />
           ))}
           
-          {/* 💰 ENHANCED PRICE CENTER */}
+          {/* ENHANCED PRICE CENTER */}
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div 
               className="text-center bg-black/30 backdrop-blur-sm rounded-xl p-4"
@@ -745,14 +726,14 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
                 Vol: {(confidence * 150).toFixed(0)}%
               </div>
               <div className="text-xs text-green-400 mt-1">
-                🚀 {direction.toUpperCase()}
+                {direction.toUpperCase()}
               </div>
             </motion.div>
           </div>
           
-          {/* 🎯 CRYPTO METRICS */}
+          {/* CRYPTO METRICS */}
           <div className="absolute top-2 right-2 text-xs space-y-1 text-right">
-            <div className="text-orange-400 font-bold">₿ Crypto Analysis</div>
+            <div className="text-orange-400 font-bold">Crypto Analysis</div>
             <div className="text-slate-300">24h Vol: ${(currentPrice * 1000).toLocaleString()}</div>
             <div className="text-slate-300">Market Cap: $1.2T</div>
           </div>
@@ -761,7 +742,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     );
   };
 
-  // 🎨 MAIN CHART CONTAINER
+  // MAIN CHART CONTAINER
   return (
     <motion.div 
       className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 border border-blue-500/30 overflow-hidden"
@@ -770,7 +751,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
       transition={{ duration: 0.3 }}
     >
       <div className="text-center mb-4">
-        {/* 🏷️ ENHANCED CHART HEADER */}
+        {/* ENHANCED CHART HEADER */}
         <motion.div 
           className="text-2xl font-bold text-white"
           animate={{ scale: [1, 1.02, 1] }}
@@ -781,19 +762,19 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
         <div className="text-3xl text-green-400 font-bold">${typeof price === 'number' ? price.toFixed(2) : price}</div>
         <div className="text-sm text-slate-300 mt-1 font-semibold">{strategyType}</div>
         <div className="text-xs text-slate-400 mb-3">
-          📈 Confidence: {(confidence * 100).toFixed(1)}% • {assetClass?.toUpperCase()} • Touch to interact
+          Confidence: {(confidence * 100).toFixed(1)}% • {assetClass?.toUpperCase()} • Touch to interact
         </div>
         
-        {/* 🎯 DYNAMIC CHART BASED ON ASSET CLASS */}
+        {/* DYNAMIC CHART BASED ON ASSET CLASS */}
         {assetClass === 'options' && renderOptionsChart()}
         {(assetClass === 'equity' || assetClass === 'etf') && renderStockChart()}
         {assetClass === 'bonds' && renderBondsChart()}
         {assetClass === 'crypto' && renderCryptoChart()}
         
-        {/* 🎚️ INTERACTIVE STRIKE PRICE SLIDER (Options Only) */}
+        {/* INTERACTIVE STRIKE PRICE SLIDER (Options Only) */}
         {assetClass === 'options' && (
           <div className="mt-4 space-y-2">
-            <label className="text-xs text-slate-400 font-semibold">🎯 Adjust Strike Price:</label>
+            <label className="text-xs text-slate-400 font-semibold">Adjust Strike Price:</label>
             <motion.input
               type="range"
               min={currentPrice * 0.7}
@@ -811,7 +792,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </div>
         )}
 
-        {/* 📊 ENHANCED MINI STATS GRID */}
+        {/* ENHANCED MINI STATS GRID */}
         <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
           <motion.div 
             className="bg-slate-700/50 rounded-lg p-3 text-center border border-slate-600"
@@ -841,7 +822,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </motion.div>
         </div>
 
-        {/* 📊 OPTIONS-SPECIFIC METRICS (Enhanced) */}
+        {/* OPTIONS-SPECIFIC METRICS (Enhanced) */}
         {assetClass === 'options' && (
           <div className="mt-4 grid grid-cols-3 gap-2">
             <div className="bg-slate-700/30 rounded-lg p-2 text-center">
@@ -869,45 +850,45 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
   );
 };
 
-// 💬 MAIN ENHANCED CHAT INTERFACE - KEEPING ALL YOUR ORIGINAL FEATURES
+// MAIN ENHANCED CHAT INTERFACE - KEEPING ALL YOUR ORIGINAL FEATURES
 const EnhancedChatInterface = () => {
-  // 📨 CHAT MESSAGE STATE (Same as your original)
+  // CHAT MESSAGE STATE (Same as your original)
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'ai',
-      content: '🚀 Hi! I\'m your Elite AI trading strategist. Tell me what you believe about the market and I\'ll craft the perfect strategy!',
+      content: 'Hi! I\'m your Elite AI trading strategist. Tell me what you believe about the market and I\'ll craft the perfect strategy!',
       timestamp: new Date()
     }
   ]);
   
-  // ✍️ USER INPUT STATE
+  // USER INPUT STATE
   const [inputValue, setInputValue] = useState('');
   
-  // ⏳ LOADING STATE
+  // LOADING STATE
   const [isLoading, setIsLoading] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState({});
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 
   // Add this retry function here:
   const handleRetryMessage = (newBelief) => {
-  setInputValue(newBelief);
-};
+    setInputValue(newBelief);
+  };
   
-  // 📍 REF FOR AUTO-SCROLLING
+  // REF FOR AUTO-SCROLLING
   const messagesEndRef = useRef(null);
 
-  // 📜 AUTO-SCROLL TO BOTTOM FUNCTION
+  // AUTO-SCROLL TO BOTTOM FUNCTION
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // 🔄 AUTO-SCROLL EFFECT
+  // AUTO-SCROLL EFFECT
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // 🚀 MAIN MESSAGE SEND HANDLER (Enhanced with better error handling)
+  // MAIN MESSAGE SEND HANDLER (Enhanced with better error handling)
   const handleSend = async () => {
     if (!inputValue.trim()) return;
 
@@ -924,7 +905,7 @@ const EnhancedChatInterface = () => {
     setIsLoading(true);
 
     try {
-      console.log('🔗 API Call:', `${BACKEND_URL}/strategy/process_belief`);
+      console.log('API Call:', `${BACKEND_URL}/strategy/process_belief`);
       
       const res = await fetch(`${BACKEND_URL}/strategy/process_belief`, {
         method: 'POST',
@@ -936,29 +917,29 @@ const EnhancedChatInterface = () => {
       });
 
       const data = await res.json();
-      console.log('📥 Backend Response:', data);
+      console.log('Backend Response:', data);
 
       // Check for sentiment validation error
       if (data.error === "Strategy blocked due to sentiment misalignment") {
         const errorMessage = {
           id: Date.now() + 1,
           type: 'ai',
-          content: `🚫 ${data.reason || "Strategy blocked due to sentiment misalignment"}`,
+          content: `${data.reason || "Strategy blocked due to sentiment misalignment"}`,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorMessage]);
         return;
       }
 
-      // 🤖 CREATE ENHANCED AI RESPONSE MESSAGE
+      // CREATE ENHANCED AI RESPONSE MESSAGE
       const aiResponse = {
         id: Date.now() + 1,
         type: 'ai',
-        content: `🎯 Perfect! Based on your belief, I've crafted an elite **${data.strategy?.type || 'Strategy'}** for ${data.ticker}.`,
+        content: `Perfect! Based on your belief, I've crafted an elite **${data.strategy?.type || 'Strategy'}** for ${data.ticker}.`,
         
-        // 🎯 ENHANCED STRATEGY OBJECT WITH ALL YOUR ORIGINAL FIELDS
+        // ENHANCED STRATEGY OBJECT WITH ALL YOUR ORIGINAL FIELDS
         strategy: {
-          // 📋 BASIC STRATEGY INFO
+          // BASIC STRATEGY INFO
           type: data.strategy?.type || 'Unknown',
           ticker: data.strategy?.trade_legs?.[0]?.ticker || data.ticker || 'N/A',
           confidence: data.confidence || 0.5,
@@ -966,7 +947,7 @@ const EnhancedChatInterface = () => {
           price: data.price_info?.latest || 0,
           assetClass: data.asset_class || 'options',
           
-          // 📈 ADDITIONAL STRATEGY METADATA  
+          // ADDITIONAL STRATEGY METADATA  
           direction: data.direction || 'neutral',
           tags: data.tags || [],
           goal_type: data.goal_type || 'Unspecified',
@@ -975,7 +956,7 @@ const EnhancedChatInterface = () => {
           trade_legs: data.strategy?.trade_legs || [],
           source: data.strategy?.source || 'unknown',
           
-          // 🎯 ALL YOUR ORIGINAL DYNAMIC FIELDS
+          // ALL YOUR ORIGINAL DYNAMIC FIELDS
           strike_price: data.strike_price || data.strategy?.trade_legs?.[0]?.strike_price,
           premium: data.premium,
           break_even: data.break_even,
@@ -1010,7 +991,7 @@ const EnhancedChatInterface = () => {
       setMessages(prev => [...prev, aiResponse]);
       
     } catch (error) {
-      console.error('❌ API Error:', error);
+      console.error('API Error:', error);
       
       const errorMessage = {
         id: Date.now() + 1,
@@ -1030,7 +1011,7 @@ const EnhancedChatInterface = () => {
     }
   };
 
-  // ⌨️ ENTER KEY HANDLER
+  // ENTER KEY HANDLER
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -1038,14 +1019,14 @@ const EnhancedChatInterface = () => {
     }
   };
 
-  // ✅ RENDER DYNAMIC FIELDS (Enhanced from your original)
+  // RENDER DYNAMIC FIELDS (Enhanced from your original)
   const renderDynamicFields = (strategy) => {
     const { assetClass } = strategy;
     
     if (assetClass === 'options' && strategy.strike_price) {
       return (
         <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg border border-purple-500/30">
-          <h4 className="text-xs font-semibold text-purple-300 mb-2">💥 Options Details</h4>
+          <h4 className="text-xs font-semibold text-purple-300 mb-2">Options Details</h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div><span className="text-slate-400">Strike:</span> <span className="text-white ml-1 font-semibold">${strategy.strike_price}</span></div>
             {strategy.premium && (
@@ -1071,7 +1052,7 @@ const EnhancedChatInterface = () => {
     return null;
   };
 
-  // 👍👎 FEEDBACK SUBMISSION HANDLER (Enhanced from your original)
+  // FEEDBACK SUBMISSION HANDLER (Enhanced from your original)
   const sendFeedback = async (strategy, feedbackType) => {
     try {
       await fetch(`${BACKEND_URL}/feedback/submit_feedback`, {
@@ -1088,7 +1069,7 @@ const EnhancedChatInterface = () => {
       // Enhanced toast notification
       const toast = document.createElement('div');
       toast.className = `fixed top-20 right-4 ${feedbackType === 'good' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-xl z-50 font-bold shadow-lg`;
-      toast.textContent = `${feedbackType === 'good' ? '👍 Awesome!' : '👎 Thanks for the feedback!'} Your input helps me improve.`;
+      toast.textContent = `${feedbackType === 'good' ? 'Awesome!' : 'Thanks for the feedback!'} Your input helps me improve.`;
       document.body.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -1101,16 +1082,16 @@ const EnhancedChatInterface = () => {
     }
   };
 
-  // 🎨 MAIN COMPONENT RENDER
+  // MAIN COMPONENT RENDER
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
       
-      {/* 📊 ENHANCED STOCK TICKER AT TOP */}
+      {/* ENHANCED STOCK TICKER AT TOP */}
       <div className="fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <EliteStockTicker />
       </div>
 
-      {/* 🧠 ENHANCED HEADER WITH BRANDING */}
+      {/* ENHANCED HEADER WITH BRANDING */}
       <motion.div 
         className="fixed top-12 left-0 right-0 z-40 bg-gradient-to-r from-slate-800/95 via-slate-900/95 to-slate-800/95 backdrop-blur-sm border-b border-blue-500/30 p-4"
         initial={{ y: -50, opacity: 0 }}
@@ -1123,7 +1104,7 @@ const EnhancedChatInterface = () => {
             whileHover={{ rotate: 360, scale: 1.1 }}
             transition={{ duration: 0.5 }}
           >
-            🧠
+            <span className="text-white">AI</span>
           </motion.div>
           <div>
             <h1 className="font-bold text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -1142,7 +1123,7 @@ const EnhancedChatInterface = () => {
         </div>
       </motion.div>
 
-      {/* 💬 ENHANCED MESSAGES AREA */}
+      {/* ENHANCED MESSAGES AREA */}
       <div className="overflow-y-auto p-4 space-y-6" 
            style={{ 
              paddingTop: '150px',
@@ -1162,7 +1143,7 @@ const EnhancedChatInterface = () => {
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div className={`max-w-sm lg:max-w-lg ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
-                {/* 💭 ENHANCED MESSAGE BUBBLE */}
+                {/* ENHANCED MESSAGE BUBBLE */}
                 <motion.div
                   className={`px-6 py-4 rounded-2xl backdrop-blur-sm border ${
                     message.type === 'user'
@@ -1178,7 +1159,7 @@ const EnhancedChatInterface = () => {
                   </p>
                 </motion.div>
                 
-                {/* 🎯 ENHANCED STRATEGY CARD */}
+                {/* ENHANCED STRATEGY CARD */}
                 {message.strategy && (
                   <motion.div
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -1187,7 +1168,7 @@ const EnhancedChatInterface = () => {
                     className="mt-4"
                   >
                     <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 rounded-2xl border border-blue-500/30 overflow-hidden backdrop-blur-sm">
-                      {/* 🎯 STRATEGY HEADER - ENHANCED */}
+                      {/* STRATEGY HEADER - ENHANCED */}
                       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4">
                         <div className="flex justify-between items-center">
                           <div>
@@ -1212,13 +1193,13 @@ const EnhancedChatInterface = () => {
                             <div className={`mt-1 px-3 py-1 rounded-full text-sm font-bold ${
                               message.strategy.source === 'ml_model' ? 'bg-red-500/80' : 'bg-green-500/80'
                             } text-white`}>
-                              {message.strategy.source === 'ml_model' ? '🤖 ML' : '🧠 GPT'}
+                              {message.strategy.source === 'ml_model' ? 'ML' : 'GPT'}
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* 📊 ENHANCED KEY METRICS GRID */}
+                      {/* ENHANCED KEY METRICS GRID */}
                       <div className="p-4">
                         <div className="grid grid-cols-2 gap-3 mb-4">
                           <motion.div 
@@ -1230,8 +1211,8 @@ const EnhancedChatInterface = () => {
                               message.strategy.direction === 'bullish' ? 'text-green-400' :
                               message.strategy.direction === 'bearish' ? 'text-red-400' : 'text-yellow-400'
                             }`}>
-                              {message.strategy.direction === 'bullish' ? '📈 BULL' :
-                               message.strategy.direction === 'bearish' ? '📉 BEAR' : '⚖️ NEUTRAL'}
+                              {message.strategy.direction === 'bullish' ? 'BULL' :
+                               message.strategy.direction === 'bearish' ? 'BEAR' : 'NEUTRAL'}
                             </div>
                           </motion.div>
 
@@ -1268,14 +1249,14 @@ const EnhancedChatInterface = () => {
                           </motion.div>
                         </div>
 
-                        {/* 🎯 ENHANCED OPTIONS-SPECIFIC DATA */}
+                        {/* Dynamic Options Fields */}
                         {renderDynamicFields(message.strategy)}
 
-                        {/* 📈 ENHANCED TRADE LEGS */}
+                        {/* Trade Legs */}
                         {message.strategy.trade_legs && message.strategy.trade_legs.length > 0 && (
                           <div className="mb-4">
                             <h4 className="text-sm font-bold text-blue-400 mb-3 flex items-center">
-                              📋 Trade Actions
+                              Trade Actions
                             </h4>
                             {message.strategy.trade_legs.map((leg, idx) => (
                               <motion.div 
@@ -1300,15 +1281,15 @@ const EnhancedChatInterface = () => {
                           </div>
                         )}
 
-                        {/* 📄 ENHANCED EXPLANATION */}
+                        {/* Explanation */}
                         <div className="bg-slate-700/30 rounded-lg p-4 mb-4 border border-slate-600/50">
                           <h4 className="text-sm font-bold text-slate-200 mb-2 flex items-center">
-                            🧠 Elite AI Analysis
+                            Elite AI Analysis
                           </h4>
                           <p className="text-sm text-slate-300 leading-relaxed">{message.strategy.explanation}</p>
                         </div>
 
-                        {/* 📈 INTERACTIVE CHART COMPONENT */}
+                        {/* Interactive Chart Component */}
                         <div className="mb-4">
                           <InteractivePnLChart
                             ticker={message.strategy.ticker}
@@ -1321,115 +1302,115 @@ const EnhancedChatInterface = () => {
                           />
                         </div>
 
-                        {/* 🎮 ENHANCED ACTION BUTTONS WITH INVESTMENT FLOW */}
-{!investmentAmount[message.id] ? (
-    // Investment Amount Selection
-    <div className="space-y-4">
-      <h4 className="text-lg font-bold text-white text-center">💰 How much do you want to invest?</h4>
-      <div className="grid grid-cols-2 gap-3">
-        {[500, 1000, 2500, 5000].map(amount => (
-          <button
-            key={amount}
-            onClick={() => setInvestmentAmount(prev => ({ ...prev, [message.id]: amount }))}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 rounded-lg"
-          >
-            ${amount}
-          </button>
-        ))}
-      </div>
-      <input
-        type="number"
-        placeholder="Custom amount"
-        className="w-full bg-slate-700 text-white rounded-lg p-3"
-        onKeyPress={(e) => {
-          if (e.key === 'Enter' && e.target.value) {
-            setInvestmentAmount(prev => ({ ...prev, [message.id]: parseInt(e.target.value) }));
-          }
-        }}
-      />
-    </div>
-  ) : (
-    // Show scenarios after investment selected
-    <div className="space-y-4">
-      <div className="text-center mb-4">
-        <h4 className="text-lg font-bold text-white">Investment: ${investmentAmount[message.id]}</h4>
-      </div>
-      
-      {/* Worst/Neutral/Best scenarios */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-3 text-center">
-          <div className="text-red-400 font-bold">😰 Worst</div>
-          <div className="text-2xl font-bold text-red-400">-${investmentAmount[message.id]}</div>
-          <div className="text-xs text-red-300">Total Loss</div>
-        </div>
-        
-        <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-3 text-center">
-          <div className="text-yellow-400 font-bold">😐 Neutral</div>
-          <div className="text-2xl font-bold text-yellow-400">+${Math.round(investmentAmount[message.id] * 0.1)}</div>
-          <div className="text-xs text-yellow-300">10% gain</div>
-        </div>
-        
-        <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-3 text-center">
-          <div className="text-green-400 font-bold">🚀 Best</div>
-          <div className="text-2xl font-bold text-green-400">+${Math.round(investmentAmount[message.id] * 3)}</div>
-          <div className="text-xs text-green-300">300% gain</div>
-        </div>
-      </div>
-  
-      {/* Original action buttons */}
-      <div className="grid grid-cols-3 gap-3 mt-4">
-        <motion.button 
-          onClick={() => sendFeedback(message.strategy, 'good')}
-          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.05, y: -2 }}
-        >
-          👍 Perfect
-        </motion.button>
-        <motion.button 
-          onClick={() => sendFeedback(message.strategy, 'bad')}
-          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.05, y: -2 }}
-        >
-          👎 Improve
-        </motion.button>
-        <motion.button 
-          onClick={async () => {
-            try {
-              const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: 'demo_user',
-                    strategy_data: {
-                      ...message.strategy,
-                      investment_amount: investmentAmount[message.id]
-                    },
-                    belief: inputValue || 'User strategy execution'
-                  })
-              });
-              
-              const result = await response.json();
-              
-              if (result.status === 'success') {
-                alert(`Trade executed: ${result.message}`);
-              } else {
-                alert(`Trade failed: ${result.message}`);
-              }
-            } catch (error) {
-              alert(`Error: ${error.message}`);
-            }
-          }}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.05, y: -2 }}
-        >
-          🚀 Execute
-        </motion.button>
-      </div>
-    </div>
-  )}
+                        {/* Enhanced Action Buttons with Investment Flow */}
+                        {!investmentAmount[message.id] ? (
+                          // Investment Amount Selection
+                          <div className="space-y-4">
+                            <h4 className="text-lg font-bold text-white text-center">How much do you want to invest?</h4>
+                            <div className="grid grid-cols-2 gap-3">
+                              {[500, 1000, 2500, 5000].map(amount => (
+                                <button
+                                  key={amount}
+                                  onClick={() => setInvestmentAmount(prev => ({ ...prev, [message.id]: amount }))}
+                                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 rounded-lg"
+                                >
+                                  ${amount}
+                                </button>
+                              ))}
+                            </div>
+                            <input
+                              type="number"
+                              placeholder="Custom amount"
+                              className="w-full bg-slate-700 text-white rounded-lg p-3"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && e.target.value) {
+                                  setInvestmentAmount(prev => ({ ...prev, [message.id]: parseInt(e.target.value) }));
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          // Show scenarios after investment selected
+                          <div className="space-y-4">
+                            <div className="text-center mb-4">
+                              <h4 className="text-lg font-bold text-white">Investment: ${investmentAmount[message.id]}</h4>
+                            </div>
+                            
+                            {/* Worst/Neutral/Best scenarios */}
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-3 text-center">
+                                <div className="text-red-400 font-bold">Worst</div>
+                                <div className="text-2xl font-bold text-red-400">-${investmentAmount[message.id]}</div>
+                                <div className="text-xs text-red-300">Total Loss</div>
+                              </div>
+                              
+                              <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-3 text-center">
+                                <div className="text-yellow-400 font-bold">Neutral</div>
+                                <div className="text-2xl font-bold text-yellow-400">+${Math.round(investmentAmount[message.id] * 0.1)}</div>
+                                <div className="text-xs text-yellow-300">10% gain</div>
+                              </div>
+                              
+                              <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-3 text-center">
+                                <div className="text-green-400 font-bold">Best</div>
+                                <div className="text-2xl font-bold text-green-400">+${Math.round(investmentAmount[message.id] * 3)}</div>
+                                <div className="text-xs text-green-300">300% gain</div>
+                              </div>
+                            </div>
+                      
+                            {/* Original action buttons */}
+                            <div className="grid grid-cols-3 gap-3 mt-4">
+                              <motion.button 
+                                onClick={() => sendFeedback(message.strategy, 'good')}
+                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
+                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.05, y: -2 }}
+                              >
+                                Perfect
+                              </motion.button>
+                              <motion.button 
+                                onClick={() => sendFeedback(message.strategy, 'bad')}
+                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
+                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.05, y: -2 }}
+                              >
+                                Improve
+                              </motion.button>
+                              <motion.button 
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                          user_id: 'demo_user',
+                                          strategy_data: {
+                                            ...message.strategy,
+                                            investment_amount: investmentAmount[message.id]
+                                          },
+                                          belief: inputValue || 'User strategy execution'
+                                        })
+                                    });
+                                    
+                                    const result = await response.json();
+                                    
+                                    if (result.status === 'success') {
+                                      alert(`Trade executed: ${result.message}`);
+                                    } else {
+                                      alert(`Trade failed: ${result.message}`);
+                                    }
+                                  } catch (error) {
+                                    alert(`Error: ${error.message}`);
+                                  }
+                                }}
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
+                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.05, y: -2 }}
+                              >
+                                Execute
+                              </motion.button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -1439,7 +1420,7 @@ const EnhancedChatInterface = () => {
           ))}
         </AnimatePresence>
 
-        {/* ⏳ ENHANCED LOADING INDICATOR */}
+        {/* Loading Indicator */}
         {isLoading && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1473,19 +1454,18 @@ const EnhancedChatInterface = () => {
         <div ref={messagesEndRef} />
       </div>
 
-     {/* 💬 MOBILE-OPTIMIZED INPUT AREA - WhatsApp/iMessage Style */}
-     <motion.div 
+      {/* Mobile-Optimized Input Area */}
+      <motion.div 
         className="fixed bottom-16 left-0 right-0 z-30 px-3 pb-2"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {/* 🎨 ROUNDED PILL CONTAINER - Professional mobile UX */}
         <div className="bg-slate-800/95 backdrop-blur-md rounded-full border border-slate-700/50 shadow-xl">
           <div className="flex items-center px-4 py-3 gap-3">
             
-            {/* 🎤 VOICE INPUT BUTTON - Compact design */}
+            {/* Voice Input Button */}
             <motion.button
               type="button"
               onClick={() => {
@@ -1501,14 +1481,13 @@ const EnhancedChatInterface = () => {
               className="w-8 h-8 bg-purple-500 hover:bg-purple-600 text-white rounded-full flex items-center justify-center transition-colors"
               whileTap={{ scale: 0.95 }}
             >
-              {/* 🎙️ MICROPHONE ICON */}
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                 <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
               </svg>
             </motion.button>
             
-            {/* ✍️ TEXT INPUT FIELD - Single line, flex-1 for responsive width */}
+            {/* Text Input Field */}
             <input
               type="text"
               value={inputValue}
@@ -1519,7 +1498,7 @@ const EnhancedChatInterface = () => {
               disabled={isLoading}
             />
             
-            {/* 🚀 SEND BUTTON - Inside input area, no overlap */}
+            {/* Send Button */}
             <motion.button
               onClick={handleSend}
               disabled={!inputValue.trim() || isLoading}
@@ -1530,7 +1509,6 @@ const EnhancedChatInterface = () => {
               }`}
               whileTap={{ scale: 0.95 }}
             >
-              {/* ⏳ LOADING SPINNER OR SEND ICON */}
               {isLoading ? (
                 <svg className="w-4 h-4 animate-spin" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/>
@@ -1554,10 +1532,10 @@ const EnhancedChatInterface = () => {
         />
       )}
      
-      {/* 📱 PERSISTENT BOTTOM NAVIGATION */}
+      {/* Persistent Bottom Navigation */}
       <BottomNavigation 
-      onPortfolioClick={() => setShowPortfolioModal(true)}
-    />
+        onPortfolioClick={() => setShowPortfolioModal(true)}
+      />
     </div>
   );
 };

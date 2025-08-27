@@ -247,11 +247,19 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         if is_tradable_symbol(tt):
             print("🎯 Bond asset class → TLT")
             return tt
+            
     elif asset_class == "crypto":
         # NOTE: 'BTC' won't be tradable in Alpaca equities universe; leave to final guard
         tt = "BTC"
         print("🎯 Crypto asset class → BTC (will be validated later)")
         return tt
+
+    elif asset_class == "etf":
+        tt = "SPY"
+        if is_tradable_symbol(tt):
+            print("🎯 ETF asset class → SPY")
+            return tt
+    
     elif asset_class == "equity":
         tt = "SPY"
         if is_tradable_symbol(tt):
