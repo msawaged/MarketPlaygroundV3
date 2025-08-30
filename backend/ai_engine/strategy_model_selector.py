@@ -10,7 +10,7 @@ It centralizes all belief-to-strategy routing logic to keep ai_engine.py clean.
 """
 
 import json
-from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_gpt4
+from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_validation
 from backend.ai_engine.ml_strategy_bridge import predict_strategy_with_ml
 
 
@@ -30,7 +30,7 @@ def decide_strategy_engine(belief: str, metadata: dict, method: str = "hybrid") 
         dict: strategy dictionary
     """
     if method == "gpt":
-        return generate_strategy_with_gpt4(belief)
+        return generate_strategy_with_validation(belief, metadata.get("direction", "neutral"))
 
 
     elif method == "ml":
@@ -38,13 +38,14 @@ def decide_strategy_engine(belief: str, metadata: dict, method: str = "hybrid") 
 
     elif method == "hybrid":
         try:
-            strategy = generate_strategy_with_gpt4(belief)
+            strategy = generate_strategy_with_validation(belief, metadata.get("direction", "neutral"))
             if strategy and isinstance(strategy, dict):
                 return strategy
             raise ValueError("GPT returned invalid structure")
         except Exception as e:
-            print(f"[⚠️ Fallback] GPT failed, using ML model: {e}")
-            return predict_strategy_with_ml(belief, metadata)
+            print(f"🚫 PRODUCTION MODE: ML fallback disabled - {e}")
+            print(f"💡 Strategy validation blocked misaligned strategy - this is expected behavior")
+            return None
 
     else:
         raise ValueError(f"Invalid strategy method: {method}")

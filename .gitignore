@@ -104,3 +104,7 @@ backend/*.pkl
 
 # Redundant
 __pycache__/
+
+# Training metrics JSON
+backend/*_model_metrics.json
+backend/logs/metrics_*.json

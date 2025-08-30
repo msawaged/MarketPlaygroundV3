@@ -1,30 +1,31 @@
 {
   "name": "marketplayground-frontend",
- "version": "1.0.0",
- "private": true,
- "scripts": {
- "dev": "vite",
- "build": "vite build",
- "preview": "vite preview"
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
- "dependencies": {
- "@react-three/drei": "9.122.0",
- "@react-three/fiber": "8.18.0",
- "chart.js": "^4.5.0",
- "framer-motion": "11.18.2",
- "ngrok": "5.0.0-beta.2",
- "react": "18.3.1",
- "react-chartjs-2": "5.3.0",
- "react-dom": "18.3.1",
- "react-icons": "^5.5.0",
- "react-router-dom": "7.7.1",
- "three": "0.179.1"
+  "dependencies": {
+    "@react-three/drei": "9.122.0",
+    "@react-three/fiber": "8.18.0",
+    "chart.js": "^4.5.0",
+    "framer-motion": "11.18.2",
+    "lucide-react": "^0.539.0",
+    "ngrok": "5.0.0-beta.2",
+    "react": "18.3.1",
+    "react-chartjs-2": "5.3.0",
+    "react-dom": "18.3.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "7.7.1",
+    "three": "0.179.1"
   },
- "devDependencies": {
- "@vitejs/plugin-react": "4.7.0",
- "autoprefixer": "10.4.21",
- "postcss": "8.5.6",
- "tailwindcss": "3.4.17",
- "vite": "4.5.14"
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.7.0",
+    "autoprefixer": "10.4.21",
+    "postcss": "8.5.6",
+    "tailwindcss": "3.4.17",
+    "vite": "4.5.14"
   }
- }
+}

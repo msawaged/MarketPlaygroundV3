@@ -29,7 +29,8 @@ print("📦 [4] Middleware, Pydantic, dotenv loaded")
 load_dotenv()
 print("🌿 [5] .env variables loaded")
 
-
+# 📊 PERFORMANCE MONITORING: Import decorator to track API response times and errors
+from backend.routes.debug_router import log_response_time
 
 # === Local imports ===
 print("📦 [6] Starting local backend imports")
@@ -57,7 +58,16 @@ from backend.routes.pnl_router import router as pnl_router
 from backend.routes.market_router import router as market_router
 from backend.routes.analytics_router import router as analytics_router
 from backend.routes.debug_router import router as debug_router
+from backend.routes.debug_router import router as debug_router
+from backend.routes.ibkr_router import router as ibkr_router
+from backend.routes.trade_confirmation_router import router as trade_confirmation_router  # Trade confirmation for live money safety
+from backend.routes.paper_trading_router import router as paper_trading_router  # ← ADD THIS LINE
 from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoints (test connection, real-time data, etc.)
+from backend.routes.market_events_router import router as market_events_router  # Market events and upcoming catalysts
+from backend.routes.alpaca_probe_router import ROUTER as alpaca_probe_router
+from backend.routes.market_ticker_router import ROUTER as market_ticker_router
+
+
 print("✅ [9] Router imports finished")
 
 
@@ -108,22 +118,28 @@ if not os.path.exists(strategy_csv_path):
 
 # === Register routers ===
 
-app.include_router(auth_router,              prefix="/auth",      tags=["Auth"])
-app.include_router(feedback_router,          prefix="/feedback",  tags=["Feedback"])
-app.include_router(feedback_predictor,       prefix="/predict",   tags=["Predictor"])
-app.include_router(portfolio_router,         prefix="/portfolio", tags=["Portfolio"])
-app.include_router(strategy_router,          prefix="/strategy",  tags=["Strategy"])
-app.include_router(strategy_logger_router,   prefix="/strategy",  tags=["Strategy Logger"])
-app.include_router(news_router,              prefix="/news",      tags=["News"])
-app.include_router(hot_trades_router,                             tags=["Hot Trades"])
-app.include_router(basket_router,            prefix="/basket",    tags=["Asset Baskets"])  # ✅ Basket routes now live
-app.include_router(alpaca_router,            prefix="/alpaca",    tags=["Alpaca"])
-app.include_router(execution_router,         prefix="/alpaca",    tags=["Execution"])
-app.include_router(pnl_router,               prefix="/pnl",       tags=["PnL"])
-app.include_router(market_router,            prefix="/market",    tags=["Market"])
-app.include_router(analytics_router,         prefix="/analytics", tags=["Analytics"])
-app.include_router(debug_router,             prefix="/debug",     tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
-app.include_router(ibkr_router,              prefix="/ibkr",      tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
+app.include_router(auth_router,              prefix="/auth",              tags=["Auth"])
+app.include_router(feedback_router,          prefix="/feedback",          tags=["Feedback"])
+app.include_router(feedback_predictor,       prefix="/predict",           tags=["Predictor"])
+app.include_router(portfolio_router,         prefix="/portfolio",         tags=["Portfolio"])
+app.include_router(strategy_router,          prefix="/strategy",          tags=["Strategy"])
+app.include_router(strategy_logger_router,   prefix="/strategy",          tags=["Strategy Logger"])
+app.include_router(news_router,              prefix="/news",              tags=["News"])
+app.include_router(hot_trades_router,                                     tags=["Hot Trades"])
+app.include_router(basket_router,            prefix="/basket",            tags=["Asset Baskets"])  # ✅ Basket routes now live
+app.include_router(alpaca_router,            prefix="/alpaca",            tags=["Alpaca"])
+app.include_router(execution_router,         prefix="/alpaca",            tags=["Execution"])
+app.include_router(pnl_router,               prefix="/pnl",               tags=["PnL"])
+app.include_router(market_router,            prefix="/market",            tags=["Market"])
+app.include_router(analytics_router,         prefix="/analytics",         tags=["Analytics"])
+app.include_router(debug_router,             prefix="/debug",             tags=["Debug"])  # ✅ Fixed: routes now accessible under /debug/*
+app.include_router(ibkr_router,              prefix="/ibkr",              tags=["IBKR"])  # ✅ Mount IBKR routes under /ibkr with Swagger tag
+app.include_router(paper_trading_router,     prefix="/api/paper-trading", tags=["Paper Trading"])  # ← ADD THIS LINE
+app.include_router(trade_confirmation_router,                             tags=["Trade Confirmation"])  # Live trading safety barrier
+app.include_router(market_events_router)  # Market events calendar and event-driven strategies
+app.include_router(alpaca_probe_router)
+app.include_router(market_ticker_router)
+
 
 print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")
 
@@ -149,8 +165,18 @@ def test_env():
     openai_key = os.getenv("OPENAI_API_KEY")
     return {"OPENAI_API_KEY": "Set" if openai_key else "Not Set"}
 
+# 📊 # 📊 PERFORMANCE MONITORING: Manual implementation 
 @app.post("/strategy/process_belief")
 async def strategy_process_belief(request: Request):
+    print("🚨 STRATEGY FUNCTION CALLED - THIS SHOULD ALWAYS PRINT!")  # ← ADD THIS LINE
+    print("🔧 [DEBUG] Strategy function called - starting timer")
+    
+    # Import metrics from debug router
+    from backend.routes.debug_router import METRICS
+    import time
+    
+    start = time.perf_counter()
+    
     try:
         body = await request.json()
         belief = body.get("belief")
@@ -162,9 +188,32 @@ async def strategy_process_belief(request: Request):
 
         # 🔥 CALL YOUR REAL AI ENGINE - NO MORE DUMMY SHIT!
         result = run_ai_engine(belief, user_id, risk_profile)
+        
+        # 📊 LOG SUCCESS METRICS
+        duration = (time.perf_counter() - start) * 1000
+        METRICS["response_times"].append(duration)
+        METRICS["logs"].append({
+            "level": "SUCCESS",
+            "message": f"strategy_process_belief completed - {duration:.0f}ms",
+            "duration": f"{duration:.0f}ms",
+            "timestamp": time.strftime("%H:%M:%S")
+        })
+        
+        print(f"🔧 [DEBUG] SUCCESS! Duration: {duration:.0f}ms, Total logs: {len(METRICS['logs'])}")
         return result
 
     except Exception as e:
+        # 📊 LOG ERROR METRICS  
+        duration = (time.perf_counter() - start) * 1000
+        METRICS["error_counts"][type(e).__name__] += 1
+        METRICS["logs"].append({
+            "level": "ERROR",
+            "message": f"strategy_process_belief failed: {str(e)[:50]}",
+            "duration": f"{duration:.0f}ms", 
+            "timestamp": time.strftime("%H:%M:%S")
+        })
+        
+        print(f"🔧 [DEBUG] ERROR! {type(e).__name__}: {str(e)[:50]}")
         print("\n❌ ERROR in /strategy/process_belief:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

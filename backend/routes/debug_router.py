@@ -7,12 +7,81 @@ import subprocess
 import requests
 import csv
 import traceback  # ✅ FIXED: Added missing import
+import time
+from collections import defaultdict, deque
+from functools import wraps
 from collections import Counter
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi import Request
 
 router = APIRouter()
+
+# 📊 Global metrics storage for real-time monitoring
+METRICS = {
+    "response_times": deque(maxlen=100),
+    "error_counts": defaultdict(int),
+    "strategies": {"good": deque(maxlen=50), "bad": deque(maxlen=50)},
+    "logs": deque(maxlen=200)
+}
+
+# 🎯 SIMPLE Response Time Decorator (works with FastAPI)
+def log_response_time(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        print(f"🔧 [DEBUG] Decorator triggered for: {func.__name__}")
+        start = time.perf_counter()
+        try:
+            result = await func(*args, **kwargs)
+            duration = (time.perf_counter() - start) * 1000
+            
+            METRICS["response_times"].append(duration)
+            METRICS["logs"].append({
+                "level": "SUCCESS",
+                "message": f"{func.__name__} - {duration:.0f}ms",
+                "duration": f"{duration:.0f}ms", 
+                "timestamp": time.strftime("%H:%M:%S")
+            })
+            
+            print(f"🔧 [DEBUG] Success! Duration: {duration:.0f}ms, Logs: {len(METRICS['logs'])}")
+            return result
+            
+        except Exception as e:
+            duration = (time.perf_counter() - start) * 1000
+            METRICS["error_counts"][type(e).__name__] += 1
+            METRICS["logs"].append({
+                "level": "ERROR",
+                "message": f"{func.__name__} failed: {str(e)[:50]}", 
+                "duration": f"{duration:.0f}ms",
+                "timestamp": time.strftime("%H:%M:%S")
+            })
+            print(f"🔧 [DEBUG] Error! {type(e).__name__}: {str(e)[:50]}")
+            raise
+            
+    return wrapper
+
+# 📊 NEW ENDPOINT: Real-time metrics for frontend
+@router.get("/logs/latest")
+async def get_latest_logs():
+    response_times = list(METRICS["response_times"])
+    avg_response = sum(response_times) / len(response_times) if response_times else 0
+    total_requests = len(response_times)
+    error_count = sum(METRICS["error_counts"].values())
+    success_rate = ((total_requests - error_count) / total_requests * 100) if total_requests > 0 else 100
+    
+    return {
+        "logs": list(METRICS["logs"]),
+        "metrics": {
+            "avgResponseTime": avg_response / 1000,  # Convert to seconds
+            "errorCount": error_count,
+            "successRate": success_rate,
+            "errorTypes": dict(METRICS["error_counts"]),
+            "strategies": {
+                "good": list(METRICS["strategies"]["good"]),
+                "bad": list(METRICS["strategies"]["bad"])
+            }
+        }
+    }
 
 # === 📁 File paths used by diagnostics and logs ===
 LOGS_DIR = os.path.join("backend", "logs")
