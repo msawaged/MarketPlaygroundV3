@@ -113,3 +113,9 @@ backend/*.joblib
 backend/news_beliefs.csv
 backend/news_ingestor_metrics.json
 backend/news_ingestor_state.json
+
+# =======================
+# 🗄️ DATABASES
+# =======================
+*.db
+*.sqlite3
