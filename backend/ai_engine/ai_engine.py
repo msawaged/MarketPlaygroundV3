@@ -17,7 +17,7 @@ from openai import OpenAI, OpenAIError
 import openai
 from backend.ai_engine.strategy_explainer import generate_strategy_explainer
 
-print("🔍 ai_engine.py: All imports finished.")
+print("📋 ai_engine.py: All imports finished.")
 
 
 from typing import Optional
@@ -75,7 +75,7 @@ else:
     }
 
 
- # === 🔁 Lazy Load Helper: Create OpenAI client only when needed ===
+ # === 📋 Lazy Load Helper: Create OpenAI client only when needed ===
 client = None
 print("✅ [Debug] OpenAI client set to None (lazy init ready)")
 
@@ -208,6 +208,360 @@ def parse_strategy_json(payload):
     raise TypeError("parse_strategy_json received unsupported type")
 
 
+def _guard_spurious_ticker(belief_text: str, ticker: str) -> str:
+    """Prevent English words like 'next', 'on', 'all', 's' from slipping in as tickers.
+    If a suspected stopword ticker is detected and the belief wasn't explicitly specifying the symbol,
+    default to SPY to keep behavior safe and consistent with belief_parser rules.
+    """
+    try:
+        b = f" {belief_text.lower()} "
+        t = (ticker or "").strip().upper()
+        STOPWORD_TICKERS = {"NEXT", "S", "ON", "ALL"}
+        if t in STOPWORD_TICKERS:
+            print(f"[GUARD] Spurious ticker '{t}' detected from language; defaulting to SPY")
+            return "SPY"
+        return t or "SPY"
+    except Exception as e:
+        print(f"[GUARD ERROR] {e}")
+        return ticker or "SPY"
+
+
+def _maybe_nudge_to_bull_call_spread(strategy: dict, belief: str, price_info: dict) -> dict:
+    """
+    If belief contains an explicit % and timeframe (weeks/months/quarter) and the current
+    strategy is a single long call, nudge to a bull call spread using spot-based strikes.
+    SANE + SURGICAL: only adjusts if it looks like underperformance risk.
+    """
+    try:
+        if not isinstance(strategy, dict):
+            return strategy
+
+        s_type = (strategy.get("type") or "").lower()
+        legs = strategy.get("trade_legs") or []
+        if "call option" not in s_type or not legs:
+            return strategy  # only touch simple long-call outputs
+
+        import re
+        pct = None
+        m = re.search(r'(\d{1,2})\s*%|\~\s*(\d{1,2})\s*%', belief)
+        if m:
+            pct = float(m.group(1) or m.group(2))
+        short_tf = re.search(r'(week|weeks|month|months|quarter)', belief.lower()) is not None
+        if not (pct and short_tf):
+            return strategy
+
+        spot_raw = price_info.get("latest")
+        try:
+            spot = float(spot_raw)
+        except Exception:
+            return strategy
+        if spot <= 0:
+            return strategy
+
+        if not (len(legs) == 1 and isinstance(legs[0], dict) and legs[0].get("option_type","").lower()=="call"):
+            return strategy
+
+        def round_like(underlying):
+            return 5 if underlying >= 100 else 1
+
+        step = round_like(spot)
+        def round_to(v, step):
+            return step * round(float(v)/step)
+
+        buy_strike = round_to(spot, step)
+        target = spot * (1 + min(max(pct, 3), 20)/100.0)  # clamp 3%..20%
+        sell_strike = max(buy_strike + step, round_to(target, step))
+
+        expiry = strategy.get("expiration") or legs[0].get("expiration") or "TBD"
+        sym = legs[0].get("ticker") or "SPY"
+
+        new_legs = [
+            {"action": "Buy to Open", "ticker": sym, "option_type": "Call", "strike_price": str(buy_strike), "expiration": expiry},
+            {"action": "Sell to Open", "ticker": sym, "option_type": "Call", "strike_price": str(sell_strike), "expiration": expiry},
+        ]
+        out = {**strategy, "type": "Bull Call Spread", "trade_legs": new_legs}
+        if "target_return" in out:
+            out["target_return"] = "20-40%"
+        if "max_loss" in out:
+            out["max_loss"] = "Net Debit"
+        return out
+    except Exception as e:
+        print(f"[NUDGE ERROR] {e}")
+        return strategy
+
+ # === 🛠️ Helper: Nudge long put → Bear Put Spread (short timeframe + % drop) ===
+def _maybe_nudge_to_bear_put_spread(strategy: dict, belief: str, price_info: dict) -> dict:
+    """
+    If belief contains an explicit % drop and short timeframe (weeks/months)
+    and current strategy is a single long put, nudge to a bear put spread using spot-based strikes.
+    """
+    try:
+        if not isinstance(strategy, dict):
+            return strategy
+
+        s_type = (strategy.get("type") or "").lower()
+        legs = strategy.get("trade_legs") or []
+        # only touch simple long-put outputs (1 leg, PUT)
+        if "put option" not in s_type or len(legs) != 1:
+            return strategy
+        leg = legs[0] if isinstance(legs[0], dict) else {}
+        if str(leg.get("option_type", "")).lower() != "put":
+            return strategy
+
+        import re
+        pct = None
+        m = re.search(r'(\d{1,2})\s*%|\~\s*(\d{1,2})\s*%', belief)
+        if m:
+            pct = float(m.group(1) or m.group(2))
+        short_tf = re.search(r'(week|weeks|month|months)', belief.lower()) is not None
+        if not (pct and short_tf):
+            return strategy
+
+        spot_raw = price_info.get("latest")
+        try:
+            spot = float(spot_raw)
+        except Exception:
+            return strategy
+        if spot <= 0:
+            return strategy
+
+        # Round strikes sensibly (5 for large prices like NVDA/SPY; else 1)
+        step = 5 if spot >= 100 else 1
+        def round_to(v, step): 
+            return step * round(float(v)/step)
+
+        # Bear put: BUY higher strike (near spot), SELL lower strike (near target drop)
+        buy_strike  = round_to(spot, step)
+        drop_clamped = max(3.0, min(20.0, pct))  # clamp 3–20%
+        target_down = spot * (1 - drop_clamped/100.0)
+        sell_strike = min(buy_strike - step, round_to(target_down, step))
+
+        sym    = leg.get("ticker") or "NVDA"
+        expiry = strategy.get("expiration") or leg.get("expiration") or "TBD"
+
+        new_legs = [
+            {"action": "Buy to Open",  "ticker": sym, "option_type": "Put", "strike_price": str(buy_strike),  "expiration": expiry},
+            {"action": "Sell to Open", "ticker": sym, "option_type": "Put", "strike_price": str(sell_strike), "expiration": expiry},
+        ]
+
+        out = {**strategy, "type": "Bear Put Spread", "trade_legs": new_legs}
+        out["max_loss"] = "Net Debit"
+        out["target_return"] = out.get("target_return") or "20-40%"
+        return out
+    except Exception as e:
+        print(f"[BEAR NUDGE ERROR] {e}")
+        return strategy
+       
+
+# === 🛠️ Helper: Sanitize Spread Strikes ===
+def _sanitize_spread_strikes(strategy: dict, belief: str, price_info: dict) -> dict:
+    """
+    If we already have a call spread but strikes are clearly unrealistic vs spot
+    (e.g., SPY ~645 but strikes are 19/20), recalc to sane spot-based levels.
+    """
+    try:
+        if not isinstance(strategy, dict):
+            return strategy
+        s_type = (strategy.get("type") or "").lower()
+        legs = strategy.get("trade_legs") or []
+        if "spread" not in s_type or len(legs) != 2:
+            return strategy
+
+        def _to_float(v):
+            try:
+                return float(str(v).replace("$","").strip())
+            except Exception:
+                return None
+
+        call_legs = [leg for leg in legs if isinstance(leg, dict) and str(leg.get("option_type","")).lower()=="call"]
+        if len(call_legs) != 2:
+            return strategy
+
+        s1 = _to_float(call_legs[0].get("strike_price"))
+        s2 = _to_float(call_legs[1].get("strike_price"))
+        if s1 is None or s2 is None:
+            return strategy
+
+        spot_raw = price_info.get("latest")
+        try:
+            spot = float(spot_raw)
+        except Exception:
+            return strategy
+        if spot <= 0:
+            return strategy
+
+        low_thresh = 0.5 * spot
+        high_thresh = 5.0 * spot
+        unrealistic = (s1 < low_thresh and s2 < low_thresh) or (s1 > high_thresh and s2 > high_thresh)
+        if not unrealistic:
+            return strategy
+
+        import re
+        pct = 5.0
+        m = re.search(r'(\d{1,2})\s*%|\~\s*(\d{1,2})\s*%', str(belief))
+        if m:
+            try:
+                pct = float(m.group(1) or m.group(2))
+            except Exception:
+                pass
+        pct = max(3.0, min(20.0, pct))
+
+        def step_for(x): return 5 if x >= 100 else 1
+        step = step_for(spot)
+        def round_to(v, step): return step * round(float(v)/step)
+
+        buy = round_to(spot, step)
+        sell = max(buy + step, round_to(spot * (1.0 + pct/100.0), step))
+
+        sym = call_legs[0].get("ticker") or call_legs[1].get("ticker") or "SPY"
+        expiry = strategy.get("expiration") or call_legs[0].get("expiration") or call_legs[1].get("expiration") or "TBD"
+
+        new_legs = [
+            {"action": "Buy to Open",  "ticker": sym, "option_type": "Call", "strike_price": str(buy),  "expiration": expiry},
+            {"action": "Sell to Open", "ticker": sym, "option_type": "Call", "strike_price": str(sell), "expiration": expiry},
+        ]
+        out = {**strategy, "trade_legs": new_legs}
+
+        if "bull" not in s_type and "call" in s_type:
+            out["type"] = "Bull Call Spread"
+        if "max_loss" in out:
+            out["max_loss"] = "Net Debit"
+        if "target_return" in out:
+            out["target_return"] = "20-40%"
+
+        print(f"[SANITIZE] Spread strikes corrected from {s1}/{s2} to {buy}/{sell} (spot ~ {spot})")
+        return out
+    except Exception as e:
+        print(f"[SANITIZE ERROR] {e}")
+        return strategy
+
+
+# === 🛠️ Helper: Normalize Bear Put Spread Type + Explanation ===
+def _normalize_bear_put_spread(strategy: dict) -> dict:
+    """
+    If the strategy is a 2-leg put spread, normalize its type to 'Bear Put Spread'
+    and fix key fields/explanation to match puts (not calls).
+    """
+    try:
+        if not isinstance(strategy, dict):
+            return strategy
+        legs = strategy.get("trade_legs") or []
+        if len(legs) != 2:
+            return strategy
+
+        # Both legs must be puts
+        def _is_put(leg):
+            return isinstance(leg, dict) and str(leg.get("option_type", "")).lower() == "put"
+
+        put_legs = [leg for leg in legs if _is_put(leg)]
+        if len(put_legs) != 2:
+            return strategy
+
+        # Extract strikes
+        def _to_f(x):
+            try:
+                return float(str(x).replace("$", "").strip())
+            except Exception:
+                return None
+
+        s1 = _to_f(put_legs[0].get("strike_price"))
+        s2 = _to_f(put_legs[1].get("strike_price"))
+        if s1 is None or s2 is None:
+            return strategy
+
+        sym = put_legs[0].get("ticker") or put_legs[1].get("ticker") or "?"
+        lo, hi = sorted([s1, s2])  # bear put typically: BUY higher, SELL lower
+        out = {**strategy}
+
+        # Normalize type/labels
+        out["type"] = "Bear Put Spread"
+        # Economics text
+        out["max_loss"] = "Net Debit"
+        out["target_return"] = out.get("target_return") or "20-40%"
+
+        # Clean explanation to match puts
+        out["explanation"] = f"Bear Put Spread on {sym} between {hi} and {lo}. Limits loss to net debit and caps profit at the spread width. Profits if price trends down toward the lower strike by expiry."
+
+        return out
+    except Exception as e:
+        print(f"[PUT NORMALIZE ERROR] {e}")
+        return strategy
+
+
+# === 🏷️ Helper: Infer Tags From Final Strategy ===
+def _infer_tags_from_strategy(strategy: dict, direction: str) -> list:
+    tl = " ".join(str(leg).lower() for leg in strategy.get("trade_legs", []))
+    st = (strategy.get("type") or "").lower()
+    tags = []
+    if "spread" in st or "spread" in tl:
+        if "call" in tl:
+            tags.append("bull call spread" if direction == "bullish" else "bear call spread")
+        elif "put" in tl:
+            tags.append("bear put spread" if direction == "bearish" else "bull put spread")
+        else:
+            tags.append("spread")
+    elif "call" in st:
+        tags.append("long call" if "buy" in tl else "call")
+    elif "put" in st:
+        tags.append("long put" if "buy" in tl else "put")
+    elif "equity" in st or "stock" in st:
+        tags.append("stock")
+    elif "straddle" in st or "strangle" in st:
+        tags.append("neutral")
+    return tags
+
+# === 🧼 Helper: Sanitize explanation to match final strategy ===
+def _sanitize_explanation(strategy: dict, price_info: dict) -> str:
+    """
+    Rewrite explanation so it matches the FINAL legs/type.
+    Detects Call-vs-Put spreads and names them correctly.
+    """
+    try:
+        expl = strategy.get("explanation", "")
+        legs = strategy.get("trade_legs", [])
+        st = (strategy.get("type") or "").lower()
+        if not legs or len(legs) not in (1, 2):
+            return expl
+
+        # Identify leg types
+        def _leg_type(l):
+            return str(l.get("option_type", "")).lower() if isinstance(l, dict) else ""
+
+        calls = [l for l in legs if _leg_type(l) == "call"]
+        puts  = [l for l in legs if _leg_type(l) == "put"]
+
+        # One-leg cases: leave original text
+        if len(legs) == 1:
+            return expl
+
+        # Two-leg spreads
+        if len(legs) == 2 and (calls or puts):
+            s1 = legs[0].get("strike_price")
+            s2 = legs[1].get("strike_price")
+            sym = legs[0].get("ticker") or legs[1].get("ticker") or "?"
+            lo, hi = (s1, s2)
+
+            if len(calls) == 2:
+                label = "Bull Call Spread"
+            elif len(puts) == 2:
+                label = "Bear Put Spread"
+                try:
+                    f1, f2 = float(s1), float(s2)
+                    hi, lo = (str(max(f1, f2)), str(min(f1, f2)))
+                except Exception:
+                    hi, lo = (s1, s2)
+            else:
+                label = "Spread"
+
+            return f"{label} on {sym} between {hi} and {lo}. Limits loss to net debit and caps profit at the spread width."
+
+        return expl
+    except Exception as e:
+        print(f"[SANITIZE EXPLAIN ERROR] {e}")
+        return strategy.get("explanation", "")
+
+
+
 
 
 def clean_float(value):
@@ -283,6 +637,8 @@ def run_ai_engine(
         ticker = "TLT"  # Safer fallback for bond beliefs
     else:
         asset_class = parsed_asset
+        ticker = _guard_spurious_ticker(belief, ticker)
+
 
     # ✅ Get price data safely
     try:
@@ -376,7 +732,7 @@ def run_ai_engine(
     )
     # ============================================================================
 
-    # === 🔁 Soft Fallback Parser Injection for GPT-4 ===
+    # === 📋 Soft Fallback Parser Injection for GPT-4 ===
     if _should_call_gpt:
         try:
             from backend.ai_engine.gpt4_strategy_generator import generate_strategy_with_validation
@@ -588,8 +944,33 @@ def run_ai_engine(
         )
     )
     # Add dynamic fields based on asset class
-    print("🔍 CHECKPOINT: About to add dynamic fields!")
+    print("📋 CHECKPOINT: About to add dynamic fields!")
     asset_specific_fields = add_dynamic_fields(asset_class, strategy, ticker, price_info)
+
+    # Nudge plain long call → bull call spread if underperform risk
+    strategy = _maybe_nudge_to_bull_call_spread(strategy, belief, price_info)
+
+    # If it was already a spread with silly call strikes, fix them based on spot
+    strategy = _sanitize_spread_strikes(strategy, belief, price_info)
+
+    # Nudge long put → bear put spread (short timeframe + % drop)
+    strategy = _maybe_nudge_to_bear_put_spread(strategy, belief, price_info)
+
+    # Normalize put spreads (type + explanation) if needed
+    strategy = _normalize_bear_put_spread(strategy)
+
+    # Normalize legs to final ticker
+    strategy = _normalize_strategy_ticker(strategy, ticker)
+
+    # === 🏁 Final cleanup: tags + explanation ===
+    tags = _infer_tags_from_strategy(strategy, direction)
+    explanation = _sanitize_explanation(strategy, price_info)
+    strategy["explanation"] = explanation
+
+
+
+
+
     
     # Build the result first
     result = {
@@ -624,6 +1005,33 @@ def run_ai_engine(
 
 # === 🎯 DYNAMIC ASSET-SPECIFIC FIELDS ===
 # FILE: backend/ai_engine/ai_engine.py (lines 537-580 replacement)
+
+def _normalize_strategy_ticker(strategy: dict, final_ticker: str) -> dict:
+    """
+    Ensure all trade legs reference the final_ticker (e.g., avoid stale 'AAPL' when ticker = 'SPY').
+    Works for both string-based legs and dict-based legs.
+    """
+    import re
+    if not strategy or not isinstance(strategy, dict):
+        return strategy
+    legs = strategy.get("trade_legs")
+    if not legs:
+        return strategy
+
+    out = []
+    for leg in legs:
+        if isinstance(leg, str):
+            out.append(re.sub(r'\b[A-Z]{1,5}\b', final_ticker, leg))
+        elif isinstance(leg, dict):
+            leg = {**leg}
+            if "ticker" in leg and isinstance(leg["ticker"], str):
+                leg["ticker"] = final_ticker
+            out.append(leg)
+        else:
+            out.append(leg)
+    strategy = {**strategy, "trade_legs": out}
+    return strategy
+
 
 def add_dynamic_fields(asset_class: str, strategy: dict, ticker: str, price_info: dict) -> dict:
     """
@@ -677,7 +1085,7 @@ def add_dynamic_fields(asset_class: str, strategy: dict, ticker: str, price_info
     # Return only meaningful fields, no fake Greeks
     return dynamic_fields
 
-# === 🔒 Helper Function: Safe JSON serialization ===
+# === 🔑 Helper Function: Safe JSON serialization ===
 def safe_json(data):
     """Recursively sanitize data for JSON compliance (NaN → None, etc)."""
     def fix_value(val):
@@ -711,7 +1119,7 @@ def generate_asset_basket(
         Goal: {goal or "unspecified"}
 
         Your task:
-            - Create a diversified basket of 2–5 assets (stocks, ETFs, crypto, bonds).
+            - Create a diversified basket of 2—5 assets (stocks, ETFs, crypto, bonds).
             - For each: include ticker, type, allocation %, and a one-sentence rationale.
             - Also return a goal summary, estimated return range, and risk profile.
 
@@ -732,7 +1140,7 @@ def generate_asset_basket(
                 }}
                 ],
                 "goal": "moderate growth",
-                "estimated_return": "5–7% annually",
+                "estimated_return": "5—7% annually",
                 "risk_profile": "moderate"
                 }}
 
@@ -812,7 +1220,7 @@ def generate_asset_basket(
                 },
             ],
             "goal": goal or "growth",
-            "estimated_return": "4–6% annually",
+            "estimated_return": "4—6% annually",
             "risk_profile": "moderate",
         }
 
