@@ -119,3 +119,6 @@ backend/news_ingestor_state.json
 # =======================
 *.db
 *.sqlite3
+
+# Local backups
+*.bak.local
