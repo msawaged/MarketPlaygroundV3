@@ -108,3 +108,17 @@ __pycache__/
 # Training metrics JSON
 backend/*_model_metrics.json
 backend/logs/metrics_*.json
+
+backend/*.joblib
+backend/news_beliefs.csv
+backend/news_ingestor_metrics.json
+backend/news_ingestor_state.json
+
+# =======================
+# 🗄️ DATABASES
+# =======================
+*.db
+*.sqlite3
+
+# Local backups
+*.bak.local

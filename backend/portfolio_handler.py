@@ -46,7 +46,7 @@ def save_trade(user_id: str, belief: str, strategy: dict):
                 "filled_avg_price": alpaca_response.get("filled_avg_price")
             })
 
-def get_portfolio(user_id: str):
+def get_portfolio(user_id: str, force_refresh: bool = True):
     """
     Retrieves the full trade history (portfolio) for a given user.
     """

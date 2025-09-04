@@ -72,7 +72,16 @@ print("✅ [9] Router imports finished")
 
 
 app = FastAPI(title="MarketPlayground AI Backend")
-print("🚀 [10] FastAPI instance created")
+# --- CORS: allow local dev frontends ---
+import os
+from fastapi.middleware.cors import CORSMiddleware
+
+_ALLOWED = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000,http://10.0.0.61:3000"
+).split(",")
+
+
 
 # === Debug: Print all loaded routes (for dev visibility) ===
 print("\n🔍 ROUTES LOADED:")

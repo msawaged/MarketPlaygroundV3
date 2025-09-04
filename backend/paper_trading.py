@@ -439,7 +439,7 @@ class PaperTradingEngine:
                 return dict(result)
             return {}
     
-    def get_portfolio(self, user_id: str):
+    def get_portfolio(self, user_id: str, force_refresh: bool = True):
         """Get comprehensive portfolio with real-time data"""
         self._initialize_user(user_id)
         
@@ -517,43 +517,49 @@ class PaperTradingEngine:
     
     def _calculate_performance_grade(self, return_pct: Decimal) -> str:
         """Calculate performance grade A-F"""
-        if return_pct >= 20: return "A+"
-        elif return_pct >= 15: return "A"
-        elif return_pct >= 10: return "B+"
-        elif return_pct >= 5: return "B"
-        elif return_pct >= 0: return "C"
-        elif return_pct >= -5: return "D"
-        else: return "F"
-    
+        if return_pct >= 20:
+            return "A+"
+        elif return_pct >= 15:
+            return "A"
+        elif return_pct >= 10:
+            return "B+"
+        elif return_pct >= 5:
+            return "B"
+        elif return_pct >= 0:
+            return "C"
+        elif return_pct >= -5:
+            return "D"
+        else:
+            return "F"
+
     def get_leaderboard(self):
         """Get performance leaderboard"""
         with self._get_db_connection() as conn:
             users = conn.execute("""
-                SELECT user_id, cash_balance, 
+                SELECT user_id, cash_balance,
                        (SELECT COALESCE(SUM(market_value), 0) FROM positions WHERE user_id = users.user_id) as equity_value
                 FROM users
             """).fetchall()
-            
+
             leaderboard = []
             for user in users:
                 total_value = user['cash_balance'] + user['equity_value']
                 total_return = total_value - float(self.starting_balance)
-                return_pct = (total_return / float(self.starting_balance)) * 100
-                
+                total_return_pct = (total_return / float(self.starting_balance)) * 100 if self.starting_balance else 0.0
                 leaderboard.append({
                     "user_id": user['user_id'],
                     "total_value": float(total_value),
-                    "total_return": total_return,
-                    "return_pct": return_pct,
-                    "performance_grade": self._calculate_performance_grade(Decimal(str(return_pct)))
+                    "total_return": float(total_return),
+                    "total_return_pct": float(total_return_pct),
+                    "performance_grade": self._calculate_performance_grade(total_return_pct),
                 })
             
             # Sort by return percentage
-            leaderboard.sort(key=lambda x: x['return_pct'], reverse=True)
+            leaderboard.sort(key=lambda x: x["total_return_pct"], reverse=True)
             
             return {"leaderboard": leaderboard[:25]}  # Top 25
     
-    def close_position(self, user_id: str, position_id: str):
+    def close_position(self, user_id: str, position_id: str, qty: Optional[int] = None):
         """Close a position and realize P&L"""
         with self._lock:
             try:
@@ -695,4 +701,3 @@ class PaperTradingEngine:
 
 # Create the singleton instance
 paper_engine = PaperTradingEngine()
-
