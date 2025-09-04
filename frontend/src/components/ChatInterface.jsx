@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { API_BASE, processBelief } from "../lib/api";
 // ADD THIS IMPORT WITH YOUR OTHER IMPORTS
 import DebugDashboard from './DebugDashboard';
 import BottomNavigation from './BottomNavigation'; // ← ADD THIS LINE
@@ -83,14 +84,11 @@ const SentimentErrorMessage = ({ error, onRetry, originalBelief }) => {
   );
 };
 
-// 🌐 BACKEND URL CONFIGURATION - Same as your original
-const BACKEND_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:8000' 
-  : window.location.hostname.startsWith('10.0.0') || window.location.hostname.startsWith('192.168')
-    ? `http://${window.location.hostname}:8000`
-    : 'https://marketplayground-backend.onrender.com';
+// 🌐 BACKEND URL CONFIGURATION - Now uses centralized API base from Vite env
+// Configured via VITE_API_BASE environment variable
+const BACKEND_URL = API_BASE;
 
-// 📊 LIVE ELITE STOCK TICKER — FINAL VERSION
+// 📊 LIVE ELITE STOCK TICKER – FINAL VERSION
 const EliteLiveSymbolsKey = 'mp_elite_symbols';
 
 const EliteStockTicker = () => {
@@ -864,18 +862,9 @@ const EnhancedChatInterface = () => {
     setIsLoading(true);
 
     try {
-      console.log('API Call:', `${BACKEND_URL}/strategy/process_belief`);
+      // Use the centralized processBelief helper
+      const data = await processBelief("murad", belief);
       
-      const res = await fetch(`${BACKEND_URL}/strategy/process_belief`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          belief: belief,
-          user_id: 'elite_chat_user',
-        }),
-      });
-
-      const data = await res.json();
       console.log('Backend Response:', data);
 
       // Check for sentiment validation error

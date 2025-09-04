@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { FiMic } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from "./lib/api";
 
 const BasketBuilderPage = () => {
   const [goalText, setGoalText] = useState('');
@@ -36,8 +37,9 @@ const BasketBuilderPage = () => {
     if (!goalText.trim()) return;
 
     try {
+      // Now uses centralized API base from Vite env
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'}/basket/generate_basket`,
+        `${API_BASE}/basket/generate_basket`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -61,7 +63,7 @@ const BasketBuilderPage = () => {
       setResult(data);
       setError(null);
     } catch (err) {
-      console.error('❌ Backend error:', err);
+      console.error('⌠Backend error:', err);
       const displayError = typeof err.message === 'string' ? err.message : JSON.stringify(err);
       setError(displayError);
       setResult(null);
