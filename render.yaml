@@ -7,13 +7,15 @@ services:
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
     startCommand: "PYTHONPATH=./ uvicorn backend.app:app --host 0.0.0.0 --port 10000"
     envVars:
       - key: PORT
         value: 10000
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: CREATIVE_MAPPING
+        value: "1"   # ✅ Enable Creative Mapping on Render
 
   # 🔁 Background Model Retraining Worker
   - type: worker
@@ -21,20 +23,19 @@ services:
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
     startCommand: "PYTHONPATH=./ python backend/retrain_worker.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
 
-  # 📰 News Ingestor (Runs Automatically Every Hour via Render Cron)
-  - type: worker
+  # 📰 News Ingestor (Cron Job every hour)
+  - type: cron
     name: news-ingestor
     env: python
-    plan: starter
-    schedule: "hourly"  # ⏱️ Native Render scheduler triggers this job once per hour
+    schedule: "0 * * * *"                                   # ✅ every hour
     rootDir: .
-    buildCommand: "pip install -r backend/requirements-news.txt"
+    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
     startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
     envVars:
       - key: PYTHON_VERSION
@@ -46,7 +47,7 @@ services:
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
     startCommand: "PYTHONPATH=./ python backend/belief_feeder.py"
     envVars:
       - key: PYTHON_VERSION
