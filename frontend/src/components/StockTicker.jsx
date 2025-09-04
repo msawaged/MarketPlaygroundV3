@@ -2,11 +2,14 @@
 // Live Alpaca-powered ticker bar with search, add/remove, persistence, and refresh.
 
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE } from "../lib/api";
 
 const REFRESH_INTERVAL_MS = 30_000; // 30s
 const STORAGE_KEY = 'mp_top_tickers';
 
-const StockTicker = ({ backendUrl = '' }) => {
+// Now uses centralized API base from Vite env
+const StockTicker = () => {
+  const backendUrl = API_BASE;
   const [tickers, setTickers] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');

@@ -6,11 +6,15 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE } from "../lib/api";
+
+// Now uses centralized API base from Vite env
+const BACKEND_URL = API_BASE;
 
 /* =========================
    Portfolio Summary Card
 ========================= */
-const PortfolioSummary = ({ BACKEND_URL, refreshNonce = 0 }) => {
+const PortfolioSummary = ({ refreshNonce = 0 }) => {
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -35,8 +39,9 @@ const PortfolioSummary = ({ BACKEND_URL, refreshNonce = 0 }) => {
     fetchPortfolio();
     const interval = setInterval(fetchPortfolio, 30000);
     return () => clearInterval(interval);
-  }, [refreshNonce, BACKEND_URL]);
+  }, [refreshNonce]);
 
+  // ... rest of the component remains the same
   if (loading) {
     return (
       <div className="bg-slate-800/50 rounded-lg p-4 animate-pulse">
@@ -109,7 +114,7 @@ const PortfolioSummary = ({ BACKEND_URL, refreshNonce = 0 }) => {
 /* =========================
    Active Positions + Close
 ========================= */
-const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
+const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -138,7 +143,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
     fetchPositions();
     const i = setInterval(fetchPositions, 30000);
     return () => clearInterval(i);
-  }, [refreshNonce, BACKEND_URL]);
+  }, [refreshNonce]);
 
   const openConfirm = (position) => {
     setSelected({
@@ -150,7 +155,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
   };
 
   // Poll until the closed position disappears (or give up after 10 tries)
-  async function pollUntilGone({ BACKEND_URL, userId, closedId, tries = 10, intervalMs = 500 }) {
+  async function pollUntilGone({ userId, closedId, tries = 10, intervalMs = 500 }) {
     for (let i = 0; i < tries; i++) {
       const resp = await fetch(
         `${BACKEND_URL}/api/paper-trading/portfolio/${encodeURIComponent(userId)}?ts=${Date.now()}&r=${Math.random()}`,
@@ -201,7 +206,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
         throw new Error(text || `HTTP ${response.status}`);
       }
 
-      // 🟣 Optimistic UI — drop it locally immediately
+      // 🟣 Optimistic UI – drop it locally immediately
       setPositions((prev) =>
         prev.filter((p) => (p.position_id ?? p.id ?? p.strategy_id) !== positionId)
       );
@@ -212,8 +217,8 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
       setCloseError(null);
       toast("Position closed successfully!");
 
-      // 🔁 Poll backend until it disappears (handles write lag)
-      const fresh = await pollUntilGone({ BACKEND_URL, userId, closedId: positionId });
+      // 🔍 Poll backend until it disappears (handles write lag)
+      const fresh = await pollUntilGone({ userId, closedId: positionId });
       if (fresh) setPositions(fresh);
 
       // Tell Summary to refresh
@@ -317,7 +322,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
                   <div className="text-xs text-slate-400">
                     Opened: {position.opened_at ? new Date(position.opened_at).toLocaleString() : "—"}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">Belief: “{position.belief ?? "—"}”</div>
+                  <div className="text-xs text-slate-500 mt-1">Belief: "{position.belief ?? "—"}"</div>
                 </div>
               </motion.div>
             );
@@ -349,7 +354,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
               />
               {closeError && <div className="text-red-400 text-sm">{closeError}</div>}
               <div className="text-xs text-slate-400">
-                If your backend doesn’t support partial closes, we’ll close the full position.
+                If your backend doesn't support partial closes, we'll close the full position.
               </div>
             </div>
 
@@ -375,7 +380,7 @@ const ActivePositions = ({ BACKEND_URL, refreshNonce = 0, onChanged }) => {
 /* =========================
    Portfolio Modal Wrapper
 ========================= */
-const PortfolioModal = ({ isOpen, onClose, BACKEND_URL }) => {
+const PortfolioModal = ({ isOpen, onClose }) => {
   // 🔄 children refetch when this bumps
   const [refreshNonce, setRefreshNonce] = useState(0);
   const refreshAll = () => setRefreshNonce((n) => n + 1);
@@ -411,8 +416,8 @@ const PortfolioModal = ({ isOpen, onClose, BACKEND_URL }) => {
         </div>
 
         <div className="space-y-6">
-          <PortfolioSummary BACKEND_URL={BACKEND_URL} refreshNonce={refreshNonce} />
-          <ActivePositions BACKEND_URL={BACKEND_URL} refreshNonce={refreshNonce} onChanged={refreshAll} />
+          <PortfolioSummary refreshNonce={refreshNonce} />
+          <ActivePositions refreshNonce={refreshNonce} onChanged={refreshAll} />
         </div>
       </motion.div>
     </motion.div>
@@ -422,7 +427,7 @@ const PortfolioModal = ({ isOpen, onClose, BACKEND_URL }) => {
 /* =========================
    Floating Portfolio Button (optional)
 ========================= */
-const PortfolioButton = ({ BACKEND_URL }) => {
+const PortfolioButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [portfolioSummary, setPortfolioSummary] = useState(null);
 
@@ -443,7 +448,7 @@ const PortfolioButton = ({ BACKEND_URL }) => {
     fetchSummary();
     const interval = setInterval(fetchSummary, 60000);
     return () => clearInterval(interval);
-  }, [BACKEND_URL]);
+  }, []);
 
   const totalValue = portfolioSummary?.account?.total_value ?? 0;
   const totalPnl = portfolioSummary?.account?.total_pnl ?? 0;
@@ -473,7 +478,6 @@ const PortfolioButton = ({ BACKEND_URL }) => {
           <PortfolioModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            BACKEND_URL={BACKEND_URL}
           />
         )}
       </AnimatePresence>

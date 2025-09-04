@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { API_BASE } from "../lib/api";
 
 // MarketDashboard
 //
@@ -16,12 +17,9 @@ import { motion } from 'framer-motion';
 // through Framer Motion. Debugging can be toggled by setting
 // `DEBUG_DASHBOARD` to `true`.
 
-// Determine the backend URL.  We reuse the same heuristic as
-// ChatInterface.jsx: if a VITE_BACKEND_URL environment variable is
-// provided it takes precedence, otherwise we fall back to the origin.
-const BACKEND_URL =
-  import.meta.env?.VITE_BACKEND_URL ||
-  `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+// Determine the backend URL - now uses centralized API base from Vite env
+// Configured via VITE_API_BASE environment variable
+const BACKEND_URL = API_BASE;
 
 // Set to true to enable verbose debugging in the console.
 const DEBUG_DASHBOARD = false;
