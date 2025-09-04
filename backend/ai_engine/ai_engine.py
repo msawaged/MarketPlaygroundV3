@@ -48,6 +48,8 @@ print("✅ Imported strategy_logger")
 from backend.ai_engine.strategy_model_selector import decide_strategy_engine
 print("✅ Imported strategy_model_selector")
 
+from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
+
 
 
 if not OPENAI_API_KEY:
@@ -209,18 +211,41 @@ def parse_strategy_json(payload):
 
 
 def _guard_spurious_ticker(belief_text: str, ticker: str) -> str:
-    """Prevent English words like 'next', 'on', 'all', 's' from slipping in as tickers.
-    If a suspected stopword ticker is detected and the belief wasn't explicitly specifying the symbol,
-    default to SPY to keep behavior safe and consistent with belief_parser rules.
+    """
+    Prevent English words (e.g., 'next', 'on', 'all', 'tour') from slipping in as tickers
+    when they appear as lowercase nouns in the belief.
+    Rule: if the candidate equals a common word found in the belief in lowercase,
+    and the belief does NOT contain the ticker as an uppercase token or as $TICKER, reject it.
     """
     try:
-        b = f" {belief_text.lower()} "
         t = (ticker or "").strip().upper()
-        STOPWORD_TICKERS = {"NEXT", "S", "ON", "ALL"}
-        if t in STOPWORD_TICKERS:
-            print(f"[GUARD] Spurious ticker '{t}' detected from language; defaulting to SPY")
+        if not t:
             return "SPY"
-        return t or "SPY"
+
+        b = f" {belief_text or ''} "
+        b_lower = b.lower()
+
+        # Common words that are also tickers
+        common_words = {"NEXT", "S", "ON", "ALL", "TOUR"}
+
+        # Helper checks
+        def has_uppercase_token(word: str) -> bool:
+            return f" {word} " in b or f"({word})" in b or f"[{word}]" in b
+
+        def has_dollar_ticker(word: str) -> bool:
+            return f"${word}" in b
+
+        # Block if common word is present in lowercase in the belief
+        if (
+            t in common_words
+            and f" {t.lower()} " in b_lower
+            and not has_uppercase_token(t)
+            and not has_dollar_ticker(t)
+        ):
+            print(f"[GUARD] Spurious ticker '{t}' inferred from common word in belief; defaulting to SPY")
+            return "SPY"
+
+        return t
     except Exception as e:
         print(f"[GUARD ERROR] {e}")
         return ticker or "SPY"
@@ -332,7 +357,7 @@ def _maybe_nudge_to_bear_put_spread(strategy: dict, belief: str, price_info: dic
 
         # Bear put: BUY higher strike (near spot), SELL lower strike (near target drop)
         buy_strike  = round_to(spot, step)
-        drop_clamped = max(3.0, min(20.0, pct))  # clamp 3–20%
+        drop_clamped = max(3.0, min(20.0, pct))  # clamp 3—20%
         target_down = spot * (1 - drop_clamped/100.0)
         sell_strike = min(buy_strike - step, round_to(target_down, step))
 
@@ -602,12 +627,63 @@ def fix_expiration(ticker: str, raw_expiry: str) -> str:
         return "N/A"
 
 
+def _should_try_creative(parsed: dict, belief: str) -> bool:
+    """Determine if we should try creative mapping for this ticker."""
+    sym = parsed.get("ticker")
+    
+    # Missing or generic
+    if not sym or str(sym).upper() in {"SPY", "QQQ"}:
+        return True
+    
+    # Spurious common words
+    COMMON_WORDS = {"NEXT", "S", "ON", "ALL", "TOUR", "WORK", "ALLY", "LOVE"}
+    sym_upper = str(sym).upper()
+    belief_lower = belief.lower()
+    if sym_upper in COMMON_WORDS and f" {sym.lower()} " in f" {belief_lower} " and f" {sym_upper} " not in f" {belief} " and f"${sym_upper}" not in belief:
+        return True
+    
+    # Not tradable
+    if not is_tradable_symbol(normalize_ticker(sym)):
+        return True
+    
+    return False
+
 
 def run_ai_engine(
     belief: str, risk_profile: str = "moderate", user_id: str = "anonymous"
 ) -> dict:
     start_time = time.time()  # ADD THIS LINE HERE
     parsed = parse_belief(belief)
+    print(f"[DEBUG] CREATIVE_MAPPING will_run={os.getenv('CREATIVE_MAPPING')} parsed_ticker_before={parsed.get('ticker')}")
+
+    # --- Creative Mapping (feature-flagged; safe by default) ---
+    try:
+        CREATIVE_MAPPING = os.getenv("CREATIVE_MAPPING", "0") in {"1", "true", "True"}
+    except Exception:
+        CREATIVE_MAPPING = False
+
+    if CREATIVE_MAPPING and _should_try_creative(parsed, belief):
+        try:
+            from backend.signal_mapping.creative_mapper import (
+                generate_symbol_candidates,
+                choose_best_candidate,
+            )
+            cands = generate_symbol_candidates(belief)
+            best = choose_best_candidate(cands)
+            if best:
+                parsed["ticker"] = best["symbol"]
+                ticker = parsed["ticker"]  # Update local variable immediately
+                print(f"[CREATIVE MAPPING] applied {best}")
+                print(f"[DEBUG] CREATIVE_MAPPING applied: {best}")
+                parsed.setdefault("tags", []).append("creative-mapped")
+                parsed.setdefault("explanation_notes", []).append(
+                    f"Creative mapping: {best['symbol']} (score={best['score']}). {best.get('why','')}"
+                )
+                print(f"[CREATIVE MAPPING] selected {best['symbol']} (score={best['score']})")
+        except Exception as e:
+            print(f"[CREATIVE MAPPING] error: {e}")
+    # --- end Creative Mapping ---
+
     direction = parsed.get("direction")
     ticker = parsed.get("ticker")
     tags = parsed.get("tags", [])
@@ -640,18 +716,23 @@ def run_ai_engine(
         ticker = _guard_spurious_ticker(belief, ticker)
 
 
-    # ✅ Get price data safely
+    from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
+
+    # ✅ Get price data safely (skip non-tradables like SWIFT/BLACK)
     try:
+        assert is_tradable_symbol(normalize_ticker(ticker)), f"Non-tradable: {ticker}"
         latest = get_latest_price(ticker)
     except Exception as e:
         print(f"[ERROR] get_latest_price failed: {e}")
         latest = -1.0
 
     try:
+        assert is_tradable_symbol(normalize_ticker(ticker)), f"Non-tradable: {ticker}"
         high_low = get_weekly_high_low(ticker)
     except Exception as e:
         print(f"[ERROR] get_weekly_high_low failed: {e}")
         high_low = (-1.0, -1.0)
+    
 
     # ✅ Normalize price data
     price_info = {
@@ -835,7 +916,7 @@ def run_ai_engine(
     trade_legs_raw = strategy.get("trade_legs", [])
     trade_legs = " ".join(str(leg).lower() for leg in trade_legs_raw)
 
-    tags = []
+    tags = list(tags) if isinstance(tags, list) else []
     if "spread" in strategy_type or "spread" in trade_legs:
         if "put" in trade_legs and "sell" in trade_legs and "buy" in trade_legs:
             tags.append(
@@ -962,10 +1043,15 @@ def run_ai_engine(
     # Normalize legs to final ticker
     strategy = _normalize_strategy_ticker(strategy, ticker)
 
-    # === 🏁 Final cleanup: tags + explanation ===
-    tags = _infer_tags_from_strategy(strategy, direction)
+    # === 🏷 Final cleanup: tags + explanation ===
+    existing_tags = tags if isinstance(tags, list) else []
+    inferred_tags = _infer_tags_from_strategy(strategy, direction)
+    tags = list({*existing_tags, *inferred_tags})  # preserve "creative-mapped"
     explanation = _sanitize_explanation(strategy, price_info)
     strategy["explanation"] = explanation
+
+
+
 
 
 

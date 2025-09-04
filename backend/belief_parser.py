@@ -19,17 +19,19 @@ from backend.utils.model_utils import load_model
 # === Load Belief Tag Classifier + Vectorizer ===
 try:
     belief_model = load_model("belief_model.joblib")
-    vectorizer = load_model("belief_vectorizer.joblib")
+    belief_vectorizer = load_model("belief_vectorizer.joblib")
 except Exception as e:
     print(f"[ERROR] Could not load belief/tag model: {e}")
-    belief_model, vectorizer = None, None
+    belief_model, belief_vectorizer = None, None
 
-# === Load Asset Class Model (full pipeline) ===
+# === Load Asset Class Model + Vectorizer ===
 try:
     asset_model = load_model("asset_class_model.joblib")
+    asset_vectorizer = load_model("asset_vectorizer.joblib")
 except Exception as e:
-    print(f"[WARNING] Asset class model not loaded: {e}")
-    asset_model = None
+    print(f"[WARNING] Asset class model/vectorizer not loaded: {e}")
+    asset_model, asset_vectorizer = None, None
+
 
 # === Fallback keyword-to-ticker maps ===
 SYMBOL_LOOKUP_MAP = {
@@ -342,15 +344,17 @@ def detect_direction(belief: str) -> str:
     return "neutral"
 
 def detect_asset_class(raw_belief: str) -> str:
-    if asset_model:
+    if asset_model and asset_vectorizer:
         try:
-            prediction = asset_model.predict([raw_belief])[0]
+            vec = asset_vectorizer.transform([raw_belief])  # 1 x n_features
+            prediction = asset_model.predict(vec)[0]
             print(f"[ASSET CLASS DETECTED] → {prediction}")
             return prediction
         except Exception as e:
             print(f"[ASSET CLASS ERROR] Failed to predict: {e}")
     print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
     return "options"
+
 
 def inject_keyword_tags(belief: str, tags: list) -> list:
     belief_lower = belief.lower()
@@ -372,16 +376,17 @@ def parse_belief(belief: str) -> dict:
     confidence = 0.0
 
     # === Tag prediction via ML ===
-    if belief_model and vectorizer:
+    if belief_model and belief_vectorizer:
         try:
-            vec = vectorizer.transform([cleaned])
+            vec = belief_vectorizer.transform([cleaned])  # 1 x n_features
             prediction = belief_model.predict(vec)[0]
-            confidence = max(belief_model.predict_proba(vec)[0])
+            confidence = float(max(belief_model.predict_proba(vec)[0]))
             raw_tags = re.split(r"[\n,]+", prediction)
             tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
             tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
+
 
     # === Keyword tag injection (overlay) ===
     tag_list = inject_keyword_tags(belief, tag_list)
@@ -454,6 +459,16 @@ def parse_belief(belief: str) -> dict:
     print(f"[DEBUG] Direction: {direction}")
     print(f"[DEBUG] Confidence: {confidence}")
     print("[DEBUG] -------------------------------\n")
+
+    # --- Confidence floor (avoid leaking 0.0 on model errors) ---
+    try:
+        confidence = float(confidence)
+    except Exception:
+        confidence = 0.5
+    if confidence <= 0.0:
+        confidence = 0.45
+    # --- end confidence floor ---
+
 
     # === Final structured belief output ===
     return {
