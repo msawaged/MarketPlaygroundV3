@@ -1,0 +1,11 @@
+--- a/backend/ai_engine/ai_engine.py
++++ b/backend/ai_engine/ai_engine.py
+@@ -... +... @@
+-    # === 🏷 Final cleanup: tags + explanation ===
+-    tags = _infer_tags_from_strategy(strategy, direction)
++    # === 🏷 Final cleanup: tags + explanation ===
++    existing_tags = tags if isinstance(tags, list) else []
++    inferred_tags = _infer_tags_from_strategy(strategy, direction)
++    tags = list({*existing_tags, *inferred_tags})  # preserve "creative-mapped" etc.
+     explanation = _sanitize_explanation(strategy, price_info)
+     strategy["explanation"] = explanation

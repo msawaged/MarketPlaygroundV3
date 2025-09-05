@@ -2,10 +2,10 @@
 ================================================================================
 FILE: BottomNavigation.jsx (SAFE COPY)
 --------------------------------------------------------------------------------
-- Drop‑in replacement for frontend/src/components/BottomNavigation.jsx
+- Drop‐in replacement for frontend/src/components/BottomNavigation.jsx
 - Always visible on desktop + mobile (no hidden classes by default)
-- Child‑route aware active state (prefix match)
-- Safe‑area padding for iOS notch
+- Child‐route aware active state (prefix match)
+- Safe‐area padding for iOS notch
 - Optional onPortfolioClick() handler to open a modal/sheet instead of routing
 - Accessible (aria-current, keyboard activation)
 ================================================================================
@@ -13,7 +13,7 @@ FILE: BottomNavigation.jsx (SAFE COPY)
 
 import React, { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, BarChart3, User, Zap } from 'lucide-react';
+import { Home, TrendingUp, BarChart3, User, Zap, Flame } from 'lucide-react';
 
 /**
  * Props
@@ -31,6 +31,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
     : [
         { id: 'home',      label: 'Home',      icon: Home,       path: '/select-tool',   color: '#3b82f6' },
         { id: 'chat',      label: 'AI Trade',  icon: Zap,        path: '/chat',          color: '#8b5cf6' },
+        { id: 'hot-trades', label: 'Hot Trades', icon: Flame,     path: '/hot-trades',    color: '#f97316' },
         { id: 'portfolio', label: 'Portfolio', icon: TrendingUp, path: '/paper-trading', color: '#22c55e' },
         { id: 'analytics', label: 'Stats',     icon: BarChart3,  path: '/analytics',     color: '#f59e0b' },
         { id: 'profile',   label: 'Profile',   icon: User,       path: '/profile',       color: '#ef4444' },
