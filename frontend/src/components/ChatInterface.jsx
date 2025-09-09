@@ -1326,7 +1326,7 @@ const EnhancedChatInterface = () => {
                               <motion.button 
                                 onClick={async () => {
                                   try {
-                                    const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute`, {
+                                    const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute_live`, {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({

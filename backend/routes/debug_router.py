@@ -6,7 +6,7 @@ import json
 import subprocess
 import requests
 import csv
-import traceback  # ✅ FIXED: Added missing import
+import traceback
 import time
 from collections import defaultdict, deque
 from functools import wraps
@@ -14,8 +14,14 @@ from collections import Counter
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi import Request
+from pathlib import Path
 
 router = APIRouter()
+
+# Setup paths to data directory
+BASE_DIR = Path(__file__).resolve().parents[2]  # repo root
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # 📊 Global metrics storage for real-time monitoring
 METRICS = {
@@ -83,20 +89,19 @@ async def get_latest_logs():
         }
     }
 
-# === 📁 File paths used by diagnostics and logs ===
-LOGS_DIR = os.path.join("backend", "logs")
-LAST_JSON_LOG = os.path.join(LOGS_DIR, "last_training_log.json")
-LAST_TRAINING_LOG_TXT = os.path.join(LOGS_DIR, "last_training_log.txt")
-RETRAIN_LOG_PATH = os.path.join(LOGS_DIR, "retrain_worker.log")
-FEEDBACK_PATH = os.path.join("backend", "feedback_data.json")
-STRATEGY_PATH = os.path.join("backend", "strategy_log.json")
-OUTCOMES_PATH = os.path.join("backend", "strategy_outcomes.csv")
+# === 🔍 File paths used by diagnostics and logs (now in data/) ===
+LAST_JSON_LOG = str(DATA_DIR / "last_training_log.json")
+LAST_TRAINING_LOG_TXT = str(DATA_DIR / "last_training_log.txt")
+RETRAIN_LOG_PATH = str(DATA_DIR / "retrain_worker.log")
+FEEDBACK_PATH = str(DATA_DIR / "feedback_data.json")
+STRATEGY_PATH = str(DATA_DIR / "strategy_log.json")
+OUTCOMES_PATH = str(DATA_DIR / "strategy_outcomes.csv")
 
-# === 🔐 Supabase credentials ===
+# === 🔍 Supabase credentials ===
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-# === ✅ GET /debug/run_news_ingestor — manually runs ingestion loop ===
+# === ✅ GET /debug/run_news_ingestor – manually runs ingestion loop ===
 @router.get("/run_news_ingestor")
 def run_news_ingestor():
     try:
@@ -114,7 +119,7 @@ def run_news_ingestor():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run script: {str(e)}")
 
-# === ✅ GET /debug/ingested_news — pulls latest beliefs from Supabase ===
+# === ✅ GET /debug/ingested_news – pulls latest beliefs from Supabase ===
 @router.get("/ingested_news")
 def get_ingested_news(limit: int = 10):
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -208,7 +213,6 @@ def get_recent_logs(lines: int = 50):
 
 @router.get("/ai_loop_status")
 def get_ai_loop_status():
-    
     status = {}
     try:
         if os.path.exists(STRATEGY_PATH):
@@ -303,9 +307,7 @@ def recent_feedback(limit: int = 10):
 
 @router.get("/retrain_status")
 def retrain_status():
-    """
-    ✅ Returns retraining status from the last JSON log.
-    """
+    """✅ Returns retraining status from the last JSON log."""
     if not os.path.exists(LAST_JSON_LOG):
         raise HTTPException(status_code=404, detail="No retraining status found.")
     try:
@@ -313,7 +315,6 @@ def retrain_status():
             return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading retrain status: {str(e)}")
-
 
 @router.post("/test_ml_strategy")
 async def test_ml_strategy(request: Request):

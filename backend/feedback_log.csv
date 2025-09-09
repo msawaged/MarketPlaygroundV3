@@ -76,3 +76,14 @@ timestamp,user_id,ip,belief,strategy,feedback,risk_profile
 2025-08-26T06:18:43.761131,elite_chat_user,127.0.0.1,electricity demand is going to go up towards the end of 2025,Call Option,bad,moderate
 2025-08-26T06:18:43.998210,elite_chat_user,127.0.0.1,electricity demand is going to go up towards the end of 2025,Call Option,bad,moderate
 2025-08-26T06:53:39.437934,elite_chat_user,10.0.0.160,Long term investment on aapl,Long Call Spread,good,moderate
+2025-09-06T00:15:26.168596,elite_chat_user,127.0.0.1,tesla is going up after earnings,Call Option,bad,moderate
+2025-09-06T17:25:59.091576,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Call Option,bad,moderate
+2025-09-06T17:29:37.510051,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Straddle,bad,moderate
+2025-09-06T17:29:47.708254,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Straddle,bad,moderate
+2025-09-06T17:29:49.705905,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Straddle,bad,moderate
+2025-09-06T17:35:36.995616,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Call Option,bad,moderate
+2025-09-06T17:35:56.485033,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Straddle,bad,moderate
+2025-09-06T17:40:32.825180,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Call Option,bad,moderate
+2025-09-06T17:40:46.316296,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Straddle,bad,moderate
+2025-09-06T17:42:31.336611,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Call Option,bad,moderate
+2025-09-08T03:31:15.399890,elite_chat_user,127.0.0.1,oil demand is rising in europe,Straddle Option Strategy,bad,moderate

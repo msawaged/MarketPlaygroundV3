@@ -11,7 +11,7 @@ from backend.feedback_handler import save_feedback_entry
 from backend.logger.strategy_logger import log_strategy
 from backend.alpaca_orders import AlpacaExecutor
 from backend.utils.logger import write_training_log
-from backend.strategy_outcome_logger import log_strategy_outcome
+from backend.strategy_outcome_logger import log_strategy_outcome, log_strategy_result  # ✅ added safe wrapper
 
 import pandas as pd
 import os
@@ -85,25 +85,18 @@ def process_belief(request: BeliefRequest):
             result.get("strategy", {})
         )
 
-        # 📊 OUTCOME TRACKING: Log initial strategy outcome (pending state)
+        # 📊 OUTCOME TRACKING: Log initial strategy outcome (safe on strategy=None)
         try:
-            strategy_data = result.get("strategy", {})
-            ticker = result.get("ticker", "UNKNOWN")
-            
-            log_strategy_outcome(
-                strategy=strategy_data,
-                belief=request.belief,
-                ticker=ticker,
-                pnl_percent=0.0,
-                result="pending",
-                notes="Strategy generated - awaiting execution/feedback",
-                user_id=request.user_id,
-                holding_period_days=None
-            )
-            print(f"🟩 Strategy logged to outcomes: {strategy_data.get('type', 'unknown')} for {ticker}")
-            
+            # Attach belief/user_id so the logger has full context
+            result["belief"] = request.belief
+            result["user_id"] = request.user_id
+            log_strategy_result(result)  # ✅ safe wrapper: handles strategy=None (BLOCKED)
+            # Cosmetic console line:
+            strat = result.get("strategy")
+            strat_name = strat.get("type", "unknown") if isinstance(strat, dict) else "BLOCKED"
+            print(f"🟩 Strategy logged to outcomes: {strat_name} for {result.get('ticker','UNKNOWN')}")
         except Exception as e:
-            print(f"⚠️ Failed to log strategy outcome: {e}")
+            print(f"⚠️ Failed to log strategy outcome (router): {e}")
 
         # 🗂️ TRAINING LOG: Save to Supabase for ML training data
         try:

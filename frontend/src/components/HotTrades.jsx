@@ -402,3 +402,4 @@ const HotTrades = () => {
 };
 
 export default HotTrades;
+

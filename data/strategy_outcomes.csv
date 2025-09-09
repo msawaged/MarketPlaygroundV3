@@ -1,0 +1,2 @@
+timestamp,belief,strategy,ticker,pnl_percent,result,risk,notes
+2025-09-07T23:01:53.390892,I believe AAPL will go up,bull call spread,AAPL,18.25,win,moderate,initial placeholder row

@@ -2,38 +2,56 @@
 """
 Hot Trades Router - Surfaces news-driven trading strategies
 Fetches beliefs from news ingestor, enriches with strategies, returns normalized JSON
+HARDENED: 30s cache, HOT_TRADES_ENABLED flag, graceful error handling
 """
 
 import os
 import csv
 import json
 import traceback
+import time
 from datetime import datetime
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 from fastapi import APIRouter, Query, HTTPException
 from backend.ai_engine.ai_engine import run_ai_engine
-from backend.utils.logger import write_training_log
+from pathlib import Path
 
 # Initialize router
 router = APIRouter()
 
-# File paths
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NEWS_BELIEFS_CSV = os.path.join(BACKEND_DIR, "news_beliefs.csv")
-STRATEGY_OUTCOMES_CSV = os.path.join(BACKEND_DIR, "strategy_outcomes.csv")
+# === File paths (moved to data/ directory) ===
+BASE_DIR = Path(__file__).resolve().parents[2]  # repo root
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-def safe_read_csv(filepath: str) -> List[Dict[str, Any]]:
-    """Read CSV safely with error handling"""
-    if not os.path.exists(filepath):
-        print(f"[hot_trades] File not found: {filepath}")
+NEWS_BELIEFS_CSV = DATA_DIR / "news_beliefs.csv"
+STRATEGY_OUTCOMES_CSV = DATA_DIR / "strategy_outcomes.csv"
+
+# === In-memory cache (30 seconds) ===
+CACHE = {
+    "data": None,
+    "timestamp": 0,
+    "ttl": 30  # seconds
+}
+
+# === Feature flag ===
+HOT_TRADES_ENABLED = os.getenv("HOT_TRADES_ENABLED", "true").lower() == "true"
+
+
+def safe_read_csv(filepath: Union[str, Path]) -> List[Dict[str, Any]]:
+    """Read CSV safely with error handling (Path-safe for Render/CWD differences)."""
+    path = Path(filepath)
+    if not path.exists():
+        print(f"[hot_trades] File not found: {path}")
         return []
-    
+
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with path.open('r', encoding='utf-8') as f:
             return list(csv.DictReader(f))
     except Exception as e:
-        print(f"[hot_trades] Error reading {filepath}: {e}")
+        print(f"[hot_trades] Error reading {path}: {e}")
         return []
+
 
 def read_news_beliefs() -> List[Dict[str, Any]]:
     """Read news beliefs from CSV"""
@@ -64,6 +82,7 @@ def read_news_beliefs() -> List[Dict[str, Any]]:
             continue
     
     return beliefs
+
 
 def read_strategy_outcomes() -> Dict[str, Dict[str, Any]]:
     """Read strategy outcomes from CSV"""
@@ -96,6 +115,7 @@ def read_strategy_outcomes() -> Dict[str, Dict[str, Any]]:
     
     return strategies
 
+
 def normalize_sentiment(value: Any) -> str:
     """Convert to bullish/bearish/neutral"""
     if value is None or value == '':
@@ -119,6 +139,7 @@ def normalize_sentiment(value: Any) -> str:
     
     return "neutral"
 
+
 def normalize_confidence(value: Any) -> float:
     """Convert to 0-100 scale"""
     if value is None or value == '':
@@ -139,12 +160,43 @@ def normalize_confidence(value: Any) -> float:
     except:
         return 50.0
 
+
+def normalize_option_legs(strategy_obj: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+    """
+    Normalize option legs to use the final ticker (Fix C from ai_engine.py).
+    Only normalize legs if they exist and are options.
+    """
+    if not strategy_obj or not isinstance(strategy_obj, dict):
+        return strategy_obj
+    
+    legs = strategy_obj.get('legs', [])
+    if not legs:
+        return strategy_obj
+    
+    normalized_legs = []
+    for leg in legs:
+        if not isinstance(leg, dict):
+            normalized_legs.append(leg)
+            continue
+            
+        # Only normalize if it's an option leg
+        option_type = leg.get('option_type')
+        if option_type in ['call', 'put']:
+            # Force ticker to the final ticker
+            leg['ticker'] = ticker
+        
+        normalized_legs.append(leg)
+    
+    strategy_obj['legs'] = normalized_legs
+    return strategy_obj
+
+
 def generate_hot_trade_item(
     belief_data: Dict[str, Any],
     strategy_data: Optional[Dict[str, Any]] = None,
     item_id: int = 0
 ) -> Dict[str, Any]:
-    """Generate a normalized hot trade item"""
+    """Generate a normalized hot trade item with error handling"""
     
     # Get belief text
     belief_text = (
@@ -188,7 +240,7 @@ def generate_hot_trade_item(
         except:
             pass
     
-    # Generate strategy if missing
+    # Generate strategy if missing (with error handling)
     if not hot_trade['strategy'] and belief_text:
         try:
             print(f"[hot_trades] Generating strategy for: {belief_text[:50]}...")
@@ -199,8 +251,11 @@ def generate_hot_trade_item(
                 user_id="hot_trades"
             )
             
-            if ai_result and 'strategy' in ai_result:
+            if ai_result and isinstance(ai_result, dict) and 'strategy' in ai_result:
                 strategy_obj = ai_result.get('strategy', {})
+                
+                # Normalize option legs to use final ticker
+                strategy_obj = normalize_option_legs(strategy_obj, ticker)
                 
                 hot_trade['strategy'] = {
                     'type': strategy_obj.get('type', 'Options Strategy'),
@@ -212,9 +267,18 @@ def generate_hot_trade_item(
                 
                 hot_trade['sentiment'] = normalize_sentiment(ai_result.get('direction', 'neutral'))
                 hot_trade['confidence'] = normalize_confidence(ai_result.get('confidence', 0.5))
+            else:
+                # GPT returned invalid response
+                print(f"[hot_trades] GPT returned invalid response for: {belief_text[:30]}")
+                hot_trade['strategy'] = {'type': 'Unavailable (invalid response)', 'error': True}
+                
         except Exception as e:
             print(f"[hot_trades] Error generating strategy: {e}")
-            hot_trade['strategy'] = {'type': 'Error', 'error': True}
+            # Check if it's a quota error
+            if "quota" in str(e).lower() or "rate" in str(e).lower():
+                hot_trade['strategy'] = {'type': 'Unavailable (quota)', 'error': True}
+            else:
+                hot_trade['strategy'] = {'type': 'Unavailable (error)', 'error': True}
     
     # Final normalization
     hot_trade['sentiment'] = normalize_sentiment(hot_trade['sentiment'])
@@ -225,12 +289,48 @@ def generate_hot_trade_item(
     
     return hot_trade
 
+
+def generate_placeholder_trades() -> List[Dict[str, Any]]:
+    """Generate placeholder trades when feature is disabled or on error"""
+    return [{
+        'id': 0,
+        'ticker': 'SPY',
+        'headline': 'Hot trades temporarily unavailable',
+        'source': 'system',
+        'belief': 'Hot trades feature is currently disabled or experiencing issues',
+        'sentiment': 'neutral',
+        'confidence': 0.0,
+        'strategy': {'type': 'Unavailable', 'error': True},
+        'createdAt': datetime.utcnow().isoformat()
+    }]
+
+
 @router.get("/hot_trades")
 async def get_hot_trades(
     limit: int = Query(default=20, ge=1, le=100),
     sort: str = Query(default="created_at", regex="^(confidence|created_at)$")
 ) -> List[Dict[str, Any]]:
-    """GET /hot_trades endpoint"""
+    """GET /hot_trades endpoint with caching and error handling"""
+    
+    # Check feature flag
+    if not HOT_TRADES_ENABLED:
+        print("[hot_trades] Feature disabled via HOT_TRADES_ENABLED env var")
+        return []
+    
+    # Check cache
+    current_time = time.time()
+    if CACHE["data"] is not None and (current_time - CACHE["timestamp"]) < CACHE["ttl"]:
+        print(f"[hot_trades] Returning cached data (age: {current_time - CACHE['timestamp']:.1f}s)")
+        cached_data = CACHE["data"]
+        
+        # Apply sorting and limiting to cached data
+        if sort == "confidence":
+            cached_data = sorted(cached_data, key=lambda x: x.get('confidence', 0), reverse=True)
+        else:
+            cached_data = sorted(cached_data, key=lambda x: x.get('createdAt', ''), reverse=True)
+        
+        return cached_data[:limit]
+    
     try:
         # Load data
         beliefs = read_news_beliefs()
@@ -249,12 +349,21 @@ async def get_hot_trades(
             if not strategy_data and belief.get('summary'):
                 strategy_data = strategies.get(belief.get('summary', ''))
             
-            # Generate item
+            # Generate item (with error handling built in)
             hot_trade = generate_hot_trade_item(belief, strategy_data, idx)
             hot_trades.append(hot_trade)
             
             if len(hot_trades) >= limit * 2:
                 break
+        
+        # If no trades generated, return placeholder
+        if not hot_trades:
+            hot_trades = generate_placeholder_trades()
+        
+        # Update cache
+        CACHE["data"] = hot_trades
+        CACHE["timestamp"] = current_time
+        print(f"[hot_trades] Cache updated with {len(hot_trades)} items")
         
         # Sort
         if sort == "confidence":
@@ -266,6 +375,8 @@ async def get_hot_trades(
         return hot_trades[:limit]
         
     except Exception as e:
-        print(f"[hot_trades] Error: {e}")
+        print(f"[hot_trades] Critical error: {e}")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail={"error": str(e)})
+        
+        # Return graceful fallback instead of raising exception
+        return generate_placeholder_trades()

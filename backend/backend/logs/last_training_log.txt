@@ -1,0 +1,19 @@
+
+🕒 2025-09-08 04:15:28 — unknown
+
+🧠 Starting full model retraining pipeline...
+✅ Belief tag model retrained
+✅ Asset class model retrained
+❌ Failed to train smart strategy model: ❌ File not found: backend/training_data/cleaned_strategies.csv
+Traceback (most recent call last):
+  File "/Users/muradsawaged/Documents/MarketPlayground_CleanMain/backend/train_all_models.py", line 60, in train_all_models
+    train_strategy_model()
+  File "/Users/muradsawaged/Documents/MarketPlayground_CleanMain/backend/train_smarter_strategy_model.py", line 32, in train_strategy_model
+    raise RuntimeError(f"❌ File not found: {DATA_PATH}")
+RuntimeError: ❌ File not found: backend/training_data/cleaned_strategies.csv
+
+✅ Feedback quality model retrained
+✅ Strategy-from-feedback classifier retrained
+✅ Strategy training pipeline retrained
+
+✅ All model training steps completed.

@@ -6,7 +6,7 @@ This module parses the user's belief into structured components:
 - Detects company names and tickers
 - Infers market direction from keywords
 - Predicts asset class using ML model pipeline
-# - Extracts tags via ML classifier and keyword injection
+- Extracts tags via ML classifier and keyword injection
 """
 
 import re
@@ -32,6 +32,28 @@ except Exception as e:
     print(f"[WARNING] Asset class model/vectorizer not loaded: {e}")
     asset_model, asset_vectorizer = None, None
 
+# === Fix B: Guard against spurious ticker detection ===
+# Common English words that might be mistaken for tickers
+COMMON_WORDS = {
+    "NEXT", "AMID", "YEAR", "WHY", "EQUAL", "SINCE", "AGAIN", "FILES", 
+    "THIS", "ABOUT", "ITS", "MY", "DON", "PAY", "ARE", "HALO", "ALL",
+    "INTO", "FROM", "WITH", "OVER", "UNDER", "AFTER", "BEFORE", "DURING",
+    "THEN", "NOW", "HERE", "THERE", "WHERE", "WHEN", "WHAT", "WHO"
+}
+
+# === Fix B: Theme-based proxy mapping ===
+# When spurious tickers detected, map themes to real tradable symbols
+THEME_PROXIES = [
+    (("oil", "gas", "opec", "energy", "crude", "petroleum"), ["USO", "XLE", "XOM", "CVX"]),
+    (("coffee", "latte", "starbucks", "dunkin", "cafe"), ["SBUX", "DNUT", "XLY"]),
+    (("tariff", "tariffs", "trade war", "import", "export"), ["XLI", "SPY"]),
+    (("inflation", "cpi", "ppi", "consumer price"), ["SPY", "TIP"]),
+    (("rates", "fed", "powell", "fomc", "interest", "federal reserve"), ["TLT", "SPY"]),
+    (("war", "conflict", "military", "defense", "weapons"), ["ITA", "LMT", "BA"]),
+    (("china", "chinese", "beijing", "xi"), ["MCHI", "FXI", "BABA"]),
+    (("europe", "european", "eu", "euro"), ["EZU", "FEZ", "VGK"]),
+    (("japan", "japanese", "yen", "nikkei"), ["EWJ", "DXJ"]),
+]
 
 # === Fallback keyword-to-ticker maps ===
 SYMBOL_LOOKUP_MAP = {
@@ -139,8 +161,9 @@ def clean_belief(text: str) -> str:
     return re.sub(r"[^a-zA-Z0-9\s]", "", text.lower().strip())
 
 def detect_ticker(belief: str, asset_class: str = None) -> str:
-    """Enhanced ticker detection with Step C tradability guards."""
+    """Enhanced ticker detection with Step C tradability guards and theme proxies."""
     belief_lower = belief.lower()
+    belief_lower_clean = belief_lower  # For theme checking
 
     # 🎯 STEP 1: Direct ticker pattern matching (TSLA, AAPL, etc.)
     ticker_pattern = r'\b([A-Z]{1,5})\b'
@@ -181,15 +204,34 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
     # Enforce min length 2 here; remaining validity handled by is_tradable_symbol
     candidate_tickers = [t for t in ticker_matches if t not in false_positives and len(t) >= 2]
 
+    # === Fix B: Check for spurious words and apply theme-based fallback ===
     for t in candidate_tickers:
         tt = normalize_ticker(t)
+        
+        # Check if this is a spurious common word
+        if tt.upper() in COMMON_WORDS:
+            print(f"[PARSER] Spurious ticker detected: {tt} - checking for theme proxies")
+            
+            # Try to find a theme-based proxy
+            for themes, proxies in THEME_PROXIES:
+                if any(theme in belief_lower_clean for theme in themes):
+                    # Try each proxy until we find a tradable one
+                    for proxy in proxies:
+                        if is_tradable_symbol(proxy):
+                            print(f"[PARSER] Theme proxy found: {themes} → {proxy}")
+                            return proxy
+            
+            # No theme match, skip this spurious ticker
+            print(f"[PARSER] No proxy found for spurious ticker {tt}, will fall back later")
+            continue
+            
         if is_tradable_symbol(tt):
             print(f"🎯 Direct ticker match found: {tt}")
             return tt
         else:
             print(f"[PARSER] Rejected direct match (not tradable): {tt}")
 
-   # 🎯 STEP 2: Company name to ticker mapping (whole-word match)
+    # 🎯 STEP 2: Company name to ticker mapping (whole-word match)
     for company, ticker in SYMBOL_LOOKUP_MAP.items():
         # match only on whole words to avoid substrings (e.g. 'ark' in 'war tensions')
         pattern = r'\b' + re.escape(company) + r'\b'
@@ -344,15 +386,28 @@ def detect_direction(belief: str) -> str:
     return "neutral"
 
 def detect_asset_class(raw_belief: str) -> str:
+    """Detect asset class with safe fallback on vectorizer mismatch"""
     if asset_model and asset_vectorizer:
         try:
+            # === Fix A: Wrap prediction in try/except for vectorizer mismatch ===
             vec = asset_vectorizer.transform([raw_belief])  # 1 x n_features
             prediction = asset_model.predict(vec)[0]
             print(f"[ASSET CLASS DETECTED] → {prediction}")
             return prediction
+        except ValueError as ve:
+            # Handle vectorizer feature count mismatch specifically
+            if "features" in str(ve).lower():
+                print(f"[ASSET CLASS WARNING] Vectorizer mismatch: {ve}")
+                print("[ASSET CLASS FALLBACK] Using 'options' due to model/vectorizer mismatch")
+                return "options"
+            else:
+                print(f"[ASSET CLASS ERROR] Prediction failed: {ve}")
+                return "options"
         except Exception as e:
             print(f"[ASSET CLASS ERROR] Failed to predict: {e}")
-    print("[ASSET CLASS FALLBACK] Defaulting to 'options'")
+            return "options"
+    
+    print("[ASSET CLASS FALLBACK] No model loaded, defaulting to 'options'")
     return "options"
 
 
@@ -375,17 +430,31 @@ def parse_belief(belief: str) -> dict:
     tag_list = []
     confidence = 0.0
 
-    # === Tag prediction via ML ===
+    # === Tag prediction via ML with safe fallback ===
     if belief_model and belief_vectorizer:
         try:
+            # === Fix A: Wrap tag prediction in try/except for vectorizer mismatch ===
             vec = belief_vectorizer.transform([cleaned])  # 1 x n_features
             prediction = belief_model.predict(vec)[0]
             confidence = float(max(belief_model.predict_proba(vec)[0]))
             raw_tags = re.split(r"[\n,]+", prediction)
             tag_list = [tag.strip() for tag in raw_tags if tag.strip()]
             tag_list = [tag for tag in tag_list if len(tag) <= 30 and len(tag.split()) <= 4]
+        except ValueError as ve:
+            # Handle vectorizer feature count mismatch specifically
+            if "features" in str(ve).lower():
+                print(f"[TAG MODEL WARNING] Vectorizer mismatch: {ve}")
+                print("[TAG MODEL FALLBACK] Using empty tags due to model/vectorizer mismatch")
+                tag_list = []
+                confidence = 0.5
+            else:
+                print(f"[TAG MODEL ERROR] Prediction failed: {ve}")
+                tag_list = []
+                confidence = 0.5
         except Exception as e:
             print(f"[TAG MODEL ERROR] Failed to classify belief: {e}")
+            tag_list = []
+            confidence = 0.5
 
 
     # === Keyword tag injection (overlay) ===
@@ -481,13 +550,3 @@ def parse_belief(belief: str) -> dict:
         "multiplier": multiplier,
         "timeframe": timeframe,
     }
-
-    # (Unreachable legacy code retained intentionally during cleanup)
-    cleaned = clean_belief(belief)
-    if belief_model and vectorizer:
-        try:
-            vec = vectorizer.transform([cleaned])
-            return float(max(belief_model.predict_proba(vec)[0]))
-        except Exception as e:
-            print(f"[CONFIDENCE ERROR] {e}")
-    return 0.5
