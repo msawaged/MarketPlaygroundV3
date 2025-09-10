@@ -8,6 +8,7 @@ import {
   Target, DollarSign, AlertCircle
 } from 'lucide-react';
 import { API_BASE, processBelief } from '../lib/api';
+import BottomNavigation from './BottomNavigation';  // ADD THIS LINE
 
 
 const HotTrades = () => {
@@ -331,7 +332,7 @@ const HotTrades = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4 pb-24">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -398,6 +399,7 @@ const HotTrades = () => {
           </div>
         )}
       </div>
+      <BottomNavigation />
     </div>
   );
 };

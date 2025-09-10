@@ -9,6 +9,7 @@ import HotTradesPage from './components/HotTrades'; // ✅ NEW: Hot Trades route
 import ToolSelectorPage from './components/ToolSelectorPage';
 import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
 import ChatInterface from './components/ChatInterface';
+import AnalyticsPage from './components/Analytics';
 
 // ✅ Option parsing helpers
 const parseOptionType = (leg) => {
@@ -658,6 +659,7 @@ export default function App() {
   <Route path="/strategy-ops" element={<StrategyOpsPage />} />
   <Route path="/hot-trades" element={<HotTradesPage />} />
   <Route path="/basket-builder" element={<BasketBuilderPage />} />
+  <Route path="/analytics" element={<AnalyticsPage />} />
 
 </Routes>
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API_BASE } from "./lib/api";
 import BottomNavigation from './components/BottomNavigation';
+import { PortfolioModal } from './components/PortfolioComponents';
 
 const BasketBuilderPage = () => {
   const [goalText, setGoalText] = useState('');
@@ -13,6 +14,7 @@ const BasketBuilderPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -356,8 +358,19 @@ const BasketBuilderPage = () => {
         </div>
       </motion.div>
 
+      {/* Portfolio Modal */}
+      {showPortfolioModal && (
+        <PortfolioModal
+          isOpen={showPortfolioModal}
+          onClose={() => setShowPortfolioModal(false)}
+          BACKEND_URL={API_BASE}
+        />
+      )}
+
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation 
+        onPortfolioClick={() => setShowPortfolioModal(true)}
+      />
     </div>
   );
 };
