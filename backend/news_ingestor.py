@@ -19,6 +19,8 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
+from dotenv import load_dotenv
+load_dotenv()
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -61,8 +63,9 @@ OUT_CSV = DATA_DIR / "news_beliefs.csv"
 METRICS_JSON = BASE_DIR / "news_ingestor_metrics.json"
 STATE_JSON = BASE_DIR / "news_ingestor_state.json"  # persistent dedupe/last-run
 
-print("[news_ingestor] INIT REPO_ROOT:", REPO_ROOT)
-print("[news_ingestor] INIT NEWS_BELIEFS_CSV:", OUT_CSV)
+_log(f"INIT REPO_ROOT: {REPO_ROOT}")
+_log(f"INIT TARGET CSV PATH: {OUT_CSV.resolve()}")
+
 
 ALPACA_DATA_BASE = os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets")
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")

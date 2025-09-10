@@ -436,21 +436,23 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </defs>
 
           {/* P&L CURVE WITH GLOW */}
-          <motion.polyline
-            fill="none"
-            stroke={strategyType.toLowerCase().includes('put') ? "#ef4444" : "#22c55e"}
-            strokeWidth="3"
-            filter="url(#glow)"
-            points={pnlPoints.map((point, index) => {
-              const x = (index / (pnlPoints.length - 1)) * 100;
-              const y = ((maxPnl - point.pnl) / pnlRange) * 80 + 10;
-              return `${x},${y}`;
-            }).join(' ')}
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, ease: "easeInOut" }}
-          />
-
+          {pnlPoints.length > 0 && (
+            <motion.polyline
+              fill="none"
+              stroke={strategyType.toLowerCase().includes('put') ? "#ef4444" : "#22c55e"}
+              strokeWidth="3"
+              filter="url(#glow)"
+              points={pnlPoints.map((point, index) => {
+                const x = (index / (pnlPoints.length - 1)) * 100;
+                const y = ((maxPnl - point.pnl) / pnlRange) * 80 + 10;
+                return `${x},${y}`;
+              }).join(' ')}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+            />
+          )}
+     
           {/* BREAKEVEN LINE */}
           <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,4" />
           
@@ -1332,13 +1334,13 @@ const EnhancedChatInterface = () => {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({
-                                          user_id: 'demo_user',
-                                          strategy_data: {
-                                            ...message.strategy,
-                                            investment_amount: investmentAmount[message.id]
-                                          },
-                                          belief: inputValue || 'User strategy execution'
-                                        })
+                                        user_id: 'demo_user',
+                                        strategy_data: {
+                                          ...message.strategy,
+                                          investment_amount: investmentAmount[message.id]
+                                        },
+                                        belief: inputValue || 'User strategy execution'
+                                      })
                                     });
                                     
                                     const result = await response.json();
