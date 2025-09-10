@@ -656,14 +656,15 @@ def should_use_creative(parsed: dict, belief: str) -> bool:
     This unifies the system to a single backend instead of port-based routing (8000 vs 8001).
     
     Returns True if:
-    - CREATIVE_MAPPING=1 is explicitly set (force mode)
+    - CREATIVE_MAPPING_ENABLED env var is set to "true" (default false)
     - No valid ticker detected or only generic tickers (SPY, QQQ, DIA)
     - Tags are empty or too vague
     - Belief is thematic/cultural (contains key phrases)
     """
-    # Force creative if env var is explicitly set to 1
-    if os.getenv("CREATIVE_MAPPING", "0") == "1":
-        print("[CREATIVE] Forced via CREATIVE_MAPPING=1 env var")
+    # Check CREATIVE_MAPPING_ENABLED env var (default to "false")
+    creative_enabled = os.getenv("CREATIVE_MAPPING_ENABLED", "false").lower() == "true"
+    if creative_enabled:
+        print("[CREATIVE] Enabled via CREATIVE_MAPPING_ENABLED=true env var")
         return True
     
     # Check ticker quality
@@ -1175,11 +1176,15 @@ def _normalize_strategy_ticker(strategy: dict, final_ticker: str) -> dict:
                     leg["ticker"] = final_ticker
                 out.append(leg)
             else:
-                # Option leg: enforce normalization to final_ticker
+                # Option leg: only fill in missing ticker, don't overwrite existing valid tickers
                 old = leg.get("ticker")
-                leg["ticker"] = final_ticker
-                if isinstance(old, str) and old != final_ticker:
-                    print(f"[NORMALIZE] Dict leg ticker: '{old}' -> '{final_ticker}'")
+                if not isinstance(old, str) or not old.strip():
+                    # Ticker is missing or empty, fill it with final_ticker
+                    leg["ticker"] = final_ticker
+                    print(f"[NORMALIZE] Filled missing ticker with: '{final_ticker}'")
+                else:
+                    # Keep existing ticker, don't overwrite
+                    print(f"[NORMALIZE] Keeping existing ticker: '{old}'")
                 out.append(leg)
             continue
 

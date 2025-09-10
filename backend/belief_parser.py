@@ -41,6 +41,12 @@ COMMON_WORDS = {
     "THEN", "NOW", "HERE", "THERE", "WHERE", "WHEN", "WHAT", "WHO"
 }
 
+# === STOPWORD_TICKER_BLOCK: Additional stopwords that should never be treated as tickers ===
+STOPWORD_TICKER_BLOCK = {
+    "IT", "DAY", "WE", "FROM", "BANK", "PLAN", "YEARS", "MARCH", 
+    "NOW", "EYE", "WHAT", "AS", "GAIN"
+}
+
 # === Fix B: Theme-based proxy mapping ===
 # When spurious tickers detected, map themes to real tradable symbols
 THEME_PROXIES = [
@@ -162,12 +168,16 @@ def clean_belief(text: str) -> str:
 
 def detect_ticker(belief: str, asset_class: str = None) -> str:
     """Enhanced ticker detection with Step C tradability guards and theme proxies."""
-    belief_lower = belief.lower()
+    # Strip URLs from belief before processing
+    url_pattern = r'https?://\S+|www\.\S+'
+    belief_cleaned = re.sub(url_pattern, '', belief)
+    
+    belief_lower = belief_cleaned.lower()
     belief_lower_clean = belief_lower  # For theme checking
 
     # 🎯 STEP 1: Direct ticker pattern matching (TSLA, AAPL, etc.)
     ticker_pattern = r'\b([A-Z]{1,5})\b'
-    ticker_matches = re.findall(ticker_pattern, belief.upper())
+    ticker_matches = re.findall(ticker_pattern, belief_cleaned.upper())
 
     # Filter out common false positives
     false_positives = {
@@ -202,7 +212,11 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
         "TESLA","APPLE","MICROSOFT","NVIDIA","AMAZON","GOOGLE","FACEBOOK","NETFLIX","BITCOIN","ETHEREUM"
     }
     # Enforce min length 2 here; remaining validity handled by is_tradable_symbol
-    candidate_tickers = [t for t in ticker_matches if t not in false_positives and len(t) >= 2]
+    # Also filter out STOPWORD_TICKER_BLOCK
+    candidate_tickers = [t for t in ticker_matches 
+                        if t not in false_positives 
+                        and t not in STOPWORD_TICKER_BLOCK 
+                        and len(t) >= 2]
 
     # === Fix B: Check for spurious words and apply theme-based fallback ===
     for t in candidate_tickers:

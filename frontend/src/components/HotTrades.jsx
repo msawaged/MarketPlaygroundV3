@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { API_BASE, processBelief } from '../lib/api';
 
+
 const HotTrades = () => {
   const navigate = useNavigate();
   const [trades, setTrades] = useState([]);
@@ -38,7 +39,7 @@ const HotTrades = () => {
     if (showRefreshState) setRefreshing(true);
     
     try {
-      const response = await fetch(`${API_BASE}/hot_trades`, {
+      const response = await fetch(`${API_BASE}/hot_trades?limit=8`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

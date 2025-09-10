@@ -42678,5 +42678,20 @@
       "safe_to_execute": true
     },
     "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-10T08:07:53.818857",
+    "user_id": "murad",
+    "belief": "tsla is going up",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "TSLA",
+      "direction": "bullish",
+      "user_id": "murad",
+      "processing_time": 2.3416242599487305,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
   }
 ]

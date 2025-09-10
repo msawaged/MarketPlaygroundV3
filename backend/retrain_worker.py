@@ -20,6 +20,7 @@ except ImportError:
 
 # ── Paths / constants ─────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -32,7 +33,7 @@ TRAINING_FILES: List[Path] = [
     # feedback/news & outcomes
     BASE_DIR / "feedback_log.csv",
     BASE_DIR / "feedback.csv",
-    BASE_DIR / "news_beliefs.csv",
+    DATA_DIR / "news_beliefs.csv",
     BASE_DIR / "strategy_outcomes.csv",
     BASE_DIR / "Training_Strategies.csv",
     BASE_DIR / "beliefs.csv",
