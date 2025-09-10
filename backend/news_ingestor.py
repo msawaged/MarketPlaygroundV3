@@ -4,7 +4,7 @@ News Ingestor (single-cycle)
 - Reads NEWS_SOURCES (comma-separated URLs or JSON array).
 - Pulls Alpaca news when configured via "alpaca:SYMB1|SYMB2|...".
 - Optionally calls your local news_scraper.py if present, to merge custom items.
-- Dedupe + atomic append to backend/news_beliefs.csv.
+- Dedupe + atomic append to data/news_beliefs.csv.
 - Writes backend/news_ingestor_metrics.json (atomic).
 - Safe on errors; structured, timestamped stdout logs.
 - Run mode: one cycle only (loop handled by news_ingestor_loop.py).
@@ -20,7 +20,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-# Optional deps; we degrade gracefully if missing.
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def _log(msg: str):
+    ts = _utc_now_iso()
+    print(f"[{ts}] [news_ingestor] {msg}")
+
+# Optional deps — keep import failures non-fatal for dev
 try:
     import requests
 except Exception:  # pragma: no cover
@@ -45,19 +52,40 @@ except Exception:
     custom_scraper = None  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
-OUT_CSV = BASE_DIR / "news_beliefs.csv"
+# Canonical data dir at repo root (aligns with hot_trades_router.py)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+OUT_CSV = DATA_DIR / "news_beliefs.csv"
 METRICS_JSON = BASE_DIR / "news_ingestor_metrics.json"
 STATE_JSON = BASE_DIR / "news_ingestor_state.json"  # persistent dedupe/last-run
+
+print("[news_ingestor] INIT REPO_ROOT:", REPO_ROOT)
+print("[news_ingestor] INIT NEWS_BELIEFS_CSV:", OUT_CSV)
 
 ALPACA_DATA_BASE = os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets")
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")
 ALPACA_API_SECRET = os.getenv("ALPACA_API_SECRET")
+print("[news_ingestor] INIT ALPACA_NEWS_ENABLED:", os.getenv("ALPACA_NEWS_ENABLED"))
+print("[news_ingestor] INIT NEWS_SOURCES:", os.getenv("NEWS_SOURCES"))
 
-def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def _csv_header() -> List[str]:
+    return ["timestamp_utc", "story_id", "title", "url", "source", "summary", "tickers"]
 
-def _log(msg: str):
-    print(f"[{_utc_now_iso()}] [news_ingestor] {msg}", flush=True)
+def _ensure_csv():
+    if not OUT_CSV.exists():
+        with OUT_CSV.open("w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(_csv_header())
+
+def _atomic_write_json(path: Path, data: Dict):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(path)
+
+def _write_metrics(data: Dict):
+    _atomic_write_json(METRICS_JSON, data)
 
 def _atomic_write_text(path: Path, text: str):
     tmp = path.with_suffix(path.suffix + ".tmp")
@@ -92,39 +120,22 @@ def _remember_ids(new_ids: Iterable[str]):
 def _parse_sources_env() -> List[str]:
     raw = os.getenv("NEWS_SOURCES", "").strip()
     if not raw:
+        raw = "https://www.marketwatch.com/rss/topstories,https://feeds.a.dj.com/rss/RSSMarketsMain.xml"
+    if not raw:
         return []
     # Allow JSON array or comma-separated
-    if raw.startswith("["):
+    if (raw.startswith("[") and raw.endswith("]")) or (raw.startswith("{") and raw.endswith("}")):
         try:
-            arr = json.loads(raw)
-            return [str(x).strip() for x in arr if str(x).strip()]
+            obj = json.loads(raw)
+            if isinstance(obj, list):
+                return [str(x).strip() for x in obj if str(x).strip()]
+            return []
         except Exception:
-            pass
+            return []
+    # Comma-separated
     return [s.strip() for s in raw.split(",") if s.strip()]
 
-def _csv_header() -> List[str]:
-    return ["timestamp_utc", "story_id", "title", "url", "source", "summary", "tickers"]
-
-def _ensure_csv():
-    if not OUT_CSV.exists():
-        with OUT_CSV.open("w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f)
-            w.writerow(_csv_header())
-
-def _atomic_append_rows(rows: List[List[str]]):
-    """Atomic append: read current -> write merged tmp -> replace."""
-    _ensure_csv()
-    with OUT_CSV.open("r", newline="", encoding="utf-8") as rf:
-        existing = rf.read()
-
-    with tempfile.NamedTemporaryFile("w", delete=False, newline="", encoding="utf-8") as tf:
-        tf.write(existing)
-        w = csv.writer(tf)
-        for row in rows:
-            w.writerow(row)
-        tmp_path = Path(tf.name)
-
-    tmp_path.replace(OUT_CSV)
+# === Fetchers ===
 
 def _normalize_text(s: Optional[str]) -> str:
     if not s:
@@ -139,7 +150,7 @@ def _fetch_rss(url: str, timeout: int = 10) -> List[Dict]:
     try:
         parsed = feedparser.parse(url)
     except Exception as e:
-        _log(f"ERROR parsing feed {url}: {e}")
+        _log(f"ERROR fetching RSS {url}: {e}")
         return []
     out = []
     for e in parsed.entries:
@@ -172,47 +183,38 @@ def _fetch_http_json(url: str, timeout: int = 10) -> List[Dict]:
         items = data
     else:
         items = []
-
     for it in items:
-        story_id = it.get("id") or it.get("uuid") or it.get("url") or it.get("title")
+        story_id = it.get("id") or it.get("uuid") or it.get("url")
         out.append({
             "story_id": str(story_id) if story_id else None,
-            "title": it.get("title", ""),
-            "url": it.get("url", ""),
+            "title": it.get("title") or "",
+            "url": it.get("url") or "",
             "source": url,
-            "summary": it.get("summary", "") or it.get("description", ""),
-            "tickers": it.get("tickers", []) or it.get("symbols", []),
+            "summary": _normalize_text(it.get("summary") or it.get("description") or ""),
+            "tickers": it.get("tickers") or it.get("symbols") or [],
         })
     return out
 
-def _fetch_alpaca_news(symbols: List[str], limit: int = 50, timeout: int = 10) -> List[Dict]:
-    """
-    Uses Alpaca Market Data v1beta1 news endpoint when keys are present.
-    NOTE: This assumes Premium data access is enabled in your Alpaca account.
-    """
+def _fetch_alpaca_news(symbols: List[str], limit: int = 25) -> List[Dict]:
     if requests is None:
-        _log("WARNING: requests not installed; skipping Alpaca news.")
+        _log("WARNING: requests not installed; skipping Alpaca.")
         return []
-    if not (ALPACA_API_KEY and ALPACA_API_SECRET):
-        _log("INFO: Alpaca keys not set; skipping Alpaca news.")
+    if not ALPACA_API_KEY or not ALPACA_API_SECRET:
+        _log("INFO: Alpaca credentials not set; skipping Alpaca news.")
         return []
-    if not symbols:
-        return []
-
-    url = f"{ALPACA_DATA_BASE.rstrip('/')}/v1beta1/news"
-    params = {"symbols": ",".join(symbols), "limit": str(limit)}
-    headers = {
-        "APCA-API-KEY-ID": ALPACA_API_KEY,
-        "APCA-API-SECRET-KEY": ALPACA_API_SECRET,
-    }
+    url = f"{ALPACA_DATA_BASE}/v1beta1/news"
     try:
-        resp = requests.get(url, headers=headers, params=params, timeout=timeout)
+        params = {"symbols": ",".join(symbols), "limit": str(limit)}
+        headers = {
+            "Apca-Api-Key-Id": ALPACA_API_KEY,
+            "Apca-Api-Secret-Key": ALPACA_API_SECRET,
+        }
+        resp = requests.get(url, params=params, headers=headers, timeout=10)
         resp.raise_for_status()
         data = resp.json()
     except Exception as e:
         _log(f"ERROR fetching Alpaca news: {e}")
         return []
-
     items = data.get("news", []) if isinstance(data, dict) else []
     out = []
     for it in items:
@@ -245,38 +247,82 @@ def _infer_fetcher(entry: str) -> Tuple[str, Dict]:
         url = "http://" + entry[len("feed://"):]
         return ("rss", {"url": url})
     if entry.startswith("http://") or entry.startswith("https://"):
-        return ("auto", {"url": entry})
-    return ("unknown", {"raw": entry})
+        # Try RSS via feedparser first, fall back to JSON fetch if looks JSON
+        return ("rss", {"url": entry})
+    return ("unknown", {})
 
-def _collect_entries(sources: List[str]) -> List[Dict]:
-    collected: List[Dict] = []
-
-    # 1) Built-in sources
-    for s in sources:
-        kind, meta = _infer_fetcher(s)
-        if kind == "alpaca":
-            entries = _fetch_alpaca_news(meta.get("symbols", []))
-            _log(f"Source alpaca:{'|'.join(meta.get('symbols', []))} -> {len(entries)} items")
-            collected.extend(entries)
-        elif kind == "auto":
-            url = meta["url"]
-            rss_entries = _fetch_rss(url)
-            if rss_entries:
-                _log(f"Source RSS {url} -> {len(rss_entries)} items")
-                collected.extend(rss_entries)
-            else:
-                json_entries = _fetch_http_json(url)
-                _log(f"Source JSON {url} -> {len(json_entries)} items")
-                collected.extend(json_entries)
+def _collect_sources() -> List[Dict]:
+    entries = _parse_sources_env()
+    if not entries:
+        _log("INFO: NEWS_SOURCES is empty and no custom scraper detected; nothing to ingest.")
+        return []
+    out = []
+    for entry in entries:
+        kind, params = _infer_fetcher(entry)
+        if kind == "alpaca" and params.get("symbols"):
+            out.append({"kind": "alpaca", "params": params})
         elif kind == "rss":
-            url = meta["url"]
-            rss_entries = _fetch_rss(url)
-            _log(f"Source RSS {url} -> {len(rss_entries)} items")
-            collected.extend(rss_entries)
-        else:
-            _log(f"WARNING: Unrecognized source '{s}', skipping.")
+            out.append({"kind": "rss", "params": params})
+        elif kind == "unknown" and entry:
+            # Try JSON anyway
+            out.append({"kind": "json", "params": {"url": entry}})
+    return out
 
-    # 2) Optional custom scraper hook (your news_scraper.py)
+def _atomic_append_rows(rows: List[List[str]]):
+    """Atomic append: read current -> write merged tmp -> replace."""
+    _ensure_csv()
+    with OUT_CSV.open("r", newline="", encoding="utf-8") as rf:
+        existing = rf.read()
+
+    with tempfile.NamedTemporaryFile("w", delete=False, newline="", encoding="utf-8") as tf:
+        tf.write(existing)
+        w = csv.writer(tf)
+        for row in rows:
+            w.writerow(row)
+        tmp_path = Path(tf.name)
+
+    tmp_path.replace(OUT_CSV)
+
+def main() -> int:
+    start_ts = datetime.now(timezone.utc).timestamp()
+
+    sources = _collect_sources()
+    if not sources:
+        _write_metrics({
+            "polled_feeds": 0,
+            "fetched": 0,
+            "new_written": 0,
+            "duration_seconds": 0.0,
+            "alpaca_enabled": bool(ALPACA_API_KEY and ALPACA_API_SECRET),
+            "custom_scraper": bool(CUSTOM_SCRAPER_FUNCS),
+        })
+        return 0
+
+    # Seed CSV header if needed
+    _ensure_csv()
+
+    collected: List[Dict] = []
+    fetched = 0
+
+    # RSS / JSON / Alpaca fetch
+    for s in sources:
+        if s["kind"] == "alpaca":
+            syms = s["params"].get("symbols") or []
+            items = _fetch_alpaca_news(syms)
+            fetched += len(items)
+            collected.extend(items)
+        elif s["kind"] == "rss":
+            url = s["params"]["url"]
+            items = _fetch_rss(url)
+            fetched += len(items)
+            collected.extend(items)
+        elif s["kind"] == "json":
+            url = s["params"]["url"]
+            items = _fetch_http_json(url)
+            fetched += len(items)
+            collected.extend(items)
+
+    # Custom scraper (optional)
     if CUSTOM_SCRAPER_FUNCS:
         total_custom = 0
         for func in CUSTOM_SCRAPER_FUNCS:
@@ -309,45 +355,21 @@ def _collect_entries(sources: List[str]) -> List[Dict]:
     for it in collected:
         it["story_id"] = (it.get("story_id") or "").strip()
         it["title"] = _normalize_text(it.get("title"))
-        it["url"] = _normalize_text(it.get("url"))
-        it["source"] = _normalize_text(it.get("source"))
+        it["url"] = (it.get("url") or "").strip()
+        it["source"] = (it.get("source") or "").strip()
         it["summary"] = _normalize_text(it.get("summary"))
         syms = it.get("tickers") or []
-        if not isinstance(syms, list):
-            syms = [str(syms)]
-        it["tickers"] = sorted({str(t).upper() for t in syms if str(t).strip()})
-    return collected
+        if isinstance(syms, str):
+            syms = [s.strip().upper() for s in syms.split(",") if s.strip()]
+        if isinstance(syms, list):
+            syms = [str(s).strip().upper() for s in syms if str(s).strip()]
+        it["tickers"] = syms
 
-def _write_metrics(metrics: Dict):
-    metrics = dict(metrics)
-    metrics["last_run_utc"] = _utc_now_iso()
-    _atomic_write_text(METRICS_JSON, json.dumps(metrics, indent=2))
-
-def main():
-    # Support one-shot invocation, loop is external
-    _ = sys.argv[1:]
-
-    sources = _parse_sources_env()
-    if not sources and not CUSTOM_SCRAPER_FUNCS:
-        _log("INFO: NEWS_SOURCES is empty and no custom scraper detected; nothing to ingest.")
-        _write_metrics({
-            "polled_feeds": 0, "fetched": 0, "new_written": 0, "duration_seconds": 0.0,
-            "alpaca_enabled": bool(ALPACA_API_KEY and ALPACA_API_SECRET),
-            "custom_scraper": False,
-        })
-        return 0
-
-    start_ts = datetime.now(timezone.utc).timestamp()
-
-    entries = _collect_entries(sources)
-    fetched = len(entries)
     seen = _load_seen_ids()
-
-    # dedupe by story_id (fallback to URL if missing)
     new_rows: List[List[str]] = []
     newly_seen: List[str] = []
 
-    for it in entries:
+    for it in collected:
         sid = it.get("story_id") or it.get("url") or ""
         if not sid:
             continue
