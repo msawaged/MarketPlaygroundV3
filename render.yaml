@@ -7,7 +7,7 @@ services:
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ uvicorn backend.app:app --host 0.0.0.0 --port 10000"
     envVars:
       - key: PORT
@@ -15,7 +15,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: CREATIVE_MAPPING
-        value: "1"   # ✅ Enable Creative Mapping on Render
+        value: "1"
 
   # 🔁 Background Model Retraining Worker
   - type: worker
@@ -23,32 +23,73 @@ services:
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ python backend/retrain_worker.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      # Throttles
+      - key: RETRAIN_WORKER_ENABLED
+        value: "true"
+      - key: RETRAIN_MIN_NEW_ITEMS
+        value: "75"          # wait for enough new samples
+      - key: RETRAIN_COOLDOWN_MINUTES
+        value: "180"         # min 3h between runs
+      - key: RETRAIN_USE_LOCKFILE
+        value: "true"        # refuse if another retrain is active
 
   # 📰 News Ingestor (Cron Job every hour)
   - type: cron
     name: news-ingestor
     env: python
-    schedule: "0 * * * *"                                   # ✅ every hour
+    schedule: "0 * * * *"     # hourly
     rootDir: .
-    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      # Safety gates (no-code throttles)
+      - key: NEWS_INGESTOR_ENABLED
+        value: "true"
+      - key: NEWS_USE_LOCKFILE
+        value: "true"         # refuse if previous hour still running
+      - key: NEWS_MAX_FEEDS
+        value: "5"
+      - key: NEWS_PER_FEED_LIMIT
+        value: "10"
+      - key: NEWS_MAX_CONCURRENCY
+        value: "1"            # keep it single-threaded on Starter
+      - key: NEWS_POLL_SECONDS
+        value: "999999"       # cron should do ONE pass and exit
+      - key: NEWS_HTTP_TIMEOUT
+        value: "10"
+      - key: NEWS_RETRY_MAX
+        value: "3"
+      - key: NEWS_GLOBAL_RATE_QPS
+        value: "1"            # simple global rate limit
+      - key: NEWS_HARD_RSS_MB
+        value: "450"          # self-terminate if memory climbs
+      - key: NEWS_RUN_ONCE
+        value: "true"         # if supported; otherwise LOG & exit after pass
 
-  # 🧠 Belief Feeder (Feeds Beliefs into the AI Pipeline)
+  # 🧠 Belief Feeder
   - type: worker
     name: belief-feeder
     env: python
     plan: starter
     rootDir: .
-    buildCommand: "pip install -r requirements.txt"         # ✅ use root requirements.txt
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ python backend/belief_feeder.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      # Throttles
+      - key: FEEDER_ENABLED
+        value: "true"
+      - key: FEEDER_MAX_CONCURRENCY
+        value: "1"
+      - key: FEEDER_POLL_SECONDS
+        value: "60"
+      - key: FEEDER_USE_LOCKFILE
+        value: "true"
