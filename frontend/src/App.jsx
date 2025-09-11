@@ -10,6 +10,8 @@ import ToolSelectorPage from './components/ToolSelectorPage';
 import BasketBuilderPage from './BasketBuilderPage'; // 🧺 Asset basket builder
 import ChatInterface from './components/ChatInterface';
 import AnalyticsPage from './components/Analytics';
+import MarketDashboard from "./components/MarketDashboard";
+
 
 // ✅ Option parsing helpers
 const parseOptionType = (leg) => {
@@ -660,6 +662,8 @@ export default function App() {
   <Route path="/hot-trades" element={<HotTradesPage />} />
   <Route path="/basket-builder" element={<BasketBuilderPage />} />
   <Route path="/analytics" element={<AnalyticsPage />} />
+  <Route path="/market-dashboard" element={<MarketDashboard />} />
+
 
 </Routes>
 

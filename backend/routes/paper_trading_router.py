@@ -23,6 +23,18 @@ from backend.alpaca_orders import AlpacaExecutor
 from backend.alpaca_client import get_account_info
 from backend.alpaca_portfolio import get_live_positions
 
+DEDUP_WINDOW = int(os.getenv("EXECUTION_SYMBOL_WINDOW_SECONDS", "30"))  # cooldown in seconds
+_EXEC_CACHE: Dict[str, float] = {}  # cache of last order timestamps
+
+def _dedupe_key(req: "TradeRequest") -> str:
+    sd = req.strategy_data or {}
+    t = (sd.get("type") or "").lower()
+    side = (sd.get("side") or ("sell" if "sell" in t else "buy")).lower()
+    sym = (sd.get("ticker") or sd.get("symbol") or "UNKNOWN").upper()
+    qty = str(sd.get("quantity") or sd.get("qty") or 1)
+    return f"{req.user_id}:{sym}:{side}:{qty}"  # unique key for dedupe
+
+
 # -----------------------------------------------------------------------------
 # Logging
 # -----------------------------------------------------------------------------
@@ -336,6 +348,20 @@ async def execute_live_trade(request: TradeRequest):
         raise HTTPException(status_code=403, detail="User not permitted for live trading.")
     if not request.confirm_live:
         raise HTTPException(status_code=400, detail="Missing confirm_live=true for live execution.")
+    k = _dedupe_key(request)  # unique key from user+order
+    now = time.time()  # current timestamp
+    last = _EXEC_CACHE.get(k, 0.0)  # last time this order key was seen
+    if now - last < DEDUP_WINDOW:  # within cooldown window
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": "duplicate_or_too_soon",
+                "retry_after": int(DEDUP_WINDOW - (now - last)),
+                "key": k
+            }
+        )
+    _EXEC_CACHE[k] = now  # record this order timestamp
+
 
     # Normalize equity order for the stock path; then branch cleanly by intent.
     normalized_equity, err = _normalize_alpaca_equity_order(request.strategy_data)
