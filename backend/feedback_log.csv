@@ -88,3 +88,12 @@ timestamp,user_id,ip,belief,strategy,feedback,risk_profile
 2025-09-06T17:42:31.336611,elite_chat_user,127.0.0.1,online clothing shopping is booming,Long Call Option,bad,moderate
 2025-09-08T03:31:15.399890,elite_chat_user,127.0.0.1,oil demand is rising in europe,Straddle Option Strategy,bad,moderate
 2025-09-10T15:20:32.629384,elite_chat_user,127.0.0.1,tesla will go up in the next two weeks by 20%,Bull Call Spread,bad,moderate
+2025-09-11T06:05:28.879010,elite_chat_user,127.0.0.1,oil prices are esclating due to hight overseas tension,Iron Condor,bad,moderate
+2025-09-14T21:54:29.061967,elite_chat_user,127.0.0.1,NVDA up 10% next month,Bull Call Spread,bad,moderate
+2025-09-15T08:23:17.905378,elite_chat_user,127.0.0.1,i think oil will sky rocket soon,Call Option,bad,moderate
+2025-09-15T12:29:59.602087,elite_chat_user,127.0.0.1,BUILD A BOND LADDER FOR MODERATE GROWTH,Bond Ladder,bad,moderate
+2025-09-15T18:48:41.852616,elite_chat_user,127.0.0.1,ai chip demand and energy for it is rising very high in the long term,Iron Condor,bad,moderate
+2025-09-16T02:34:35.613110,elite_chat_user,127.0.0.1,Neutral on NVDA near-term; consider an iron condor,Iron Condor,bad,moderate
+2025-09-16T02:34:41.072060,elite_chat_user,127.0.0.1,Neutral on NVDA near-term; consider an iron condor,Iron Condor,bad,moderate
+2025-09-16T06:03:09.055717,elite_chat_user,127.0.0.1,Price of gold will rise by end of year ,Long Call Option,bad,moderate
+2025-09-16T06:54:45.913751,elite_chat_user,127.0.0.1,Apple will gain 20% in a month’s time.,Bull Call Spread,bad,moderate

@@ -47,6 +47,26 @@ STOPWORD_TICKER_BLOCK = {
     "NOW", "EYE", "WHAT", "AS", "GAIN"
 }
 
+# Prevent English-word collisions that also exist as tickers (e.g., "TIME" from "in a month's time")
+STOP_TICKERS = {
+    "TIME", "IT", "ALL", "ONE", "ON", "US", "USD", "UP", "DOWN", "OPEN", "CLOSE", "NEW", "HIGH", "LOW"
+}
+
+def _looks_like_contextual_ticker(tok: str, text_upper: str) -> bool:
+    """
+    True if tok appears as a real symbol (e.g. $TOK, (TOK), [TOK], or as a clean token).
+    Avoids matching substrings in normal prose (e.g. 'time' -> 'TIME').
+    """
+    tok = tok.upper()
+    padded = f" {text_upper} "
+    return (
+        f"${tok}" in text_upper or
+        f"({tok})" in text_upper or
+        f"[{tok}]" in text_upper or
+        f" {tok} " in padded
+    )
+
+
 # === Fix B: Theme-based proxy mapping ===
 # When spurious tickers detected, map themes to real tradable symbols
 THEME_PROXIES = [
@@ -213,10 +233,30 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
     }
     # Enforce min length 2 here; remaining validity handled by is_tradable_symbol
     # Also filter out STOPWORD_TICKER_BLOCK
-    candidate_tickers = [t for t in ticker_matches 
-                        if t not in false_positives 
-                        and t not in STOPWORD_TICKER_BLOCK 
-                        and len(t) >= 2]
+    belief_upper = belief_cleaned.upper()
+
+    candidate_tickers = []
+    for t in ticker_matches:
+        if len(t) < 2:
+            continue
+        if t in false_positives:
+            continue
+        if t in STOPWORD_TICKER_BLOCK:
+            continue
+
+        # 🔒 Special rule for STOP_TICKERS (English words that are also tickers)
+        # Require explicit symbol context for these: $T, (T), [T].
+        if t in STOP_TICKERS:
+            if not (f"${t}" in belief_upper or f"({t})" in belief_upper or f"[{t}]" in belief_upper):
+                # e.g. skip TIME from "in a month's time"
+                continue
+
+        # For non-stop tickers, your normal rules apply
+        candidate_tickers.append(t)
+        print(f"[PARSER] Candidates after STOP_TICKERS rule: {candidate_tickers}")
+
+
+
 
     # === Fix B: Check for spurious words and apply theme-based fallback ===
     for t in candidate_tickers:

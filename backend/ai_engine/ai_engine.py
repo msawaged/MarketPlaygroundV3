@@ -51,6 +51,15 @@ print(" Imported strategy_model_selector")
 
 from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
 
+# === Environment flags (prod/guard & fallbacks)
+PRODUCTION_MODE = os.getenv("MP_PRODUCTION_MODE", os.getenv("PRODUCTION_MODE", "false")).lower() == "true"
+ENABLE_ML_FALLBACK = os.getenv("ENABLE_ML_FALLBACK", "true").lower() == "true"
+CREATIVE_MAPPING  = os.getenv("CREATIVE_MAPPING", "true").lower() == "true"
+print(f"[ENV] PRODUCTION_MODE={PRODUCTION_MODE} ENABLE_ML_FALLBACK={ENABLE_ML_FALLBACK} CREATIVE_MAPPING={CREATIVE_MAPPING}")
+
+
+
+
 # === Beta Guard helpers (surgical; do not refactor core engine) ===
 def _is_creative_disabled() -> bool:
     """Check if creative mapping is OFF (beta default)."""
@@ -604,6 +613,7 @@ def _sanitize_spread_strikes(strategy: dict, belief: str, price_info: dict) -> d
         return strategy
 
 
+
 # ===   Helper: Normalize Bear Put Spread Type + Explanation ===
 def _normalize_bear_put_spread(strategy: dict) -> dict:
     """
@@ -654,6 +664,103 @@ def _normalize_bear_put_spread(strategy: dict) -> dict:
     except Exception as e:
         print(f"[PUT NORMALIZE ERROR] {e}")
         return strategy
+
+# === Synthesizer: build a safe, defined-risk options strategy when legs are missing ===
+def _synthesize_defined_risk(direction: str, ticker: str, price_info: dict, expiry: str | None) -> dict:
+    """
+    WHY:
+      Sometimes GPT/ML returns an options *type* but no `trade_legs`, or legs get
+      stripped in validation. That downstream breaks UI and validator logic.
+
+    WHAT:
+      Use spot to synthesize a *defined-risk* options structure that matches the
+      direction. This guarantees:
+        - no naked long-only legs (risk is capped),
+        - strikes make sense relative to spot,
+        - expiration is present,
+        - trade_legs is never missing.
+
+    HOW:
+      - bullish  -> Bull Call Spread (buy ATM-ish call, sell OTM call)
+      - bearish  -> Bear  Put  Spread (buy ATM-ish put,  sell lower put)
+      - neutral  -> Iron  Condor    (±5% band around spot; wings 1 step wide)
+
+    NOTE:
+      We keep strikes coarse (1 or 5) so they align with common tick size ladders.
+    """
+    # 1) Pull spot price; default to a reasonable synthetic if unavailable
+    try:
+        spot = float(price_info.get("latest") or 0.0)
+    except Exception:
+        spot = 0.0
+    if spot <= 0:
+        spot = 100.0  # fallback spot so we can still synthesize legs
+
+    # 2) Choose step size: 5 for large underlyings (>=100), else 1
+    step = 5 if spot >= 100 else 1
+    def rto(v: float) -> int:
+        """round-to ladder step size (keeps strikes on consistent grid)."""
+        return step * round(float(v)/step)
+
+    # 3) Ensure we always emit an expiration
+    expiry = expiry or "TBD"
+    d = (direction or "").lower()
+
+    # 4) Bullish: Bull Call Spread near/above spot
+    if d == "bullish":
+        buy  = rto(spot * 1.00)        # near-the-money
+        sell = max(buy + step, rto(spot * 1.05))  # ~+5%
+        return {
+            "type": "Bull Call Spread",
+            "trade_legs": [
+                {"action": "Buy to Open",  "ticker": ticker, "option_type": "Call", "strike_price": str(buy),  "expiration": expiry},
+                {"action": "Sell to Open", "ticker": ticker, "option_type": "Call", "strike_price": str(sell), "expiration": expiry},
+            ],
+            "expiration": expiry,
+            "target_return": "20-40%",
+            "max_loss": "Net Debit",
+            "time_to_target": "1-3 months",
+            "explanation": f"Defined-risk bullish spread on {ticker} synthesized from belief.",
+        }
+
+    # 5) Bearish: Bear Put Spread near/below spot
+    if d == "bearish":
+        buy  = rto(spot * 1.00)         # near-the-money
+        sell = rto(spot * 0.95)         # ~-5%
+        if sell >= buy:                 # sanity: ensure sell < buy for put spread
+            sell = buy - step
+        return {
+            "type": "Bear Put Spread",
+            "trade_legs": [
+                {"action": "Buy to Open",  "ticker": ticker, "option_type": "Put", "strike_price": str(buy),  "expiration": expiry},
+                {"action": "Sell to Open", "ticker": ticker, "option_type": "Put", "strike_price": str(sell), "expiration": expiry},
+            ],
+            "expiration": expiry,
+            "target_return": "20-40%",
+            "max_loss": "Net Debit",
+            "time_to_target": "1-3 months",
+            "explanation": f"Defined-risk bearish spread on {ticker} synthesized from belief.",
+        }
+
+    # 6) Neutral: Iron Condor with ±5% short strikes and 1-step wings
+    low_put   = rto(spot * 0.95)
+    high_call = rto(spot * 1.05)
+    buy_put   = low_put  - step
+    sell_call = high_call + step
+    return {
+        "type": "Iron Condor",
+        "trade_legs": [
+            {"action":"Buy to Open","ticker":ticker,"option_type":"Put",  "strike_price": str(buy_put),  "expiration": expiry},
+            {"action":"Sell to Open","ticker":ticker,"option_type":"Put",  "strike_price": str(low_put), "expiration": expiry},
+            {"action":"Sell to Open","ticker":ticker,"option_type":"Call", "strike_price": str(high_call),"expiration": expiry},
+            {"action":"Buy to Open","ticker":ticker,"option_type":"Call", "strike_price": str(sell_call),"expiration": expiry},
+        ],
+        "expiration": expiry,
+        "target_return": "10-20%",
+        "max_loss": "Defined",
+        "time_to_target": "1-2 months",
+        "explanation": f"Range-bound defined-risk condor on {ticker} synthesized from belief.",
+    }
 
 
 # ===  Helper: Infer Tags From Final Strategy ===
@@ -1054,18 +1161,11 @@ def run_ai_engine(
         },
     )
     
-    #  CRITICAL PRODUCTION FIX: Check if sentiment validation blocked the strategy
+   #  CRITICAL: selector says "blocked" — do NOT return here; let GPT/ML fallback run
     if strategy is None:
-        print(" STRATEGY BLOCKED: Sentiment validation prevented misaligned strategy")
-        return {
-            "error": "Strategy blocked due to sentiment misalignment",
-            "strategy": None,
-            "ticker": ticker,
-            "direction": direction,
-            "user_id": user_id,
-            "processing_time": time.time() - start_time,
-            "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
-        }
+        print(" STRATEGY BLOCKED by selector — attempting GPT/ML fallback instead of returning")
+        # leave `strategy = None` so the `_should_call_gpt` block below will run
+
 
         # ===  GPT CALL GUARD =======================================================
     # Only call GPT here if we *need* it:
@@ -1120,7 +1220,7 @@ def run_ai_engine(
                 except Exception as e:
                     print(f"[Explainer] failed: {e}")  # leave existing explanation as-is
 
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError, ValueError):
                 print("[  Fallback] GPT returned invalid JSON, attempting soft parse...")
 
                 soft_strategy = attempt_gpt_strategy_parse(
@@ -1167,7 +1267,39 @@ def run_ai_engine(
 
         except Exception as e:
             print(f"[GPT DEBUG]  GPT strategy generation failed: {e}")
-    # else: skipped GPT because selector already produced a non-ML strategy
+    # === Ensure we have a strategy dict before continuing ===
+    if not isinstance(strategy, dict):
+        print("[FALLBACK] Strategy is still None after GPT. Trying ML model...")
+        try:
+            from backend.ai_engine.ml_strategy_bridge import run_ml_strategy_model
+            strategy = run_ml_strategy_model(
+                belief,
+                {
+                    "direction": direction,
+                    "ticker": ticker,
+                    "tags": tags,
+                    "asset_class": asset_class,
+                    "goal_type": goal_type,
+                    "multiplier": multiplier,
+                    "timeframe": timeframe,
+                    "risk_profile": risk_profile,
+                    "confidence": confidence,
+                    "price_info": price_info,
+                },
+            )
+            strategy["source"] = "ml_fallback"
+        except Exception as e:
+            print(f"[FALLBACK ERROR] ML fallback failed: {e}")
+            return {
+                "error": "Strategy generation failed after GPT and ML fallback",
+                "strategy": None,
+                "ticker": ticker,
+                "direction": direction,
+                "user_id": user_id,
+                "processing_time": time.time() - start_time,
+                "reason": str(e),
+            }
+
 
     # --- Sanitize non-US/futures or foreign outputs into a clean US instrument (ETF or defined-risk options) ---
     if isinstance(strategy, dict):
@@ -1233,7 +1365,26 @@ def run_ai_engine(
 
     # ===   Clean up expiration
     if asset_class == "options":
+        # Ensure the expiration date is never past or invalid
         strategy["expiration"] = fix_expiration(ticker, strategy.get("expiration"))
+
+        # 🔧 GUARD: If GPT/ML gave us an "options" strategy *without trade_legs*,
+        #           synthesize a safe, defined-risk structure so validation never breaks.
+        #           This guarantees:
+        #             • trade_legs is never missing,
+        #             • risk is capped (no naked longs),
+        #             • structure matches the belief direction.
+        if not strategy.get("trade_legs"):
+            strategy = _synthesize_defined_risk(direction, ticker, price_info, strategy.get("expiration"))
+
+        # === REPAIR/NUDGE BEFORE VALIDATION ===
+        # Now run sanity-nudges to adjust unsafe or unrealistic outputs.
+        strategy = _maybe_nudge_to_bull_call_spread(strategy, belief, price_info)   # naked long call → bull call spread
+        strategy = _sanitize_spread_strikes(strategy, belief, price_info)           # unrealistic strikes → clamp near spot
+        strategy = _maybe_nudge_to_bear_put_spread(strategy, belief, price_info)    # naked long put → bear put spread
+        strategy = _normalize_bear_put_spread(strategy)                             # mislabeled 2-leg put spread → normalize
+
+
 
 
     #  FIXED: Ensure trade_legs list is converted to a lowercase string safely
@@ -1354,17 +1505,7 @@ def run_ai_engine(
     print("CHECKPOINT: About to add dynamic fields!")
     asset_specific_fields = add_dynamic_fields(asset_class, strategy, ticker, price_info)
 
-    # Nudge plain long call ' bull call spread if underperform risk
-    strategy = _maybe_nudge_to_bull_call_spread(strategy, belief, price_info)
-
-    # If it was already a spread with silly call strikes, fix them based on spot
-    strategy = _sanitize_spread_strikes(strategy, belief, price_info)
-
-    # Nudge long put ' bear put spread (short timeframe + % drop)
-    strategy = _maybe_nudge_to_bear_put_spread(strategy, belief, price_info)
-
-    # Normalize put spreads (type + explanation) if needed
-    strategy = _normalize_bear_put_spread(strategy)
+    
 
     # === Fix C: Ensure all trade legs use the final validated ticker ===
     # This is critical for consistency - force all legs to match

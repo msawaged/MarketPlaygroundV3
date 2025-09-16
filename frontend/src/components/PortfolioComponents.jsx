@@ -22,7 +22,7 @@ const PortfolioSummary = ({ refreshNonce = 0 }) => {
   const fetchPortfolio = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+        `${BACKEND_URL}/api/paper-trading/portfolio_live/${encodeURIComponent('elite_chat_user')}?ts=${Date.now()}`,
         { headers: { "Cache-Control": "no-store" } }
       );
       const data = await response.json();
@@ -54,8 +54,6 @@ const PortfolioSummary = ({ refreshNonce = 0 }) => {
   if (!portfolio) return null;
 
   const { account, summary } = portfolio;
-  const totalReturn = (account?.total_return_pct ?? 0) * 100;
-  const isProfit = totalReturn >= 0;
 
   return (
     <motion.div
@@ -69,35 +67,57 @@ const PortfolioSummary = ({ refreshNonce = 0 }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: "#3b82f6" }}>
-          <div className="text-xs text-slate-400 font-semibold">Total Value</div>
+        {/* Equity */}
+        <motion.div
+          className="bg-slate-700/50 rounded-lg p-3 border border-slate-600"
+          whileHover={{ scale: 1.02, borderColor: "#3b82f6" }}
+        >
+          <div className="text-xs text-slate-400 font-semibold">Equity</div>
           <div className="text-xl font-bold text-white">
-            ${(account?.total_value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            ${Number(account?.equity_value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
           </div>
         </motion.div>
 
-        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: isProfit ? "#22c55e" : "#ef4444" }}>
-          <div className="text-xs text-slate-400 font-semibold">Total P&L</div>
-          <div className={`text-xl font-bold ${isProfit ? "text-green-400" : "text-red-400"}`}>
-            {isProfit ? "+" : ""}${(account?.total_pnl ?? 0).toFixed(2)}
-          </div>
-          <div className={`text-sm ${isProfit ? "text-green-300" : "text-red-300"}`}>
-            ({isProfit ? "+" : ""}{totalReturn.toFixed(2)}%)
+        {/* Buying Power */}
+        <motion.div
+          className="bg-slate-700/50 rounded-lg p-3 border border-slate-600"
+          whileHover={{ scale: 1.02, borderColor: "#8b5cf6" }}
+        >
+          <div className="text-xs text-slate-400 font-semibold">Buying Power</div>
+          <div className="text-xl font-bold text-white">
+            ${Number(account?.buying_power ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
           </div>
         </motion.div>
 
-        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: "#22c55e" }}>
+        {/* Cash Balance */}
+        <motion.div
+          className="bg-slate-700/50 rounded-lg p-3 border border-slate-600"
+          whileHover={{ scale: 1.02, borderColor: "#22c55e" }}
+        >
           <div className="text-xs text-slate-400 font-semibold">Cash Balance</div>
           <div className="text-lg font-bold text-green-400">
-            ${(account?.cash_balance ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            ${Number(account?.cash_balance ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
           </div>
         </motion.div>
 
-        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: "#8b5cf6" }}>
-          <div className="text-xs text-slate-400 font-semibold">Positions</div>
-          <div className="text-lg font-bold text-purple-400">{summary?.total_positions ?? 0}</div>
-          <div className="text-sm text-slate-300">Grade: {summary?.performance_grade ?? "—"}</div>
+        {/* Day P/L */}
+        <motion.div
+          className="bg-slate-700/50 rounded-lg p-3 border border-slate-600"
+          whileHover={{ scale: 1.02, borderColor: "#eab308" }}
+        >
+          <div className="text-xs text-slate-400 font-semibold">Day P/L</div>
+          <div className={`text-xl font-bold ${Number(account?.day_pnl ?? 0) >= 0 ? "text-green-400" : "text-red-400"}`}>
+            ${Number(account?.day_pnl ?? 0).toFixed(2)}
+          </div>
         </motion.div>
+      </div>
+
+      {/* Positions count - FIXED: This was duplicated, now just one version */}
+      <div className="text-sm text-slate-300 mb-4">
+        Open Positions: <span className="font-semibold text-white">{Number(summary?.total_positions ?? 0)}</span>
+        {summary?.performance_grade && (
+          <span className="ml-3">Grade: <span className="font-semibold">{summary.performance_grade}</span></span>
+        )}
       </div>
 
       <motion.button
@@ -127,7 +147,7 @@ const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
   const fetchPositions = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+        `${BACKEND_URL}/api/paper-trading/portfolio_live/${encodeURIComponent('elite_chat_user')}?ts=${Date.now()}`,
         { headers: { "Cache-Control": "no-store" } }
       );
       const data = await response.json();
@@ -206,7 +226,7 @@ const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
         throw new Error(text || `HTTP ${response.status}`);
       }
 
-      // 🟣 Optimistic UI – drop it locally immediately
+      // 🟣 Optimistic UI — drop it locally immediately
       setPositions((prev) =>
         prev.filter((p) => (p.position_id ?? p.id ?? p.strategy_id) !== positionId)
       );
@@ -217,7 +237,7 @@ const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
       setCloseError(null);
       toast("Position closed successfully!");
 
-      // 🔍 Poll backend until it disappears (handles write lag)
+      // 🔄 Poll backend until it disappears (handles write lag)
       const fresh = await pollUntilGone({ userId, closedId: positionId });
       if (fresh) setPositions(fresh);
 
@@ -435,7 +455,7 @@ const PortfolioButton = () => {
     const fetchSummary = async () => {
       try {
         const response = await fetch(
-          `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+          `${BACKEND_URL}/api/paper-trading/portfolio_live/${encodeURIComponent('elite_chat_user')}?ts=${Date.now()}`,
           { headers: { "Cache-Control": "no-store" } }
         );
         const data = await response.json();

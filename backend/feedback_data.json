@@ -42889,5 +42889,3748 @@
     "strategy": "Bull Call Spread",
     "feedback": "bad",
     "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-11T06:05:09.584853",
+    "user_id": "murad",
+    "belief": "oil prices are esclating due to hight overseas tension",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Put",
+            "strike_price": "27"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "OIL",
+            "option_type": "Put",
+            "strike_price": "28"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Call",
+            "strike_price": "30"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "OIL",
+            "option_type": "Call",
+            "strike_price": "29"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Difference in strike prices - net premium received",
+        "time_to_target": "3 months",
+        "explanation": "Given the current market context and neutral sentiment, this iron condor strategy is designed to capitalize on the range-bound behavior of oil prices. The selected strike prices are based on the current price of OIL, with the expectation that the price will remain between $28 and $29. This strategy is constructed by selling an OTM put at $28, buying a further OTM put at $27, selling an OTM call at $29, and buying a further OTM call at $30. The max loss is the difference in strike prices minus the net premium received. Key risk factors include escalating overseas tension which could lead to a spike in oil prices. Profit target is 20% return within the 3-month window. Exit criteria: close position if 75% of max profit is achieved or one week before expiration to avoid gamma risk.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "neutral",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "XLE",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 89.13,
+        "high": 89.16,
+        "low": 87.58
+      },
+      "high_low": [
+        89.16,
+        87.58
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the current market context and neutral sentiment, this iron condor strategy is designed to capitalize on the range-bound behavior of oil prices. The selected strike prices are based on the current price of OIL, with the expectation that the price will remain between $28 and $29. This strategy is constructed by selling an OTM put at $28, buying a further OTM put at $27, selling an OTM call at $29, and buying a further OTM call at $30. The max loss is the difference in strike prices minus the net premium received. Key risk factors include escalating overseas tension which could lead to a spike in oil prices. Profit target is 20% return within the 3-month window. Exit criteria: close position if 75% of max profit is achieved or one week before expiration to avoid gamma risk.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Difference in strike prices - net premium received",
+      "expiration": "2025-09-20",
+      "option_type": "Put",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-11T06:05:28.879010",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "oil prices are esclating due to hight overseas tension",
+    "strategy": "Iron Condor",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-13T21:22:22.805143",
+    "user_id": "beta",
+    "belief": "I plan to work until 70",
+    "strategy": {
+      "strategy": {
+        "type": "Long Straddle",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "150"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Put",
+            "strike_price": "150"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "30%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "2 weeks",
+        "explanation": "Spread on AAPL between 150 and 150. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "neutral",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "neutral"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 657.6,
+        "high": 659.11,
+        "low": 656.9
+      },
+      "high_low": [
+        659.11,
+        656.9
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Spread on AAPL between 150 and 150. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-13T21:23:03.726263",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-13T21:27:11.214614",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-13T21:32:35.591514",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-13T21:47:04.850514",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "4 weeks",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-14T03:28:34.477311",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-14T03:36:49.185445",
+    "user_id": "beta",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "beta",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-14T21:42:45.824899",
+    "user_id": "me",
+    "belief": "Tesla up 15% next quarter",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "395",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "TSLA",
+            "option_type": "Call",
+            "strike_price": "455",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 quarter",
+        "explanation": "Bull Call Spread on TSLA between 455 and 395. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "TSLA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 396.0,
+        "high": 396.69,
+        "low": 370.24
+      },
+      "high_low": [
+        396.69,
+        370.24
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next quarter",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on TSLA between 455 and 395. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "15%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-14T21:53:35.408622",
+    "user_id": "murad",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-14T21:54:29.061967",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "NVDA up 10% next month",
+    "strategy": "Bull Call Spread",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-15T00:43:20.923838",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "655",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "725",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 725 and 655. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "SPY",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 657.41,
+        "high": 659.11,
+        "low": 656.9
+      },
+      "high_low": [
+        659.11,
+        656.9
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 725 and 655. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T01:06:31.056579",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T01:09:45.433306",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T01:20:41.589135",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T01:23:34.549501",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T02:30:55.934097",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "4 weeks",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T02:33:48.439187",
+    "user_id": "murad",
+    "belief": "potato demand is going up in europe",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "FXE",
+      "direction": "bullish",
+      "user_id": "murad",
+      "processing_time": 16.09295415878296,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T06:48:58.369160",
+    "user_id": "me",
+    "belief": "potato demand is going up in europe",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "FXE",
+      "direction": "bullish",
+      "user_id": "me",
+      "processing_time": 22.07268524169922,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T07:26:02.262365",
+    "user_id": "me",
+    "belief": "potato demand is going up in europe",
+    "strategy": {
+      "strategy": {
+        "type": "Commodity Future",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "POTATO",
+            "future_type": "Long",
+            "contract_price": "Current Market Price"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20%",
+        "max_loss": "Initial Investment",
+        "time_to_target": "6 months",
+        "explanation": "Given the belief that potato demand is going up in Europe, this commodity future strategy aims to capitalize on this anticipated upward trend. The prevailing market price will be utilized as the contract price for this future. Key catalysts include increasing potato consumption trends in Europe, potential crop shortages due to adverse weather conditions, and rising global food inflation. Risk management involves limiting loss to the initial investment while targeting a 20% return within the 6-month window. This strategy benefits from positive delta exposure while maintaining defined risk parameters. Exit criteria: 20% profit target or 2 days before expiration to avoid potential price slippage.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "DBA",
+      "asset_class": "options",
+      "tags": [
+        "agriculture-theme"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 27.48,
+        "high": 27.54,
+        "low": 27.37
+      },
+      "high_low": [
+        27.54,
+        27.37
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the belief that potato demand is going up in Europe, this commodity future strategy aims to capitalize on this anticipated upward trend. The prevailing market price will be utilized as the contract price for this future. Key catalysts include increasing potato consumption trends in Europe, potential crop shortages due to adverse weather conditions, and rising global food inflation. Risk management involves limiting loss to the initial investment while targeting a 20% return within the 6-month window. This strategy benefits from positive delta exposure while maintaining defined risk parameters. Exit criteria: 20% profit target or 2 days before expiration to avoid potential price slippage.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Initial Investment",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T07:39:28.877809",
+    "user_id": "me",
+    "belief": "potato demand is going up in europe",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "DBA",
+            "option_type": "Call",
+            "strike_price": "27",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "DBA",
+            "option_type": "Call",
+            "strike_price": "29",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1-3 months",
+        "explanation": "Bull Call Spread on DBA between 29 and 27. Limits loss to net debit and caps profit at the spread width."
+      },
+      "ticker": "DBA",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread",
+        "agriculture-theme"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 27.48,
+        "high": 27.54,
+        "low": 27.37
+      },
+      "high_low": [
+        27.54,
+        27.37
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on DBA between 29 and 27. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "20-40%",
+      "max_loss": "Net Debit",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T07:50:04.228194",
+    "user_id": "me",
+    "belief": "potato demand is going up in europe",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "DBA",
+      "direction": "bullish",
+      "user_id": "me",
+      "processing_time": 13.073997259140015,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T08:22:12.571645",
+    "user_id": "murad",
+    "belief": "i think oil will sky rocket soon",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "USO",
+            "option_type": "Call",
+            "strike_price": "50"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "100%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "6 months",
+        "explanation": "Given the belief that oil prices will skyrocket soon, this call option strategy is designed to capitalize on the expected upward momentum in USO, a popular oil ETF. The strike price at $50 is considered optimal for risk-reward positioning given the current market price, and it's also above the current resistance levels based on technical analysis. Key potential catalysts for this trade could be geopolitical tensions, supply constraints, or increased demand due to global economic recovery from the pandemic. Risk management involves limiting the loss to the premium paid, while targeting 100% returns within the six-month window. This strategy benefits from positive delta and gamma exposure, while the risks are clearly defined. The exit criteria would be either reaching the profit target of 100% or 2 weeks before the expiration to avoid excessive theta decay.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "SKY",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 74.63,
+        "high": 76.18,
+        "low": 74.49
+      },
+      "high_low": [
+        76.18,
+        74.49
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the belief that oil prices will skyrocket soon, this call option strategy is designed to capitalize on the expected upward momentum in USO, a popular oil ETF. The strike price at $50 is considered optimal for risk-reward positioning given the current market price, and it's also above the current resistance levels based on technical analysis. Key potential catalysts for this trade could be geopolitical tensions, supply constraints, or increased demand due to global economic recovery from the pandemic. Risk management involves limiting the loss to the premium paid, while targeting 100% returns within the six-month window. This strategy benefits from positive delta and gamma exposure, while the risks are clearly defined. The exit criteria would be either reaching the profit target of 100% or 2 weeks before the expiration to avoid excessive theta decay.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "100%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 500,
+        "shares_or_contracts": 1,
+        "contract_type": "options",
+        "estimated_premium_per_contract": 500,
+        "reasoning": "Limited to 1 contracts to stay within risk limits",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "This trade represents 50.0% of your account",
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T08:23:17.905378",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "i think oil will sky rocket soon",
+    "strategy": "Call Option",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-15T09:11:27.769130",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T09:14:40.616853",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T09:17:13.942776",
+    "user_id": "murad",
+    "belief": "nvda will go up 10percent next month",
+    "strategy": {
+      "strategy": {
+        "type": "Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "50%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "1 month",
+        "explanation": "Given the current market sentiment and technical indicators, this call option strategy aims to capitalize on the anticipated upward momentum in NVDA. The strike price of $195 provides optimal risk-reward positioning, considering a 10% anticipated increase in the stock price. Key catalysts include the strong demand for GPUs, positive earnings forecast, and the role of NVDA in AI and machine learning. Risk management involves limiting the loss to the premium paid for the option. The strategy benefits from positive delta and gamma exposure while managing risk parameters effectively. Exit criteria include a 50% profit target or 2 days before expiration to avoid theta decay.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the current market sentiment and technical indicators, this call option strategy aims to capitalize on the anticipated upward momentum in NVDA. The strike price of $195 provides optimal risk-reward positioning, considering a 10% anticipated increase in the stock price. Key catalysts include the strong demand for GPUs, positive earnings forecast, and the role of NVDA in AI and machine learning. Risk management involves limiting the loss to the premium paid for the option. The strategy benefits from positive delta and gamma exposure while managing risk parameters effectively. Exit criteria include a 50% profit target or 2 days before expiration to avoid theta decay.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 500,
+        "shares_or_contracts": 1,
+        "contract_type": "options",
+        "estimated_premium_per_contract": 500,
+        "reasoning": "Limited to 1 contracts to stay within risk limits",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "This trade represents 50.0% of your account",
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T09:19:00.155700",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T09:21:48.935338",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T09:29:48.658643",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T10:30:33.871822",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.8,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T12:26:47.546416",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "175",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 175. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 175.01,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 175. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T12:29:13.898160",
+    "user_id": "murad",
+    "belief": "BUILD A BOND LADDER FOR MODERATE GROWTH",
+    "strategy": {
+      "strategy": {
+        "type": "Bond Ladder",
+        "trade_legs": [
+          {
+            "action": "Buy",
+            "ticker": "TLT",
+            "maturity_date": "2023-06-15",
+            "yield": "1.5%"
+          },
+          {
+            "action": "Buy",
+            "ticker": "IEF",
+            "maturity_date": "2024-06-15",
+            "yield": "1.8%"
+          },
+          {
+            "action": "Buy",
+            "ticker": "SHY",
+            "maturity_date": "2025-06-15",
+            "yield": "2.1%"
+          }
+        ],
+        "target_return": "2%",
+        "max_loss": "Interest Rate Risk",
+        "time_to_target": "3 years",
+        "explanation": "Given the current low interest rate environment and the upward pressure on long-term rates, a bond ladder strategy provides a moderate growth opportunity with lower risk. The strategy involves buying bonds with different maturity dates, effectively creating a ladder. This allows the investor to take advantage of rising interest rates, as funds from matured bonds can be reinvested at higher rates. Key market catalysts include potential Fed rate hikes and inflation data. Risk management involves diversification across different bond durations and issuers. Price targets are based on the yield to maturity of each bond, and the exit strategy involves holding each bond to maturity. The risk to this strategy is interest rate risk, as rising rates can lead to a decrease in the market value of the bonds.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "BOND",
+      "asset_class": "bond",
+      "tags": [
+        "bond"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 93.56,
+        "high": 93.56,
+        "low": 93.36
+      },
+      "high_low": [
+        93.56,
+        93.36
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": null,
+      "risk_profile": "moderate",
+      "explanation": "Given the current low interest rate environment and the upward pressure on long-term rates, a bond ladder strategy provides a moderate growth opportunity with lower risk. The strategy involves buying bonds with different maturity dates, effectively creating a ladder. This allows the investor to take advantage of rising interest rates, as funds from matured bonds can be reinvested at higher rates. Key market catalysts include potential Fed rate hikes and inflation data. Risk management involves diversification across different bond durations and issuers. Price targets are based on the yield to maturity of each bond, and the exit strategy involves holding each bond to maturity. The risk to this strategy is interest rate risk, as rising rates can lead to a decrease in the market value of the bonds.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "yield": "Market rate",
+      "duration": "TBD",
+      "maturity_date": "TBD",
+      "credit_rating": "To be analyzed",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T12:29:59.602087",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "BUILD A BOND LADDER FOR MODERATE GROWTH",
+    "strategy": "Bond Ladder",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-15T12:32:16.403230",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "175",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 175. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 175.01,
+        "high": 178.59,
+        "low": 176.45
+      },
+      "high_low": [
+        178.59,
+        176.45
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 175. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "50%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T17:58:25.079957",
+    "user_id": "me",
+    "belief": "NVDA up 10% next month",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "180",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "195",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 177.62,
+        "high": 178.28,
+        "low": 174.51
+      },
+      "high_low": [
+        178.28,
+        174.51
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on NVDA between 195 and 180. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "me",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "10%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T18:47:03.258378",
+    "user_id": "murad",
+    "belief": "ai chip demand and energy for it is rising very high in the long term",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AI",
+            "option_type": "Put",
+            "strike_price": "16"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AI",
+            "option_type": "Put",
+            "strike_price": "17"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "AI",
+            "option_type": "Call",
+            "strike_price": "18"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AI",
+            "option_type": "Call",
+            "strike_price": "17"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "15%",
+        "max_loss": "Difference in Strike Prices - Premium Received",
+        "time_to_target": "6 months",
+        "explanation": "Given the neutral sentiment around AI, an Iron Condor strategy is recommended. This involves selling an at-the-money (ATM) strangle and buying an out-of-the-money (OTM) strangle. The strategy benefits from time decay and volatility reduction. Key market catalysts include the continued growth in AI chip demand and energy requirements. Technically, AI is trading in a tight range, further supporting this strategy. The risk is limited to the difference between the strike prices less the premium received. The trade will be profitable if AI stays within the range of $16 and $18 until expiration. Exit criteria include a 50% profit target or a break of the $16 or $18 levels."
+      },
+      "ticker": "AI",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 17.23,
+        "high": 17.47,
+        "low": 16.4
+      },
+      "high_low": [
+        17.47,
+        16.4
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the neutral sentiment around AI, an Iron Condor strategy is recommended. This involves selling an at-the-money (ATM) strangle and buying an out-of-the-money (OTM) strangle. The strategy benefits from time decay and volatility reduction. Key market catalysts include the continued growth in AI chip demand and energy requirements. Technically, AI is trading in a tight range, further supporting this strategy. The risk is limited to the difference between the strike prices less the premium received. The trade will be profitable if AI stays within the range of $16 and $18 until expiration. Exit criteria include a 50% profit target or a break of the $16 or $18 levels.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "15%",
+      "max_loss": "Difference in Strike Prices - Premium Received",
+      "expiration": "2025-09-20",
+      "option_type": "Put",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-15T18:48:41.852616",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "ai chip demand and energy for it is rising very high in the long term",
+    "strategy": "Iron Condor",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-15T20:57:07.908081",
+    "user_id": "murad",
+    "belief": "tsla will grow 20 percent by end of year",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "TSLA",
+      "direction": "neutral",
+      "user_id": "murad",
+      "processing_time": 14.336780071258545,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T02:23:43.095794",
+    "user_id": "murad",
+    "belief": "NVDA seems kinda interesting not sure yet",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "169"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "171"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "189"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "187"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "15%",
+        "max_loss": "Difference in strike prices - premium received",
+        "time_to_target": "1 month",
+        "explanation": "This Iron Condor strategy is ideal for a neutral market view on NVDA, which is currently priced at $177.75. The chosen strike prices create a range within which we expect the stock to stay until expiration. On the technical front, NVDA has shown some consolidation at these price levels, suggesting limited near-term volatility. Key catalysts that could impact this trade include NVDA's upcoming earnings and any major shifts in the tech industry. Risk management involves monitoring the position closely; if NVDA breaks out of the expected range, adjustments may be necessary. Exit criteria include achieving 50% of max profit or if the stock price reaches either short strike. This risk-defined strategy provides a balance of potential profit and controlled loss, capitalizing on theta decay and relatively low volatility.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "neutral",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 177.76,
+        "high": 178.85,
+        "low": 174.51
+      },
+      "high_low": [
+        178.85,
+        174.51
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This Iron Condor strategy is ideal for a neutral market view on NVDA, which is currently priced at $177.75. The chosen strike prices create a range within which we expect the stock to stay until expiration. On the technical front, NVDA has shown some consolidation at these price levels, suggesting limited near-term volatility. Key catalysts that could impact this trade include NVDA's upcoming earnings and any major shifts in the tech industry. Risk management involves monitoring the position closely; if NVDA breaks out of the expected range, adjustments may be necessary. Exit criteria include achieving 50% of max profit or if the stock price reaches either short strike. This risk-defined strategy provides a balance of potential profit and controlled loss, capitalizing on theta decay and relatively low volatility.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "15%",
+      "max_loss": "Difference in strike prices - premium received",
+      "expiration": "2025-09-20",
+      "option_type": "Put",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T02:34:11.955851",
+    "user_id": "murad",
+    "belief": "Neutral on NVDA near-term; consider an iron condor",
+    "strategy": {
+      "strategy": {
+        "type": "Iron Condor",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "46"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Put",
+            "strike_price": "47"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "51"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "NVDA",
+            "option_type": "Call",
+            "strike_price": "50"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "15%",
+        "max_loss": "Difference in strike prices - credit received",
+        "time_to_target": "Until expiration",
+        "explanation": "This Iron Condor strategy capitalizes on a neutral market view for NVDA. The selected strike prices are based on the current market price of $48.11 and the expectation of limited price movement. NVDA's fundamentals and recent market sentiment suggest a period of consolidation, making this a suitable strategy. The risk is limited to the difference between the strike prices minus the credit received for opening the positions. The maximum profit is the credit received, which is achieved if NVDA's price at expiration is between the strike prices of the short put and call options. The strategy benefits from time decay (positive theta) and is less sensitive to changes in implied volatility (low vega). The exit criteria should be a significant breakout from the current price range or nearing expiration.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "neutral",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "NVDA",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 177.76,
+        "high": 178.85,
+        "low": 174.51
+      },
+      "high_low": [
+        178.85,
+        174.51
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "This Iron Condor strategy capitalizes on a neutral market view for NVDA. The selected strike prices are based on the current market price of $48.11 and the expectation of limited price movement. NVDA's fundamentals and recent market sentiment suggest a period of consolidation, making this a suitable strategy. The risk is limited to the difference between the strike prices minus the credit received for opening the positions. The maximum profit is the credit received, which is achieved if NVDA's price at expiration is between the strike prices of the short put and call options. The strategy benefits from time decay (positive theta) and is less sensitive to changes in implied volatility (low vega). The exit criteria should be a significant breakout from the current price range or nearing expiration.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "15%",
+      "max_loss": "Difference in strike prices - credit received",
+      "expiration": "2025-09-20",
+      "option_type": "Put",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T02:34:35.613110",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "Neutral on NVDA near-term; consider an iron condor",
+    "strategy": "Iron Condor",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-16T02:34:41.072060",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "Neutral on NVDA near-term; consider an iron condor",
+    "strategy": "Iron Condor",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-16T03:31:46.712364",
+    "user_id": "murad",
+    "belief": "Bullish on AAPL next month; target 20%",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "AAPL",
+      "direction": "bullish",
+      "user_id": "murad",
+      "processing_time": 46.543556928634644,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T03:33:39.695088",
+    "user_id": "murad",
+    "belief": "APPLE WILL GAIN 20% IN A MONTHS TIME",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "24",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "29",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on AAPL between 29 and 24. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "TIME",
+      "asset_class": "options",
+      "tags": [
+        "long call",
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 24.24,
+        "high": 24.27,
+        "low": 24.22
+      },
+      "high_low": [
+        24.27,
+        24.22
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on AAPL between 29 and 24. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T04:16:01.887801",
+    "user_id": "murad",
+    "belief": "APPLE WILL GAIN 20% IN A MONTHS TIME",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "24",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "29",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1 month",
+        "explanation": "Bull Call Spread on AAPL between 29 and 24. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "TIME",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 24.24,
+        "high": 24.27,
+        "low": 24.22
+      },
+      "high_low": [
+        24.27,
+        24.22
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on AAPL between 29 and 24. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "20%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T04:23:35.946101",
+    "user_id": "murad",
+    "belief": "APPLE WILL GAIN 20% IN A MONTHS TIME",
+    "strategy": {
+      "error": "Strategy blocked due to sentiment misalignment",
+      "strategy": null,
+      "ticker": "AAPL",
+      "direction": "bullish",
+      "user_id": "murad",
+      "processing_time": 10.070244789123535,
+      "reason": "Bullish belief cannot generate neutral/bearish strategies in production mode"
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T05:27:32.410026",
+    "user_id": "murad",
+    "belief": "Bullish on AAPL next month; target 20%",
+    "strategy": {
+      "strategy": {
+        "type": "bull call spread",
+        "source": "ml_fallback",
+        "expiration": "2025-09-20",
+        "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 236.75,
+        "high": 238.19,
+        "low": 235.03
+      },
+      "high_low": [
+        238.19,
+        235.03
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": "next month",
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": true,
+        "estimated_profit_pct": 50.0,
+        "valid": true,
+        "notes": "\u2705 If belief is true, strategy likely profits"
+      },
+      "valid": true,
+      "would_profit": true,
+      "estimated_profit_pct": 50.0,
+      "notes": "\u2705 If belief is true, strategy likely profits",
+      "strike_price": "ATM",
+      "max_profit": "Unlimited",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T05:31:11.698518",
+    "user_id": "murad",
+    "belief": "APPLE WILL GAIN 20% IN A MONTHS TIME",
+    "strategy": {
+      "strategy": {
+        "type": "iron condor",
+        "source": "ml_fallback",
+        "expiration": "2025-09-20",
+        "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'"
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 236.75,
+        "high": 238.19,
+        "low": 235.03
+      },
+      "high_low": [
+        238.19,
+        235.03
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Explanation unavailable due to error: 'str' object has no attribute 'get'",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": false,
+        "estimated_profit_pct": 0.0,
+        "valid": false,
+        "notes": "\u26a0\ufe0f Strategy may underperform belief"
+      },
+      "valid": false,
+      "would_profit": false,
+      "estimated_profit_pct": 0.0,
+      "notes": "\u26a0\ufe0f Strategy may underperform belief",
+      "strike_price": "ATM",
+      "max_profit": "Unlimited",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T06:01:48.732223",
+    "user_id": "murad",
+    "belief": "Price of gold will rise by end of year ",
+    "strategy": {
+      "strategy": {
+        "type": "Long Call Option",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "GLD",
+            "option_type": "Call",
+            "strike_price": "180"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "25%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "3 months",
+        "explanation": "Given the expectation that the price of gold will rise by the end of the year, a long call option strategy on the GLD ETF is proposed. The strike price is selected at $180, above the current market price, offering a high potential return while keeping the premium cost relatively low. The strategy leverages positive market sentiments about gold and currency uncertainties, which typically make gold a safe haven. Our technical analysis shows that gold prices have been consolidating and are ready for a breakout. Risk management involves limiting loss to the premium paid while targeting a 25% return by year-end. Exit criteria include achieving a 50% profit target or the option's expiration date. This strategy has a positive gamma, meaning it will benefit from an increase in the underlying asset's price, and a positive delta, indicating the option's price sensitivity relative to the underlying asset.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "bullish",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "BY",
+      "asset_class": "options",
+      "tags": [
+        "long call"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 28.71,
+        "high": 29.33,
+        "low": 28.71
+      },
+      "high_low": [
+        29.33,
+        28.71
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Given the expectation that the price of gold will rise by the end of the year, a long call option strategy on the GLD ETF is proposed. The strike price is selected at $180, above the current market price, offering a high potential return while keeping the premium cost relatively low. The strategy leverages positive market sentiments about gold and currency uncertainties, which typically make gold a safe haven. Our technical analysis shows that gold prices have been consolidating and are ready for a breakout. Risk management involves limiting loss to the premium paid while targeting a 25% return by year-end. Exit criteria include achieving a 50% profit target or the option's expiration date. This strategy has a positive gamma, meaning it will benefit from an increase in the underlying asset's price, and a positive delta, indicating the option's price sensitivity relative to the underlying asset.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "25%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 500,
+        "shares_or_contracts": 1,
+        "contract_type": "options",
+        "estimated_premium_per_contract": 500,
+        "reasoning": "Limited to 1 contracts to stay within risk limits",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "This trade represents 50.0% of your account",
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T06:03:09.055717",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "Price of gold will rise by end of year ",
+    "strategy": "Long Call Option",
+    "feedback": "bad",
+    "risk_profile": "moderate"
+  },
+  {
+    "timestamp": "2025-09-16T06:05:13.869322",
+    "user_id": "murad",
+    "belief": "i think oil prices will be volitale durring war tenssion",
+    "strategy": {
+      "strategy": {
+        "type": "Straddle",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Call",
+            "strike_price": "70"
+          },
+          {
+            "action": "Buy to Open",
+            "ticker": "OIL",
+            "option_type": "Put",
+            "strike_price": "70"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "30%",
+        "max_loss": "Premium Paid",
+        "time_to_target": "6 months",
+        "explanation": "Spread on OIL between 70 and 70. Limits loss to net debit and caps profit at the spread width.",
+        "sentiment_validation": {
+          "status": "PASSED",
+          "detected_sentiment": "neutral",
+          "strategy_alignment": "CONFIRMED"
+        }
+      },
+      "ticker": "XLE",
+      "asset_class": "options",
+      "tags": [
+        "neutral"
+      ],
+      "direction": "neutral",
+      "price_info": {
+        "latest": 88.3,
+        "high": 89.0,
+        "low": 88.15
+      },
+      "high_low": [
+        89.0,
+        88.15
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Spread on OIL between 70 and 70. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": null,
+        "estimated_profit_pct": null,
+        "valid": false,
+        "notes": "\u274c Could not detect % move in belief"
+      },
+      "valid": false,
+      "would_profit": null,
+      "estimated_profit_pct": null,
+      "notes": "\u274c Could not detect % move in belief",
+      "strike_price": "ATM",
+      "max_profit": "30%",
+      "max_loss": "Premium Paid",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T06:44:00.313122",
+    "user_id": "murad",
+    "belief": "APPLE WILL GAIN 20% IN A MONTHS TIME",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "235",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "250",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1-3 months",
+        "explanation": "Bull Call Spread on AAPL between 250 and 235. Limits loss to net debit and caps profit at the spread width."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 236.75,
+        "high": 238.19,
+        "low": 235.03
+      },
+      "high_low": [
+        238.19,
+        235.03
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on AAPL between 250 and 235. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": true,
+        "estimated_profit_pct": 50.0,
+        "valid": true,
+        "notes": "\u2705 If belief is true, strategy likely profits"
+      },
+      "valid": true,
+      "would_profit": true,
+      "estimated_profit_pct": 50.0,
+      "notes": "\u2705 If belief is true, strategy likely profits",
+      "strike_price": "ATM",
+      "max_profit": "20-40%",
+      "max_loss": "Net Debit",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T06:54:09.584680",
+    "user_id": "murad",
+    "belief": "Apple will gain 20% in a month\u2019s time.",
+    "strategy": {
+      "strategy": {
+        "type": "Bull Call Spread",
+        "trade_legs": [
+          {
+            "action": "Buy to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "235",
+            "expiration": "2025-09-20"
+          },
+          {
+            "action": "Sell to Open",
+            "ticker": "AAPL",
+            "option_type": "Call",
+            "strike_price": "250",
+            "expiration": "2025-09-20"
+          }
+        ],
+        "expiration": "2025-09-20",
+        "target_return": "20-40%",
+        "max_loss": "Net Debit",
+        "time_to_target": "1-3 months",
+        "explanation": "Bull Call Spread on AAPL between 250 and 235. Limits loss to net debit and caps profit at the spread width."
+      },
+      "ticker": "AAPL",
+      "asset_class": "options",
+      "tags": [
+        "bull call spread"
+      ],
+      "direction": "bullish",
+      "price_info": {
+        "latest": 236.75,
+        "high": 238.19,
+        "low": 235.03
+      },
+      "high_low": [
+        238.19,
+        235.03
+      ],
+      "confidence": 0.5,
+      "goal_type": "unspecified",
+      "multiplier": null,
+      "timeframe": null,
+      "expiry_date": "2025-09-20",
+      "risk_profile": "moderate",
+      "explanation": "Bull Call Spread on AAPL between 250 and 235. Limits loss to net debit and caps profit at the spread width.",
+      "user_id": "murad",
+      "validator": {
+        "would_profit": true,
+        "estimated_profit_pct": 50.0,
+        "valid": true,
+        "notes": "\u2705 If belief is true, strategy likely profits"
+      },
+      "valid": true,
+      "would_profit": true,
+      "estimated_profit_pct": 50.0,
+      "notes": "\u2705 If belief is true, strategy likely profits",
+      "strike_price": "ATM",
+      "max_profit": "20-40%",
+      "max_loss": "Net Debit",
+      "expiration": "2025-09-20",
+      "option_type": "Call",
+      "risk_management": {
+        "max_investment": 10.0,
+        "shares_or_contracts": 1,
+        "reasoning": "Conservative sizing for unknown strategy type",
+        "account_balance": 1000.0,
+        "max_risk_dollars": 20.0,
+        "risk_percentage": 2.0,
+        "warnings": [
+          "Position size limited to minimum due to risk constraints"
+        ],
+        "approved_for_execution": true
+      },
+      "safe_to_execute": true
+    },
+    "result": "auto_generated"
+  },
+  {
+    "timestamp": "2025-09-16T06:54:45.913751",
+    "user_id": "elite_chat_user",
+    "ip": "127.0.0.1",
+    "belief": "Apple will gain 20% in a month\u2019s time.",
+    "strategy": "Bull Call Spread",
+    "feedback": "bad",
+    "risk_profile": "moderate"
   }
 ]
