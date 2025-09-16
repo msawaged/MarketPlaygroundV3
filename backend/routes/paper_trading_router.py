@@ -342,6 +342,35 @@ async def execute_live_trade(request: TradeRequest):
       - If LIVE_TRADING_WHITELIST is set, user_id must be whitelisted
       - Requires request.confirm_live == true
     """
+
+    # ---- PAPER short-circuit for beta testers (accept before any live checks) ----
+    # If EXECUTION_BLOCK_ALL is on, return a clear 403 reason
+    if os.getenv("EXECUTION_BLOCK_ALL", "true").lower() == "true":
+        raise HTTPException(status_code=403, detail="Execution blocked: EXECUTION_BLOCK_ALL=true (beta safety)")
+
+    # If paper mode is enabled, accept immediately
+    if os.getenv("ALPACA_PAPER", "false").lower() == "true":
+        sd = request.strategy_data or {}
+        symbol = (sd.get("ticker") or sd.get("symbol") or "UNKNOWN").upper() if isinstance(sd, dict) else "UNKNOWN"
+        legs = len(sd.get("trade_legs", [])) if isinstance(sd, dict) else 0
+
+        return JSONResponse(
+            content={
+                "status": "accepted",
+                "trading_mode": "paper",
+                "user_id": request.user_id,
+                "symbol": symbol,
+                "legs": legs
+            },
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+
+
+
     if not ALLOW_LIVE_TRADING:
         raise HTTPException(status_code=403, detail="Live trading disabled by server config.")
     if LIVE_TRADING_WHITELIST and request.user_id not in LIVE_TRADING_WHITELIST:

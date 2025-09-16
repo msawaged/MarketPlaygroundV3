@@ -88,6 +88,11 @@ const SentimentErrorMessage = ({ error, onRetry, originalBelief }) => {
 // Configured via VITE_API_BASE environment variable
 const BACKEND_URL = API_BASE;
 
+// DEBUG: confirm API base at runtime
+if (typeof window !== 'undefined') {
+  console.log('[DEBUG] BACKEND_URL =', BACKEND_URL);
+}
+
 // 📊 LIVE ELITE STOCK TICKER – FINAL VERSION
 const EliteLiveSymbolsKey = 'mp_elite_symbols';
 
@@ -405,6 +410,12 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
     const maxPnl = Math.max(...pnlPoints.map(p => p.pnl));
     const minPnl = Math.min(...pnlPoints.map(p => p.pnl));
     const pnlRange = maxPnl - minPnl || 1;
+    // SAFE % for the yellow strike line
+
+    const rawX = ((touchStrike - currentPrice * 0.5) / (currentPrice * 0.5)) * 100;
+    const xPercent = Number.isFinite(rawX) ? Math.max(0, Math.min(100, rawX)) : 50;
+    // compute the vertical line position as a safe percentage [0..100]
+    
 
     return (
       <div className="h-48 bg-slate-700/50 rounded-lg relative overflow-hidden">
@@ -453,17 +464,20 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,4" />
           
           {/* ADJUSTABLE STRIKE PRICE INDICATOR */}
-          <motion.line 
-            x1={((touchStrike - currentPrice * 0.5) / (currentPrice * 0.5)) * 100 + "%"} 
-            y1="0" 
-            x2={((touchStrike - currentPrice * 0.5) / (currentPrice * 0.5)) * 100 + "%"} 
-            y2="100%" 
-            stroke="#fbbf24" 
+          <motion.line
+            x1={`${xPercent}%`}
+            y1="0"
+            x2={`${xPercent}%`}
+            y2="100%"
+            stroke="#fbbf24"
             strokeWidth="3"
             filter="url(#glow)"
-            animate={{ x1: `${((touchStrike - currentPrice * 0.5) / (currentPrice * 0.5)) * 100}%` }}
+            initial={{ x1: `${xPercent}%` }}   // 👈 important: define initial x1 so it’s never undefined
+            animate={{ x1: `${xPercent}%` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
+
+
           
           {/* CURRENT PRICE INDICATOR */}
           <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#3b82f6" strokeWidth="2" strokeDasharray="2,2" />
@@ -866,6 +880,30 @@ const EnhancedChatInterface = () => {
       const data = await processBelief("murad", belief);
       
       console.log('Backend Response:', data);
+      // DEBUG: See how the backend signals a block
+      console.log('[DEBUG] block-shape:', { error: data?.error, status: data?.status, blocked: data?.blocked, reason: data?.reason, detected_sentiment: data?.detected_sentiment });
+
+
+      // If backend blocked the strategy on sentiment, push a special message
+      if (
+        data?.error === "Strategy blocked due to sentiment misalignment" ||
+        data?.status === "blocked" ||
+        data?.blocked === true
+      ) {
+        const err = {
+          message: data?.reason || data?.message || "Strategy blocked due to sentiment misalignment",
+          detected_sentiment: data?.detected_sentiment || data?.sentiment || "unknown",
+        };
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          type: 'sentiment_error',
+          content: err.message,
+          errorData: { ...err, original_belief: belief },
+          timestamp: new Date()
+        }]);
+        return;
+      }
+
 
       // Check for sentiment validation error
       if (data.error === "Strategy blocked due to sentiment misalignment") {
@@ -1007,7 +1045,7 @@ const EnhancedChatInterface = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          belief: messages.find(m => m.type === 'user')?.content || '',
+          belief: [...messages].reverse().find(m => m.type === 'user')?.content || '',
           strategy: strategy.type,
           feedback: feedbackType,
           user_id: 'elite_chat_user',
@@ -1092,6 +1130,17 @@ const EnhancedChatInterface = () => {
             >
               <div className={`max-w-sm lg:max-w-lg ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
                 {/* ENHANCED MESSAGE BUBBLE */}
+                {message.type === 'sentiment_error' ? (
+                <SentimentErrorMessage
+                  error={message.errorData}
+                  originalBelief={message.errorData?.original_belief || ''}
+                  onRetry={(newBelief) => {
+                    setInputValue(newBelief);
+                    // optional: auto-send the suggestion
+                    // setTimeout(handleSend, 0);
+                  }}
+                />
+              ) : (
                 <motion.div
                   className={`px-6 py-4 rounded-2xl backdrop-blur-sm border ${
                     message.type === 'user'
@@ -1106,6 +1155,8 @@ const EnhancedChatInterface = () => {
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </motion.div>
+              )}
+
                 
                 {/* ENHANCED STRATEGY CARD */}
                 {message.strategy && (
@@ -1326,28 +1377,44 @@ const EnhancedChatInterface = () => {
                               <motion.button 
                                 onClick={async () => {
                                   try {
-                                    const response = await fetch(`${BACKEND_URL}/api/paper-trading/execute_live`, {
+                                    const payload = {
+                                   // DEBUG: Show exactly what we send
+
+                                    user_id: 'elite_chat_user',
+                                    ticker: message?.strategy?.ticker || message?.strategy?.trade_legs?.[0]?.ticker || 'UNKNOWN',
+                                    strategy_data: {
+                                      ...message.strategy,
+                                      investment_amount: investmentAmount[message.id]
+                                    }
+                                  };
+
+                                  console.log('[DEBUG] execute payload →', payload);
+
+
+                                    const res = await fetch(`${BACKEND_URL}/api/paper-trading/execute_live`, {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                          user_id: 'demo_user',
-                                          strategy_data: {
-                                            ...message.strategy,
-                                            investment_amount: investmentAmount[message.id]
-                                          },
-                                          belief: inputValue || 'User strategy execution'
-                                        })
+                                      body: JSON.stringify(payload),
                                     });
-                                    
-                                    const result = await response.json();
-                                    
-                                    if (result.status === 'success') {
-                                      alert(`Trade executed: ${result.message}`);
-                                    } else {
-                                      alert(`Trade failed: ${result.message}`);
+
+                                    // robust parse: JSON or text
+                                    let bodyText = '', json = {};
+                                    try { bodyText = await res.text(); json = JSON.parse(bodyText); } catch {}
+
+                                    if (!res.ok) {
+                                      const msg = (json && (json.detail || json.error || json.message)) || bodyText || `${res.status} ${res.statusText}`;
+                                      alert(`Trade failed: ${msg}`);
+                                      return;
                                     }
-                                  } catch (error) {
-                                    alert(`Error: ${error.message}`);
+
+                                    alert(`✅ Trade accepted: ${json.status || "accepted"}`);
+
+                                    // optional: fetch paper portfolio snapshot from server (Alpaca paper)
+                                    // const pf = await fetch(`${BACKEND_URL}/api/paper-trading/portfolio_live/${encodeURIComponent('elite_chat_user')}`).then(r=>r.json());
+                                    // console.log('Paper portfolio after trade:', pf);
+
+                                  } catch (e) {
+                                    alert(`Trade failed: ${e?.message || e}`);
                                   }
                                 }}
                                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
@@ -1356,6 +1423,8 @@ const EnhancedChatInterface = () => {
                               >
                                 Execute
                               </motion.button>
+
+
                             </div>
                           </div>
                         )}

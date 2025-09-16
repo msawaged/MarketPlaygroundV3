@@ -195,6 +195,13 @@ async def strategy_process_belief(request: Request):
 
         # 🔥 CALL YOUR REAL AI ENGINE
         result = run_ai_engine(belief, user_id, risk_profile)
+        # Beta guard: enforce alignment for beta testers
+        try:
+            from backend.ai_engine.ai_engine import _beta_guard_finish
+            result = _beta_guard_finish(payload.belief, result)
+        except Exception as e:
+            print(f"[beta_guard] skipped due to {type(e).__name__}: {e}")
+
         
         # 📊 LOG SUCCESS METRICS
         duration = (time.perf_counter() - start) * 1000

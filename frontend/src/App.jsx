@@ -55,6 +55,34 @@ function MainApp() {
   const [belief, setBelief] = useState('');
   const [userId, setUserId] = useState('');
   const [response, setResponse] = useState(null);
+  // --- sanitize strategy before putting it in state ---
+  const cleanStrategy = (s) => {
+    if (!s || typeof s !== "object") {
+      return {
+        type: "TBD",
+        trade_legs: [],
+        expiration: "N/A",
+        explanation: "No explanation provided",
+      };
+    }
+    return {
+      type: s.type ?? "TBD",
+      trade_legs: Array.isArray(s.trade_legs) ? s.trade_legs : [],
+      expiration: s.expiration ?? "N/A",
+      explanation: s.explanation ?? "No explanation provided",
+      ...s, // keep any extra fields from backend
+    };
+  };
+
+  const normalizeResponse = (data) => {
+    const arr = Array.isArray(data?.strategy)
+      ? data.strategy
+      : [data?.strategy ?? {}];
+    const fixed = arr.map(cleanStrategy);
+    return { ...data, strategy: fixed };
+  };
+// --- end sanitize block ---
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loopStatus, setLoopStatus] = useState(null);
@@ -121,8 +149,7 @@ function MainApp() {
       });
 
       const data = await res.json();
-      const strategies = Array.isArray(data.strategy) ? data.strategy : [data.strategy];
-      setResponse({ ...data, strategy: strategies });
+      setResponse(normalizeResponse(data));
       setCurrentIndex(0);
       fetchLoopStatus();
     } catch {
@@ -169,7 +196,54 @@ function MainApp() {
       alert('❌ Feedback submission failed');
     }
   };
+
+  // === 🚀 POST /api/paper-trading/execute_live
+  const executeTrade = async () => {
+    try {
+      // make sure we have a normalized strategy at the current index
+      if (!response || !Array.isArray(response.strategy) || !response.strategy[currentIndex]) {
+        alert("No strategy to execute");
+        return;
+      }
+      const currentStrategy = response.strategy[currentIndex];
+
+      // respect backend hint if present
+      if (response.safe_to_execute === false) {
+        alert(response.execution_note || "Execution disabled in beta.");
+        return;
+      }
+
+      const payload = {
+        user_id: (userId || "").trim() || "anonymous",
+        ticker: response.ticker,
+        // IMPORTANT: backend expects 'strategy_data'
+        strategy_data: currentStrategy,
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/paper-trading/execute_live`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      let json = {};
+      try { json = await res.json(); } catch {}
+
+      if (!res.ok) {
+        const msg = json.detail || json.error || json.message || `${res.status} ${res.statusText}`;
+        alert(`Trade failed: ${msg}`);
+        return;
+      }
+
+      alert(`✅ Trade accepted: ${json.status || "accepted"}`);
+    } catch (e) {
+      alert(`Trade failed: ${e?.message || e}`);
+    }
+  };
+
   console.log("🔁 Render block A");
+  const current = response?.strategy?.[currentIndex] || {};
+
 
   return (
     <div style={{ backgroundColor: '#0f172a', color: '#f8fafc', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
@@ -390,9 +464,9 @@ function MainApp() {
               boxShadow: '0 0 20px rgba(59,130,246,0.5)'
             }}>
               <p>
-               <strong>🧠 Strategy:</strong> {response.strategy[currentIndex].type}{' '}
+                <strong>🧠 Strategy:</strong> {current.type}{' '}
                 <span style={{
-                  backgroundColor: response.strategy[currentIndex].source === 'ml_model' ? '#f87171' : '#34d399',
+                  backgroundColor: current.source === 'ml_model' ? '#f87171' : '#34d399',
                   color: '#000',
                   padding: '0.2rem 0.5rem',
                   marginLeft: '0.5rem',
@@ -400,17 +474,19 @@ function MainApp() {
                   fontWeight: 'bold',
                   fontSize: '0.8rem'
                 }}>
-                  {response.strategy[currentIndex].source === 'ml_model'
+                  {current.source === 'ml_model'
                     ? '📊 ML Model'
-                    : response.strategy[currentIndex].source === 'gpt_soft_parse'
+                    : current.source === 'gpt_soft_parse'
                     ? '🧬 GPT Parsed'
                     : '✅ GPT JSON'}
                 </span>
               </p>
 
-              <p><strong>📉 Type:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.instrument || parseOptionType(response.strategy[currentIndex].trade_legs?.[0])}</p>
-              <p><strong>💥 Strike:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.strike || parseStrike(response.strategy[currentIndex].trade_legs?.[0])}</p>
-              <p><strong>🧾 Quantity:</strong> {response.strategy[currentIndex].trade_legs?.[0]?.quantity || parseQuantity(response.strategy[currentIndex].trade_legs?.[0])}</p>
+
+              <p><strong>📉 Type:</strong> {current.trade_legs?.[0]?.instrument || parseOptionType(current.trade_legs?.[0])}</p>
+              <p><strong>💥 Strike:</strong> {current.trade_legs?.[0]?.strike || parseStrike(current.trade_legs?.[0])}</p>
+              <p><strong>🧾 Quantity:</strong> {current.trade_legs?.[0]?.quantity || parseQuantity(current.trade_legs?.[0])}</p>
+
 
               <p><strong>📝 Description:</strong> {response.strategy[currentIndex].description}</p>
               <p><strong>📌 Tags:</strong> {response.tags?.join(', ') || 'N/A'}</p>
@@ -435,8 +511,8 @@ function MainApp() {
               </p>
 
 
-                      {/* ✅ Extra breakdown for option strategies */}
-        {response.asset_class === "options" && response.strategy?.trade_legs && (
+        {/* ✅ Extra breakdown for option strategies */}
+        {response.asset_class === "options" && current.trade_legs?.length > 0 && (
           <div style={{
             backgroundColor: '#334155',
             padding: '1rem',
@@ -445,12 +521,12 @@ function MainApp() {
             boxShadow: '0 0 12px rgba(148,163,184,0.3)'
           }}>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>🧾 Option Trade Details</h4>
-            
+
             <p><strong>Ticker:</strong> {response.ticker}</p>
-            <p><strong>Type:</strong> {response.strategy.trade_legs[0].instrument || parseOptionType(response.strategy.trade_legs[0])}</p>
-            <p><strong>Strike:</strong> {response.strategy.trade_legs[0].strike || parseStrike(response.strategy.trade_legs[0])}</p>
-            <p><strong>Quantity:</strong> {response.strategy.trade_legs[0].quantity || parseQuantity(response.strategy.trade_legs[0])}</p>
-            <p><strong>Expiration:</strong> {response.strategy.expiration}</p>
+            <p><strong>Type:</strong> {current.trade_legs[0]?.instrument || parseOptionType(current.trade_legs[0])}</p>
+            <p><strong>Strike:</strong> {current.trade_legs[0]?.strike || parseStrike(current.trade_legs[0])}</p>
+            <p><strong>Quantity:</strong> {current.trade_legs[0]?.quantity || parseQuantity(current.trade_legs[0])}</p>
+            <p><strong>Expiration:</strong> {current.expiration}</p>
             <p>
               <strong>🧠 Confidence:</strong>{' '}
               <span style={{
@@ -460,9 +536,9 @@ function MainApp() {
                 {(response.confidence * 100).toFixed(1)}%
               </span>
             </p>
-            
           </div>
         )}
+
 
               <p><strong>📈 Direction:</strong> {response.direction}</p>
               <p><strong>⚡ Confidence:</strong> {response.confidence?.toFixed(4)}</p>
@@ -473,10 +549,10 @@ function MainApp() {
               <p><strong>📄 Explanation:</strong> {response.strategy[currentIndex].explanation}</p>
 
 {/* 👇 INSERT THE NEW BLOCK HERE — flush with the rest of the breakdown */}
-{response.strategy?.trade_legs?.length > 0 && (
+{current.trade_legs?.length > 0 && (
   <>
     <h4 style={{ color: '#fff', fontWeight: 'bold' }}>📈 Trade Legs</h4>
-    {response.strategy.trade_legs.map((leg, idx) => {
+    {current.trade_legs.map((leg, idx) => {
       const isOption = !!leg.option_type;
       const isEquity = !leg.option_type && !!leg.entry_price;
 
@@ -520,31 +596,27 @@ function MainApp() {
 
 
 
+
               {/* ✅ Conditionally show the Execute Trade button if we have a strategy */}
-{response && response.strategy && (
+{response && Array.isArray(response.strategy) && response.strategy[currentIndex] && (
   <button
-    // ✅ On click, show an alert simulating trade execution
-    onClick={() =>
-      alert(
-        `🚀 Executing trade: ${response.strategy.type || 'UNKNOWN'} on ${
-          response.strategy.ticker || 'UNKNOWN'
-        }`
-      )
-    }
-    // ✅ Styling: green button, white text, rounded corners, margin from left
+    onClick={executeTrade}
+    disabled={response.safe_to_execute === false}
+    title={response.safe_to_execute === false ? (response.execution_note || "Execution disabled in beta.") : "Place paper trade"}
     style={{
       marginLeft: '10px',
-      backgroundColor: '#10B981',  // Tailwind green-500
+      backgroundColor: response.safe_to_execute === false ? '#64748b' : '#10B981',
       color: '#ffffff',
       border: 'none',
       padding: '8px 12px',
       borderRadius: '8px',
-      cursor: 'pointer',
+      cursor: response.safe_to_execute === false ? 'not-allowed' : 'pointer',
     }}
   >
     🚀 Execute Trade
   </button>
 )}
+
 
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => sendFeedback('good')} style={{ marginRight: '1rem', backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px' }}>👍 Yes</button>

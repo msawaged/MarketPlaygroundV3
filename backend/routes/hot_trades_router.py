@@ -15,6 +15,7 @@ from typing import List, Dict, Optional, Any, Union
 from fastapi import APIRouter, Query, HTTPException
 from backend.ai_engine.ai_engine import run_ai_engine
 from pathlib import Path
+from backend.utils.symbol_universe import is_tradable_symbol
 
 # Initialize router
 router = APIRouter()
@@ -27,12 +28,15 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 NEWS_BELIEFS_CSV = DATA_DIR / "news_beliefs.csv"
 STRATEGY_OUTCOMES_CSV = DATA_DIR / "strategy_outcomes.csv"
 
-# === In-memory cache (30 seconds) ===
+# === In-memory cache (5 HOURS for testing) ===
 CACHE = {
     "data": None,
     "timestamp": 0,
-    "ttl": 30  # seconds
+    "ttl": 18000  # 5 hours = 5 * 60 * 60 seconds
 }
+
+# === Strategy cache to avoid duplicate API calls ===
+STRATEGY_CACHE = {}
 
 # === Feature flag ===
 HOT_TRADES_ENABLED = os.getenv("HOT_TRADES_ENABLED", "true").lower() == "true"
@@ -195,7 +199,7 @@ def generate_hot_trade_item(
     belief_data: Dict[str, Any],
     strategy_data: Optional[Dict[str, Any]] = None,
     item_id: int = 0
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:  # Changed return type to Optional
     """Generate a normalized hot trade item with error handling"""
     
     # Get belief text
@@ -208,6 +212,20 @@ def generate_hot_trade_item(
     # Get ticker
     tickers = belief_data.get('tickers', [])
     ticker = tickers[0] if tickers else 'SPY'
+    
+    # === VALIDATION: Skip invalid tickers ===
+    if not is_tradable_symbol(ticker):
+        print(f"[hot_trades] Skipping invalid ticker: {ticker}")
+        return None
+    
+    # === VALIDATION: Skip non-financial content ===
+    if belief_text:
+        financial_keywords = ['stock', 'shares', '%', 'earnings', 'revenue', 
+                             'trading', 'market', 'price', 'gains', 'losses',
+                             'nasdaq', 's&p', 'dow', 'ipo', 'merger']
+        if not any(word in belief_text.lower() for word in financial_keywords):
+            print(f"[hot_trades] Skipping non-financial: {belief_text[:30]}...")
+            return None
     
     # Build hot trade item
     hot_trade = {
@@ -240,45 +258,62 @@ def generate_hot_trade_item(
         except:
             pass
     
-    # Generate strategy if missing (with error handling)
+    # Generate strategy if missing (with caching and error handling)
     if not hot_trade['strategy'] and belief_text:
-        try:
-            print(f"[hot_trades] Generating strategy for: {belief_text[:50]}...")
-            
-            ai_result = run_ai_engine(
-                belief=belief_text,
-                risk_profile="moderate",
-                user_id="hot_trades"
-            )
-            
-            if ai_result and isinstance(ai_result, dict) and 'strategy' in ai_result:
-                strategy_obj = ai_result.get('strategy', {})
+        # === CHECK CACHE FIRST ===
+        cache_key = hash(belief_text[:100] if len(belief_text) > 100 else belief_text)
+        if cache_key in STRATEGY_CACHE:
+            print(f"[hot_trades] Using cached strategy for: {belief_text[:30]}...")
+            cached = STRATEGY_CACHE[cache_key]
+            hot_trade['strategy'] = cached['strategy']
+            hot_trade['sentiment'] = cached['sentiment']
+            hot_trade['confidence'] = cached['confidence']
+        else:
+            # === GENERATE NEW STRATEGY (WITH API CALL) ===
+            try:
+                print(f"[hot_trades] Generating strategy for: {belief_text[:50]}...")
                 
-                # Normalize option legs to use final ticker
-                strategy_obj = normalize_option_legs(strategy_obj, ticker)
+                ai_result = run_ai_engine(
+                    belief=belief_text,
+                    risk_profile="moderate",
+                    user_id="hot_trades"
+                )
                 
-                hot_trade['strategy'] = {
-                    'type': strategy_obj.get('type', 'Options Strategy'),
-                    'expiration': strategy_obj.get('expiration'),
-                    'target_return': strategy_obj.get('target_return'),
-                    'max_loss': strategy_obj.get('max_loss'),
-                    'max_profit': strategy_obj.get('max_profit')
-                }
-                
-                hot_trade['sentiment'] = normalize_sentiment(ai_result.get('direction', 'neutral'))
-                hot_trade['confidence'] = normalize_confidence(ai_result.get('confidence', 0.5))
-            else:
-                # GPT returned invalid response
-                print(f"[hot_trades] GPT returned invalid response for: {belief_text[:30]}")
-                hot_trade['strategy'] = {'type': 'Unavailable (invalid response)', 'error': True}
-                
-        except Exception as e:
-            print(f"[hot_trades] Error generating strategy: {e}")
-            # Check if it's a quota error
-            if "quota" in str(e).lower() or "rate" in str(e).lower():
-                hot_trade['strategy'] = {'type': 'Unavailable (quota)', 'error': True}
-            else:
-                hot_trade['strategy'] = {'type': 'Unavailable (error)', 'error': True}
+                if ai_result and isinstance(ai_result, dict) and 'strategy' in ai_result:
+                    strategy_obj = ai_result.get('strategy', {})
+                    
+                    # Normalize option legs to use final ticker
+                    strategy_obj = normalize_option_legs(strategy_obj, ticker)
+                    
+                    hot_trade['strategy'] = {
+                        'type': strategy_obj.get('type', 'Options Strategy'),
+                        'expiration': strategy_obj.get('expiration'),
+                        'target_return': strategy_obj.get('target_return'),
+                        'max_loss': strategy_obj.get('max_loss'),
+                        'max_profit': strategy_obj.get('max_profit')
+                    }
+                    
+                    hot_trade['sentiment'] = normalize_sentiment(ai_result.get('direction', 'neutral'))
+                    hot_trade['confidence'] = normalize_confidence(ai_result.get('confidence', 0.5))
+                    
+                    # === CACHE THE SUCCESSFUL RESULT ===
+                    STRATEGY_CACHE[cache_key] = {
+                        'strategy': hot_trade['strategy'],
+                        'sentiment': hot_trade['sentiment'],
+                        'confidence': hot_trade['confidence']
+                    }
+                else:
+                    # GPT returned invalid response
+                    print(f"[hot_trades] GPT returned invalid response for: {belief_text[:30]}")
+                    hot_trade['strategy'] = {'type': 'Unavailable (invalid response)', 'error': True}
+                    
+            except Exception as e:
+                print(f"[hot_trades] Error generating strategy: {e}")
+                # Check if it's a quota error
+                if "quota" in str(e).lower() or "rate" in str(e).lower():
+                    hot_trade['strategy'] = {'type': 'Unavailable (quota)', 'error': True}
+                else:
+                    hot_trade['strategy'] = {'type': 'Unavailable (error)', 'error': True}
     
     # Final normalization
     hot_trade['sentiment'] = normalize_sentiment(hot_trade['sentiment'])
@@ -351,9 +386,14 @@ async def get_hot_trades(
             
             # Generate item (with error handling built in)
             hot_trade = generate_hot_trade_item(belief, strategy_data, idx)
+            
+            # === SKIP NONE VALUES (invalid tickers/content) ===
+            if hot_trade is None:
+                continue
+            
             hot_trades.append(hot_trade)
             
-            if len(hot_trades) >= limit * 2:
+            if len(hot_trades) >= limit:
                 break
         
         # If no trades generated, return placeholder

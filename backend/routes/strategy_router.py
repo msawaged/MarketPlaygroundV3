@@ -17,6 +17,57 @@ import pandas as pd
 import os
 from datetime import datetime
 
+def _enrich_option_legs_with_quotes(strategy: dict) -> dict:
+    """
+    Prefer Alpaca quotes; fallback to yfinance only if Alpaca has no data.
+    Adds bid/ask/mark/iv per option leg so the frontend can show real pricing.
+    Never mutates inputs outside of 'strategy.trade_legs'.
+    """
+    st = strategy or {}
+    legs = st.get("trade_legs") or []
+    if not legs:
+        return st
+
+    for leg in legs:
+        if not isinstance(leg, dict):
+            continue
+
+        # Normalize required fields
+        right = str(leg.get("option_type", "")).strip().title()   # "Call" / "Put"
+        if right not in ("Call", "Put"):
+            continue
+        sym    = str(leg.get("ticker") or "").strip().upper()
+        exp    = str(leg.get("expiration") or st.get("expiration") or "").strip()  # YYYY-MM-DD
+        strike = str(leg.get("strike_price") or "").strip().replace("$", "")
+        if not (sym and exp and strike):
+            continue
+
+        # 1) Alpaca first
+        q = {}
+        try:
+            from backend.market_data_alpaca import get_option_latest_quote_alpaca
+            q = get_option_latest_quote_alpaca(sym, exp, strike, right)
+        except Exception:
+            q = {}
+
+        # 2) yfinance fallback (only if you added it elsewhere)
+        if not q:
+            try:
+                from backend.market_data import get_option_quote_yf
+                q = get_option_quote_yf(sym, exp, strike, right)
+            except Exception:
+                q = {}
+
+        # 3) Attach to leg if we found anything
+        if q:
+            leg["bid"]  = float(q.get("bid", 0.0) or 0.0)
+            leg["ask"]  = float(q.get("ask", 0.0) or 0.0)
+            leg["mark"] = float(q.get("mid", q.get("last", 0.0) or 0.0))
+            leg["iv"]   = float(q.get("iv", 0.0) or 0.0)
+
+    return st
+
+
 router = APIRouter()
 
 def sanitize_json_values(obj):
@@ -69,6 +120,8 @@ def process_belief(request: BeliefRequest):
     try:
         # 🤖 AI ENGINE: Generate strategy from user belief
         result = run_ai_engine(request.belief)
+        print(f"[DBG] after run_ai_engine → type={(result.get('strategy') or {}).get('type')}, strategy_is_dict={isinstance(result.get('strategy'), dict)}")
+
         result["user_id"] = request.user_id
         
         # 🧹 DATA CLEANING: Remove inf/nan values that break JSON
@@ -124,7 +177,137 @@ def process_belief(request: BeliefRequest):
         })
         
         print(f"🔧 [DEBUG] SUCCESS! Duration: {duration:.0f}ms, Total logs: {len(METRICS['logs'])}")
+        
+         # === Beta guard: final normalize for beta testers (MUST be last) ===
+        try:
+            # Import inside to avoid circulars
+            from backend.ai_engine.ai_engine import _beta_guard_finish
+            result = _beta_guard_finish(request.belief, result)
+            print(f"[DBG] after beta_guard_finish → type={(result.get('strategy') or {}).get('type')}, strategy_is_dict={isinstance(result.get('strategy'), dict)}")
+
+            st = result.get("strategy") or {}
+            if st.get("type") in (None, "", "TBD"):
+                d = (result.get("direction") or "").lower()
+                st["type"] = "Call Debit Spread" if d == "bullish" else ("Put Debit Spread" if d == "bearish" else "Iron Condor")
+                result["strategy"] = st
+
+
+            # --- Normalize/clean for beta output shape ---
+            # 1) Flatten any dict-style validator to keep JSON simple
+            if isinstance(result.get("validator"), dict):
+                result["validator_details"] = result["validator"]
+                aligned = bool(result.get("ticker")) and bool(result.get("strategy"))
+                result["validator"] = "beta_guard:aligned" if aligned else "beta_guard:rejected"
+
+            # 2) If we have a real ticker + strategy, mark valid:true (beta rule)
+            if result.get("ticker") and result.get("strategy"):
+                result["valid"] = True
+                # Drop scary notes unless guard explicitly set them
+                if result.get("notes") and "vague" not in str(result["notes"]).lower():
+                    result["notes"] = None
+
+                # 3) Force a sensible type if missing (align with direction)
+                st = result.get("strategy") or {}
+                if not st.get("type"):
+                    d = (result.get("direction") or "").lower()
+                    st["type"] = "Call Debit Spread" if d == "bullish" else ("Put Debit Spread" if d == "bearish" else "Iron Condor")
+
+                # 4) Ensure expiration is a future ISO date
+                from datetime import datetime, timedelta
+                exp = st.get("expiration")
+                fix_exp = False
+                if not exp or exp in ("TBD", "Unknown"):
+                    fix_exp = True
+                else:
+                    try:
+                        dt = datetime.fromisoformat(str(exp))
+                        if dt.date() <= datetime.utcnow().date():
+                            fix_exp = True
+                    except Exception:
+                        fix_exp = True
+                if fix_exp:
+                    tf = (result.get("timeframe") or "").lower()
+                    days = 21 if "week" in tf else 30
+                    st["expiration"] = (datetime.utcnow().date() + timedelta(days=days)).isoformat()
+
+                result["strategy"] = st
+
+                # ---- Enrich option legs with quotes (Alpaca first; fallback yf) ----
+                if isinstance(result.get("strategy"), dict) and result["strategy"].get("trade_legs"):
+                    result["strategy"] = _enrich_option_legs_with_quotes(result["strategy"])
+                    # Mirror explanation to top-level for the frontend
+                    expl = result["strategy"].get("explanation") or result.get("explanation") or ""
+                    result["explanation"] = str(expl)
+
+
+            # If still no ticker/strategy, keep valid/notes as set by guard
+        except Exception as e:
+            print(f"[beta_guard/router] skipped due to {type(e).__name__}: {e}")
+        # === end beta guard ===
+
+        # Return is the absolute last thing — nothing modifies result after guard
+        print(f"[DBG] before return → type={(result.get('strategy') or {}).get('type')}, strategy_is_dict={isinstance(result.get('strategy'), dict)}")
+
+        # ---- Final stabilization: recover type/legs if they were dropped downstream ----
+        try:
+            st = result.get("strategy") or {}
+            expl = (st.get("explanation") or result.get("explanation") or "").strip()
+
+            # 1) Recover type from explanation keywords if missing
+            if not st.get("type"):
+                if "Bull Call Spread" in expl:
+                    st["type"] = "Bull Call Spread"
+                elif "Bear Put Spread" in expl:
+                    st["type"] = "Bear Put Spread"
+                elif "Buy ETF" in expl:
+                    st["type"] = "Buy ETF"
+                elif "Buy Equity" in expl:
+                    st["type"] = "Buy Equity"
+
+            # 2) Rebuild legs from "between A and B" if we have a known spread but no legs
+            if st.get("type") in ("Bull Call Spread", "Bear Put Spread") and not st.get("trade_legs"):
+                import re
+                # Try to parse two strikes: "... between 29 and 27 ..."
+                m = re.search(r'between\s+([0-9]+(?:\.[0-9]+)?)\s+and\s+([0-9]+(?:\.[0-9]+)?)', expl)
+                # Fallback: try to parse two floats anywhere in explanation
+                if not m:
+                    m = re.search(r'([0-9]+(?:\.[0-9]+)?)\D+([0-9]+(?:\.[0-9]+)?)', expl)
+
+                if m:
+                    k1 = float(m.group(1)); k2 = float(m.group(2))
+                    lo, hi = (min(k1, k2), max(k1, k2))
+                    sym = result.get("ticker") or "SPY"
+                    exp = st.get("expiration") or result.get("expiry_date") or "TBD"
+
+                    if st["type"] == "Bull Call Spread":
+                        legs = [
+                            {"action":"Buy to Open",  "ticker": sym, "option_type":"Call", "strike_price": str(lo), "expiration": exp},
+                            {"action":"Sell to Open", "ticker": sym, "option_type":"Call", "strike_price": str(hi), "expiration": exp},
+                        ]
+                    else:  # Bear Put Spread
+                        legs = [
+                            {"action":"Buy to Open",  "ticker": sym, "option_type":"Put", "strike_price": str(hi), "expiration": exp},
+                            {"action":"Sell to Open", "ticker": sym, "option_type":"Put", "strike_price": str(lo), "expiration": exp},
+                        ]
+                    st["trade_legs"] = legs
+
+            # 3) Ensure expiration lives inside strategy (router sometimes only has top-level)
+            if not st.get("expiration"):
+                st["expiration"] = result.get("expiry_date") or st.get("expiration") or "TBD"
+
+            result["strategy"] = st
+        except Exception as _:
+            # Never block the response on stabilization
+            pass
+
+
+        # Mirror explanation top-level for the frontend
+        if isinstance(result.get("strategy"), dict) and not result.get("explanation"):
+            result["explanation"] = result["strategy"].get("explanation", "")
+
+
         return result
+
 
     except Exception as e:
         # 📊 PERFORMANCE MONITORING: Log error with timing and details

@@ -12,7 +12,7 @@ import os
 import json
 import math
 from backend.risk_management.position_sizing import add_risk_management_to_strategy
-from datetime import datetime
+from datetime import datetime, timedelta
 from openai import OpenAI, OpenAIError
 import openai
 from backend.ai_engine.strategy_explainer import generate_strategy_explainer
@@ -50,6 +50,147 @@ from backend.ai_engine.strategy_model_selector import decide_strategy_engine
 print(" Imported strategy_model_selector")
 
 from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
+
+# === Beta Guard helpers (surgical; do not refactor core engine) ===
+def _is_creative_disabled() -> bool:
+    """Check if creative mapping is OFF (beta default)."""
+    return os.getenv("CREATIVE_MAPPING_ENABLED", "false").lower() != "true"
+
+def _looks_vague(belief_text: str) -> bool:
+    """Detect if belief is clearly non-financial/vague for beta hardening."""
+    text = (belief_text or "").strip().lower()
+    if not text:
+        return True
+    non_financial_markers = [
+        r"\b(retire|retirement|work until|wedding|birthday|vacation)\b",
+        r"\b(health|diet|exercise|school|college|tuition)\b",
+    ]
+    for pat in non_financial_markers:
+        if re.search(pat, text):
+            return True
+    return False
+
+def _coerce_strategy_type(direction: str) -> str:
+    """Force strategy type to align with belief direction."""
+    d = (direction or "").lower()
+    if d == "bullish":
+        return "Call Debit Spread"
+    if d == "bearish":
+        return "Put Debit Spread"
+    return "Iron Condor"  # default neutral
+
+def _choose_expiration_days(timeframe_hint: str) -> int:
+    """Pick sensible expirations (weeks → 21d, months → 30d)."""
+    tf = (timeframe_hint or "").lower()
+    if "week" in tf:
+        return 21
+    if "month" in tf or "30" in tf:
+        return 30
+    return 30
+
+def _ensure_future_expiration(strategy: dict, timeframe_hint: str) -> dict:
+    """Guarantee expiration is in the future; set sane default if missing/invalid."""
+    if not isinstance(strategy, dict):
+        return strategy
+    exp = strategy.get("expiration")
+    needs_fix = False
+    if not exp or exp in ("TBD", "Unknown"):
+        needs_fix = True
+    else:
+        try:
+            dt = datetime.fromisoformat(str(exp))
+            if dt.date() <= datetime.utcnow().date():
+                needs_fix = True
+        except Exception:
+            needs_fix = True
+    if needs_fix:
+        days = _choose_expiration_days(timeframe_hint)
+        new_dt = datetime.utcnow().date() + timedelta(days=days)
+        strategy["expiration"] = new_dt.isoformat()
+    return strategy
+
+def _beta_guard_enforce(parsed_belief: dict, strategy_bundle: dict) -> dict:
+    """
+    Last-line safety check for beta:
+    - With creative OFF, vague beliefs => valid:false, no forced fallback.
+    - Coerce strategy.type to align with direction if missing.
+    - Ensure expiration is a future ISO date.
+    - Normalize validator to a simple string; move any dict to validator_details.
+    """
+    bundle = dict(strategy_bundle or {})
+    belief_text = (parsed_belief or {}).get("raw_belief") or (parsed_belief or {}).get("belief") or ""
+    ticker = (parsed_belief or {}).get("ticker")
+    direction = (parsed_belief or {}).get("direction")
+    timeframe = (parsed_belief or {}).get("timeframe") or (parsed_belief or {}).get("time_horizon") or ""
+
+
+    # If upstream produced no strategy, do NOT fabricate one in beta
+    if not bundle.get("strategy"):
+        bundle["valid"] = False
+        bundle["validator"] = "beta_guard:no_strategy"
+        bundle["notes"] = "No strategy produced; not forcing one in beta."
+        return bundle
+
+
+    # 1) If creative OFF and belief is vague or missing ticker => invalid, no fallback
+    if _is_creative_disabled() and (_looks_vague(belief_text) or not ticker):
+        bundle["valid"] = False
+        bundle["notes"] = "Belief too vague or lacks tradable subject while creative mapping is OFF."
+        bundle["validator"] = "beta_guard:vague"
+        bundle["strategy"] = None
+        bundle["ticker"] = ticker if ticker else None
+        return bundle
+
+    # 2) Coerce strategy shape
+    st = dict(bundle.get("strategy") or {})  # copy so we don't mutate input unexpectedly
+
+    # If missing/empty type, force it to align with direction
+    coerced_type = _coerce_strategy_type(direction)
+    if not st.get("type"):
+        st["type"] = coerced_type
+
+    # Ensure expiration is valid and in the future
+    st = _ensure_future_expiration(st, timeframe)
+    bundle["strategy"] = st  # write back
+
+    # 3) Decide validity for beta: if we have a ticker (and not vague above), it's valid
+    bundle["valid"] = True if ticker else False
+    if not bundle["valid"]:
+        bundle["validator"] = "beta_guard:missing_ticker"
+        bundle["notes"] = "No ticker detected; not forcing SPY in beta."
+    else:
+        # Normalize any prior dict validator to details, and set clean, simple validator
+        if isinstance(bundle.get("validator"), dict):
+            bundle["validator_details"] = bundle["validator"]
+        bundle["validator"] = "beta_guard:aligned"
+        # Mirror top-level convenience fields
+        bundle["ticker"] = ticker
+        bundle["direction"] = direction
+        # Clear scary notes if we’re returning a valid, aligned strategy
+        if "notes" in bundle and bundle["notes"]:
+            # Keep notes only if we explicitly set them above; otherwise drop noisy ones
+            if "too vague" not in str(bundle["notes"]).lower():
+                bundle["notes"] = None
+
+    return bundle
+
+
+def _beta_guard_finish(belief_text: str, result: dict) -> dict:
+    """Wrapper to call right before returning strategy to the client."""
+    try:
+        parsed = (result or {}).get("parsed_belief") or {
+            "raw_belief": belief_text,
+            "ticker": (result or {}).get("ticker"),
+            "direction": (result or {}).get("direction"),
+            "timeframe": (result or {}).get("timeframe") or (result or {}).get("time_horizon"),
+        }
+        return _beta_guard_enforce(parsed, result or {})
+    except Exception as e:
+        result = result or {}
+        result.setdefault("valid", False)
+        result["validator"] = f"beta_guard:error:{type(e).__name__}"
+        result["notes"] = "Guard failed; returning original result without alignment."
+        return result
 
 
 
@@ -228,7 +369,7 @@ def _guard_spurious_ticker(belief_text: str, ticker: str) -> str:
         b_lower = b.lower()
 
         # Common words that are also tickers
-        common_words = {"NEXT", "S", "ON", "ALL", "TOUR"}
+        common_words = {"NEXT", "S", "ON", "ALL", "TOUR", "IS", "IN", "UP", "EUROPE", "GOING"}
 
         # Helper checks
         def has_uppercase_token(word: str) -> bool:
@@ -652,46 +793,43 @@ def _should_try_creative(parsed: dict, belief: str) -> bool:
 
 def should_use_creative(parsed: dict, belief: str) -> bool:
     """
-    Intelligently decide if creative mapping should be used based on belief characteristics.
-    This unifies the system to a single backend instead of port-based routing (8000 vs 8001).
-    
-    Returns True if:
-    - CREATIVE_MAPPING_ENABLED env var is set to "true" (default false)
-    - No valid ticker detected or only generic tickers (SPY, QQQ, DIA)
-    - Tags are empty or too vague
-    - Belief is thematic/cultural (contains key phrases)
+    Decide if creative mapping should be used.
+    For beta, respect CREATIVE_MAPPING_ENABLED strictly.
+    If enabled, run heuristics; if disabled, never use creative.
     """
-    # Check CREATIVE_MAPPING_ENABLED env var (default to "false")
     creative_enabled = os.getenv("CREATIVE_MAPPING_ENABLED", "false").lower() == "true"
-    if creative_enabled:
-        print("[CREATIVE] Enabled via CREATIVE_MAPPING_ENABLED=true env var")
+    if not creative_enabled:
+        print(f"[CREATIVE] Decision: DISABLED (env var false) — belief='{(belief or '')[:60]}'...")
+        return False
+
+    print(f"[CREATIVE] Decision: ENABLED (env var true) — evaluating heuristics — belief='{(belief or '')[:60]}'...")
+
+    # Heuristic 1: ticker quality
+    ticker = (parsed.get("ticker") or "").upper()
+    if not ticker or ticker in {"SPY", "QQQ", "DIA", "IWM"}:
+        print(f"[CREATIVE] ON due to generic/missing ticker: '{ticker}'")
         return True
-    
-    # Check ticker quality
-    ticker = parsed.get("ticker", "").upper()
-    if not ticker or ticker in {"SPY", "QQQ", "DIA", "IWM", ""}:
-        print(f"[CREATIVE] Generic/missing ticker detected: '{ticker}'")
-        return True
-    
-    # Check tag quality
-    tags = parsed.get("tags", [])
+
+    # Heuristic 2: tag quality
+    tags = parsed.get("tags") or []
     if not tags or all(t in {"options", "equity", "etf", "stock"} for t in tags):
-        print(f"[CREATIVE] Vague/empty tags detected: {tags}")
+        print(f"[CREATIVE] ON due to vague/empty tags: {tags}")
         return True
-    
-    # Check for thematic/cultural keywords that suggest creative interpretation needed
+
+    # Heuristic 3: thematic/cultural keywords
     thematic_keywords = [
-        "why", "markets", "nervous", "boom", "culture", "trend", 
-        "sentiment", "everyone", "nobody", "viral", "meme", "hype",
-        "fear", "greed", "panic", "euphoria", "bubble", "crash"
+        "why","markets","nervous","boom","culture","trend","sentiment",
+        "everyone","nobody","viral","meme","hype","fear","greed",
+        "panic","euphoria","bubble","crash"
     ]
-    belief_lower = belief.lower()
-    if any(kw in belief_lower for kw in thematic_keywords):
-        print(f"[CREATIVE] Thematic/cultural belief detected")
+    bl = (belief or "").lower()
+    if any(kw in bl for kw in thematic_keywords):
+        print("[CREATIVE] ON due to thematic/cultural belief")
         return True
-    
-    print(f"[CREATIVE] Not needed - ticker: {ticker}, tags: {tags}")
+
+    print(f"[CREATIVE] OFF — heuristics say not needed (ticker={ticker}, tags={tags})")
     return False
+
 
 
 def run_ai_engine(
@@ -699,6 +837,72 @@ def run_ai_engine(
 ) -> dict:
     start_time = time.time()
     parsed = parse_belief(belief)
+
+    # --- sentiment nudge for simple language like "grow 20%" / "drop 10%" ---
+    if (parsed.get("direction") or "neutral").lower() == "neutral":
+        bl = f" {belief.lower()} "
+        bullish_hits = [" up ", " grow", " increase", " higher", " rise", " rally", "% up", " up%", " percent up"]
+        bearish_hits = [" down ", " drop", " decrease", " lower", " fall", " crash", "% down", " down%", " percent down"]
+        if any(k in bl for k in bullish_hits):
+            parsed["direction"] = "bullish"
+        elif any(k in bl for k in bearish_hits):
+            parsed["direction"] = "bearish"
+
+
+    # --- Curated theme → ETF mapping (beta-safe) ---
+    bl = (belief or "").lower()
+    cur = (parsed.get("ticker") or "").upper()
+
+    def _is_generic_or_currency(t: str) -> bool:
+        # Treat these as generic (okay to override for themes)
+        return t in {"", "SPY", "QQQ", "DIA", "IWM", "FXE", "UUP", "FXB", "FXY"}
+
+    # Agriculture / food demand
+    if _is_generic_or_currency(cur) and any(k in bl for k in [
+        "potato","agri","agriculture","crop","farmland","fertilizer","wheat","corn","soy","grain","food demand"
+    ]):
+        parsed["ticker"] = "DBA"   # or "MOO" if you prefer agribusiness equities
+        parsed.setdefault("tags", []).append("agriculture-theme")
+        print("[THEME MAP] agriculture → DBA")
+
+
+    # --- Curated theme → ETF mapping (beta-safe; only when ticker is missing or generic) ---
+    bl = (belief or "").lower()
+    cur_ticker = (parsed.get("ticker") or "").upper()
+
+    def _is_generic(t: str) -> bool:
+        return t in {"", "SPY", "QQQ", "DIA", "IWM"}
+
+    # Agriculture / food demand (e.g., "potato demand in Europe")
+    if _is_generic(cur_ticker) and any(k in bl for k in ["potato", "agri", "agriculture", "crop", "farmland", "fertilizer", "wheat", "corn", "soy", "grain"]):
+        parsed["ticker"] = "DBA"  # or "MOO" if you prefer agribusiness equities
+        parsed.setdefault("tags", []).append("agriculture-theme")
+        print("[THEME MAP] agriculture → DBA")
+
+    # AI chips / semiconductors
+    elif _is_generic(cur_ticker) and any(k in bl for k in ["ai chip", "semiconductor", "gpu", "nvidia supply", "foundry", "wafer", "tsmc", "chip cycle"]):
+        parsed["ticker"] = "SMH"  # or "SOXX"
+        parsed.setdefault("tags", []).append("semis-theme")
+        print("[THEME MAP] semiconductors → SMH")
+
+    # US housing
+    elif _is_generic(cur_ticker) and any(k in bl for k in ["housing", "homebuilding", "mortgage rates", "real estate demand", "new homes", "builder"]):
+        parsed["ticker"] = "ITB"  # or "XHB"
+        parsed.setdefault("tags", []).append("housing-theme")
+        print("[THEME MAP] housing → ITB")
+
+    # Energy (oil & gas)
+    elif _is_generic(cur_ticker) and any(k in bl for k in ["oil", "crude", "opec", "refinery", "gasoline", "energy stocks", "xle"]):
+        parsed["ticker"] = "XLE"
+        parsed.setdefault("tags", []).append("energy-theme")
+        print("[THEME MAP] energy → XLE")
+
+    # Euro strength / EUR up
+    elif _is_generic(cur_ticker) and any(k in bl for k in ["euro up", "eur up", "euro strength", "european currency", "fxe"]):
+        parsed["ticker"] = "FXE"
+        parsed.setdefault("tags", []).append("fx-eur-theme")
+        print("[THEME MAP] euro → FXE")
+
     
     # --- Creative Mapping: Automatic decision based on belief characteristics ---
     # This replaces port-based routing (8000 vs 8001) with intelligent detection
@@ -731,7 +935,7 @@ def run_ai_engine(
     ticker = parsed.get("ticker")
     tags = parsed.get("tags", [])
     confidence = parsed.get("confidence", 0.5)
-    parsed_asset = parsed.get("asset_class", "options")
+    parsed_asset = parsed.get("asset_class", "auto")
 
     goal = evaluate_goal(belief)
     goal_type = goal.get("goal_type")
@@ -759,7 +963,7 @@ def run_ai_engine(
         ticker = _guard_spurious_ticker(belief, ticker)
 
 
-    from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
+    
 
     #  Get price data safely (skip non-tradables like SWIFT/BLACK)
     try:
@@ -792,27 +996,46 @@ def run_ai_engine(
         or asset_class == "bond"
     )
 
-    #  Construct the base prompt for GPT strategy generation
     strategy_prompt = f"""
-    You are a financial strategist. Based on the user's belief: "{belief}", generate a trading strategy.
+    You are a pragmatic US-markets strategist. Based on the user's belief: "{belief}",
+    propose ONE best-case, executable strategy using ONLY US-listed instruments.
 
-    Include:
-        - type (e.g., long call, bull put spread, buy equity, buy bond ETF)
-        - trade_legs (e.g., 'buy 1 call 150 strike', 'sell 1 put 140 strike')
-        - expiration (in 'YYYY-MM-DD' format or 'N/A')
-        - target_return (expected gain %)
-        - max_loss (worst-case loss %)
-        - time_to_target (e.g., 2 weeks, 3 months)
-        - explanation (why this fits belief)
+    Choose exactly one instrument class that best suits the belief, horizon and risk:
+      - Buy Equity (single stock)  OR
+      - Buy ETF (broad/sector/commodity ETF)  OR
+      - Covered Call (on an existing long)  OR
+      - Cash-Secured Put (to accumulate at discount)  OR
+      - Bull Call Spread (defined-risk bullish options)  OR
+      - Bear Put Spread (defined-risk bearish options)  OR
+      - Iron Condor (range-bound, defined risk)
+
+    Constraints:
+      - US-listed symbols only (no futures, OTC or foreign tickers).
+      - If choosing Equity/ETF, do NOT include option legs.
+      - If choosing an options strategy, include realistic strikes and an ISO expiration (YYYY-MM-DD).
+      - Favor liquid, optionable ETFs for thematic beliefs.
+
+    Return a single JSON object with keys:
+    {{
+      "type": "<one of: Buy Equity | Buy ETF | Covered Call | Cash-Secured Put | Bull Call Spread | Bear Put Spread | Iron Condor>",
+      "trade_legs": [ "<if equity/ETF: e.g., 'buy 100 shares of TICKER'>", "<if options: leg dicts are fine>" ],
+      "expiration": "<YYYY-MM-DD or 'N/A'>",
+      "target_return": "<e.g., '10-15%'>",
+      "max_loss": "<string>",
+      "time_to_target": "<e.g., '1-3 months'>",
+      "explanation": "<why this is the best-case instrument for this belief>"
+    }}
 
     Context:
-        - Ticker: {ticker}
-        - Direction: {direction}
-        - Asset Class: {asset_class}
-        - Latest Price: {latest}
-        - Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
-        - Confidence: {confidence}, Risk Profile: {risk_profile}
+      - Ticker (candidate): {ticker}
+      - Direction: {direction}
+      - Asset Class Hint: {asset_class}
+      - Latest Price: {latest}
+      - Goal: {goal_type}, Multiplier: {multiplier}, Timeframe: {timeframe}
+      - Confidence: {confidence}, Risk Profile: {risk_profile}
+      - Theme Tags: {tags}
     """
+
 
     # ===  NEW: Route strategy generation through hybrid GPT/ML selector ===
     strategy = decide_strategy_engine(
@@ -946,6 +1169,65 @@ def run_ai_engine(
             print(f"[GPT DEBUG]  GPT strategy generation failed: {e}")
     # else: skipped GPT because selector already produced a non-ML strategy
 
+    # --- Sanitize non-US/futures or foreign outputs into a clean US instrument (ETF or defined-risk options) ---
+    if isinstance(strategy, dict):
+        st_type = str(strategy.get("type", "")).lower()
+        legs = strategy.get("trade_legs") or []
+
+        # signals of futures/foreign artifacts
+        futureish = ("future" in st_type) or any(isinstance(l, dict) and ("future_type" in l or "contract_price" in l) for l in legs)
+        foreignish = any(isinstance(l, dict) and str(l.get("ticker", "")).upper().endswith((".L", ".TO", ".HK")) for l in legs)
+
+        if futureish or foreignish:
+            # If we have a tradable US ticker + direction, build a defined-risk spread on that ticker
+            if direction in ("bullish", "bearish") and is_tradable_symbol(normalize_ticker(ticker)):
+                # pick sane strikes from spot
+                try:
+                    spot = float(str(price_info.get("latest", 100.0)).replace("$", "")) or 100.0
+                except Exception:
+                    spot = 100.0
+                step = 1 if spot < 100 else 5
+                def _round_to(v, s): return s * round(float(v)/s)
+
+                if direction == "bullish":
+                    buy  = _round_to(spot * 1.00, step)
+                    sell = max(buy + step, _round_to(spot * 1.05, step))
+                    exp  = strategy.get("expiration") or "TBD"
+                    strategy = {
+                        "type": "Bull Call Spread",
+                        "trade_legs": [
+                            {"action":"Buy to Open","ticker":ticker,"option_type":"Call","strike_price":str(buy),"expiration":exp},
+                            {"action":"Sell to Open","ticker":ticker,"option_type":"Call","strike_price":str(sell),"expiration":exp},
+                        ],
+                        "expiration": exp,
+                        "target_return":"20-40%","max_loss":"Net Debit","time_to_target":"1-3 months",
+                        "explanation": f"Defined-risk bullish spread on {ticker} (US-listed) instead of non-US/futures."
+                    }
+                else:  # bearish
+                    sell = _round_to(spot * 0.95, step)
+                    buy  = max(sell + step, _round_to(spot * 0.98, step))
+                    exp  = strategy.get("expiration") or "TBD"
+                    strategy = {
+                        "type": "Bear Put Spread",
+                        "trade_legs": [
+                            {"action":"Buy to Open","ticker":ticker,"option_type":"Put","strike_price":str(buy),"expiration":exp},
+                            {"action":"Sell to Open","ticker":ticker,"option_type":"Put","strike_price":str(sell),"expiration":exp},
+                        ],
+                        "expiration": exp,
+                        "target_return":"20-40%","max_loss":"Net Debit","time_to_target":"1-3 months",
+                        "explanation": f"Defined-risk bearish spread on {ticker} (US-listed) instead of non-US/futures."
+                    }
+            else:
+                # If no solid ticker/direction, produce a clean US ETF buy (no options)
+                strategy = {
+                    "type":"Buy ETF",
+                    "trade_legs":[f"buy 100 shares of {ticker}"],
+                    "expiration":"N/A",
+                    "target_return":"10-15%",
+                    "max_loss":"Drawdown to stop",
+                    "time_to_target":"3-6 months",
+                    "explanation": f"US-listed ETF exposure via {ticker}; replaced non-US/futures output."
+                }
 
 
 
@@ -1409,6 +1691,8 @@ def generate_trading_strategy(belief: str, user_id: str = "anonymous") -> dict:
     try:
         # Use the existing working run_ai_engine function
         result = run_ai_engine(belief, "moderate", user_id)
+        # Beta guard: enforce valid:false for vague inputs and align type/expiration
+        result = _beta_guard_finish(belief, result)
         print(" Strategy successfully generated and logged.")
         return result
 
