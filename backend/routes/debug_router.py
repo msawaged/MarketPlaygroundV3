@@ -421,3 +421,20 @@ def debug_models():
         status[model] = os.path.exists(path)
     
     return status
+
+
+@router.get("/routes")
+def list_all_routes():
+    """
+    ✅ GET /debug/routes
+    Lists all registered FastAPI routes (path + methods).
+    Helps confirm what execute endpoints exist.
+    """
+    from backend.app import app
+    routes = []
+    for r in app.routes:
+        methods = sorted(list(getattr(r, "methods", []) or []))
+        path = getattr(r, "path", None)
+        name = getattr(r, "name", None)
+        routes.append({"path": path, "methods": methods, "name": name})
+    return {"count": len(routes), "routes": routes}

@@ -67,6 +67,15 @@ from backend.routes.paper_trading_router import router as paper_trading_router
 from backend.routes.market_events_router import router as market_events_router
 from backend.routes.alpaca_probe_router import ROUTER as alpaca_probe_router
 from backend.routes.market_ticker_router import ROUTER as market_ticker_router
+# ============================
+# 🚀 Broker & OAuth Routers
+# Alpaca-only (beta).
+# - /oauth/* handles Connect/OAuth stubs + dev token seeding
+# - /broker/* proxies account, positions, and orders via token_store
+# ============================
+from backend.routes.oauth_router import router as oauth_router
+from backend.routes.broker_router import router as broker_router
+
 
 print("✅ [9] Router imports finished")
 
@@ -133,6 +142,10 @@ app.include_router(trade_confirmation_router, tags=["Trade Confirmation"])
 app.include_router(market_events_router)
 app.include_router(alpaca_probe_router)
 app.include_router(market_ticker_router)
+# --- Broker & OAuth Routers (Alpaca beta) ---
+app.include_router(oauth_router)
+app.include_router(broker_router)
+
 
 print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")
 

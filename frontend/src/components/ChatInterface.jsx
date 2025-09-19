@@ -93,6 +93,86 @@ if (typeof window !== 'undefined') {
   console.log('[DEBUG] BACKEND_URL =', BACKEND_URL);
 }
 
+// === MP order helper (paper env) ===========================================
+// Calls POST /broker/place_order with user_id from localStorage.
+// - Uses BACKEND_URL you already set
+// - Ensures a stable mp_user_id for this browser session
+async function mpPlaceOrder({ symbol, side = "buy", qty = 1, env = "paper" }) {
+  // 1) ensure user_id exists
+  const KEY = "mp_user_id";
+  let user_id = localStorage.getItem(KEY);
+  if (!user_id) {
+    user_id = (crypto?.randomUUID && crypto.randomUUID()) || "murad";
+    localStorage.setItem(KEY, user_id);
+  }
+
+  // 2) build URL with query params your /broker/place_order expects
+  const url =
+    `${BACKEND_URL}/broker/place_order` +
+    `?user_id=${encodeURIComponent(user_id)}` +
+    `&symbol=${encodeURIComponent(symbol)}` +
+    `&side=${encodeURIComponent(side)}` +
+    `&qty=${encodeURIComponent(qty)}` +
+    `&env=${encodeURIComponent(env)}`;
+
+  // 3) POST (no body needed for this minimal proxy)
+  const res = await fetch(url, { method: "POST" });
+
+  // 4) tolerant parse (JSON or raw text)
+  const raw = await res.text();
+  let data;
+  try { data = JSON.parse(raw); } catch { data = { raw }; }
+
+  if (!res.ok) {
+    // surface broker error message if present
+    const msg = data?.detail?.message || raw || `${res.status} ${res.statusText}`;
+    throw new Error(msg);
+  }
+
+  return data; // shape: { env, order: {...} }
+}
+// =========================================================================== 
+
+
+// === MP Broker Badge (uses /broker/account via your MP proxy) ===
+// Shows "Connected · Paper · BP $..." when the proxy works;
+// otherwise shows "Connect Brokerage (soon)" placeholder.
+const BrokerBadge = () => {
+  const [state, setState] = useState({ ok: false, bp: null });
+
+  useEffect(() => {
+    // Ensure a user_id exists for beta; keep it simple/localStorage
+    const KEY = "mp_user_id";
+    let uid = localStorage.getItem(KEY);
+    if (!uid) {
+      uid = (crypto?.randomUUID && crypto.randomUUID()) || "murad";
+      localStorage.setItem(KEY, uid);
+    }
+
+    // Hit MP proxy endpoint (paper env for beta)
+    const url = `${BACKEND_URL}/broker/account?user_id=${uid}&env=paper`;
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((data) => setState({ ok: true, bp: data?.buying_power ?? null }))
+      .catch(() => setState({ ok: false, bp: null }));
+  }, []);
+
+  if (!state.ok) {
+    return (
+      <div className="px-2 py-1 rounded bg-zinc-700 text-zinc-200 text-[11px] md:text-xs">
+        Connect Brokerage (soon)
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] md:text-xs">
+      Connected · Paper · BP ${state.bp}
+    </div>
+  );
+};
+
+
 // 📊 LIVE ELITE STOCK TICKER – FINAL VERSION
 const EliteLiveSymbolsKey = 'mp_elite_symbols';
 
@@ -1098,7 +1178,11 @@ const EnhancedChatInterface = () => {
             </h1>
             <p className="text-sm text-blue-400">AI Trading Strategist</p>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-3">
+            {/* MP broker status badge */}
+            <BrokerBadge />
+
+            {/* Existing live indicator */}
             <motion.div 
               className="w-3 h-3 bg-green-400 rounded-full shadow-lg"
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
@@ -1106,6 +1190,7 @@ const EnhancedChatInterface = () => {
             />
             <span className="text-xs text-green-400 font-semibold">LIVE</span>
           </div>
+
         </div>
       </motion.div>
 
@@ -1359,7 +1444,11 @@ const EnhancedChatInterface = () => {
                             {/* Original action buttons */}
                             <div className="grid grid-cols-3 gap-3 mt-4">
                               <motion.button 
-                                onClick={() => sendFeedback(message.strategy, 'good')}
+                               onClick={() => { 
+                                console.log("[UI] Perfect -> feedback(good)"); 
+                                sendFeedback(message.strategy, 'good'); 
+                              }}
+                              
                                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
                                 whileTap={{ scale: 0.95 }}
                                 whileHover={{ scale: 1.05, y: -2 }}
@@ -1377,46 +1466,31 @@ const EnhancedChatInterface = () => {
                               <motion.button 
                                 onClick={async () => {
                                   try {
-                                    const payload = {
-                                   // DEBUG: Show exactly what we send
-
-                                    user_id: 'elite_chat_user',
-                                    ticker: message?.strategy?.ticker || message?.strategy?.trade_legs?.[0]?.ticker || 'UNKNOWN',
-                                    strategy_data: {
-                                      ...message.strategy,
-                                      investment_amount: investmentAmount[message.id]
-                                    }
-                                  };
-
-                                  console.log('[DEBUG] execute payload →', payload);
-
-
-                                    const res = await fetch(`${BACKEND_URL}/api/paper-trading/execute_live`, {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify(payload),
+                                    // symbol from strategy (fallback safe)
+                                    const symbol =
+                                      message?.strategy?.ticker ||
+                                      message?.strategy?.trade_legs?.[0]?.ticker ||
+                                      "AAPL";
+                                
+                                    // derive qty from selected Investment (fallback to 1)
+                                    const px = Number(message?.strategy?.price) || 0;
+                                    const invest = Number(investmentAmount[message.id]) || 0;
+                                    const qty = invest && px ? Math.max(1, Math.floor(invest / px)) : 1;
+                                
+                                    // place order via MP proxy (paper)
+                                    const { order } = await mpPlaceOrder({
+                                      symbol,
+                                      side: "buy",
+                                      qty,
+                                      env: "paper",
                                     });
-
-                                    // robust parse: JSON or text
-                                    let bodyText = '', json = {};
-                                    try { bodyText = await res.text(); json = JSON.parse(bodyText); } catch {}
-
-                                    if (!res.ok) {
-                                      const msg = (json && (json.detail || json.error || json.message)) || bodyText || `${res.status} ${res.statusText}`;
-                                      alert(`Trade failed: ${msg}`);
-                                      return;
-                                    }
-
-                                    alert(`✅ Trade accepted: ${json.status || "accepted"}`);
-
-                                    // optional: fetch paper portfolio snapshot from server (Alpaca paper)
-                                    // const pf = await fetch(`${BACKEND_URL}/api/paper-trading/portfolio_live/${encodeURIComponent('elite_chat_user')}`).then(r=>r.json());
-                                    // console.log('Paper portfolio after trade:', pf);
-
+                                
+                                    alert(`✅ Order ${order?.status || "submitted"}: ${order?.symbol || symbol} x${order?.qty || qty}`);
                                   } catch (e) {
-                                    alert(`Trade failed: ${e?.message || e}`);
+                                    alert(`❌ Trade failed: ${e.message || e}`);
                                   }
                                 }}
+                                
                                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
                                 whileTap={{ scale: 0.95 }}
                                 whileHover={{ scale: 1.05, y: -2 }}

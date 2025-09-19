@@ -63,3 +63,7 @@ frozendict==2.4.6          # Immutable dictionaries
 matplotlib>=3.7.1
 xgboost
 xgboost
+rapidfuzz==3.6.1          # Fast fuzzy matching for symbol resolver (SYMBOL | NAME)
+
+# For reading structured config files like themes.yaml
+pyyaml==6.0.2

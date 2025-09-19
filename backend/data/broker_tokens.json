@@ -1,0 +1,15 @@
+{
+  "murad|alpaca|paper": {
+    "user_id": "murad",
+    "provider": "alpaca",
+    "env": "paper",
+    "access_token": "FAKE",
+    "refresh_token": null,
+    "expires_at": null,
+    "scope": "account:read trading data",
+    "extra": {
+      "source": "dev"
+    },
+    "updated_at": 1758157287
+  }
+}

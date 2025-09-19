@@ -42,15 +42,30 @@ COMMON_WORDS = {
 }
 
 # === STOPWORD_TICKER_BLOCK: Additional stopwords that should never be treated as tickers ===
+# Add short tokens that get picked up in “I want … an … etf” style sentences
 STOPWORD_TICKER_BLOCK = {
-    "IT", "DAY", "WE", "FROM", "BANK", "PLAN", "YEARS", "MARCH", 
-    "NOW", "EYE", "WHAT", "AS", "GAIN"
+    "IT", "DAY", "WE", "FROM", "BANK", "PLAN", "YEARS", "MARCH",
+    "NOW", "EYE", "WHAT", "AS", "GAIN",
+    "AN", "AI", "ETF"   # 👈 new: block these as standalone “tickers”
 }
+
 
 # Prevent English-word collisions that also exist as tickers (e.g., "TIME" from "in a month's time")
 STOP_TICKERS = {
     "TIME", "IT", "ALL", "ONE", "ON", "US", "USD", "UP", "DOWN", "OPEN", "CLOSE", "NEW", "HIGH", "LOW"
 }
+
+# --- Specific “AI ETF” mapping (handles “artificial intelligence etf”, “ai & robotics etf”, etc.) ---
+AI_ETF_KEYWORDS = (
+    "ai etf",
+    "artificial intelligence etf",
+    "ai & robotics etf",
+    "ai and robotics etf",
+    "robotics etf",
+    "intelligence etf",
+)
+AI_ETF_TICKER = "BOTZ"  # Global X Robotics & AI ETF
+
 
 def _looks_like_contextual_ticker(tok: str, text_upper: str) -> bool:
     """
@@ -177,6 +192,8 @@ SECTOR_ETF_MAP = {
     "renewable": "ICLN",    # iShares Global Clean Energy ETF
     "solar": "TAN",         # Invesco Solar ETF
     "wind": "FAN",          # First Trust Global Wind Energy ETF
+
+    
     # Add more sector keywords and representative ETFs as needed
 }
 
@@ -194,6 +211,32 @@ def detect_ticker(belief: str, asset_class: str = None) -> str:
     
     belief_lower = belief_cleaned.lower()
     belief_lower_clean = belief_lower  # For theme checking
+
+     # --- AI-ETF early return (handles common typos too) ---
+    # 1) keyword set
+    if any(k in belief_lower for k in AI_ETF_KEYWORDS):
+        tt = normalize_ticker(AI_ETF_TICKER)
+        if is_tradable_symbol(tt):
+            print(f"🎯 AI-ETF keyword match → {tt}")
+            return tt
+
+    # 2) typo-tolerant regex (e.g., 'intelegince', 'intellegence')
+    if re.search(r"\bartificial\s+intel+ig(?:en[sc]e|ence|ince)\s+etf\b", belief_lower):
+        tt = normalize_ticker(AI_ETF_TICKER)
+        if is_tradable_symbol(tt):
+            print(f"🎯 AI-ETF regex match → {tt}")
+            return tt
+
+
+
+    # --- AI ETF early return (prevents SPY/AN/ETF fallbacks) ---
+    # If the user asked for an AI/robotics ETF, use BOTZ directly.
+    if any(k in belief_lower for k in AI_ETF_KEYWORDS):
+        tt = normalize_ticker(AI_ETF_TICKER)
+        if is_tradable_symbol(tt):
+            print(f"🎯 AI-ETF keyword match → {tt}")
+            return tt
+
 
     # 🎯 STEP 1: Direct ticker pattern matching (TSLA, AAPL, etc.)
     ticker_pattern = r'\b([A-Z]{1,5})\b'
