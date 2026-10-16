@@ -1,0 +1,154 @@
+# Starter beliefs for seeding. One per line. Mix of specific, sector, consumer,
+# macro and everyday-observation beliefs, bullish and bearish, short and long.
+plumbing demand is going to be high
+potatoes are in demand
+people are eating out less because prices are too high
+everyone I know is buying an electric bike
+air travel is going to slow down next year
+more people are getting pets
+home renovation spending will drop as rates stay high
+data centers are going to need way more electricity
+AI chip demand keeps growing for years
+nobody wants to buy an office building
+cruise lines are packed this summer
+weight loss drugs will change what people eat
+people will drink less alcohol
+coffee prices are going up
+cocoa shortage will hurt chocolate makers
+the housing shortage isn't going away
+mortgage rates will come down and housing will heat up
+used car prices are about to fall
+EV sales growth is slowing
+oil prices will spike if there's trouble in the Middle East
+natural gas exports from the US will keep growing
+solar installs are going to slow down without subsidies
+nuclear power is making a comeback
+uranium is going to be in short supply
+copper will be scarce because of electrification
+gold keeps rising as people lose trust in currencies
+the dollar will weaken this year
+interest rates will stay higher for longer
+a recession is coming in the next six months
+consumers are tapped out on credit cards
+buy now pay later is going to have a lot of defaults
+regional banks are still in trouble
+big banks will make more money from higher rates
+insurance prices keep going up because of storms
+wildfires will get worse out west
+hurricane season will be bad this year
+farmers will have a tough year with low crop prices
+fertilizer demand will rise
+water is going to be the next big scarcity
+people are moving to Texas and Florida
+small towns are growing as people work remote
+office REITs will keep falling
+data center REITs will keep growing
+streaming services will keep raising prices and people will cancel
+movie theaters are coming back
+live concerts and events are booming
+sports betting keeps growing
+video games are in a slump
+people are buying fewer smartphones
+everyone is upgrading their PC for AI
+cybersecurity spending will go up after big hacks
+cloud spending is accelerating again
+software companies will get hurt by AI agents
+online ad spending will grow
+social media usage is peaking
+teens are spending more on beauty products
+luxury brands are slowing down
+discount stores like dollar stores will win as people trade down
+Costco keeps winning
+department stores are dying
+people are shopping online less and going back to stores
+package delivery volumes will rise
+trucking is in a recession
+railroads will benefit from reshoring
+manufacturing is coming back to the US
+defense spending will go up
+space launches are taking off
+drones are going to be everywhere
+airlines will have pricing power
+hotels will see weaker demand
+restaurants that are cheap will do well
+fast food is losing customers to grocery stores
+grocery prices are finally coming down
+beef prices will stay high
+egg prices will spike again
+health insurers will get squeezed by higher costs
+hospitals are getting busier
+aging population means more demand for senior care
+GLP-1 drugs will hurt medical device makers
+biotech will rebound as rates fall
+vaccines are out of favor
+telehealth is fading
+pharmacies are closing stores
+Apple will have a great iPhone cycle
+Tesla will disappoint on deliveries
+Nvidia will beat earnings again
+Amazon's cloud business will reaccelerate
+Google search is losing to AI chatbots
+Microsoft will benefit most from AI
+Meta will keep spending too much on the metaverse
+Netflix will keep growing subscribers
+Disney parks will slow down
+Boeing will keep having problems
+Intel will make a comeback
+AMD will take market share
+semiconductors will have a downturn next year
+Chinese stocks will rebound
+emerging markets will outperform
+Japan's stock market will keep rising
+Europe is heading into a slowdown
+India will be the fastest growing big economy
+tariffs will hurt retailers that import from China
+tariffs will help US steel makers
+the stock market will be flat for the next few months
+volatility is going to spike
+small caps will finally outperform
+dividend stocks will be popular as rates fall
+bitcoin mania will lift crypto-related stocks
+gold miners will catch up to gold prices
+silver demand from solar will grow
+lithium prices have bottomed
+battery storage is going to boom
+the power grid needs massive upgrades
+heat pumps will replace furnaces
+people are fixing their homes instead of moving
+DIY home projects are slowing
+lumber prices will rise
+cement and construction materials will be in demand from infrastructure spending
+pool and backyard spending is slowing
+RV sales will stay weak
+boat sales will fall
+motorcycle sales are rising with younger riders
+pickup trucks will keep selling well
+car repairs are up because people keep cars longer
+auto parts stores will benefit from older cars
+ride sharing is growing again
+food delivery apps are losing customers
+people are cooking at home more
+meal kit companies are struggling
+plant-based meat is fading
+organic food demand is growing
+pet food and vet spending will keep rising
+childcare costs are rising and daycare demand is high
+birth rates are falling which hurts baby products
+college enrollment will drop
+online education is growing
+staffing companies will struggle as hiring slows
+layoffs are increasing in tech
+people are working from the office more
+coworking spaces are growing
+weddings are getting more expensive and fewer people are having them
+funeral and death care demand will rise with an aging population
+casinos in Las Vegas are booming
+Macau gambling will recover
+gold jewelry demand will fall because gold is too expensive
+watch and luxury resale is slowing
+sneaker demand is cooling
+athleisure is still growing
+outdoor gear sales will slow
+golf is getting more popular
+fitness gyms are packed
+sleep products and mattresses will see weak demand

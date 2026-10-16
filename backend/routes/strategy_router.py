@@ -38,6 +38,12 @@ class BeliefRequest(BaseModel):
     belief: str
     user_id: Optional[str] = "anonymous"
     place_order: Optional[bool] = False
+    risk_profile: Optional[str] = "moderate"
+
+
+def _use_v4() -> bool:
+    # ENGINE_VERSION=legacy switches back to the original GPT-4 + ML engine.
+    return os.getenv("ENGINE_VERSION", "v4").lower() != "legacy"
 
 class FeedbackRequest(BaseModel):
     belief: str
@@ -68,14 +74,27 @@ def process_belief(request: BeliefRequest):
     
     try:
         # 🤖 AI ENGINE: Generate strategy from user belief
-        result = run_ai_engine(request.belief)
+        if _use_v4():
+            from backend.v4 import engine as v4_engine
+            try:
+                result = v4_engine.process_belief(request.belief, request.user_id or "anonymous",
+                                                  request.risk_profile or "moderate")
+            except v4_engine.BeliefError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+        else:
+            result = run_ai_engine(request.belief)
         result["user_id"] = request.user_id
         
         # 🧹 DATA CLEANING: Remove inf/nan values that break JSON
         result = sanitize_json_values(result)
 
-        # 💾 FEEDBACK SYSTEM: Auto-save strategy generation as feedback
-        save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
+        if not result.get("strategy"):
+            # v4: not a market belief / no tradable tickers — return the explanation as-is
+            return result
+
+        # 💾 FEEDBACK SYSTEM: Auto-save strategy generation as feedback (legacy ML training only)
+        if not _use_v4():
+            save_feedback_entry(request.belief, result, "auto_generated", request.user_id)
 
         # 📝 STRATEGY LOGGING: Log to strategy files for analysis
         log_strategy(
@@ -133,6 +152,8 @@ def process_belief(request: BeliefRequest):
         print(f"🔧 [DEBUG] SUCCESS! Duration: {duration:.0f}ms, Total logs: {len(METRICS['logs'])}")
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         # 📊 PERFORMANCE MONITORING: Log error with timing and details
         duration = (time.perf_counter() - start) * 1000

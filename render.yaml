@@ -16,27 +16,22 @@ services:
         value: 3.11.9
       - key: CREATIVE_MAPPING
         value: "1"
+      # v4 belief engine (set ENGINE_VERSION=legacy to use the old GPT-4 + ML engine)
+      - key: ENGINE_VERSION
+        value: v4
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: MP_CLAUDE_MODEL
+        value: claude-sonnet-5-5
+      - key: MP_ADMIN_TOKEN
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: marketplayground-db
+          property: connectionString
 
-  # 🔁 Background Model Retraining Worker
-  - type: worker
-    name: retrain-worker
-    env: python
-    plan: starter
-    rootDir: .
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "PYTHONPATH=./ python backend/retrain_worker.py"
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
-      # Throttles
-      - key: RETRAIN_WORKER_ENABLED
-        value: "true"
-      - key: RETRAIN_MIN_NEW_ITEMS
-        value: "75"          # wait for enough new samples
-      - key: RETRAIN_COOLDOWN_MINUTES
-        value: "180"         # min 3h between runs
-      - key: RETRAIN_USE_LOCKFILE
-        value: "true"        # refuse if another retrain is active
+  # (v4) The old retrain-worker was removed: it retrained the legacy ML models nonstop.
+  #      Suspend/delete it in the Render dashboard. Code kept in backend/retrain_worker.py.
 
   # 📰 News Ingestor (Cron Job every hour)
   - type: cron
@@ -73,23 +68,64 @@ services:
       - key: NEWS_RUN_ONCE
         value: "true"         # if supported; otherwise LOG & exit after pass
 
-  # 🧠 Belief Feeder
-  - type: worker
-    name: belief-feeder
+  # (v4) The old belief-feeder worker was removed: it only fed the legacy ML training CSV.
+  #      Suspend/delete it in the Render dashboard. Code kept in backend/belief_feeder.py.
+
+  # 📏 v4: grade every pick against real prices, then retrain the neural network (daily, after US close)
+  - type: cron
+    name: v4-grade-and-train
     env: python
-    plan: starter
+    schedule: "47 22 * * 1-5"   # 22:47 UTC weekdays
     rootDir: .
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "PYTHONPATH=./ python backend/belief_feeder.py"
+    startCommand: "PYTHONPATH=./ python -m backend.v4.grader --train"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      # Throttles
-      - key: FEEDER_ENABLED
+      - key: ALPACA_API_KEY
+        sync: false
+      - key: ALPACA_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: marketplayground-db
+          property: connectionString
+
+  # 🌱 v4: daily live seeding so the network keeps getting clean, forward-graded examples
+  - type: cron
+    name: v4-seed-live
+    env: python
+    schedule: "13 15 * * 1-5"   # 15:13 UTC weekdays (market open)
+    rootDir: .
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "PYTHONPATH=./ python -m backend.v4.seeder live"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MP_SEED_ENABLED
         value: "true"
-      - key: FEEDER_MAX_CONCURRENCY
-        value: "1"
-      - key: FEEDER_POLL_SECONDS
-        value: "60"
-      - key: FEEDER_USE_LOCKFILE
-        value: "true"
+      - key: MP_SEED_N
+        value: "25"            # beliefs per day
+      - key: MP_SEED_GENERATE
+        value: "25"            # new beliefs Claude writes per day
+      - key: MP_SEED_MAX_USD
+        value: "1"             # hard daily cap on Claude spend
+      - key: MP_SEED_MODEL
+        value: claude-haiku-5-5
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ALPACA_API_KEY
+        sync: false
+      - key: ALPACA_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: marketplayground-db
+          property: connectionString
+
+databases:
+  # 🗄️ v4 shared learning database (all users' beliefs, picks, grades, network versions)
+  - name: marketplayground-db
+    plan: basic-256mb
+    databaseName: marketplayground
+    user: marketplayground

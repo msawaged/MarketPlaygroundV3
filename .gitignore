@@ -122,3 +122,6 @@ backend/news_ingestor_state.json
 
 # Local backups
 *.bak.local
+
+# v4 local SQLite
+backend/v4/data/

@@ -879,6 +879,12 @@ const EnhancedChatInterface = () => {
         return;
       }
 
+      // v4: no tradable idea for this belief — show the engine's explanation
+      if (!data.strategy && data.reason) {
+        setMessages(prev => [...prev, { id: Date.now() + 1, type: 'ai', content: data.reason, timestamp: new Date() }]);
+        return;
+      }
+
       // CREATE ENHANCED AI RESPONSE MESSAGE
       const aiResponse = {
         id: Date.now() + 1,
@@ -903,6 +909,10 @@ const EnhancedChatInterface = () => {
           expiry_date: data.expiry_date || 'N/A',
           trade_legs: data.strategy?.trade_legs || [],
           source: data.strategy?.source || 'unknown',
+
+          // v4 learning ids (thumbs up/down and executed trades are learned from)
+          belief_id: data.belief_id,
+          pick_id: data.pick_id,
           
           // ALL YOUR ORIGINAL DYNAMIC FIELDS
           strike_price: data.strike_price || data.strategy?.trade_legs?.[0]?.strike_price,
@@ -1001,7 +1011,17 @@ const EnhancedChatInterface = () => {
   };
 
   // FEEDBACK SUBMISSION HANDLER (Enhanced from your original)
+  const sendV4Feedback = (strategy, kind) => {
+    if (!strategy?.belief_id) return;
+    fetch(`${BACKEND_URL}/v4/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ belief_id: strategy.belief_id, pick_id: strategy.pick_id, kind, user_id: 'elite_chat_user' }),
+    }).catch(err => console.error('v4 feedback error:', err));
+  };
+
   const sendFeedback = async (strategy, feedbackType) => {
+    sendV4Feedback(strategy, feedbackType === 'good' ? 'up' : 'down');
     try {
       await fetch(`${BACKEND_URL}/feedback/submit_feedback`, {
         method: 'POST',
@@ -1342,6 +1362,7 @@ const EnhancedChatInterface = () => {
                                     const result = await response.json();
                                     
                                     if (result.status === 'success') {
+                                      sendV4Feedback(message.strategy, 'executed');
                                       alert(`Trade executed: ${result.message}`);
                                     } else {
                                       alert(`Trade failed: ${result.message}`);

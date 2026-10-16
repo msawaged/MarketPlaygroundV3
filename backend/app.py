@@ -66,6 +66,7 @@ from backend.routes.ibkr_router import router as ibkr_router  # ✅ IBKR endpoin
 from backend.routes.market_events_router import router as market_events_router  # Market events and upcoming catalysts
 from backend.routes.alpaca_probe_router import ROUTER as alpaca_probe_router
 from backend.routes.market_ticker_router import ROUTER as market_ticker_router
+from backend.v4.router import router as v4_router  # v4 belief engine: /v4/*
 
 
 print("✅ [9] Router imports finished")
@@ -148,6 +149,7 @@ app.include_router(trade_confirmation_router,                             tags=[
 app.include_router(market_events_router)  # Market events calendar and event-driven strategies
 app.include_router(alpaca_probe_router)
 app.include_router(market_ticker_router)
+app.include_router(v4_router, prefix="/v4", tags=["v4 Belief Engine"])
 
 
 print("✅ [Checkpoint] All app.include_router(...) calls completed successfully.")

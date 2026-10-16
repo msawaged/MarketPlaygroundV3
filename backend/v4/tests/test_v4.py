@@ -1,0 +1,269 @@
+"""
+v4 tests — no network: Claude and Alpaca are replaced with fakes.
+
+Run:  PYTHONPATH=./ python -m pytest backend/v4/tests -q
+"""
+from __future__ import annotations
+
+import json
+import math
+import random
+from datetime import date, timedelta
+from types import SimpleNamespace
+
+import pytest
+
+from backend.v4 import db, engine, grader, learning, market, nn, seeder, strategy
+
+TODAY = date(2026, 10, 15)
+
+# Synthetic market: ticker -> annual drift. WINR trends up, LOSR down, others flat-ish.
+DRIFTS = {"SPY": 0.08, "WINR": 0.45, "LOSR": -0.35, "FLAT": 0.0, "PIPE": 0.25, "SPUD": 0.10, "XLI": 0.07}
+NAMES = {"WINR": "Winner Plumbing Inc", "LOSR": "Loser Corp", "FLAT": "Flat Co", "PIPE": "Pipe Supply Co",
+         "SPUD": "Spud Foods", "XLI": "Industrial Select Sector SPDR Fund", "SPY": "SPDR S&P 500 ETF Trust"}
+
+
+def _series(sym: str):
+    rnd = random.Random(sym)
+    d = TODAY - timedelta(days=365 * 5)
+    dates, closes, p = [], [], 50.0 + rnd.random() * 100
+    while d <= TODAY:
+        if d.weekday() < 5:
+            p *= math.exp(DRIFTS[sym] / 252 + rnd.gauss(0, 0.012))
+            dates.append(d.isoformat())
+            closes.append(round(p, 4))
+        d += timedelta(days=1)
+    return dates, closes
+
+
+@pytest.fixture(autouse=True)
+def env(tmp_path, monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
+    db.reset_for_tests()
+    learning.invalidate()
+    nn._loaded.update(at=0.0, row=None, model=None)
+    market.clear_cache()
+    series = {s: _series(s) for s in DRIFTS}
+    monkeypatch.setattr(market, "today", lambda: TODAY)
+    monkeypatch.setattr(market, "daily_closes", lambda s: series[s.upper()] if s.upper() in series else (_ for _ in ()).throw(market.MarketDataError("no data")))
+    monkeypatch.setattr(market, "latest_price", lambda s: series[s.upper()][1][-1])
+    monkeypatch.setattr(market, "asset_info", lambda s: (
+        {"symbol": s, "name": NAMES[s], "is_etf": market._looks_like_etf(NAMES[s]), "tradable": True}
+        if s in NAMES and s != "SPY" else None))
+    yield
+
+
+class FakeClaude:
+    """Mimics anthropic.Anthropic().messages.create with structured output."""
+
+    def __init__(self, payload=None):
+        self.calls = []
+        self.payload = payload
+        self.messages = self
+
+    def create(self, **kw):
+        self.calls.append(kw)
+        if "beliefs" in json.dumps(kw.get("extra_body", {})):  # seeder belief generator
+            out = {"beliefs": ["more people are fixing old pipes", "people want cheaper food"]}
+        else:
+            out = self.payload or default_interp(kw["messages"][0]["content"])
+        return SimpleNamespace(
+            content=[SimpleNamespace(type="text", text=json.dumps(out))],
+            usage=SimpleNamespace(input_tokens=1000, output_tokens=400, cache_read_input_tokens=0, cache_creation_input_tokens=0),
+            stop_reason="end_turn",
+        )
+
+
+def default_interp(msg: str) -> dict:
+    food = "potato" in msg.lower() or "food" in msg.lower()
+    cands = [
+        {"ticker": "SPUD" if food else "PIPE", "name": "x", "exposure": "direct", "direction": "bullish", "rationale": "direct play", "score": 0.8},
+        {"ticker": "LOSR", "name": "x", "exposure": "supplier", "direction": "bullish", "rationale": "supplier", "score": 0.75},
+        {"ticker": "WINR", "name": "x", "exposure": "beneficiary", "direction": "bullish", "rationale": "beneficiary", "score": 0.6},
+        {"ticker": "FLAT", "name": "x", "exposure": "beneficiary", "direction": "bullish", "rationale": "meh", "score": 0.5},
+        {"ticker": "XLI", "name": "x", "exposure": "etf", "direction": "bullish", "rationale": "sector etf", "score": 0.4},
+        {"ticker": "NOPE", "name": "fake", "exposure": "direct", "direction": "bullish", "rationale": "not real", "score": 0.9},
+    ]
+    return {
+        "is_market_belief": True, "note": "", "summary": "Plumbing demand rises.", "direction": "bullish",
+        "horizon_days": 120, "conviction": "medium", "themes": ["Plumbing", "housing"] if not food else ["food", "potatoes"],
+        "causal_chain": "More plumbing work -> suppliers sell more.", "candidates": cands,
+    }
+
+
+# ---------------- engine ----------------
+
+def test_live_belief_end_to_end():
+    fake = FakeClaude()
+    r = engine.process_belief("plumbing demand is going to be high", "u1", "moderate", claude_client=fake)
+
+    assert r["valid"] and r["engine"] == "v4"
+    # fields the existing ChatInterface reads
+    for k in ("strategy", "ticker", "direction", "price_info", "confidence", "tags", "expiry_date", "asset_class", "belief_id", "pick_id"):
+        assert k in r
+    assert r["strategy"]["type"] in strategy.STRUCTURES
+    assert r["strategy"]["trade_legs"] and r["strategy"]["trade_legs"][0]["ticker"] == r["ticker"]
+    tickers = [p["ticker"] for p in r["picks"]]
+    assert "NOPE" not in tickers  # not tradable -> dropped
+    assert len(tickers) == 5
+    assert r["tags"] == ["plumbing", "housing"]  # lowercased
+    assert sum(p["shown"] for p in r["picks"]) == engine.SHOW_TOP
+
+    # one Claude call, structured output requested, prompt cached
+    assert len(fake.calls) == 1
+    ob = fake.calls[0]["extra_body"]["output_config"]
+    assert ob["format"]["type"] == "json_schema" and ob["effort"] == "low"
+    assert fake.calls[0]["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+    saved = engine.get_belief(r["belief_id"])
+    assert saved["source"] == "user" and len(saved["picks"]) == 5
+
+
+def test_identical_belief_reuses_interpretation():
+    fake = FakeClaude()
+    engine.process_belief("Plumbing demand is going to be HIGH!", "u1", claude_client=fake)
+    r2 = engine.process_belief("plumbing demand is going to be high", "u2", claude_client=fake)
+    assert len(fake.calls) == 1
+    assert r2["usage"]["cost_usd"] == 0.0
+
+
+def test_non_market_belief():
+    fake = FakeClaude({"is_market_belief": False, "note": "That's a greeting.", "summary": "", "direction": "neutral",
+                       "horizon_days": 30, "conviction": "low", "themes": [], "causal_chain": "", "candidates": []})
+    r = engine.process_belief("hello there", claude_client=fake)
+    assert r["valid"] is False and r["strategy"] is None and "greeting" in r["reason"]
+
+
+def test_empty_belief_rejected():
+    with pytest.raises(engine.BeliefError):
+        engine.process_belief("   ")
+
+
+def test_feedback():
+    r = engine.process_belief("plumbing demand is going to be high", claude_client=FakeClaude())
+    assert engine.record_feedback(r["belief_id"], "good")["status"] == "ok"
+    engine.record_feedback(r["belief_id"], "down", pick_id=r["picks"][1]["pick_id"])
+    with pytest.raises(engine.BeliefError):
+        engine.record_feedback(r["belief_id"], "meh")
+    counts = learning.feedback_counts([r["ticker"], r["picks"][1]["ticker"]])
+    assert counts[r["ticker"]]["up"] == 1
+
+
+# ---------------- strategy ----------------
+
+def test_structures_and_economics():
+    d = date(2026, 1, 5)
+    assert strategy.default_structure("bullish", 400, "high", "moderate") == "Buy Stock"
+    assert strategy.default_structure("bullish", 30, "medium", "moderate") == "Bull Call Spread"
+    assert strategy.default_structure("bearish", 60, "high", "aggressive") == "Long Put"
+    assert strategy.default_structure("neutral", 60, "low", "moderate") == "Iron Condor"
+    for s in ("Long Call", "Bull Call Spread", "Long Put", "Bear Put Spread"):
+        t = strategy.build_trade(s, "WINR", 100.0, 0.3, d, 90)
+        assert t["net_cost"] > 0, s
+        assert date.fromisoformat(t["expiration"]).weekday() == 4  # Friday
+    ic = strategy.build_trade("Iron Condor", "WINR", 100.0, 0.3, d, 60)
+    assert ic["net_cost"] < 0 and len(ic["trade_legs"]) == 4
+    bcs = strategy.build_trade("Bull Call Spread", "WINR", 100.0, 0.3, d, 90)
+    exp = date.fromisoformat(bcs["expiration"])
+    up = strategy.structure_return(bcs, 100.0, 140.0, d, exp, 0.3)
+    down = strategy.structure_return(bcs, 100.0, 70.0, d, exp, 0.3)
+    assert up > 0.5 and down == pytest.approx(-1.0)
+
+
+def test_learned_structure_switch():
+    stats = {"Bull Call Spread": {"n": 100, "mean": -0.05}, "Buy Stock": {"n": 100, "mean": 0.04}}
+    s, why = strategy.choose_structure("bullish", 30, "medium", "moderate", stats)
+    assert s == "Buy Stock" and why.startswith("learned")
+    s, why = strategy.choose_structure("bullish", 30, "medium", "moderate", {"Buy Stock": {"n": 5, "mean": 0.5}})
+    assert s == "Bull Call Spread" and why == "rule"  # not enough evidence
+
+
+# ---------------- seeding, grading, learning, network ----------------
+
+def test_backfill_grade_learn_and_train(monkeypatch):
+    monkeypatch.setattr(nn, "MIN_TRAIN", 50)
+    monkeypatch.setattr(nn, "MIN_TEST", 20)
+    fake = FakeClaude()
+    res = seeder.run("backfill", n=120, generate=2, years=3, concurrency=1, max_usd=100, claude_client=fake)
+    assert res["ok"] == 120 and res["errors"] == 0
+    assert res["grading"]["graded"] > 400
+
+    # backfilled rows never expose Claude's score/rank to the network
+    rows = db.query("SELECT p.features FROM picks p JOIN beliefs b ON b.id=p.belief_id WHERE b.source='seed_backfill' LIMIT 50")
+    for r in rows:
+        f = json.loads(r["features"])["num"]
+        assert f["has_claude"] == 0 and f["claude_score"] == 0 and f["backfill"] == 1
+    # Claude is told the as-of date for backfill
+    assert any("As of:" in c["messages"][0]["content"] for c in fake.calls if "messages" in c and "Belief:" in c["messages"][0]["content"])
+
+    # outcomes are directional excess vs SPY; WINR (uptrend) should beat LOSR (downtrend) on average
+    s = {t["ticker"]: t for t in learning.ticker_stats(["plumbing", "food", "potatoes", "housing"], ["WINR", "LOSR"])}
+    assert s["WINR"]["mean"] > s["LOSR"]["mean"]
+
+    # shared context for a new, similar belief from another user
+    ctx = learning.build_context("I think plumbing work will be in high demand")
+    assert ctx["similar"] and ctx["ticker_stats"]
+
+    # the network trains, is evaluated walk-forward, and learns WINR > LOSR
+    out = nn.train()
+    assert out["status"] in ("active", "shadow"), out
+    assert out["n_train"] >= 50 and out["n_test"] >= 20
+    assert out["cutoff"]
+    preds, w, mid = nn.predict([
+        nn.make_features(belief_text="plumbing demand is going to be high", themes=["plumbing"], core_direction="bullish",
+                         horizon_days=120, conviction="medium", cand={"ticker": t, "direction": "bullish", "exposure": "direct", "score": 0.6},
+                         market=market.features(t, TODAY), rank=0, n_cands=5, is_etf=False, backfill=False)
+        for t in ("WINR", "LOSR")
+    ])
+    assert mid and preds[0] > preds[1]
+    if out["status"] == "active":
+        assert w > 0
+
+    # a live belief after training carries NN scores on its picks
+    r = engine.process_belief("plumbing will boom", "u9", claude_client=fake)
+    assert all(p["nn_score"] is not None for p in r["picks"])
+    st = engine.stats()
+    assert st["beliefs"]["seed_backfill"]["count"] == 120 and st["graded_picks"] > 0
+
+
+def test_grader_is_idempotent():
+    seeder.run("backfill", n=5, years=1, concurrency=1, claude_client=FakeClaude())
+    n1 = db.query_one("SELECT COUNT(*) AS n FROM outcomes")["n"]
+    assert grader.grade()["graded"] == 0
+    assert db.query_one("SELECT COUNT(*) AS n FROM outcomes")["n"] == n1
+
+
+def test_train_skips_without_data():
+    assert nn.train()["status"] == "skipped"
+
+
+def test_market_features_use_only_past_data():
+    d = date(2024, 6, 3)
+    f1 = market.features("WINR", d)
+    dates, closes = market.daily_closes("WINR")
+    i = max(k for k, x in enumerate(dates) if x <= d.isoformat())
+    assert f1["mom20"] == pytest.approx(closes[i] / closes[i - 20] - 1)
+
+
+# ---------------- API ----------------
+
+def test_api_routes(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from backend.v4 import interpreter
+    from backend.v4.router import router
+
+    fake = FakeClaude()
+    monkeypatch.setattr(interpreter, "_client", lambda: fake)
+    app = FastAPI()
+    app.include_router(router, prefix="/v4")
+    c = TestClient(app)
+    r = c.post("/v4/belief", json={"belief": "potatoes are in demand", "user_id": "api"})
+    assert r.status_code == 200 and r.json()["ticker"] == "SPUD"
+    bid = r.json()["belief_id"]
+    assert c.post("/v4/feedback", json={"belief_id": bid, "kind": "up"}).status_code == 200
+    assert c.get(f"/v4/belief/{bid}").json()["text"] == "potatoes are in demand"
+    assert c.get("/v4/stats").json()["beliefs"]["user"]["count"] == 1
+    assert c.post("/v4/belief", json={"belief": ""}).status_code == 400
+    assert c.post("/v4/admin/grade").status_code == 403
