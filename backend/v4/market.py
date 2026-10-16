@@ -1,0 +1,219 @@
+"""
+Market data for v4, from Alpaca.
+
+- asset_info(): is the symbol real, active and tradable on Alpaca?
+- daily_closes(): daily close history (cached in-process; one fetch per symbol
+  covers both live pricing and historical backfill/grading).
+- price_on(): close on or before a date (or the latest trade for "today").
+- features(): simple, as-of-date market features for the neural network
+  (momentum, volatility, relative strength vs SPY). Only data up to the
+  as-of date is used, so backfilled examples never see the future.
+
+Env:
+  ALPACA_API_KEY / ALPACA_SECRET_KEY
+  ALPACA_BASE_URL      (trading API, default paper)
+  ALPACA_DATA_BASE     (default https://data.alpaca.markets)
+  ALPACA_DATA_FEED     (iex | sip, default iex — works on the free plan)
+"""
+from __future__ import annotations
+
+import bisect
+import math
+import os
+import threading
+from datetime import date, datetime, timedelta, timezone
+from typing import Optional
+
+import requests
+
+_session = requests.Session()
+_lock = threading.RLock()
+_bars_cache: dict[str, tuple[list[str], list[float]]] = {}
+_asset_cache: dict[str, Optional[dict]] = {}
+HISTORY_YEARS = int(os.getenv("MP_HISTORY_YEARS", "5"))
+
+
+class MarketDataError(RuntimeError):
+    pass
+
+
+def _headers() -> dict:
+    return {
+        "APCA-API-KEY-ID": os.getenv("ALPACA_API_KEY", ""),
+        "APCA-API-SECRET-KEY": os.getenv("ALPACA_SECRET_KEY", ""),
+        "accept": "application/json",
+    }
+
+
+def _trading_base() -> str:
+    return os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets").rstrip("/")
+
+
+def _data_base() -> str:
+    return os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets").rstrip("/")
+
+
+def today() -> date:
+    return datetime.now(timezone.utc).date()
+
+
+def asset_info(symbol: str) -> Optional[dict]:
+    """Return {'symbol','name','tradable','is_etf',...} or None if not a usable US equity."""
+    symbol = symbol.upper().strip()
+    with _lock:
+        if symbol in _asset_cache:
+            return _asset_cache[symbol]
+    try:
+        r = _session.get(f"{_trading_base()}/v2/assets/{symbol}", headers=_headers(), timeout=8)
+    except requests.RequestException as e:
+        raise MarketDataError(f"asset lookup failed for {symbol}: {e}") from e
+    info: Optional[dict] = None
+    if r.status_code == 200:
+        a = r.json()
+        if a.get("class") == "us_equity" and a.get("status") == "active" and a.get("tradable"):
+            name = a.get("name") or ""
+            info = {
+                "symbol": a.get("symbol", symbol),
+                "name": name,
+                "exchange": a.get("exchange"),
+                "tradable": True,
+                "fractionable": bool(a.get("fractionable")),
+                "is_etf": _looks_like_etf(name),
+            }
+    elif r.status_code not in (404, 422):
+        raise MarketDataError(f"asset lookup {symbol}: HTTP {r.status_code}")
+    with _lock:
+        _asset_cache[symbol] = info
+    return info
+
+
+def _looks_like_etf(name: str) -> bool:
+    n = name.lower()
+    return any(k in n for k in (" etf", "trust", "fund", "ishares", "spdr", "vaneck", "invesco", "proshares"))
+
+
+def daily_closes(symbol: str) -> tuple[list[str], list[float]]:
+    """(dates ascending as 'YYYY-MM-DD', closes). Cached per process."""
+    symbol = symbol.upper()
+    with _lock:
+        if symbol in _bars_cache:
+            return _bars_cache[symbol]
+    start = (today() - timedelta(days=365 * HISTORY_YEARS + 30)).isoformat()
+    params = {
+        "timeframe": "1Day",
+        "start": start,
+        "adjustment": "all",
+        "feed": os.getenv("ALPACA_DATA_FEED", "iex"),
+        "limit": 10000,
+    }
+    dates: list[str] = []
+    closes: list[float] = []
+    page = None
+    for _ in range(20):
+        if page:
+            params["page_token"] = page
+        try:
+            r = _session.get(f"{_data_base()}/v2/stocks/{symbol}/bars", headers=_headers(), params=params, timeout=15)
+        except requests.RequestException as e:
+            raise MarketDataError(f"bars fetch failed for {symbol}: {e}") from e
+        if r.status_code != 200:
+            raise MarketDataError(f"bars {symbol}: HTTP {r.status_code} {r.text[:120]}")
+        data = r.json()
+        for b in data.get("bars") or []:
+            dates.append(b["t"][:10])
+            closes.append(float(b["c"]))
+        page = data.get("next_page_token")
+        if not page:
+            break
+    with _lock:
+        _bars_cache[symbol] = (dates, closes)
+    return dates, closes
+
+
+def latest_price(symbol: str) -> float:
+    try:
+        r = _session.get(
+            f"{_data_base()}/v2/stocks/{symbol.upper()}/trades/latest",
+            headers=_headers(),
+            params={"feed": os.getenv("ALPACA_DATA_FEED", "iex")},
+            timeout=8,
+        )
+        if r.status_code == 200:
+            p = (r.json().get("trade") or {}).get("p")
+            if p:
+                return float(p)
+    except requests.RequestException:
+        pass
+    dates, closes = daily_closes(symbol)
+    if not closes:
+        raise MarketDataError(f"no price for {symbol}")
+    return closes[-1]
+
+
+def _index_on_or_before(dates: list[str], d: str) -> int:
+    return bisect.bisect_right(dates, d) - 1
+
+
+def price_on(symbol: str, d: Optional[date] = None) -> tuple[str, float]:
+    """(date_used, price). d=None or today → latest live price."""
+    if d is None or d >= today():
+        return today().isoformat(), latest_price(symbol)
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, d.isoformat())
+    if i < 0:
+        raise MarketDataError(f"no history for {symbol} on/before {d}")
+    return dates[i], closes[i]
+
+
+def close_on_or_after(symbol: str, d: date) -> Optional[tuple[str, float]]:
+    dates, closes = daily_closes(symbol)
+    i = bisect.bisect_left(dates, d.isoformat())
+    if i >= len(dates):
+        return None
+    return dates[i], closes[i]
+
+
+def _ret(closes: list[float], i: int, lag: int) -> float:
+    if i - lag < 0 or closes[i - lag] <= 0:
+        return 0.0
+    return closes[i] / closes[i - lag] - 1.0
+
+
+def realized_vol(closes: list[float], i: int, window: int = 20) -> float:
+    lo = max(1, i - window + 1)
+    rets = [math.log(closes[k] / closes[k - 1]) for k in range(lo, i + 1) if closes[k - 1] > 0]
+    if len(rets) < 5:
+        return 0.35
+    m = sum(rets) / len(rets)
+    var = sum((r - m) ** 2 for r in rets) / (len(rets) - 1)
+    return max(0.05, min(2.5, math.sqrt(var) * math.sqrt(252)))
+
+
+def features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """Market features using only data up to as_of."""
+    d = (as_of or today()).isoformat()
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, d)
+    if i < 20:
+        raise MarketDataError(f"not enough history for {symbol} as of {d}")
+    sdates, scloses = daily_closes("SPY")
+    j = _index_on_or_before(sdates, d)
+    hi252 = max(closes[max(0, i - 251): i + 1])
+    vol60 = realized_vol(closes, i, 60)
+    return {
+        "mom20": _ret(closes, i, 20),
+        "mom60": _ret(closes, i, 60),
+        "mom250": _ret(closes, i, 250),
+        "vol20": realized_vol(closes, i, 20),
+        "vol60": vol60,
+        "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),
+        "dist_high": closes[i] / hi252 - 1.0 if hi252 > 0 else 0.0,
+        "log_price": math.log(max(closes[i], 0.01)),
+        "history_days": min(i, 1000),
+    }
+
+
+def clear_cache() -> None:
+    with _lock:
+        _bars_cache.clear()
+        _asset_cache.clear()
