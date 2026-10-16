@@ -96,8 +96,9 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://10.0.0.61:3000",
-        "http://10.0.0.61:3001"
-    ],
+        "http://10.0.0.61:3001",
+        "https://msawaged.github.io",  # v4 landing page (GitHub Pages)
+    ] + [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

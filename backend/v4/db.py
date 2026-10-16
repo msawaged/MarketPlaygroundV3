@@ -193,6 +193,12 @@ def _schema() -> list[str]:
             metrics TEXT,
             blob {blob} NOT NULL
         )""",
+        """CREATE TABLE IF NOT EXISTS waitlist (
+            email TEXT PRIMARY KEY,
+            belief TEXT,
+            source TEXT,
+            created_at TEXT NOT NULL
+        )""",
         """CREATE TABLE IF NOT EXISTS kv_cache (
             k TEXT PRIMARY KEY,
             v TEXT NOT NULL,

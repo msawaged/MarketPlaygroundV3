@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import os
+import re
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import engine, grader, interpreter, market, nn
+from . import db, engine, grader, interpreter, market, nn
 
 router = APIRouter()
 
@@ -17,6 +19,16 @@ class BeliefIn(BaseModel):
     belief: str
     user_id: str = "anonymous"
     risk_profile: str = "moderate"
+
+
+class WaitlistIn(BaseModel):
+    email: str
+    belief: Optional[str] = None
+    source: Optional[str] = None
+    website: Optional[str] = None  # honeypot: real people never fill this in
+
+
+_EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,255}\.[A-Za-z]{2,24}$")
 
 
 class FeedbackIn(BaseModel):
@@ -76,3 +88,33 @@ async def admin_grade(train: bool = False, x_admin_token: Optional[str] = Header
     if train:
         out["train"] = await run_in_threadpool(nn.train)
     return out
+
+
+@router.post("/waitlist")
+async def join_waitlist(body: WaitlistIn):
+    """Landing-page signup. Beliefs people leave here are kept for later seeding (not run automatically)."""
+    if body.website:  # bot filled the hidden field; pretend success
+        return {"status": "ok"}
+    email = body.email.strip().lower()
+    if len(email) > 254 or not _EMAIL.match(email):
+        raise HTTPException(status_code=400, detail="Enter a valid email address.")
+    belief = (body.belief or "").strip()[:500] or None
+    source = (body.source or "").strip()[:60] or None
+
+    def save():
+        if db.query_one("SELECT email FROM waitlist WHERE email = ?", (email,)):
+            if belief:
+                db.execute("UPDATE waitlist SET belief = ? WHERE email = ?", (belief, email))
+            return
+        db.execute("INSERT INTO waitlist (email, belief, source, created_at) VALUES (?,?,?,?)",
+                   (email, belief, source, datetime.now(timezone.utc).isoformat()))
+
+    await run_in_threadpool(save)
+    return {"status": "ok"}
+
+
+@router.get("/admin/waitlist")
+async def admin_waitlist(x_admin_token: Optional[str] = Header(None)):
+    _check_admin(x_admin_token)
+    rows = await run_in_threadpool(db.query, "SELECT email, belief, source, created_at FROM waitlist ORDER BY created_at")
+    return {"count": len(rows), "signups": rows}

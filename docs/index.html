@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MarketPlayground</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Type what you believe about the world. MarketPlayground finds the stocks, ETFs and options strategies that express it. Join the waitlist.">
+<meta property="og:title" content="MarketPlayground — your belief, the right strategy">
+<meta property="og:description" content="Prediction apps hand you the question. MarketPlayground starts with yours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,400;100,600;100,800;125,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column like a trading terminal's command line; the belief box is the hero, everything else answers it. */
+:root{
+  --ink:#0E1116; --panel:#161B22; --line:#2E353F; --fg:#F2F1EC; --muted:#A3ABB6; --accent:#C6F432; --accent-ink:#0E1116; --warn:#FF8A5B;
+  --display:"Archivo",ui-sans-serif,system-ui,sans-serif;
+  --body:"Archivo",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--fg);font-family:var(--body);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.label{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:24px}
+.mark{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:20px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.mark span{color:var(--accent)}
+.nav-cta{font-family:var(--mono);font-size:14px;color:var(--accent-ink);background:var(--accent);padding:10px 16px;border-radius:999px;text-decoration:none;white-space:nowrap}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center;padding-block:48px 72px}
+h1{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(40px,6vw,68px);line-height:1.02;letter-spacing:-.025em;margin:16px 0 20px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--muted);font-size:20px;max-width:34ch;margin:0}
+
+.demo{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.demo-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.belief{border:2px solid var(--accent);border-radius:14px;padding:18px 20px;font-family:var(--display);font-weight:600;font-size:24px;line-height:1.3;min-height:94px}
+.belief .caret{display:inline-block;width:3px;height:1.05em;background:var(--accent);vertical-align:-3px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.picks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pick{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:opacity .35s,transform .35s}
+.pick b{display:block;font-size:17px}
+.pick small{color:var(--muted);font-size:14px}
+.pick .st{font-family:var(--mono);font-size:13px;color:var(--accent);text-align:right;white-space:nowrap}
+.demo.swap .pick{opacity:0;transform:translateX(12px)}
+.demo-foot{font-size:13px;color:var(--muted);margin:0}
+
+section{padding-block:64px;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(30px,4vw,44px);line-height:1.08;letter-spacing:-.02em;margin:10px 0 28px;text-wrap:balance}
+
+.versus{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.side{border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.side.ours{border-color:var(--accent)}
+.side h3{margin:0;font-size:20px}
+.side ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.side.theirs{color:var(--muted)}
+.yesno{display:flex;gap:10px}
+.yesno span{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:26px;border:2px solid var(--line);border-radius:12px;padding:10px;text-decoration:line-through;text-decoration-color:var(--accent);text-decoration-thickness:3px}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;flex-direction:column;gap:8px}
+.steps li::before{content:"Step " counter(s);font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.steps h3{margin:0;font-size:21px}
+.steps p{margin:0;color:var(--muted);font-size:16px}
+
+.join{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;align-items:start}
+form{display:flex;flex-direction:column;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px}
+label{font-weight:600;font-size:16px;display:flex;flex-direction:column;gap:8px}
+label .opt{font-weight:400;color:var(--muted)}
+input[type=email],input[type=text]{font:inherit;font-size:17px;color:var(--fg);background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px 16px;width:100%}
+input:focus{border-color:var(--accent);outline:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+button{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--accent-ink);background:var(--accent);border:0;border-radius:999px;padding:16px 24px;cursor:pointer;min-height:52px}
+button[disabled]{opacity:.6;cursor:wait}
+.status{min-height:1.6em;margin:0;font-size:16px}
+.status.ok{color:var(--accent)} .status.err{color:var(--warn)}
+.fine{font-size:13px;color:var(--muted);margin:0}
+
+.founder blockquote{margin:0;font-family:var(--display);font-weight:600;font-size:clamp(22px,2.6vw,28px);line-height:1.4;max-width:40ch}
+.founder p{margin:18px 0 0;color:var(--muted)}
+
+footer{border-top:1px solid var(--line);padding-block:32px 48px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+
+@media (max-width:820px){
+  .hero,.join{grid-template-columns:minmax(0,1fr);gap:36px}
+  .versus,.steps{grid-template-columns:minmax(0,1fr)}
+  .hero{padding-block:24px 56px}
+}
+@media (prefers-reduced-motion:reduce){.belief .caret{animation:none}.pick{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="mark" href="#top" aria-label="MarketPlayground home">Market<span>Playground</span></a>
+  <a class="nav-cta" href="#join">Join the waitlist</a>
+</header>
+
+<main id="top">
+<div class="hero">
+  <div>
+    <div class="label">Coming soon</div>
+    <h1>Prediction apps hand you the question. <em>We start with yours.</em></h1>
+    <p class="lede">Type what you believe about the world. MarketPlayground finds the stocks, ETFs and options strategies that express it.</p>
+  </div>
+  <div class="demo" id="demo" aria-label="Example of a belief turned into trade ideas">
+    <div class="demo-top"><span class="label">Your belief</span><span class="label" id="demo-dir">Bullish · 120 days</span></div>
+    <div class="belief"><span id="demo-text">Plumbing demand is about to boom</span><span class="caret" aria-hidden="true"></span></div>
+    <div class="label" style="color:var(--accent)">3 ways to trade it</div>
+    <ul class="picks" id="demo-picks">
+      <li class="pick"><div><b>Direct play</b><small>Plumbing-supply leader</small></div><span class="st">Bull call spread</span></li>
+      <li class="pick"><div><b>Key supplier</b><small>Pipes, valves, fixtures</small></div><span class="st">Buy shares</span></li>
+      <li class="pick"><div><b>Sector ETF</b><small>Broad housing exposure</small></div><span class="st">Buy ETF</span></li>
+    </ul>
+    <p class="demo-foot">Illustrative example. Real results name specific tickers and adjust to your risk level.</p>
+  </div>
+</div>
+
+<section aria-labelledby="vs-h">
+  <div class="label">The difference</div>
+  <h2 id="vs-h">Stop picking a side of someone else’s question.</h2>
+  <div class="versus">
+    <div class="side theirs">
+      <h3>Prediction apps</h3>
+      <div class="yesno" aria-hidden="true"><span>YES</span><span>NO</span></div>
+      <ul><li>Someone else writes the question</li><li>Two choices, all or nothing</li><li>You bet on an event</li></ul>
+    </div>
+    <div class="side ours">
+      <h3>MarketPlayground</h3>
+      <ul><li>You write the belief, in your own words</li><li>Stocks, ETFs and options that fit it</li><li>A strategy sized to your risk level, which you can practice with paper money first</li></ul>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="how-h">
+  <div class="label">How it works</div>
+  <h2 id="how-h">From a hunch to a plan in seconds.</h2>
+  <ol class="steps">
+    <li><h3>Say what you believe</h3><p>“Potatoes are in demand.” “Air travel slows down.” A hunch is enough.</p></li>
+    <li><h3>See who it affects</h3><p>The companies, suppliers and funds most exposed to that belief, each with a one-line reason.</p></li>
+    <li><h3>Get the strategy</h3><p>Buy shares, an options spread or an ETF, matched to your timeframe and comfort with risk.</p></li>
+  </ol>
+</section>
+
+<section aria-labelledby="join-h" id="join">
+  <div class="join">
+    <div>
+      <div class="label">Early access</div>
+      <h2 id="join-h">Get in first.</h2>
+      <p style="color:var(--muted);margin:0;max-width:36ch">Join the waitlist and we’ll email you when MarketPlayground opens. Leave a belief too, and it may be one of the first the system learns from.</p>
+    </div>
+    <form id="join-form" novalidate>
+      <label for="email">Email
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+      </label>
+      <label for="belief-in">One belief you have right now <span class="opt">(optional)</span>
+        <input id="belief-in" name="belief" type="text" maxlength="500" placeholder="e.g. people are eating out less">
+      </label>
+      <div class="hp" aria-hidden="true"><label for="website">Website<input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></label></div>
+      <button type="submit" id="join-btn">Join the waitlist</button>
+      <p class="status" id="join-status" role="status" aria-live="polite"></p>
+      <p class="fine">We’ll only email you about MarketPlayground. Unsubscribe anytime.</p>
+    </form>
+  </div>
+</section>
+
+<section class="founder" aria-labelledby="f-h">
+  <div class="label" id="f-h">A note from the founder</div>
+  <blockquote style="margin-top:16px">Many versions later, we’re close. I built MarketPlayground for everyone who has good instincts about where the world is going but never knew how to invest on them.</blockquote>
+  <p>Murad Sawaged, founder</p>
+</section>
+</main>
+
+<footer>
+  <div>MarketPlayground is an educational tool. Nothing on this site is investment advice. Trading involves risk, including loss of principal; options carry additional risk.</div>
+  <div>© 2026 MarketPlayground</div>
+</footer>
+</div>
+
+<script>
+// Set this to your deployed backend (Render) URL.
+const API_BASE = "https://marketplayground-backend.onrender.com";
+
+(function demo(){
+  const examples = [
+    {text:"Plumbing demand is about to boom", dir:"Bullish · 120 days", picks:[["Direct play","Plumbing-supply leader","Bull call spread"],["Key supplier","Pipes, valves, fixtures","Buy shares"],["Sector ETF","Broad housing exposure","Buy ETF"]]},
+    {text:"Air travel slows down next year", dir:"Bearish · 1 year", picks:[["Direct play","Major US airlines","Bear put spread"],["Exposed platform","Online travel booking","Long put"],["Sector ETF","Airline industry fund","Bear put spread"]]},
+    {text:"More people are getting pets", dir:"Bullish · 2 years", picks:[["Direct play","Pet supply retailers","Buy shares"],["Key supplier","Animal health makers","Buy shares"],["Related play","Pet food brands","Bull call spread"]]}
+  ];
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const box = document.getElementById("demo"), txt = document.getElementById("demo-text"),
+        dir = document.getElementById("demo-dir"), list = document.getElementById("demo-picks");
+  let i = 0;
+  function render(ex){
+    list.replaceChildren(...ex.picks.map(([h,s,st]) => {
+      const li = document.createElement("li"); li.className = "pick";
+      const d = document.createElement("div"), b = document.createElement("b"), sm = document.createElement("small");
+      b.textContent = h; sm.textContent = s; d.append(b, sm);
+      const sp = document.createElement("span"); sp.className = "st"; sp.textContent = st;
+      li.append(d, sp); return li;
+    }));
+  }
+  function type(ex){
+    box.classList.add("swap"); dir.textContent = ex.dir; let n = 0; txt.textContent = "";
+    const t = setInterval(() => {
+      txt.textContent = ex.text.slice(0, ++n);
+      if (n >= ex.text.length){ clearInterval(t); render(ex); requestAnimationFrame(() => box.classList.remove("swap")); }
+    }, 45);
+  }
+  setInterval(() => { i = (i + 1) % examples.length; type(examples[i]); }, 6000);
+})();
+
+document.getElementById("join-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email"), belief = document.getElementById("belief-in"),
+        hp = document.getElementById("website"), btn = document.getElementById("join-btn"),
+        status = document.getElementById("join-status");
+  status.className = "status";
+  if (!email.value.trim() || !email.checkValidity()){
+    status.textContent = "Enter a valid email address."; status.classList.add("err"); email.focus(); return;
+  }
+  btn.disabled = true; btn.textContent = "Joining…"; status.textContent = "";
+  try {
+    const r = await fetch(API_BASE + "/v4/waitlist", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({email: email.value.trim(), belief: belief.value.trim() || null, source: "landing", website: hp.value || null})});
+    if (!r.ok){ const j = await r.json().catch(() => ({})); throw new Error(j.detail || "status " + r.status); }
+    status.textContent = "You’re on the list. We’ll email you when MarketPlayground opens."; status.classList.add("ok");
+    e.target.reset();
+  } catch (err) {
+    status.textContent = /valid email/i.test(err.message) ? err.message : "We couldn’t reach the waitlist just now. Try again in a minute.";
+    status.classList.add("err");
+  } finally { btn.disabled = false; btn.textContent = "Join the waitlist"; }
+});
+</script>
+</body>
+</html>

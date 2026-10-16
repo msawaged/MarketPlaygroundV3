@@ -267,3 +267,19 @@ def test_api_routes(monkeypatch):
     assert c.get("/v4/stats").json()["beliefs"]["user"]["count"] == 1
     assert c.post("/v4/belief", json={"belief": ""}).status_code == 400
     assert c.post("/v4/admin/grade").status_code == 403
+
+
+def test_waitlist(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from backend.v4.router import router
+
+    monkeypatch.setenv("MP_ADMIN_TOKEN", "secret")
+    app = FastAPI(); app.include_router(router, prefix="/v4"); c = TestClient(app)
+    assert c.post("/v4/waitlist", json={"email": "Ana@Example.com", "belief": "potatoes are in demand"}).status_code == 200
+    assert c.post("/v4/waitlist", json={"email": "ana@example.com"}).status_code == 200  # duplicate is fine
+    assert c.post("/v4/waitlist", json={"email": "not-an-email"}).status_code == 400
+    assert c.post("/v4/waitlist", json={"email": "bot@x.com", "website": "spam"}).status_code == 200
+    r = c.get("/v4/admin/waitlist", headers={"X-Admin-Token": "secret"}).json()
+    assert r["count"] == 1 and r["signups"][0]["belief"] == "potatoes are in demand"
+    assert c.get("/v4/admin/waitlist").status_code == 403
