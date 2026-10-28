@@ -3,8 +3,10 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PayoffChart from './PayoffChart';
-import { buildModel, sizePosition, scenarios, summarize, money } from '../../lib/payoff';
+import { useNavigate } from 'react-router-dom';
+import { buildModel, sizePosition, scenarios, summarize, money, plainEnglish, niceDate } from '../../lib/payoff';
 import { sendFeedback, paperTrade } from '../../lib/api';
+import Term from '../ui/Term';
 
 const PLAIN = {
   'Buy Stock': 'Own the shares. You gain if the price rises; your risk is what you put in.',
@@ -17,27 +19,44 @@ const PLAIN = {
 };
 
 const AMOUNTS = [500, 1000, 2500, 5000];
+const TERM_FOR = { 'Per contract': 'contract', 'Max gain': 'max gain', Breakeven: 'breakeven' };
 
 function DirectionBadge({ direction }) {
   const bull = direction === 'bullish';
   return (
     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${bull ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
-      {bull ? 'Bullish' : 'Bearish'}
+      <Term k={bull ? 'bullish' : 'bearish'}>{bull ? 'Bullish' : 'Bearish'}</Term>
     </span>
   );
 }
+
+const TONE = {
+  neutral: 'text-slate-200',
+  good: 'text-green-300',
+  bad: 'text-red-300',
+  warn: 'text-amber-200',
+};
+const DOT = { neutral: 'bg-slate-400', good: 'bg-green-400', bad: 'bg-red-400', warn: 'bg-amber-300' };
+
+const RISK_NEXT = {
+  conservative: { bolder: 'moderate' },
+  moderate: { safer: 'conservative', bolder: 'aggressive' },
+  aggressive: { safer: 'moderate' },
+};
 
 function Stat({ label, value, tone }) {
   const color = tone === 'good' ? 'text-green-400' : tone === 'bad' ? 'text-red-400' : tone === 'warn' ? 'text-amber-300' : 'text-white';
   return (
     <div className="bg-slate-800/70 rounded-lg px-3 py-2 min-w-0">
-      <div className="text-[11px] uppercase tracking-wide text-slate-400">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide text-slate-400">{TERM_FOR[label] ? <Term k={TERM_FOR[label]}>{label}</Term> : label}</div>
       <div className={`text-sm font-bold truncate ${color}`}>{value}</div>
     </div>
   );
 }
 
-export default function StrategyCard({ data, belief }) {
+export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun }) {
+  const navigate = useNavigate();
+  const [shared, setShared] = useState(false);
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
   const [amount, setAmount] = useState(1000);
@@ -50,6 +69,10 @@ export default function StrategyCard({ data, belief }) {
   const sizing = useMemo(() => (model ? sizePosition(model, amount) : null), [model, amount]);
   const sum = useMemo(() => (model ? summarize(model) : null), [model]);
   const scen = useMemo(() => (model ? scenarios(model, amount) : []), [model, amount]);
+  const plain = useMemo(
+    () => (model && sum ? plainEnglish(model, sum, sizing?.units || 1, pick?.ticker, amount) : []),
+    [model, sum, sizing, pick, amount]
+  );
 
   if (!pick) return null;
   const isOptions = model?.kind === 'options';
@@ -63,6 +86,16 @@ export default function StrategyCard({ data, belief }) {
     setStatus((s) => ({ ...s, [pick.pick_id]: kind }));
     sendFeedback(data.belief_id, kind, pick.pick_id);
   };
+
+  const share = async () => {
+    const url = `${window.location.origin}/chat?b=${encodeURIComponent(belief || '')}`;
+    const text = `My belief: "${belief}". See how MarketPlayground would trade it.`;
+    try {
+      if (navigator.share) await navigator.share({ title: 'MarketPlayground', text, url });
+      else { await navigator.clipboard.writeText(`${text} ${url}`); setShared(true); setTimeout(() => setShared(false), 2500); }
+    } catch { /* user cancelled */ }
+  };
+  const next = RISK_NEXT[riskProfile] || RISK_NEXT.moderate;
 
   const doPaperTrade = async () => {
     if (isOptions || avoid) {
@@ -162,14 +195,14 @@ export default function StrategyCard({ data, belief }) {
           {/* Fit + track record */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs text-slate-400">
-              <span>Fit with your belief</span><span className="text-slate-200 font-semibold">{fit}%</span>
+              <span><Term k="fit">Fit with your belief</Term></span><span className="text-slate-200 font-semibold">{fit}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
               <div className="h-full bg-blue-500" style={{ width: `${fit}%` }} />
             </div>
             {track && track.n > 0 && (
               <p className="text-xs text-slate-400">
-                Track record on this theme: beat the S&amp;P 500 in {Math.round(track.hit * 100)}% of {track.n} past picks
+                <Term k="track record">Track record</Term> on this theme: beat the S&amp;P 500 in {Math.round(track.hit * 100)}% of {track.n} past picks
                 ({track.mean >= 0 ? '+' : ''}{(track.mean * 100).toFixed(1)}% on average after 30 days).
               </p>
             )}
@@ -178,26 +211,43 @@ export default function StrategyCard({ data, belief }) {
           {/* Strategy */}
           <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-3">
             <div className="flex items-center justify-between">
-              <div className="font-bold text-white">{pick.structure}</div>
-              {pick.trade?.expiration && <div className="text-xs text-slate-400">Expires {pick.trade.expiration}</div>}
+              <div className="font-bold text-white">
+                {/spread/i.test(pick.structure) ? <Term k="spread">{pick.structure}</Term>
+                  : /condor/i.test(pick.structure) ? <Term k="iron condor">{pick.structure}</Term> : pick.structure}
+              </div>
+              {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || ''}</p>
             {legs.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {legs.map((l, i) => (
-                  <li key={i} className="flex justify-between text-sm">
-                    <span><span className={l.action === 'Sell' ? 'text-red-300' : 'text-green-300'}>{l.action}</span> <span className="text-white">{l.ticker}</span>{l.option_type ? ` ${l.option_type}` : ''}</span>
-                    {l.strike_price ? <span className="text-slate-300">${l.strike_price} strike{l.est_premium ? ` · ~$${l.est_premium}` : ''}</span> : <span className="text-slate-500">{l.instrument === 'stock' ? 'shares' : ''}</span>}
+                  <li key={i} className="flex justify-between gap-2 text-sm">
+                    <span className="whitespace-nowrap"><span className={l.action === 'Sell' ? 'text-red-300' : 'text-green-300'}>{l.action}</span> <span className="text-white">{l.ticker}</span>{l.option_type ? <> <Term k={String(l.option_type).toLowerCase()}>{l.option_type}</Term></> : ''}</span>
+                    {l.strike_price ? <span className="text-slate-300 text-right whitespace-nowrap">${l.strike_price} <Term k="strike">strike</Term>{l.est_premium ? <span className="text-slate-500"> · ${l.est_premium}</span> : ''}</span> : <span className="text-slate-500">{l.instrument === 'stock' ? 'shares' : ''}</span>}
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
+          {plain.length > 0 && (
+            <div className="rounded-2xl border border-blue-400/25 bg-blue-500/[0.07] p-3.5">
+              <div className="text-[11px] uppercase tracking-wider text-blue-300 font-semibold mb-2">The deal, in plain English</div>
+              <ul className="space-y-1.5">
+                {plain.map((l, i) => (
+                  <li key={i} className={`flex gap-2.5 text-sm leading-snug ${TONE[l.tone]}`}>
+                    <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${DOT[l.tone]}`} aria-hidden />
+                    <span>{l.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {!avoid && sum && (
             <>
               <div className="grid grid-cols-3 gap-2">
-                <Stat label={isOptions ? 'Cost / contract' : 'Price'} value={isOptions ? money(model.capitalPerUnit) : `$${Number(pick.price).toFixed(2)}`} />
+                <Stat label={isOptions ? 'Per contract' : 'Price'} value={isOptions ? money(model.capitalPerUnit) : `$${Number(pick.price).toFixed(2)}`} />
                 <Stat label="Max gain" value={isOptions ? money(sum.maxProfit) : 'Unlimited'} tone="good" />
                 <Stat label="Breakeven" value={sum.breakevens.length ? sum.breakevens.map((b) => `$${b.toFixed(2)}`).join(' / ') : '—'} tone="warn" />
               </div>
@@ -271,8 +321,30 @@ export default function StrategyCard({ data, belief }) {
           {st === 'up' && <p className="text-xs text-green-400">Thanks. Your vote helps everyone get better picks.</p>}
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
           {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money.</p>}
-          {st === 'tracking' && <p className="text-xs text-blue-300">We'll grade this idea against the market at 1 week, 1 month and 3 months.</p>}
+          {(st === 'tracking' || st === 'traded') && (
+            <p className="text-xs text-blue-300">
+              {st === 'tracking' ? "We'll grade this idea against the market at 1 week, 1 month and 3 months. " : ''}
+              <button onClick={() => navigate('/my')} className="underline font-semibold">See it in My calls →</button>
+            </p>
+          )}
           {st?.startsWith?.('error:') && <p className="text-xs text-red-400">{st.slice(6)}</p>}
+
+          {/* Variations + share */}
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            {onRerun && next.safer && (
+              <button onClick={() => onRerun(next.safer)} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400">
+                🛡️ Safer
+              </button>
+            )}
+            {onRerun && next.bolder && (
+              <button onClick={() => onRerun(next.bolder)} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400">
+                🚀 Bolder
+              </button>
+            )}
+            <button onClick={share} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400 col-start-3">
+              {shared ? '✓ Link copied' : '↗ Share'}
+            </button>
+          </div>
         </motion.div>
       </AnimatePresence>
 

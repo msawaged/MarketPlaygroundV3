@@ -13,7 +13,7 @@ FILE: BottomNavigation.jsx (SAFE COPY)
 
 import React, { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, Flame, ShoppingBasket, Zap } from 'lucide-react';
+import { Home, TrendingUp, Flame, Target, Zap } from 'lucide-react';
 
 /**
  * Props
@@ -32,7 +32,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
         { id: 'home',      label: 'Home',      icon: Home,       path: '/select-tool',   color: '#3b82f6' },
         { id: 'chat',      label: 'Believe',   icon: Zap,            path: '/chat',           color: '#3b82f6' },
         { id: 'trending',  label: 'Trending',  icon: Flame,          path: '/trending',       color: '#f59e0b' },
-        { id: 'basket',    label: 'Baskets',   icon: ShoppingBasket, path: '/basket-builder', color: '#60a5fa' },
+        { id: 'my',        label: 'My calls',  icon: Target,         path: '/my',             color: '#60a5fa' },
         { id: 'portfolio', label: 'Portfolio', icon: TrendingUp,     path: '/portfolio',      color: '#22c55e' },
       ];
 

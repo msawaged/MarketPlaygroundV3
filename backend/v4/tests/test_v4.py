@@ -371,3 +371,44 @@ def test_rate_limit_on_costly_endpoints(monkeypatch):
     other = c.post("/v4/belief", headers={"x-forwarded-for": "9.9.9.9"})
     assert other.status_code == 200                         # limit is per visitor
     rate_limit.reset_for_tests()
+
+
+def test_learning_status_and_my_beliefs(monkeypatch):
+    fake = FakeClaude()
+    r = engine.process_belief("plumbing demand is going to be high", "u-me", "moderate", claude_client=fake)
+    engine.process_belief("potatoes are in demand", "u-other", "moderate", claude_client=fake)
+
+    ls = engine.learning_status()
+    assert ls["beliefs_from_people"] == 2 and ls["people"] == 2
+    assert [l["name"] for l in ls["layers"]] == ["Claude", "Track record", "MarketPlayground network"]
+    assert ls["layers"][2]["on"] is False and "Waiting" in ls["layers"][2]["what"]
+
+    mine = engine.my_beliefs("u-me")
+    assert len(mine["beliefs"]) == 1 and mine["beliefs"][0]["belief_id"] == r["belief_id"]
+    shown = mine["beliefs"][0]["picks"]
+    assert len(shown) == engine.SHOW_TOP
+    assert all(p["vs_spy"] is not None for p in shown)  # entered today; synthetic closes exist
+    assert engine.my_beliefs("anonymous")["beliefs"] == []
+    assert engine.my_beliefs("u-nobody")["beliefs"] == []
+
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    c = TestClient(app)
+    assert c.get("/v4/learning").status_code == 200
+    assert c.get("/v4/my_beliefs", params={"user_id": "u-me"}).json()["beliefs"][0]["text"].startswith("plumbing")
+    assert c.get("/v4/admin/ml").status_code == 403
+
+
+def test_track_record_respects_direction():
+    stat = {"n": 40, "mean": 0.0, "raw_mean": 0.10, "up": 0, "down": 0}
+    assert learning.ticker_adjustment(stat, "bullish") > 0
+    assert learning.ticker_adjustment(stat, "bearish") < 0
+
+
+def test_network_blend_can_reorder_picks():
+    # tiny predictions still reorder: rescaled to Claude's spread
+    out = nn.on_claude_scale([0.001, 0.003, -0.002], [0.8, 0.7, 0.6])
+    assert out.index(max(out)) == 1
+    assert abs(sum(out) / 3 - 0.7) < 1e-9

@@ -63,3 +63,23 @@ assert.equal(buildModel({ type: 'Sell / Avoid', trade_legs: [] }, 10).kind, 'avo
 assert.equal(money(-1234.4), '-$1,234');
 assert.equal(money(50, { sign: true }), '+$50');
 console.log('payoff tests passed');
+
+// plain English
+{
+  const { buildModel, summarize, plainEnglish } = await import('./payoff.js');
+  const trade = { type: 'Bull Call Spread', vol: 0.3, trade_legs: [
+    { instrument: 'option', action: 'Buy', option_type: 'call', strike_price: 230, est_premium: 19.19, expiration: '2027-05-21' },
+    { instrument: 'option', action: 'Sell', option_type: 'call', strike_price: 262.5, est_premium: 7.56, expiration: '2027-05-21' },
+  ] };
+  const m = buildModel(trade, 229.36, new Date('2026-10-27T12:00:00Z'));
+  const lines = plainEnglish(m, summarize(m), 1, 'FERG', 1000);
+  const txt = lines.map((l) => l.text).join(' | ');
+  if (!/\$1,163 today/.test(txt)) throw new Error('cost line: ' + txt);
+  if (!/\+\$2,087 if FERG is at or above \$262\.5 on May 21, 2027/.test(txt)) throw new Error('best line: ' + txt);
+  if (!/−\$1,163 if it's at or below \$230/.test(txt)) throw new Error('worst line: ' + txt);
+  if (!/break even if FERG is at \$241\.6/.test(txt)) throw new Error('breakeven: ' + txt);
+  const s = buildModel({ type: 'Buy Stock', trade_legs: [] }, 100);
+  const sl = plainEnglish(s, summarize(s), 10, 'XYZ', 1000).map((l) => l.text).join(' | ');
+  if (!/10 shares/.test(sl) || !/make about \$100/.test(sl)) throw new Error('stock: ' + sl);
+  console.log('plain English ok');
+}

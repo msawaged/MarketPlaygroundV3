@@ -145,3 +145,72 @@ export function money(v, { sign = false } = {}) {
   if (r < 0) return `-${s}`;
   return sign && r > 0 ? `+${s}` : s;
 }
+
+// ---------------- plain English ----------------
+
+export function niceDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00Z');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+
+const $ = (v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+
+/**
+ * The trade in three or four plain sentences: what you pay, best case, worst case, breakeven.
+ * Returns [{ tone: 'neutral'|'good'|'bad'|'warn', text }].
+ */
+export function plainEnglish(model, sum, units, ticker, amount) {
+  if (!model || model.kind === 'avoid' || !sum) return [];
+  if (model.kind === 'stock') {
+    const ten = Math.round(amount * 0.1);
+    const up = model.direction > 0;
+    return [
+      { tone: 'neutral', text: `You ${up ? 'buy' : 'short'} about ${$(amount)} of ${ticker} (${(amount / model.entry).toFixed(amount / model.entry < 10 ? 2 : 0)} shares).` },
+      { tone: 'good', text: `Every 10% ${ticker} ${up ? 'rises' : 'falls'}, you make about ${$(ten)}.` },
+      { tone: 'bad', text: `Every 10% it ${up ? 'falls' : 'rises'}, you lose about ${$(ten)}. You can sell any time.` },
+    ];
+  }
+  const n = Math.max(1, units || 1);
+  const strikes = model.legs.map((l) => l.strike).sort((a, b) => a - b);
+  const date = niceDate(model.expiration);
+  const lo = strikes[0], hi = strikes[strikes.length - 1];
+  const cost = model.capitalPerUnit * n;
+  const best = Number.isFinite(sum.maxProfit) ? sum.maxProfit * n : null;
+  const worst = Math.abs(sum.maxLoss) * n;
+  const be = sum.breakevens.map((b) => $(b.toFixed(2))).join(' or ');
+  const credit = model.netPremium < 0;
+  const lines = [];
+  lines.push(credit
+    ? { tone: 'neutral', text: `You collect about ${$(Math.round(-model.netPremium * 100 * n))} today and set aside ${$(Math.round(cost))} as the most you could lose.` }
+    : { tone: 'neutral', text: `You pay about ${$(Math.round(cost))} today${n > 1 ? ` for ${n} contracts` : ''}. That's the most you can lose.` });
+  switch (model.type) {
+    case 'Bull Call Spread':
+      lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} is at or above ${$(hi)} on ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)} on ${date}.` });
+      break;
+    case 'Bear Put Spread':
+      lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} is at or below ${$(lo)} on ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or above ${$(hi)} on ${date}.` });
+      break;
+    case 'Long Call':
+      lines.push({ tone: 'good', text: `Best case: no cap. The higher ${ticker} goes above ${be} by ${date}, the more you make.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)} on ${date}.` });
+      break;
+    case 'Long Put':
+      lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} drops toward zero; you profit below ${be} by ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or above ${$(hi)} on ${date}.` });
+      break;
+    case 'Iron Condor': {
+      const inner = strikes.length >= 4 ? [strikes[1], strikes[2]] : [lo, hi];
+      lines.push({ tone: 'good', text: `Best case: keep +${$(Math.round(best))} if ${ticker} stays between ${$(inner[0])} and ${$(inner[1])} until ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends below ${$(lo)} or above ${$(hi)}.` });
+      break;
+    }
+    default:
+      if (best != null) lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} by ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))}.` });
+  }
+  if (be) lines.push({ tone: 'warn', text: `You break even if ${ticker} is at ${be} on ${date}.` });
+  return lines;
+}

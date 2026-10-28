@@ -8,6 +8,7 @@ import BottomNavigation from './BottomNavigation';
 import { PortfolioModal } from './PortfolioComponents';
 import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
+import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
 
 const EXAMPLES = [
   'Plumbing demand is about to boom',
@@ -25,6 +26,13 @@ const RISK = [
 ];
 
 const STAGES = ['Reading your belief', 'Finding who it affects', 'Checking live prices', 'Building strategies'];
+const RISK_LABEL = { conservative: 'Careful', moderate: 'Balanced', aggressive: 'Bold' };
+
+const HOW = [
+  ['💭', 'Say what you believe', 'Any hunch about the world. "Pet adoptions keep rising" works.'],
+  ['🔎', 'We find who it affects', 'Companies and funds tied to it, checked against live prices.'],
+  ['📈', 'Pick a way to trade it', 'Shares or options, sized to your budget, with a chart you can drag.'],
+];
 
 function loadRisk() {
   try { return localStorage.getItem('mp_risk') || 'moderate'; } catch { return 'moderate'; }
@@ -39,6 +47,9 @@ export default function ChatInterface() {
   const [risk, setRisk] = useState(loadRisk);
   const [showPortfolio, setShowPortfolio] = useState(false);
   const [listening, setListening] = useState(false);
+  const [recent, setRecent] = useState(recentBeliefs);
+  const [showHow, setShowHow] = useState(() => !seen('how'));
+  const autoSent = useRef(false);
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -47,8 +58,12 @@ export default function ChatInterface() {
 
   // Prefill from a link like /chat?b=potatoes%20are%20in%20demand (Trending page uses this)
   useEffect(() => {
-    const b = new URLSearchParams(location.search).get('b');
-    if (b) { setInput(b); inputRef.current?.focus(); }
+    const q = new URLSearchParams(location.search);
+    const b = q.get('b');
+    if (!b) return;
+    if (q.get('go') === '1' && !autoSent.current) { autoSent.current = true; send(b); return; }
+    setInput(b); inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
   useEffect(() => {
@@ -58,18 +73,25 @@ export default function ChatInterface() {
     return () => clearInterval(id);
   }, [loading]);
 
-  const send = async (text) => {
+  const send = async (text, riskOverride) => {
     const belief = (text ?? input).trim();
     if (!belief || loading) return;
+    const useRisk = riskOverride || risk;
     setInput('');
-    setMessages((m) => [...m, { id: Date.now(), role: 'user', text: belief }]);
+    if (showHow) { setShowHow(false); markSeen('how'); }
+    rememberBelief(belief);
+    setRecent(recentBeliefs());
+    setMessages((m) => [...m, { id: Date.now(), role: 'user', text: belief, risk: riskOverride ? useRisk : null }]);
     setLoading(true);
     try {
-      const data = await processBelief(belief, { riskProfile: risk });
+      const data = await processBelief(belief, { riskProfile: useRisk });
       if (!data?.strategy || !data?.picks?.length) {
         setMessages((m) => [...m, { id: Date.now() + 1, role: 'ai', text: data?.reason || "I couldn't turn that into a trade idea. Try saying what you think will grow, shrink, or change." }]);
       } else {
-        setMessages((m) => [...m, { id: Date.now() + 1, role: 'ai', text: "Here's how you could trade that.", data, belief }]);
+        setMessages((m) => [...m, {
+          id: Date.now() + 1, role: 'ai', data, belief, risk: useRisk,
+          text: riskOverride ? `Here's a ${RISK_LABEL[useRisk].toLowerCase()} version.` : "Here's how you could trade that.",
+        }]);
       }
     } catch (e) {
       const offline = e instanceof TypeError; // fetch network failure
@@ -102,7 +124,7 @@ export default function ChatInterface() {
   const empty = messages.length === 0;
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="h-screen flex flex-col mp-bg text-white">
       <div className="shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <TickerStrip />
         <header className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur flex items-center gap-3">
@@ -134,7 +156,40 @@ export default function ChatInterface() {
             <p className="mt-2 text-slate-300">
               Type it in your own words. A hunch is enough. You'll get the companies and funds it affects and a strategy for each.
             </p>
-            <div className="mt-5 text-xs uppercase tracking-wider text-slate-500">Try one</div>
+            {showHow && (
+              <div className="mt-5 rounded-3xl border border-slate-700/80 bg-slate-900/70 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs uppercase tracking-wider text-blue-300 font-semibold">How it works</div>
+                  <button onClick={() => { setShowHow(false); markSeen('how'); }} className="text-xs text-slate-400 hover:text-white">Got it</button>
+                </div>
+                <ol className="mt-3 space-y-3">
+                  {HOW.map(([icon, title, body], i) => (
+                    <li key={title} className="flex gap-3">
+                      <span className="w-9 h-9 shrink-0 rounded-2xl bg-slate-800 flex items-center justify-center text-lg" aria-hidden>{icon}</span>
+                      <span>
+                        <span className="block font-semibold text-white text-sm">{i + 1}. {title}</span>
+                        <span className="block text-xs text-slate-400 leading-relaxed">{body}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
+            {recent.length > 0 && (
+              <>
+                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">Your recent beliefs</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {recent.map((r) => (
+                    <button key={r} onClick={() => send(r)} className="text-sm px-3 py-2 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-100 hover:border-blue-300 max-w-full truncate">
+                      ↻ {r}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">Try one</div>
             <div className="mt-2 flex flex-wrap gap-2">
               {EXAMPLES.map((ex) => (
                 <button
@@ -155,7 +210,10 @@ export default function ChatInterface() {
               <motion.div key={m.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
                 {m.role === 'user' ? (
                   <div className="flex justify-end">
-                    <div className="max-w-[85%] rounded-2xl rounded-br-md bg-blue-600 px-4 py-3 text-sm">{m.text}</div>
+                    <div className="max-w-[85%] rounded-2xl rounded-br-md bg-blue-600 px-4 py-3 text-sm">
+                      {m.text}
+                      {m.risk && <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-white/20 rounded-full px-2 py-0.5">{RISK_LABEL[m.risk]}</span>}
+                    </div>
                   </div>
                 ) : m.role === 'error' ? (
                   <div className="rounded-2xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">
@@ -167,7 +225,9 @@ export default function ChatInterface() {
                 ) : (
                   <div>
                     <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-slate-800 border border-slate-700 px-4 py-3 text-sm text-slate-100">{m.text}</div>
-                    {m.data && <StrategyCard data={m.data} belief={m.belief} />}
+                    {m.data && (
+                      <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} />
+                    )}
                   </div>
                 )}
               </motion.div>
@@ -175,13 +235,21 @@ export default function ChatInterface() {
           </AnimatePresence>
 
           {loading && (
-            <div className="rounded-2xl rounded-bl-md bg-slate-800 border border-slate-700 px-4 py-3 text-sm text-slate-300 inline-flex items-center gap-3" role="status">
-              <span className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <motion.span key={i} className="w-2 h-2 rounded-full bg-blue-400" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.15 }} />
+            <div className="rounded-2xl rounded-bl-md bg-slate-800/90 border border-slate-700 px-4 py-3 text-sm max-w-xs" role="status" aria-live="polite">
+              <ul className="space-y-1.5">
+                {STAGES.map((label, i) => (
+                  <li key={label} className={`flex items-center gap-2.5 ${i < stage ? 'text-slate-400' : i === stage ? 'text-white' : 'text-slate-600'}`}>
+                    {i < stage ? (
+                      <span className="w-4 h-4 rounded-full bg-green-500/20 text-green-400 text-[10px] flex items-center justify-center">✓</span>
+                    ) : i === stage ? (
+                      <motion.span className="w-4 h-4 rounded-full border-2 border-blue-400 border-t-transparent" animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }} />
+                    ) : (
+                      <span className="w-4 h-4 rounded-full border border-slate-600" />
+                    )}
+                    {label}
+                  </li>
                 ))}
-              </span>
-              {STAGES[stage]}…
+              </ul>
             </div>
           )}
           <div ref={endRef} />

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import ToolSelectorPage from './components/ToolSelectorPage';
 import ChatInterface from './components/ChatInterface';
 import TrendingPage from './components/TrendingPage';
+import MyCallsPage from './components/MyCallsPage';
+import LearningPage from './components/LearningPage';
 import BasketBuilderPage from './BasketBuilderPage';
 import { PortfolioModal } from './components/PortfolioComponents';
 import BottomNavigation from './components/BottomNavigation';
@@ -36,6 +38,8 @@ export default function App() {
           <Route path="/chat" element={<ChatInterface />} />
           <Route path="/trending" element={<TrendingPage />} />
           <Route path="/hot-trades" element={<Navigate to="/trending" replace />} />
+          <Route path="/my" element={<MyCallsPage />} />
+          <Route path="/learning" element={<LearningPage />} />
           <Route path="/basket-builder" element={<BasketBuilderPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/generator" element={<GeneratorPage />} />

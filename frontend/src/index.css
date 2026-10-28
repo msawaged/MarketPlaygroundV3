@@ -6,3 +6,19 @@
 html, body { background: #020617; color: #fff; margin: 0; }
 body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 
+
+/* mp-theme: modern + friendly */
+body { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.mp-bg {
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(77, 163, 255, 0.16), transparent 60%),
+    radial-gradient(700px 400px at -10% 30%, rgba(37, 99, 235, 0.10), transparent 60%),
+    linear-gradient(180deg, #020617 0%, #0b1224 50%, #020617 100%);
+  background-attachment: fixed;
+}
+.mp-gradient-text {
+  background: linear-gradient(90deg, #4DA3FF, #93c5fd 60%, #4DA3FF);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.tabular-nums { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

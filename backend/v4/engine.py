@@ -356,7 +356,7 @@ def learning_status() -> dict:
     net = st["network"]
     m = net.get("metrics") or {}
     if net.get("status") == "active":
-        net_line = (f"On. It earned a {int(round(net.get('weight', 0) * 100))}% say in ranking by improving "
+        net_line = (f"It earned a {int(round(net.get('weight', 0) * 100))}% say in ranking by improving "
                     "picks on later beliefs it had never seen.")
     elif net.get("status") == "shadow":
         net_line = f"Practicing in the background. Not changing your picks yet: {m.get('reason', 'still learning')}."

@@ -82,3 +82,13 @@ export function paperTrade(strategyData, belief) {
 export function generateBasket(inputText) {
   return request("/basket/generate_basket", { method: "POST", body: { input_text: inputText, user_id: userId() } });
 }
+
+/** How the shared learning is going (aggregate, plain English). */
+export function getLearning() {
+  return request("/v4/learning");
+}
+
+/** This device's beliefs and how the picks it was shown are doing so far. */
+export function getMyBeliefs() {
+  return request(`/v4/my_beliefs?user_id=${encodeURIComponent(userId())}`);
+}
