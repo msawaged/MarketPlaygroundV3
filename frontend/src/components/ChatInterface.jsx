@@ -339,7 +339,9 @@ const EliteStockTicker = () => {
 };
 
 // INTERACTIVE P&L CHART WITH TOUCH CONTROLS + ALL YOUR ORIGINAL CHART TYPES
-const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetClass, strikePrice, direction }) => {
+const fmtMoney = (v) => (typeof v === 'number' && isFinite(v)) ? `$${Math.round(v).toLocaleString()}` : (v ?? null);
+
+const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetClass, strikePrice, direction, breakEven, maxProfit, maxLoss }) => {
   const [touchStrike, setTouchStrike] = useState(parseFloat(strikePrice) || 700);
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipData, setTooltipData] = useState(null);
@@ -760,7 +762,7 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
           </motion.div>
           <motion.div 
             className="bg-slate-700/50 rounded-lg p-3 text-center border border-slate-600"
-            whileHover={{ scale: 1.05, borderColor: '#10b981' }}
+            whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
           >
             <div className="text-slate-400 font-semibold">Asset</div>
             <div className="text-white font-bold text-sm">{assetClass?.toUpperCase()}</div>
@@ -785,19 +787,19 @@ const InteractivePnLChart = ({ ticker, strategyType, price, confidence, assetCla
             <div className="bg-slate-700/30 rounded-lg p-2 text-center">
               <div className="text-xs text-slate-400">Breakeven</div>
               <div className="text-sm font-bold text-yellow-400">
-                ${(touchStrike + premium).toFixed(0)}
+                {fmtMoney(breakEven) ?? `$${(touchStrike + premium).toFixed(0)}`}
               </div>
             </div>
             <div className="bg-slate-700/30 rounded-lg p-2 text-center">
               <div className="text-xs text-slate-400">Max Profit</div>
               <div className="text-sm font-bold text-green-400">
-                {strategyType.toLowerCase().includes('call') ? 'Unlimited' : `$${(touchStrike - premium).toFixed(0)}`}
+                {fmtMoney(maxProfit) ?? (strategyType.toLowerCase().includes('call') ? 'Unlimited' : `$${(touchStrike - premium).toFixed(0)}`)}
               </div>
             </div>
             <div className="bg-slate-700/30 rounded-lg p-2 text-center">
               <div className="text-xs text-slate-400">Max Loss</div>
               <div className="text-sm font-bold text-red-400">
-                ${premium.toFixed(0)}
+                {fmtMoney(maxLoss) ?? `$${premium.toFixed(0)}`}
               </div>
             </div>
           </div>
@@ -1036,7 +1038,7 @@ const EnhancedChatInterface = () => {
       
       // Enhanced toast notification
       const toast = document.createElement('div');
-      toast.className = `fixed top-20 right-4 ${feedbackType === 'good' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-xl z-50 font-bold shadow-lg`;
+      toast.className = `fixed top-20 right-4 ${feedbackType === 'good' ? 'bg-blue-500' : 'bg-red-500'} text-white px-6 py-3 rounded-xl z-50 font-bold shadow-lg`;
       toast.textContent = `${feedbackType === 'good' ? 'Awesome!' : 'Thanks for the feedback!'} Your input helps me improve.`;
       document.body.appendChild(toast);
       setTimeout(() => {
@@ -1082,7 +1084,7 @@ const EnhancedChatInterface = () => {
           </div>
           <div className="ml-auto flex items-center gap-2">
             <motion.div 
-              className="w-3 h-3 bg-green-400 rounded-full shadow-lg"
+              className="w-3 h-3 bg-blue-400 rounded-full shadow-lg"
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
             />
@@ -1159,7 +1161,7 @@ const EnhancedChatInterface = () => {
                             </motion.div>
                             <div className="text-xs text-blue-100">AI Confidence</div>
                             <div className={`mt-1 px-3 py-1 rounded-full text-sm font-bold ${
-                              message.strategy.source === 'ml_model' ? 'bg-red-500/80' : 'bg-green-500/80'
+                              message.strategy.source === 'ml_model' ? 'bg-red-500/80' : 'bg-blue-500/80'
                             } text-white`}>
                               {message.strategy.source === 'ml_model' ? 'ML' : 'GPT'}
                             </div>
@@ -1172,7 +1174,7 @@ const EnhancedChatInterface = () => {
                         <div className="grid grid-cols-2 gap-3 mb-4">
                           <motion.div 
                             className="bg-slate-700/50 rounded-lg p-3 text-center border border-slate-600"
-                            whileHover={{ scale: 1.05, borderColor: '#22c55e' }}
+                            whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
                           >
                             <div className="text-xs text-slate-400 uppercase tracking-wide font-semibold">Direction</div>
                             <div className={`text-lg font-bold flex items-center justify-center gap-1 ${
@@ -1199,7 +1201,7 @@ const EnhancedChatInterface = () => {
                             <div className="text-xs text-slate-400 uppercase tracking-wide font-semibold">Asset Class</div>
                             <div className={`text-sm font-bold px-2 py-1 rounded ${
                               message.strategy.assetClass === 'options' ? 'bg-blue-500 text-white' :
-                              message.strategy.assetClass === 'equity' ? 'bg-green-500 text-white' :
+                              message.strategy.assetClass === 'equity' ? 'bg-blue-500 text-white' :
                               message.strategy.assetClass === 'bonds' ? 'bg-purple-500 text-white' :
                               message.strategy.assetClass === 'crypto' ? 'bg-orange-500 text-white' :
                               'bg-gray-500 text-white'
@@ -1230,7 +1232,7 @@ const EnhancedChatInterface = () => {
                               <motion.div 
                                 key={idx} 
                                 className="bg-slate-700/50 rounded-lg p-3 mb-2 border-l-4 border-blue-400"
-                                whileHover={{ scale: 1.02, borderColor: '#22c55e' }}
+                                whileHover={{ scale: 1.02, borderColor: '#3b82f6' }}
                               >
                                 <div className="flex justify-between items-center">
                                   <div>
@@ -1267,6 +1269,9 @@ const EnhancedChatInterface = () => {
                             assetClass={message.strategy.assetClass}
                             strikePrice={message.strategy.strike_price}
                             direction={message.strategy.direction}
+                            breakEven={message.strategy.break_even}
+                            maxProfit={message.strategy.max_profit}
+                            maxLoss={message.strategy.max_loss}
                           />
                         </div>
 
@@ -1280,7 +1285,7 @@ const EnhancedChatInterface = () => {
                                 <button
                                   key={amount}
                                   onClick={() => setInvestmentAmount(prev => ({ ...prev, [message.id]: amount }))}
-                                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 rounded-lg"
+                                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 rounded-lg"
                                 >
                                   ${amount}
                                 </button>
@@ -1318,7 +1323,7 @@ const EnhancedChatInterface = () => {
                                 <div className="text-xs text-yellow-300">10% gain</div>
                               </div>
                               
-                              <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-3 text-center">
+                              <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-3 text-center">
                                 <div className="text-green-400 font-bold">Best</div>
                                 <div className="text-2xl font-bold text-green-400">+${Math.round(investmentAmount[message.id] * 3)}</div>
                                 <div className="text-xs text-green-300">300% gain</div>
@@ -1329,7 +1334,7 @@ const EnhancedChatInterface = () => {
                             <div className="grid grid-cols-3 gap-3 mt-4">
                               <motion.button 
                                 onClick={() => sendFeedback(message.strategy, 'good')}
-                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg"
                                 whileTap={{ scale: 0.95 }}
                                 whileHover={{ scale: 1.05, y: -2 }}
                               >

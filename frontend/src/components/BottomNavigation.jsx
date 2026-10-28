@@ -31,7 +31,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
     : [
         { id: 'home',      label: 'Home',      icon: Home,       path: '/select-tool',   color: '#3b82f6' },
         { id: 'chat',      label: 'AI Trade',  icon: Zap,        path: '/chat',          color: '#8b5cf6' },
-        { id: 'portfolio', label: 'Portfolio', icon: TrendingUp, path: '/paper-trading', color: '#22c55e' },
+        { id: 'portfolio', label: 'Portfolio', icon: TrendingUp, path: '/paper-trading', color: '#60a5fa' },
         { id: 'analytics', label: 'Stats',     icon: BarChart3,  path: '/analytics',     color: '#f59e0b' },
         { id: 'profile',   label: 'Profile',   icon: User,       path: '/profile',       color: '#ef4444' },
       ];

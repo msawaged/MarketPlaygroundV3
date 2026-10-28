@@ -42,7 +42,7 @@ const ToolSelectorPage = () => {
         
         {/* 🚀 Basket Builder - Portfolio construction tool */}
         <button
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-2xl shadow-md"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-2xl shadow-md"
           onClick={() => navigate('/basket-builder')}
         >
           🚀 Asset Basket Builder

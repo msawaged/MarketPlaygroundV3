@@ -126,7 +126,7 @@ const BasketBuilderPage = () => {
         <FiMic /> {isListening ? 'Listening...' : 'Speak Goal'}
       </button>
       <button
-        className="bg-green-500 px-6 py-2 rounded-xl hover:bg-green-600 text-white font-semibold shadow"
+        className="bg-blue-500 px-6 py-2 rounded-xl hover:bg-blue-600 text-white font-semibold shadow"
         onClick={handleSubmit}
       >
         Generate Basket
@@ -164,7 +164,7 @@ const BasketBuilderPage = () => {
             <span className="text-lg font-bold text-white">{asset.name}</span>
             <p className="text-indigo-300 text-sm italic mt-1">{asset.mix}</p>
           </div>
-          <span className="mt-2 sm:mt-0 bg-green-700 text-white text-sm px-3 py-1 rounded-full shadow inline-block">
+          <span className="mt-2 sm:mt-0 bg-blue-700 text-white text-sm px-3 py-1 rounded-full shadow inline-block">
             {asset.ytd}
           </span>
         </div>

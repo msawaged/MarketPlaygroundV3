@@ -86,7 +86,7 @@ const PortfolioSummary = ({ refreshNonce = 0 }) => {
           </div>
         </motion.div>
 
-        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: "#22c55e" }}>
+        <motion.div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600" whileHover={{ scale: 1.02, borderColor: "#3b82f6" }}>
           <div className="text-xs text-slate-400 font-semibold">Cash Balance</div>
           <div className="text-lg font-bold text-green-400">
             ${(account?.cash_balance ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -491,7 +491,7 @@ const PortfolioButton = () => {
 function toast(message = "Done!", timeout = 3000) {
   try {
     const t = document.createElement("div");
-    t.className = "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg z-[100] shadow-lg";
+    t.className = "fixed top-20 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg z-[100] shadow-lg";
     t.textContent = message;
     document.body.appendChild(t);
     setTimeout(() => document.body.removeChild(t), timeout);
