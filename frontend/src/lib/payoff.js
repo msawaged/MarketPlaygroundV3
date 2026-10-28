@@ -201,6 +201,13 @@ export function plainEnglish(model, sum, units, ticker, amount) {
       lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} drops toward zero; you profit below ${be} by ${date}.` });
       lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or above ${$(hi)} on ${date}.` });
       break;
+    case 'Long Straddle':
+    case 'Long Strangle': {
+      const mid = model.type === 'Long Straddle' ? `exactly ${$(lo)}` : `between ${$(lo)} and ${$(hi)}`;
+      lines.push({ tone: 'good', text: `Best case: no cap. The further ${ticker} moves past ${be} by ${date}, up or down, the more you make.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends ${mid} on ${date}. You need a big move.` });
+      return lines;  // breakevens already named in the best case
+    }
     case 'Iron Condor': {
       const inner = strikes.length >= 4 ? [strikes[1], strikes[2]] : [lo, hi];
       lines.push({ tone: 'good', text: `Best case: keep +${$(Math.round(best))} if ${ticker} stays between ${$(inner[0])} and ${$(inner[1])} until ${date}.` });

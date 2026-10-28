@@ -19,6 +19,8 @@ const PLAIN = {
   'Long Put': 'Buy the right to sell shares at a set price. Gains if it falls; you can lose the whole cost.',
   'Bear Put Spread': 'Buy a put and sell a lower one. Gains if it falls, with both the gain and the loss capped.',
   'Iron Condor': 'Collect a credit by betting the price stays in a range. Small capped gain, larger capped loss.',
+  'Long Straddle': 'Buy a call and a put at the same price. You win if it makes a big move either way; you lose if it barely moves.',
+  'Long Strangle': 'Buy a call above and a put below today\'s price. Cheaper than a straddle, but it needs an even bigger move either way.',
   'Sell / Avoid': 'A way to act on the belief without a trade: avoid owning it, or trim if you already do.',
 };
 
@@ -27,6 +29,13 @@ const TERM_FOR = { 'Per contract': 'contract', 'Max gain': 'max gain', Breakeven
 
 function DirectionBadge({ direction }) {
   const bull = direction === 'bullish';
+  if (direction === 'volatile') {
+    return (
+      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300">
+        <Term k="big move">Big move</Term>
+      </span>
+    );
+  }
   return (
     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${bull ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
       <Term k={bull ? 'bullish' : 'bearish'}>{bull ? 'Bullish' : 'Bearish'}</Term>
@@ -253,7 +262,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             <div className="flex items-center justify-between">
               <div className="font-bold text-white">
                 {/spread/i.test(pick.structure) ? <Term k="spread">{pick.structure}</Term>
-                  : /condor/i.test(pick.structure) ? <Term k="iron condor">{pick.structure}</Term> : pick.structure}
+                  : /condor/i.test(pick.structure) ? <Term k="iron condor">{pick.structure}</Term>
+                  : /straddle/i.test(pick.structure) ? <Term k="straddle">{pick.structure}</Term>
+                  : /strangle/i.test(pick.structure) ? <Term k="strangle">{pick.structure}</Term> : pick.structure}
               </div>
               {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>

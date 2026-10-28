@@ -62,8 +62,8 @@ export default function TrendingPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold">{themeLabel(t.theme)}</span>
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${t.direction === 'bearish' ? 'bg-red-500/15 text-red-400' : t.direction === 'bullish' ? 'bg-green-500/15 text-green-400' : 'bg-slate-700 text-slate-300'}`}>
-                      {t.direction === 'bearish' ? 'Bearish' : t.direction === 'bullish' ? 'Bullish' : 'Neutral'}
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${t.direction === 'bearish' ? 'bg-red-500/15 text-red-400' : t.direction === 'bullish' ? 'bg-green-500/15 text-green-400' : t.direction === 'volatile' ? 'bg-violet-500/15 text-violet-300' : 'bg-slate-700 text-slate-300'}`}>
+                      {t.direction === 'bearish' ? 'Bearish' : t.direction === 'bullish' ? 'Bullish' : t.direction === 'volatile' ? 'Big move' : 'Neutral'}
                     </span>
                   </div>
                   {t.example && <p className="mt-1 text-sm text-slate-300">{t.example}</p>}

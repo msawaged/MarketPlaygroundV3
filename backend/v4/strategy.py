@@ -23,10 +23,13 @@ STRUCTURES = (
     "Long Put",
     "Bear Put Spread",
     "Iron Condor",
+    "Long Straddle",
+    "Long Strangle",
     "Sell / Avoid",
 )
 BULLISH = {"Buy Stock", "Long Call", "Bull Call Spread"}
 BEARISH = {"Long Put", "Bear Put Spread", "Sell / Avoid"}
+VOLATILE = {"Long Straddle", "Long Strangle"}  # big move expected, direction unknown
 RISK_FREE = 0.04
 
 
@@ -53,13 +56,17 @@ def default_structure(direction: str, horizon_days: int, conviction: str, risk_p
         if risk == "aggressive" and conviction == "high":
             return "Long Put"
         return "Bear Put Spread"
+    if direction == "volatile":
+        if risk == "conservative":
+            return "Sell / Avoid"  # buying volatility costs a lot if the move doesn't come; careful = sit it out
+        return "Long Straddle" if risk == "aggressive" else "Long Strangle"
     # neutral
     if risk == "conservative":
         return "Sell / Avoid"
     return "Iron Condor"
 
 
-OPTION_STRUCTURES = {"Long Call", "Bull Call Spread", "Long Put", "Bear Put Spread", "Iron Condor"}
+OPTION_STRUCTURES = {"Long Call", "Bull Call Spread", "Long Put", "Bear Put Spread", "Iron Condor", "Long Straddle", "Long Strangle"}
 
 
 def vary_structure(structure: str, direction: str, risk_profile: str, rank: int, is_etf: bool, price: float) -> tuple[str, str]:
@@ -95,7 +102,8 @@ def choose_structure(
     base = default_structure(direction, horizon_days, conviction, risk_profile)
     if not stats:
         return base, "rule"
-    allowed = BULLISH if direction == "bullish" else BEARISH if direction == "bearish" else {"Iron Condor", "Sell / Avoid"}
+    allowed = (BULLISH if direction == "bullish" else BEARISH if direction == "bearish"
+               else VOLATILE if direction == "volatile" else {"Iron Condor", "Sell / Avoid"})
     if (risk_profile or "").lower() == "conservative":
         allowed = {s for s in allowed if s in ("Buy Stock", "Bear Put Spread", "Sell / Avoid")}
     base_mean = (stats.get(base) or {}).get("mean")
@@ -228,6 +236,20 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
         width = max(sp - lp, lc - sc)
         out = {"max_loss": round((width - credit) * 100, 2), "max_profit": round(credit * 100, 2),
                "break_even": f"{round(sp - credit, 2)} / {round(sc + credit, 2)}"}
+    elif structure == "Long Straddle":
+        k = round_strike(price, price)
+        a, b = leg("Buy", "call", k), leg("Buy", "put", k)
+        cost = a["p"] + b["p"]
+        out = {"max_loss": round(cost * 100, 2), "max_profit": "Unlimited",
+               "break_even": f"{round(k - cost, 2)} / {round(k + cost, 2)}"}
+    elif structure == "Long Strangle":
+        step = strike_step(price)
+        kc = max(round_strike(price + 0.5 * sd, price), round_strike(price, price) + step)
+        kp = min(round_strike(price - 0.5 * sd, price), round_strike(price, price) - step)
+        a, b = leg("Buy", "call", kc), leg("Buy", "put", kp)
+        cost = a["p"] + b["p"]
+        out = {"max_loss": round(cost * 100, 2), "max_profit": "Unlimited",
+               "break_even": f"{round(kp - cost, 2)} / {round(kc + cost, 2)}"}
     else:
         raise ValueError(f"unknown structure {structure}")
 

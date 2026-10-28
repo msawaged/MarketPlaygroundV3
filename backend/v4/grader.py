@@ -69,7 +69,9 @@ def grade(limit: int = 50000) -> dict:
                 sret = strategy.structure_return(trade, p["entry_price"], tk[1], entry, date.fromisoformat(tk[0]), vol)
             except Exception:
                 sret = None
-            rows_out.append((p["id"], cp, tk[0], tk[1], ret, spy_ret, sign * (ret - spy_ret), sret,
+            # volatile picks were a bet on a BIG move either way: did it move more than the market?
+            dx = (abs(ret) - abs(spy_ret)) if p["direction"] == "volatile" else sign * (ret - spy_ret)
+            rows_out.append((p["id"], cp, tk[0], tk[1], ret, spy_ret, dx, sret,
                              datetime.now(timezone.utc).isoformat()))
             done += 1
         if len(rows_out) >= 500:

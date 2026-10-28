@@ -143,6 +143,8 @@ def ticker_adjustment(stat: Optional[dict], direction: str = "bullish", prior_n:
     if not stat:
         return 0.0
     n = stat.get("n", 0)
+    if direction == "volatile":
+        return 0.0  # past up/down moves say nothing about the size of the next one here
     sign = -1.0 if direction == "bearish" else 1.0
     raw = stat.get("raw_mean", stat.get("mean", 0.0))
     market = (n / (n + prior_n)) * max(-0.15, min(0.15, sign * raw)) * 1.5

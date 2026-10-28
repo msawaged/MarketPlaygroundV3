@@ -83,3 +83,19 @@ console.log('payoff tests passed');
   if (!/10 shares/.test(sl) || !/make about \$100/.test(sl)) throw new Error('stock: ' + sl);
   console.log('plain English ok');
 }
+
+// straddle
+{
+  const { buildModel, summarize, plainEnglish } = await import('./payoff.js');
+  const trade = { type: 'Long Straddle', vol: 0.4, trade_legs: [
+    { instrument: 'option', action: 'Buy', option_type: 'Call', strike_price: 100, est_premium: 6, expiration: '2027-01-15' },
+    { instrument: 'option', action: 'Buy', option_type: 'Put', strike_price: 100, est_premium: 5, expiration: '2027-01-15' },
+  ] };
+  const m = buildModel(trade, 100, new Date('2026-10-27T12:00:00Z'));
+  const s = summarize(m);
+  if (s.breakevens.length !== 2 || Math.abs(s.breakevens[0] - 89) > 0.5 || Math.abs(s.breakevens[1] - 111) > 0.5) throw new Error('straddle breakevens ' + s.breakevens);
+  if (Math.abs(s.maxLoss + 1100) > 15) throw new Error('straddle max loss ' + s.maxLoss);
+  const txt = plainEnglish(m, s, 1, 'XYZ', 1000).map((l) => l.text).join(' | ');
+  if (!/up or down/.test(txt) || !/exactly \$100/.test(txt)) throw new Error('straddle text: ' + txt);
+  console.log('straddle ok');
+}

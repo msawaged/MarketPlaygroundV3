@@ -439,7 +439,8 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
             sign = -1.0 if p["direction"] == "bearish" else 1.0
             item["return"] = round(ret, 4)
             if spy_now and spy0:
-                item["vs_spy"] = round(sign * (ret - (spy_now / spy0 - 1)), 4)
+                spy_r = spy_now / spy0 - 1
+                item["vs_spy"] = round(abs(ret) - abs(spy_r) if p["direction"] == "volatile" else sign * (ret - spy_r), 4)
                 if p["entry_date"] < today_s:
                     total += 1
                     wins += item["vs_spy"] > 0
@@ -490,8 +491,11 @@ def replay(tickers: list[str], directions: list[str], days: int = 365) -> dict:
             pts.append(round(closes[max(k, j0)] / p0 - 1, 4))
         ret = closes[-1] / p0 - 1
         sign = -1.0 if dirn == "bearish" else 1.0
-        picks.append({"ticker": t, "direction": dirn, "return": round(ret, 4),
-                      "vs_spy": round(sign * (ret - spy_pts[-1]), 4), "right": sign * ret > 0})
+        if dirn == "volatile":
+            vs, right = abs(ret) - abs(spy_pts[-1]), abs(ret) > max(0.1, abs(spy_pts[-1]))
+        else:
+            vs, right = sign * (ret - spy_pts[-1]), sign * ret > 0
+        picks.append({"ticker": t, "direction": dirn, "return": round(ret, 4), "vs_spy": round(vs, 4), "right": right})
         series.append(pts)
     if not picks:
         raise market.MarketDataError("no history for these picks")

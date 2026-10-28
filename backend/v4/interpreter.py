@@ -43,7 +43,7 @@ SCHEMA: dict[str, Any] = {
         "is_market_belief": {"type": "boolean"},
         "note": {"type": "string"},
         "summary": {"type": "string"},
-        "direction": {"type": "string", "enum": ["bullish", "bearish", "neutral"]},
+        "direction": {"type": "string", "enum": ["bullish", "bearish", "neutral", "volatile"]},
         "horizon_days": {"type": "integer"},
         "conviction": {"type": "string", "enum": ["low", "medium", "high"]},
         "themes": {"type": "array", "items": {"type": "string"}},
@@ -62,7 +62,7 @@ SCHEMA: dict[str, Any] = {
                     "ticker": {"type": "string"},
                     "name": {"type": "string"},
                     "exposure": {"type": "string", "enum": ["direct", "supplier", "beneficiary", "etf", "inverse"]},
-                    "direction": {"type": "string", "enum": ["bullish", "bearish"]},
+                    "direction": {"type": "string", "enum": ["bullish", "bearish", "volatile"]},
                     "rationale": {"type": "string"},
                     "score": {"type": "number"},
                 },
@@ -78,12 +78,12 @@ Beliefs can be anything: a specific stock call ("AAPL will hit 250"), a sector v
 Return:
 - is_market_belief: false only if the text has no plausible market implication at all (greetings, nonsense). Then explain briefly in note and leave candidates empty.
 - summary: one sentence restating the belief as a market view.
-- direction: the overall stance on the core theme (bullish = the theme benefits, bearish = it suffers, neutral = range-bound / low volatility).
+- direction: the overall stance on the core theme (bullish = the theme benefits, bearish = it suffers, neutral = range-bound / calm, volatile = a BIG move is coming but the direction is unclear, e.g. "this earnings report will be a shock either way", "the FDA decision will make or break them", "it's going to crash or moon").
 - horizon_days: how long the belief needs to play out (use the user's wording; default 180 for open-ended trends, 30 for event-driven).
 - conviction: from the user's wording ("definitely", "might", "I think").
 - themes: 2-5 short lowercase tags that a different user with a similar idea would also produce (e.g. "plumbing", "housing", "water infrastructure"). Prefer common, reusable words over clever ones.
 - causal_chain: 1-3 sentences: belief -> what changes in the real economy -> who earns more or less.
-- candidates: 5 to 12 US-listed stocks or ETFs that express the belief, best first. Mix the most direct pure-plays, key suppliers or beneficiaries, and one relevant sector ETF when one exists. Each candidate has its own direction (a belief can be bullish for one company and bearish for another). score is 0-1: how directly and cleanly that ticker expresses the belief.
+- candidates: 5 to 12 US-listed stocks or ETFs that express the belief, best first. Mix the most direct pure-plays, key suppliers or beneficiaries, and one relevant sector ETF when one exists. Each candidate has its own direction (a belief can be bullish for one company and bearish for another; use volatile for a company expected to make a big move either way). score is 0-1: how directly and cleanly that ticker expresses the belief.
 
 - wrong_if: 2-3 short, observable signs that the belief is failing (e.g. "Housing starts fall two months in a row"). Plain words, no jargon.
 - exit_rule: one plain sentence a beginner can follow to get out (e.g. "Sell if it drops 10% from where you bought, or if two of the signs above happen.").

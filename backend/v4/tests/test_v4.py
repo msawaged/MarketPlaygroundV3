@@ -569,3 +569,30 @@ def test_real_money_is_off_by_default_and_safe_when_on(monkeypatch):
     assert c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h).status_code == 409  # no double send
     monkeypatch.setenv("MP_REAL_MONEY_PILOT", "someone@else.com")
     assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10}, headers=h).status_code == 403
+
+
+def test_big_move_beliefs_get_straddles_and_strangles():
+    assert strategy.default_structure("volatile", 60, "medium", "aggressive") == "Long Straddle"
+    assert strategy.default_structure("volatile", 60, "medium", "moderate") == "Long Strangle"
+    assert strategy.default_structure("volatile", 60, "medium", "conservative") == "Sell / Avoid"
+    st = strategy.build_trade("Long Straddle", "WINR", 100.0, 0.4, TODAY, 60)
+    legs = st["trade_legs"]
+    assert [l["option_type"] for l in legs] == ["Call", "Put"] and legs[0]["strike_price"] == legs[1]["strike_price"]
+    sg = strategy.build_trade("Long Strangle", "WINR", 100.0, 0.4, TODAY, 60)
+    kc, kp = sg["trade_legs"][0]["strike_price"], sg["trade_legs"][1]["strike_price"]
+    assert kp < 100 < kc and sg["net_cost"] < st["net_cost"]  # strangle is cheaper
+    # a big move either way pays; standing still loses
+    up = strategy.structure_return(st, 100, 130, TODAY, TODAY + timedelta(days=60), 0.4)
+    down = strategy.structure_return(st, 100, 70, TODAY, TODAY + timedelta(days=60), 0.4)
+    flat = strategy.structure_return(st, 100, 100, TODAY, TODAY + timedelta(days=70), 0.4)
+    assert up > 0 and down > 0 and flat < 0
+
+    payload = default_interp("plumbing")
+    payload["direction"] = "volatile"
+    for c in payload["candidates"]:
+        c["direction"] = "volatile"
+    r = engine.process_belief("this earnings report will be a shock either way", "u-v", "moderate", claude_client=FakeClaude(payload))
+    shown = [p for p in r["picks"] if p["shown"]]
+    assert all(p["structure"] in strategy.VOLATILE or p["price"] < 10 for p in shown)
+    # graded on size of move vs the market, not up/down
+    grader.grade()

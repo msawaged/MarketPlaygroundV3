@@ -79,7 +79,7 @@ def make_features(
     backfill: bool,
 ) -> dict:
     """Plain-JSON feature record stored with each pick (frozen at entry time)."""
-    dsign = {"bullish": 1.0, "bearish": -1.0}
+    dsign = {"bullish": 1.0, "bearish": -1.0, "volatile": 0.0}
     cdir = dsign.get(cand.get("direction", "bullish"), 1.0)
     core = dsign.get(core_direction, 0.0)
     has_claude = 0.0 if backfill else 1.0
