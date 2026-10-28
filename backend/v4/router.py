@@ -76,6 +76,11 @@ async def get_belief(belief_id: str):
     return b
 
 
+@router.get("/trending")
+async def get_trending(days: int = 14, limit: int = 8):
+    return await run_in_threadpool(engine.trending, max(1, min(days, 90)), max(1, min(limit, 20)))
+
+
 @router.get("/stats")
 async def get_stats():
     return await run_in_threadpool(engine.stats)

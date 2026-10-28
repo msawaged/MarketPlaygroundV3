@@ -12,18 +12,25 @@ class FeedbackPredictionRequest(BaseModel):
 
 # ✅ Load model on router init
 MODEL_PATH = os.path.join("backend", "feedback_model.joblib")
-try:
-    model = joblib.load(MODEL_PATH)
-    print(f"[feedback_predictor] ✅ Loaded model from {MODEL_PATH}")
-except Exception as e:
-    print(f"[feedback_predictor] ❌ Failed to load model: {e}")
-    model = None
+_model = {"loaded": False, "value": None}
+
+
+def _get_model():
+    """Load the legacy model on first use, not at startup."""
+    if not _model["loaded"]:
+        try:
+            _model["value"] = joblib.load(MODEL_PATH)
+        except Exception as e:
+            print(f"[feedback_predictor] model unavailable: {e}")
+        _model["loaded"] = True
+    return _model["value"]
 
 # ✅ Create router
 router = APIRouter()
 
 @router.post("/predict_feedback")
 async def predict_feedback(data: FeedbackPredictionRequest):
+    model = _get_model()
     if not model:
         return {"error": "Model not available"}
 

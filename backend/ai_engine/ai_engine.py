@@ -52,11 +52,8 @@ from backend.utils.symbol_universe import is_tradable_symbol, normalize_ticker
 
 
 
-if not OPENAI_API_KEY:
-    raise ValueError("❌ OPENAI_API_KEY not found in environment variables.")
-else:
-    print(f"🔑 OpenAI key loaded: ...{OPENAI_API_KEY[-4:]}")
-
+# Legacy engine: only needs OpenAI when ENGINE_VERSION=legacy (v4 uses Claude).
+if OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY
 
     client = None  # Will be initialized lazily later

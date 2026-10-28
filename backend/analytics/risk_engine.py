@@ -22,10 +22,15 @@ def calculate_risk_metrics() -> Dict[str, float]:
     if not os.path.exists(PNL_PATH):
         return {"error": "pnl.json not found"}
 
-    with open(PNL_PATH, "r") as f:
-        data = json.load(f)
+    try:
+        with open(PNL_PATH, "r") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {"error": "pnl.json unreadable"}
+    if not isinstance(data, list):
+        return {"error": "No equity history yet"}
 
-    equity_series = [entry["equity"] for entry in data]
+    equity_series = [e["equity"] for e in data if isinstance(e, dict) and isinstance(e.get("equity"), (int, float))]
     if len(equity_series) < 2:
         return {"error": "Not enough data"}
 

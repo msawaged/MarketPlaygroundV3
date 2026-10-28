@@ -17,13 +17,10 @@ load_dotenv()
 
 # ✅ Step 2: Load API key from environment
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError("❌ OPENAI_API_KEY not found in environment variables.")
-else:
-    print(f"🔑 OpenAI API key loaded: ...{OPENAI_API_KEY[-4:]}")
-
-# ✅ Step 3: Set API key globally for OpenAI SDK
-openai.api_key = OPENAI_API_KEY
+# The v4 engine uses Claude, so a missing OpenAI key must not stop the app from
+# starting. It is only needed when ENGINE_VERSION=legacy.
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
 # ✅ GPT model to use
 GPT_MODEL = "gpt-4"

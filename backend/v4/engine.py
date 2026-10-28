@@ -284,3 +284,63 @@ def stats() -> dict:
         "label_days": learning.LABEL_DAYS,
         "network": nn.status(),
     }
+
+
+def trending(days: int = 14, limit: int = 8) -> dict:
+    """
+    What people believe right now, across all users: top themes with how many
+    beliefs mention them, the usual direction, a sample view (Claude's one-line
+    summary, never a user's own words), and the tickers most picked for it with
+    their graded track record.
+    """
+    from collections import Counter, defaultdict
+
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    rows = db.query(
+        "SELECT id, themes, direction, interpretation, source FROM beliefs "
+        "WHERE created_at >= ? AND source != 'seed_backfill' ORDER BY created_at DESC LIMIT 5000",
+        (cutoff,),
+    )
+    window = f"last {days} days"
+    if len(rows) < 5:  # quiet period: fall back to all recent history
+        rows = db.query(
+            "SELECT id, themes, direction, interpretation, source FROM beliefs "
+            "WHERE source != 'seed_backfill' ORDER BY created_at DESC LIMIT 5000"
+        )
+        window = "all time"
+    counts: Counter = Counter()
+    dirs: dict = defaultdict(Counter)
+    examples: dict = {}
+    ids_by_theme: dict = defaultdict(list)
+    for r in rows:
+        interp = db.loads(r["interpretation"], {})
+        for t in db.loads(r["themes"], [])[:3]:
+            counts[t] += 1
+            dirs[t][r["direction"] or "neutral"] += 1
+            ids_by_theme[t].append(r["id"])
+            if t not in examples and interp.get("summary"):
+                examples[t] = interp["summary"]
+    out = []
+    for theme, n in counts.most_common(limit):
+        ids = ids_by_theme[theme][:500]
+        ph = ",".join("?" for _ in ids)
+        top = db.query(
+            f"SELECT ticker, COUNT(*) AS n FROM picks WHERE belief_id IN ({ph}) AND shown = 1 "
+            f"GROUP BY ticker ORDER BY COUNT(*) DESC LIMIT 3",
+            ids,
+        )
+        stats = {s["ticker"]: s for s in learning.ticker_stats([theme], [t["ticker"] for t in top])} if top else {}
+        out.append({
+            "theme": theme,
+            "beliefs": n,
+            "direction": dirs[theme].most_common(1)[0][0],
+            "example": examples.get(theme, ""),
+            "tickers": [
+                {"ticker": t["ticker"], "picked": int(t["n"]),
+                 "graded": (stats.get(t["ticker"]) or {}).get("n", 0),
+                 "avg_vs_spy": (stats.get(t["ticker"]) or {}).get("mean"),
+                 "hit_rate": (stats.get(t["ticker"]) or {}).get("hit")}
+                for t in top
+            ],
+        })
+    return {"window": window, "themes": out}

@@ -1,0 +1,65 @@
+// Run: node frontend/src/lib/payoff.test.mjs
+import assert from 'node:assert/strict';
+import { bsPrice, buildModel, unitPnl, summarize, sizePosition, scenarios, money } from './payoff.js';
+
+const today = new Date('2026-10-27T15:00:00Z');
+const near = (a, b, tol) => assert.ok(Math.abs(a - b) <= tol, `${a} !~ ${b} (±${tol})`);
+
+// Black-Scholes sanity: put-call parity
+const S = 100, K = 100, T = 0.5, v = 0.3;
+near(bsPrice(S, K, T, v, 'call') - bsPrice(S, K, T, v, 'put'), S - K * Math.exp(-0.04 * T), 1e-3);
+assert.equal(bsPrice(120, 100, 0, v, 'call'), 20);
+
+// Bull call spread 205/230, debit 14.2 - 5.1 = 9.1
+const bcs = buildModel({ type: 'Bull Call Spread', vol: 0.3, trade_legs: [
+  { action: 'Buy', option_type: 'Call', strike_price: 205, est_premium: 14.2, quantity: 1, expiration: '2027-02-19', instrument: 'option' },
+  { action: 'Sell', option_type: 'Call', strike_price: 230, est_premium: 5.1, quantity: 1, expiration: '2027-02-19', instrument: 'option' },
+] }, 204.6, today);
+assert.equal(bcs.kind, 'options');
+near(bcs.capitalPerUnit, 910, 0.01);
+near(unitPnl(bcs, 150), -910, 0.01);          // below both strikes at expiry: lose the debit
+near(unitPnl(bcs, 300), 2500 - 910, 0.01);    // above both: width - debit
+const sb = summarize(bcs);
+near(sb.maxProfit, 1590, 1); near(sb.maxLoss, -910, 1);
+assert.equal(sb.breakevens.length, 1); near(sb.breakevens[0], 214.1, 0.3);
+assert.equal(sb.unlimitedUp, false);
+// before expiry the curve is smoother: value at the money is between the extremes
+const mid = unitPnl(bcs, 214.1, 30);
+assert.ok(mid > -910 && mid < 1590);
+
+// Sizing: $500 < one contract -> 1 contract with a note; $5000 -> 5 contracts
+assert.equal(sizePosition(bcs, 500).units, 1);
+assert.match(sizePosition(bcs, 500).note, /One contract/);
+assert.equal(sizePosition(bcs, 5000).units, 5);
+const sc = scenarios(bcs, 5000);
+assert.equal(sc.length, 3);
+near(sc[0].pnl, -4550, 1);                     // falls 20% -> lose 5 x 910
+
+// Long call: unlimited upside
+const lc = buildModel({ type: 'Long Call', vol: 0.3, trade_legs: [
+  { action: 'Buy', option_type: 'Call', strike_price: 100, est_premium: 8, quantity: 1, expiration: '2027-01-15', instrument: 'option' }] }, 100, today);
+assert.equal(summarize(lc).unlimitedUp, true);
+assert.equal(money(summarize(lc).maxProfit), 'Unlimited');
+
+// Iron condor: credit trade, capital = wing - credit
+const ic = buildModel({ type: 'Iron Condor', vol: 0.25, trade_legs: [
+  { action: 'Buy', option_type: 'Put', strike_price: 80, est_premium: 0.5, instrument: 'option', expiration: '2027-01-15' },
+  { action: 'Sell', option_type: 'Put', strike_price: 90, est_premium: 1.5, instrument: 'option', expiration: '2027-01-15' },
+  { action: 'Sell', option_type: 'Call', strike_price: 110, est_premium: 1.5, instrument: 'option', expiration: '2027-01-15' },
+  { action: 'Buy', option_type: 'Call', strike_price: 120, est_premium: 0.5, instrument: 'option', expiration: '2027-01-15' }] }, 100, today);
+near(ic.netPremium, -2, 1e-9);
+near(ic.capitalPerUnit, 800, 0.01);
+near(unitPnl(ic, 100), 200, 0.01);
+near(unitPnl(ic, 50), -800, 0.01);
+assert.equal(summarize(ic).breakevens.length, 2);
+
+// Stock
+const st = buildModel({ type: 'Buy Stock', trade_legs: [{ action: 'Buy', instrument: 'stock' }] }, 50, today);
+assert.equal(st.kind, 'stock');
+near(unitPnl(st, 60), 10, 1e-9);
+near(scenarios(st, 1000)[2].pnl, 200, 1e-6);   // +20% on $1000
+
+assert.equal(buildModel({ type: 'Sell / Avoid', trade_legs: [] }, 10).kind, 'avoid');
+assert.equal(money(-1234.4), '-$1,234');
+assert.equal(money(50, { sign: true }), '+$50');
+console.log('payoff tests passed');

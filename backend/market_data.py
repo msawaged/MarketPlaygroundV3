@@ -4,7 +4,7 @@
 # ⚠️ Fallbacks exist for local development/testing.
 
 import yfinance as yf
-from finnhub_client import get_finnhub_price, get_finnhub_high_low
+from backend.finnhub_client import get_finnhub_price, get_finnhub_high_low
 import os
 import requests
 from typing import Tuple, Optional  # add
@@ -16,6 +16,7 @@ _ALPACA_KEY = os.getenv("ALPACA_API_KEY")
 _ALPACA_SECRET = os.getenv("ALPACA_SECRET_KEY")
 _ALPACA_DATA_BASE = os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets")
 _ALPACA_PAPER = os.getenv("ALPACA_PAPER", "true").lower() in ("1", "true", "yes")
+_ALPACA_FEED = os.getenv("ALPACA_DATA_FEED", "iex")  # free-plan feed
 
 def _alpaca_headers():
     return {
@@ -27,7 +28,7 @@ def _alpaca_headers():
 def _get_latest_price_alpaca(ticker: str) -> float:
     """Last trade from Alpaca data API."""
     url = f"{_ALPACA_DATA_BASE}/v2/stocks/{ticker}/trades/latest"
-    r = requests.get(url, headers=_alpaca_headers(), timeout=5)
+    r = requests.get(url, headers=_alpaca_headers(), params={"feed": _ALPACA_FEED}, timeout=5)
     r.raise_for_status()
     data = r.json()
     price = data.get("trade", {}).get("p")
@@ -38,7 +39,7 @@ def _get_latest_price_alpaca(ticker: str) -> float:
 def _get_weekly_high_low_alpaca(ticker: str) -> Tuple[float, float]:
     """7 daily bars via Alpaca; returns (high,max), (low,min)."""
     url = f"{_ALPACA_DATA_BASE}/v2/stocks/{ticker}/bars"
-    params = {"timeframe": "1Day", "limit": 7, "adjustment": "all"}
+    params = {"timeframe": "1Day", "limit": 7, "adjustment": "all", "feed": _ALPACA_FEED}
     r = requests.get(url, headers=_alpaca_headers(), params=params, timeout=5)
     r.raise_for_status()
     data = r.json()

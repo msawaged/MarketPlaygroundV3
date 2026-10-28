@@ -155,6 +155,7 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
             "max_profit": "Unlimited" if structure == "Buy Stock" else None,
             "break_even": round(price, 2) if structure == "Buy Stock" else None,
             "estimated": False,
+            "vol": round(vol, 4),
         }
 
     exp = pick_expiry(as_of, horizon_days)
@@ -208,7 +209,7 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
         raise ValueError(f"unknown structure {structure}")
 
     return {"type": structure, "expiration": exp.isoformat(), "trade_legs": legs,
-            "net_cost": round(cost, 2), "estimated": True, **out}
+            "net_cost": round(cost, 2), "estimated": True, "vol": round(vol, 4), **out}
 
 
 def structure_return(trade: dict, entry_price: float, exit_price: float, entry: date, at: date, vol: float) -> Optional[float]:

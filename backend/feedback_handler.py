@@ -33,13 +33,18 @@ def load_feedback_model():
         print("⚠️ No trained feedback model found.")
         return None
 
-# Load model once at import time to reuse
-# === 🩹 TEMP PATCH: Prevent crash if feedback model is corrupted or missing ===
-try:
-    model = load_feedback_model()
-except Exception as e:
-    print(f"[⚠️ Feedback model disabled] {e}")
-    model = None
+_model_cache = {"loaded": False, "model": None}
+
+
+def _get_model():
+    """Load the legacy feedback model on first use (keeps app startup fast)."""
+    if not _model_cache["loaded"]:
+        try:
+            _model_cache["model"] = load_feedback_model()
+        except Exception as e:
+            print(f"[feedback model disabled] {e}")
+        _model_cache["loaded"] = True
+    return _model_cache["model"]
 
 
 def predict_feedback_label(belief: str, strategy: str) -> str:
@@ -49,6 +54,7 @@ def predict_feedback_label(belief: str, strategy: str) -> str:
 
     Returns 'unknown' if no model is loaded.
     """
+    model = _get_model()
     if not model:
         return "unknown"
     

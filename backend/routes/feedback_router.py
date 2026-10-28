@@ -8,8 +8,6 @@ import os
 import csv
 from datetime import datetime
 from backend.schemas import FeedbackRequest
-from backend.belief_parser import parse_belief
-from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief
 
 router = APIRouter()
 
@@ -37,6 +35,8 @@ def save_feedback_entry(data: dict):
 
 # ✅ Save training CSV if "good"
 def append_training_example(belief, strategy, risk_profile):
+    from backend.belief_parser import parse_belief  # legacy parser, loaded only when used
+    from backend.ai_engine.goal_evaluator import evaluate_goal_from_belief
     parsed = parse_belief(belief)
     goal = evaluate_goal_from_belief(belief)
 

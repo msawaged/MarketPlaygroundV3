@@ -4,7 +4,7 @@ from typing import Optional, Set
 
 _ALPACA_KEY = os.getenv("ALPACA_API_KEY", "")
 _ALPACA_SECRET = os.getenv("ALPACA_SECRET_KEY", "")
-_BASE = os.getenv("ALPACA_BASE_URL", "https://api.alpaca.markets")
+_BASE = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 _HEADERS = {"APCA-API-KEY-ID": _ALPACA_KEY, "APCA-API-SECRET-KEY": _ALPACA_SECRET}
 
 # 🟢 Debug: show which Alpaca key tail + env mode we’re using at import time

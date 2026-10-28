@@ -8,7 +8,8 @@ ROUTER = APIRouter(prefix="/ticker", tags=["ticker"])
 ALPACA_KEY = os.getenv("ALPACA_API_KEY", "")
 ALPACA_SECRET = os.getenv("ALPACA_SECRET_KEY", "")
 DATA_BASE = os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets")
-TRADE_BASE = os.getenv("ALPACA_TRADING_BASE", "https://paper-api.alpaca.markets")
+TRADE_BASE = os.getenv("ALPACA_TRADING_BASE", os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"))
+FEED = os.getenv("ALPACA_DATA_FEED", "iex")  # iex works on the free plan; sip needs a paid data plan
 
 HDRS = {
     "APCA-API-KEY-ID": ALPACA_KEY,
@@ -38,7 +39,7 @@ def _single_symbol_prices(sym: str) -> Dict[str, Any]:
 
     # latest bar (price)
     try:
-        lb = _get(f"{DATA_BASE}/v2/stocks/{sym}/bars/latest")
+        lb = _get(f"{DATA_BASE}/v2/stocks/{sym}/bars/latest", {"feed": FEED})
         bar = (lb or {}).get("bar") or {}
         out["price"] = _safe_float(bar.get("c"))
     except Exception:
@@ -46,7 +47,7 @@ def _single_symbol_prices(sym: str) -> Dict[str, Any]:
 
     # daily bars (prevClose)
     try:
-        hist = _get(f"{DATA_BASE}/v2/stocks/{sym}/bars", {"timeframe": "1Day", "limit": 2})
+        hist = _get(f"{DATA_BASE}/v2/stocks/{sym}/bars", {"timeframe": "1Day", "limit": 2, "feed": FEED})
         bars = hist.get("bars") or []
         if len(bars) >= 2:
             out["prevClose"] = _safe_float(bars[-2].get("c"))
@@ -58,7 +59,7 @@ def _single_symbol_prices(sym: str) -> Dict[str, Any]:
     # if price still None -> mid of latest quote
     if out["price"] is None:
         try:
-            lq = _get(f"{DATA_BASE}/v2/stocks/{sym}/quotes/latest")
+            lq = _get(f"{DATA_BASE}/v2/stocks/{sym}/quotes/latest", {"feed": FEED})
             q = (lq or {}).get("quote") or {}
             bp, ap = _safe_float(q.get("bp")), _safe_float(q.get("ap"))
             if bp is not None and ap is not None:
@@ -82,7 +83,7 @@ def get_prices(
 
     # Try batch snapshots first (best-effort). If plan blocks it, we fall back.
     try:
-        batch = _get(f"{DATA_BASE}/v2/stocks/snapshots", {"symbols": ",".join(symbols)})
+        batch = _get(f"{DATA_BASE}/v2/stocks/snapshots", {"symbols": ",".join(symbols), "feed": FEED})
         snaps = batch.get("snapshots") or {}
     except Exception as e:
         snaps = {}
@@ -154,7 +155,10 @@ def _load_assets() -> List[Dict[str, Any]]:
 @ROUTER.get("/search")
 def search_tickers(query: str = Query(..., min_length=1), limit: int = 10):
     q = query.strip().lower()
-    assets = _load_assets()
+    try:
+        assets = _load_assets()
+    except Exception:
+        return []  # market data unreachable: no suggestions rather than an error
     sym_starts, sym_contains, name_contains = [], [], []
     for a in assets:
         sym = (a.get("symbol") or "").upper()

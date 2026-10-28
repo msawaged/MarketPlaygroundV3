@@ -4,7 +4,12 @@ from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from backend.portfolio_handler import save_trade, get_portfolio
 from backend.analytics.portfolio_summary import summarize_user_portfolio, generate_portfolio_chart
-from backend.ai_engine.ai_engine import run_ai_engine
+from backend.engine_switch import run_belief as _run_belief
+
+
+def run_ai_engine(belief, risk_profile="moderate", user_id="system", **_):
+    """Kept for older call sites: now routed through the active engine (v4 by default)."""
+    return _run_belief(belief, user_id=user_id, risk_profile=risk_profile, source="system")
 import json
 import csv
 import os

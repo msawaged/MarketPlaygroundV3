@@ -33,7 +33,7 @@ def top_performing_strategies(metric: str = Query(default="pnl"), top_n: int = Q
         if not os.path.exists(path):
             raise HTTPException(status_code=404, detail="strategy_outcomes.csv not found")
 
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, on_bad_lines="skip", engine="python")
         if df.empty or "strategy" not in df.columns:
             raise HTTPException(status_code=400, detail="No strategy data available")
 
@@ -72,7 +72,7 @@ def strategy_summary(user_id: str = Query(default=None)):
         if not os.path.exists(path):
             raise HTTPException(status_code=404, detail="strategy_outcomes.csv not found")
 
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, on_bad_lines="skip", engine="python")
         if df.empty:
             raise HTTPException(status_code=400, detail="No strategy data available")
 

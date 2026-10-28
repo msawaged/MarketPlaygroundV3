@@ -39,10 +39,10 @@ class TradePreviewResponse(BaseModel):
     requires_confirmation: bool = True
 
 class TradeStatusResponse(BaseModel):
-    order_id: Optional[str]
+    order_id: Optional[str] = None
     status: str  # pending, confirmed, executed, failed, cancelled
-    execution_time: Optional[str]
-    error_message: Optional[str]
+    execution_time: Optional[str] = None
+    error_message: Optional[str] = None
 
 
 def calculate_trade_costs(strategy_data: Dict, investment_amount: float) -> Dict:

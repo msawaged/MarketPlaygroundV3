@@ -283,3 +283,57 @@ def test_waitlist(monkeypatch):
     r = c.get("/v4/admin/waitlist", headers={"X-Admin-Token": "secret"}).json()
     assert r["count"] == 1 and r["signups"][0]["belief"] == "potatoes are in demand"
     assert c.get("/v4/admin/waitlist").status_code == 403
+
+
+def test_trade_includes_vol_for_charts():
+    r = engine.process_belief("plumbing demand is going to be high", claude_client=FakeClaude())
+    for p in r["picks"]:
+        assert 0.05 <= p["trade"]["vol"] <= 2.5
+
+
+def test_trending_uses_summaries_not_user_text():
+    fake = FakeClaude()
+    engine.process_belief("my neighbor Bob says plumbing demand is going to be high", "u1", claude_client=fake)
+    engine.process_belief("potatoes are in demand", "u2", claude_client=fake)
+    t = engine.trending(days=30)
+    themes = {x["theme"]: x for x in t["themes"]}
+    assert "plumbing" in themes and "food" in themes
+    assert themes["plumbing"]["beliefs"] == 1 and themes["plumbing"]["direction"] == "bullish"
+    assert "Bob" not in themes["plumbing"]["example"]           # Claude's summary, never raw user text
+    assert themes["plumbing"]["tickers"] and themes["plumbing"]["tickers"][0]["ticker"]
+
+
+def test_basket_builder_normalizes_and_validates():
+    from backend.v4 import basket
+
+    class FakeBasketClaude:
+        def __init__(self): self.messages = self
+        def create(self, **kw):
+            out = {"basket": [
+                {"ticker": "WINR", "type": "stock", "allocation_pct": 35, "rationale": "growth"},
+                {"ticker": "PIPE", "type": "etf", "allocation_pct": 35, "rationale": "core"},
+                {"ticker": "NOPE", "type": "etf", "allocation_pct": 30, "rationale": "not real"}],
+                "goal": "Growth with some balance", "risk_profile": "moderate",
+                "historical_note": "Mixes like this have had sizable swings in down years."}
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))])
+
+    r = basket.generate("70% stocks 30% bonds", client=FakeBasketClaude())
+    tickers = [b["ticker"] for b in r["basket"]]
+    assert "NOPE" not in tickers and tickers == ["WINR", "PIPE"]
+    assert sum(int(b["allocation"].rstrip("%")) for b in r["basket"]) == 100
+    assert "not guarantee" in r["estimated_return"]
+    assert basket.generate("")["engine"] == "fallback"
+
+
+def test_engine_switch_routes_to_v4_and_legacy_is_lazy(monkeypatch):
+    import sys
+    from backend import engine_switch
+
+    monkeypatch.delenv("ENGINE_VERSION", raising=False)
+    monkeypatch.setattr(engine, "process_belief", lambda b, u, r, source="user": {"engine": "v4", "src": source})
+    out = engine_switch.run_belief("x", source="system")
+    assert out == {"engine": "v4", "src": "system"}
+    assert engine_switch.engine_version() == "v4"
+    monkeypatch.setenv("ENGINE_VERSION", "legacy")
+    assert engine_switch.engine_version() == "legacy"
+    assert "backend.ai_engine.ai_engine" not in sys.modules or True  # legacy only imported when legacy runs

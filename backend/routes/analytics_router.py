@@ -23,7 +23,7 @@ def strategy_summary(user_id: Optional[str] = None, ticker: Optional[str] = None
     if not os.path.exists(file_path):
         return {"detail": "No outcomes logged yet."}
 
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, on_bad_lines="skip", engine="python")
 
     # Filter by user_id if provided
     if user_id and "user_id" in df.columns:

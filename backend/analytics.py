@@ -93,7 +93,7 @@ def generate_strategy_distribution_chart(top_n: int = 10):
     if not os.path.exists(outcomes_path):
         raise ValueError("No strategy outcome data found.")
 
-    df = pd.read_csv(outcomes_path)
+    df = pd.read_csv(outcomes_path, on_bad_lines="skip", engine="python")
 
     if df.empty or "strategy" not in df.columns:
         raise ValueError("No strategy data available for charting.")
@@ -122,7 +122,7 @@ def save_strategy_distribution_chart_to_file(filepath="strategy_distribution_cha
     if not os.path.exists(outcomes_path):
         raise ValueError("No strategy outcome data found.")
 
-    df = pd.read_csv(outcomes_path)
+    df = pd.read_csv(outcomes_path, on_bad_lines="skip", engine="python")
     if df.empty or "strategy" not in df.columns:
         raise ValueError("No strategy data available for charting.")
 

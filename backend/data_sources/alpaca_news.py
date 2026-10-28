@@ -14,7 +14,7 @@
 #   - ALPACA_API_KEY
 #   - ALPACA_API_SECRET
 # OPTIONAL:
-#   - ALPACA_BASE_URL (defaults to https://data.alpaca.markets)
+#   - ALPACA_DATA_BASE (defaults to https://data.alpaca.markets)
 #
 # FUNCTIONS:
 #   - search_news(query, since_days=14, limit=50, include_content=False)
@@ -35,7 +35,7 @@ import requests
 # ------------------------------------------------------------
 # CONFIG: Load API keys + base URL
 # ------------------------------------------------------------
-ALPACA_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://data.alpaca.markets")
+ALPACA_BASE_URL = os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets")  # data API (not the trading API)
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")
 ALPACA_API_SECRET = os.getenv("ALPACA_API_SECRET")
 

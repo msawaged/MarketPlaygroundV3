@@ -6,7 +6,6 @@ from typing import Optional, Dict, Any
 import math
 import json
 
-from backend.ai_engine.ai_engine import run_ai_engine
 from backend.feedback_handler import save_feedback_entry
 from backend.logger.strategy_logger import log_strategy
 from backend.alpaca_orders import AlpacaExecutor
@@ -82,6 +81,7 @@ def process_belief(request: BeliefRequest):
             except v4_engine.BeliefError as e:
                 raise HTTPException(status_code=400, detail=str(e))
         else:
+            from backend.ai_engine.ai_engine import run_ai_engine
             result = run_ai_engine(request.belief)
         result["user_id"] = request.user_id
         
@@ -213,7 +213,7 @@ def strategy_summary(user_id: Optional[str] = Query(default=None)):
         if not os.path.exists(path):
             raise HTTPException(status_code=404, detail="strategy_outcomes.csv not found")
 
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, on_bad_lines="skip", engine="python")
         if df.empty or "belief" not in df.columns:
             raise HTTPException(status_code=400, detail="No strategy data available")
 
