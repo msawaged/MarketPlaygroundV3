@@ -73,3 +73,17 @@ PYTHONPATH=./ python -m pytest backend/v4/tests -q
 
 Option premiums are Black-Scholes estimates from realized volatility, used to
 grade structures consistently. Check live quotes before placing real orders.
+
+## Proving the learning works (offline, free)
+
+```bash
+PYTHONPATH=./ python -m backend.v4.ml_check --quick
+```
+
+Builds a fake market where the right answers are known, runs the real engine → grader → network
+on it, and checks: (1) with a real signal the network gets promoted and improves the top pick over
+Claude alone, (2) on pure noise it is never promoted. Last run: promoted on signal at 800 practice
+beliefs in both seeds, never promoted on noise, peak memory ~225 MB.
+
+Admin view of every network version: `GET /v4/admin/ml` with header `X-Admin-Token`.
+Public, plain-English view: `GET /v4/learning` (the app's "How it learns" page).
