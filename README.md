@@ -19,7 +19,7 @@ Type what you believe about the world ("plumbing demand is about to boom", "air 
 1. Render → New → Blueprint → this repo and branch.
 2. Paste `ANTHROPIC_API_KEY`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` when asked.
 3. After the first deploy, check the backend's URL on its Render page. If it isn't
-   `https://marketplayground-backend.onrender.com`, set `VITE_API_BASE` on `marketplayground-web`
+   `https://marketplayground-backend-18mm.onrender.com`, set `VITE_API_BASE` on `marketplayground-web`
    to the real URL and redeploy the website.
 4. Visit `<backend>/health` to confirm keys and database are set (it shows true/false only).
 5. Seed the learning once: see `backend/v4/README.md`.

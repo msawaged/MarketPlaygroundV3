@@ -60,7 +60,7 @@ services:
       # Backend address. If Render gives the backend a different URL (shown on its page),
       # update this and redeploy the website.
       - key: VITE_API_BASE
-        value: https://marketplayground-backend.onrender.com
+        value: https://marketplayground-backend-18mm.onrender.com
       - key: NODE_VERSION
         value: "22"
 

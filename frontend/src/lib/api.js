@@ -2,11 +2,11 @@
 // One place for the backend address and every call the app makes.
 //
 // Backend address, in order:
-//   1. VITE_API_BASE (set it in Render / .env.local), e.g. https://marketplayground-backend.onrender.com
+//   1. VITE_API_BASE (set it in Render / .env.local), e.g. https://marketplayground-backend-18mm.onrender.com
 //   2. http://localhost:8000 when the app itself runs on localhost
 //   3. the default Render backend URL
 
-const PROD_DEFAULT = "https://marketplayground-backend.onrender.com";
+const PROD_DEFAULT = "https://marketplayground-backend-18mm.onrender.com";
 const isLocal = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
 export const API_BASE = (import.meta.env.VITE_API_BASE || (isLocal ? "http://localhost:8000" : PROD_DEFAULT)).replace(/\/$/, "");
