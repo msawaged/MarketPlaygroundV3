@@ -59,6 +59,24 @@ def default_structure(direction: str, horizon_days: int, conviction: str, risk_p
     return "Iron Condor"
 
 
+OPTION_STRUCTURES = {"Long Call", "Bull Call Spread", "Long Put", "Bear Put Spread", "Iron Condor"}
+
+
+def vary_structure(structure: str, direction: str, risk_profile: str, rank: int, is_etf: bool, price: float) -> tuple[str, str]:
+    """
+    Give each belief a mix of ways to trade it instead of three copies of one structure.
+    - Cheap stocks (< $10) get shares: their options are usually thin and costly to trade.
+    - Balanced (moderate), bullish: funds and the 2nd idea are shares, so there's always a simple
+      share-based option next to the options spreads. Bold stays all-options; Careful is all shares already.
+    """
+    risk = (risk_profile or "moderate").lower()
+    if structure in OPTION_STRUCTURES and price < 10:
+        return ("Buy Stock" if direction == "bullish" else "Sell / Avoid"), "low price: options are thin"
+    if risk == "moderate" and direction == "bullish" and structure in OPTION_STRUCTURES and (is_etf or rank == 1):
+        return "Buy Stock", "mix: a simple share-based idea"
+    return structure, ""
+
+
 def choose_structure(
     direction: str,
     horizon_days: int,

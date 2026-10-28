@@ -145,6 +145,10 @@ def process_belief(
     for final_rank, v in enumerate(valid):
         sstats = learning.structure_stats(v["direction"], interp["horizon_days"])
         structure, why = strategy.choose_structure(v["direction"], interp["horizon_days"], interp["conviction"], risk_profile, sstats)
+        if why == "rule":
+            structure, mix_why = strategy.vary_structure(structure, v["direction"], risk_profile, final_rank,
+                                                         bool(v["info"].get("is_etf")), float(v["price"]))
+            why = mix_why or why
         trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]), interp["horizon_days"])
         pick_id = f"p-{uuid.uuid4().hex[:16]}"
         shown = final_rank < SHOW_TOP

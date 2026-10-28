@@ -412,3 +412,13 @@ def test_network_blend_can_reorder_picks():
     out = nn.on_claude_scale([0.001, 0.003, -0.002], [0.8, 0.7, 0.6])
     assert out.index(max(out)) == 1
     assert abs(sum(out) / 3 - 0.7) < 1e-9
+
+
+def test_balanced_results_mix_shares_and_options():
+    fake = FakeClaude()
+    r = engine.process_belief("plumbing demand is going to be high", "u-mix", "moderate", claude_client=fake)
+    shown = [p["structure"] for p in r["picks"] if p["shown"]]
+    assert "Buy Stock" in shown and any(s in strategy.OPTION_STRUCTURES for s in shown)
+    bold = engine.process_belief("plumbing demand is going to be high", "u-mix", "aggressive", claude_client=fake)
+    assert all(p["structure"] in strategy.OPTION_STRUCTURES for p in bold["picks"] if p["shown"] and p["price"] >= 10)
+    assert strategy.vary_structure("Bull Call Spread", "bullish", "aggressive", 0, False, 5.0)[0] == "Buy Stock"
