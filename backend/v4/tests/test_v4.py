@@ -685,7 +685,7 @@ def test_email_verification_and_password_reset(monkeypatch):
     tok = mailer._sent_for_tests[-1]["text"].split("verify?token=")[1].split()[0]
     v = c.post("/v4/auth/verify", json={"token": tok}).json()
     assert v["account"]["email"] == "new@example.com" and v["token"]
-    assert c.post("/v4/auth/verify", json={"token": tok}).status_code == 400  # one use only
+    assert c.post("/v4/auth/verify", json={"token": tok}).status_code == 409  # second open: already confirmed, no new session
     assert c.post("/v4/auth/login", json={"email": "new@example.com", "password": "a good password"}).status_code == 200
     # forgot password
     c.post("/v4/auth/forgot", json={"email": "new@example.com"})

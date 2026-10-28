@@ -1,5 +1,6 @@
 // Landing pages for email links: /verify?token=... (confirm email) and /reset?token=... (new password).
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useAccount } from '../lib/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Page, { Card } from './ui/Page';
 import { verifyEmail, resetPassword } from '../lib/auth';
@@ -7,10 +8,14 @@ import { verifyEmail, resetPassword } from '../lib/auth';
 export function VerifyPage() {
   const navigate = useNavigate(); const loc = useLocation();
   const [s, setS] = useState({ busy: true });
+  const account = useAccount();
+  const tried = useRef(null);
   useEffect(() => {
     const t = new URLSearchParams(loc.search).get('token');
     if (!t) { setS({ error: 'This link is missing its code.' }); return; }
-    verifyEmail(t).then(() => setS({ ok: true })).catch((e) => setS({ error: e.message }));
+    if (tried.current === t) return;   // never spend the same link twice
+    tried.current = t;
+    verifyEmail(t).then(() => setS({ ok: true })).catch((e) => setS(e.status === 409 ? { already: true } : { error: e.message }));
   }, [loc.search]);
   return (
     <Page title="Confirm email">
@@ -21,6 +26,12 @@ export function VerifyPage() {
           <div className="mt-2 text-xl font-extrabold">You're in!</div>
           <p className="mt-1 text-sm text-slate-300">Your email is confirmed and you're logged in.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold">Share your first belief</button>
+        </>)}
+        {s.already && (<>
+          <div className="text-4xl" aria-hidden>✅</div>
+          <div className="mt-2 text-xl font-extrabold">Your email is confirmed</div>
+          <p className="mt-1 text-sm text-slate-300">{account ? "You're all set." : 'Log in with your email and password to continue.'}</p>
+          <button onClick={() => navigate(account ? '/chat' : '/account?mode=login')} className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold">{account ? 'Share a belief' : 'Log in'}</button>
         </>)}
         {s.error && (<>
           <div className="text-lg font-bold">That didn't work</div>

@@ -118,6 +118,11 @@ def _new_email_token(account_id: str, kind: str, hours: int) -> str:
 def _use_email_token(token: str, kind: str) -> dict:
     row = db.query_one("SELECT * FROM email_tokens WHERE token_hash = ? AND kind = ?",
                        (hashlib.sha256((token or "").encode()).hexdigest(), kind))
+    if row and row["used"] and kind == "verify":
+        acc = db.query_one("SELECT verified FROM accounts WHERE id = ?", (row["account_id"],))
+        if acc and acc.get("verified"):
+            # Opened twice (or a mail app pre-opened it): the email IS confirmed, so say so.
+            raise AuthError("Your email is already confirmed. Log in to continue.", 409)
     if not row or row["used"] or row["expires_at"] < _now().isoformat():
         raise AuthError("That link has expired or was already used. Ask for a new one.", 400)
     db.execute("UPDATE email_tokens SET used = 1 WHERE token_hash = ?", (row["token_hash"],))
