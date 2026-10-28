@@ -16,20 +16,12 @@ import math
 from datetime import date, timedelta
 from typing import Optional
 
-STRUCTURES = (
-    "Buy Stock",
-    "Long Call",
-    "Bull Call Spread",
-    "Long Put",
-    "Bear Put Spread",
-    "Iron Condor",
-    "Long Straddle",
-    "Long Strangle",
-    "Sell / Avoid",
-)
-BULLISH = {"Buy Stock", "Long Call", "Bull Call Spread"}
-BEARISH = {"Long Put", "Bear Put Spread", "Sell / Avoid"}
-VOLATILE = {"Long Straddle", "Long Strangle"}  # big move expected, direction unknown
+from . import library
+
+STRUCTURES = tuple(library.LIB)  # the full library: see library.py
+BULLISH = {n for n, m in library.LIB.items() if "bullish" in m["dirs"]}
+BEARISH = {n for n, m in library.LIB.items() if "bearish" in m["dirs"]}
+VOLATILE = {n for n, m in library.LIB.items() if "volatile" in m["dirs"] and m["family"] == "options"}
 RISK_FREE = 0.04
 
 
@@ -173,7 +165,8 @@ def pick_expiry(as_of: date, horizon_days: int) -> date:
     return exp
 
 
-def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: date, horizon_days: int) -> dict:
+def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: date, horizon_days: int,
+                target_price: float = 0.0) -> dict:
     """Legs + estimated economics for one structure."""
     if structure in ("Buy Stock", "Sell / Avoid"):
         action = "Buy" if structure == "Buy Stock" else "Sell / avoid"
@@ -194,11 +187,11 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
     sd = price * vol * math.sqrt(t)
     legs: list[dict] = []
 
-    def leg(action: str, kind: str, k: float) -> dict:
+    def leg(action: str, kind: str, k: float, qty: int = 1) -> dict:
         prem = bs_price(price, k, t, vol, kind)
         legs.append({
             "action": action, "ticker": ticker, "option_type": kind.capitalize(),
-            "strike_price": k, "expiration": exp.isoformat(), "quantity": 1,
+            "strike_price": k, "expiration": exp.isoformat(), "quantity": qty,
             "est_premium": round(prem, 2), "instrument": "option",
         })
         return {"k": k, "p": prem}
@@ -250,11 +243,19 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
         cost = a["p"] + b["p"]
         out = {"max_loss": round(cost * 100, 2), "max_profit": "Unlimited",
                "break_even": f"{round(kp - cost, 2)} / {round(kc + cost, 2)}"}
+    elif structure in library.LIB:
+        if structure in library.HAS_STOCK:
+            legs.append(library.stock_leg(ticker, price))
+        library.build(structure, ticker, price, sd, lambda x: round_strike(x, price), strike_step(price), leg, target_price)
+        out, cost = {}, 0.0
     else:
         raise ValueError(f"unknown structure {structure}")
 
+    econ = library.economics(legs, price)  # read off the payoff: one method for every structure
     return {"type": structure, "expiration": exp.isoformat(), "trade_legs": legs,
-            "net_cost": round(cost, 2), "estimated": True, "vol": round(vol, 4), **out}
+            "net_cost": econ["net_cost"], "capital": econ["capital"], "estimated": True, "vol": round(vol, 4),
+            "max_loss": econ["max_loss"], "max_profit": econ["max_profit"], "break_even": econ["break_even"],
+            "plain": library.PLAIN.get(structure, "")}
 
 
 def structure_return(trade: dict, entry_price: float, exit_price: float, entry: date, at: date, vol: float) -> Optional[float]:
@@ -268,23 +269,66 @@ def structure_return(trade: dict, entry_price: float, exit_price: float, entry: 
         return exit_price / entry_price - 1.0
     if st == "Sell / Avoid":
         return 0.0
-    legs = [l for l in trade.get("trade_legs", []) if l.get("instrument") == "option"]
+    all_legs = trade.get("trade_legs", [])
+    legs = [l for l in all_legs if l.get("instrument") == "option"]
     if not legs:
         return None
+    shares = sum(l.get("quantity", 100) for l in all_legs if l.get("instrument") == "stock")
     exp = date.fromisoformat(legs[0]["expiration"])
     t_entry = max((exp - entry).days, 1) / 365.0
     t_now = max((exp - at).days, 0) / 365.0
     v0 = v1 = 0.0
     for l in legs:
-        sign = 1.0 if l["action"] == "Buy" else -1.0
+        sign = (1.0 if l["action"] == "Buy" else -1.0) * l.get("quantity", 1)
         kind = l["option_type"].lower()
-        v0 += sign * bs_price(entry_price, l["strike_price"], t_entry, vol, kind)
-        v1 += sign * bs_price(exit_price, l["strike_price"], t_now, vol, kind)
-    pnl = v1 - v0
-    if st == "Iron Condor":
-        strikes = sorted(l["strike_price"] for l in legs)
-        width = max(strikes[1] - strikes[0], strikes[3] - strikes[2])
-        risk = max(width + v0, 0.01)  # v0 is negative (credit)
+        v0 += sign * bs_price(entry_price, l["strike_price"], t_entry, vol, kind) * 100
+        v1 += sign * bs_price(exit_price, l["strike_price"], t_now, vol, kind) * 100
+    pnl = (v1 - v0) + shares * (exit_price - entry_price)
+    if shares:
+        risk = shares * entry_price + v0
     else:
-        risk = max(abs(v0), 0.01)
-    return max(-1.0, pnl / risk)
+        risk = library.economics([dict(l, est_premium=bs_price(entry_price, l["strike_price"], t_entry, vol, l["option_type"].lower()))
+                                  for l in legs], entry_price)["max_loss"]
+    return max(-1.0, pnl / max(risk, 0.01))
+
+
+def normalize_prefs(prefs: Optional[dict]) -> dict:
+    p = prefs or {}
+    inst = str(p.get("instrument") or "auto").lower()
+    goal = str(p.get("goal") or "").lower()
+    return {"instrument": inst if inst in ("auto", "shares", "options") else "auto",
+            "goal": goal if goal in library.GOALS else ""}
+
+
+def select(direction: str, horizon_days: int, conviction: str, risk: str, prefs: dict, *, claude_pick: str = "",
+           claude_why: str = "", stats: Optional[dict] = None, rank: int = 0, is_etf: bool = False,
+           price: float = 100.0, target_price: float = 0.0) -> tuple[str, str]:
+    """Pick the structure for one pick. Returns (structure, plain-words reason)."""
+    risk = (risk or "moderate").lower()
+    opts = library.allowed(direction, risk, prefs["instrument"], prefs["goal"], target_price)
+    if not opts:
+        opts = library.allowed(direction, risk, "auto", "", target_price) or ["Sell / Avoid"]
+    if price < 10 and any(library.LIB[o]["family"] == "options" for o in opts):
+        thin = "Buy Stock" if direction == "bullish" else "Sell / Avoid"
+        return thin, "Options on stocks under $10 are usually thin and costly to trade, so this uses shares."
+    if claude_pick in opts:
+        structure, why = claude_pick, claude_why or "Best fit for this company and your settings."
+    elif prefs["goal"] or prefs["instrument"] != "auto":
+        structure, why = opts[0], "Best fit for what you said matters most."
+    else:
+        structure, why = default_structure(direction, horizon_days, conviction, risk), "rule"
+        if structure not in opts:
+            structure = opts[0]
+        structure, mix = vary_structure(structure, direction, risk, rank, is_etf, price)
+        why = mix or "Fits your belief's direction, time frame and risk level."
+    # The shared track record can swap in a structure that has clearly done better (same allowed set).
+    if stats:
+        base = (stats.get(structure) or {}).get("mean")
+        best, best_mean = structure, base if base is not None else -1e9
+        for s_ in opts:
+            st = stats.get(s_) or {}
+            if st.get("n", 0) >= 40 and st.get("mean") is not None and st["mean"] > best_mean + 0.02:
+                best, best_mean = s_, st["mean"]
+        if best != structure:
+            return best, f"Learned: {best} has done better than {structure} for beliefs like this."
+    return structure, why

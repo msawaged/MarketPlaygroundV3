@@ -11,6 +11,7 @@ import ReplayPanel from './ReplayPanel';
 import { shareCard } from '../../lib/shareCard';
 import { useBroker } from '../../lib/broker';
 import RealMoneySheet from './RealMoneySheet';
+import StrategyGuide from './StrategyGuide';
 
 const PLAIN = {
   'Buy Stock': 'Own the shares. You gain if the price rises; your risk is what you put in.',
@@ -67,7 +68,7 @@ function Stat({ label, value, tone }) {
   );
 }
 
-export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine }) {
+export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine, prefs, onTune }) {
   const navigate = useNavigate();
   const [shared, setShared] = useState(null);
   const [replay, setReplay] = useState(null);
@@ -194,6 +195,10 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
       )}
 
       <div className="px-4 pt-3">
+        <StrategyGuide current={data.prefs || prefs} onTune={onTune} />
+      </div>
+
+      <div className="px-4 pt-3">
         <ReplayPanel picks={picks} onResult={setReplay} />
       </div>
 
@@ -264,11 +269,15 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 {/spread/i.test(pick.structure) ? <Term k="spread">{pick.structure}</Term>
                   : /condor/i.test(pick.structure) ? <Term k="iron condor">{pick.structure}</Term>
                   : /straddle/i.test(pick.structure) ? <Term k="straddle">{pick.structure}</Term>
-                  : /strangle/i.test(pick.structure) ? <Term k="strangle">{pick.structure}</Term> : pick.structure}
+                  : /strangle/i.test(pick.structure) ? <Term k="strangle">{pick.structure}</Term>
+                  : <Term k={pick.structure.toLowerCase()}>{pick.structure}</Term>}
               </div>
               {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || ''}</p>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || pick.trade?.plain || ''}</p>
+            {pick.structure_reason && pick.structure_reason !== 'rule' && (
+              <p className="text-xs text-blue-200 mt-1.5 leading-relaxed"><span className="font-semibold">Why this strategy: </span>{pick.structure_reason}</p>
+            )}
             {isOptions && model?.daysToExp > 0 && (
               <p className="text-[11px] text-slate-500 mt-1.5">
                 ⏳ {model.daysToExp} days until it expires. Options lose value as time passes, so we never suggest ones with under 30 days left.

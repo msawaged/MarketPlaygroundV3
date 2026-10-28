@@ -38,6 +38,7 @@ class BeliefRequest(BaseModel):
     user_id: Optional[str] = "anonymous"
     place_order: Optional[bool] = False
     risk_profile: Optional[str] = "moderate"
+    prefs: Optional[dict] = None  # {"instrument": auto|shares|options, "goal": upside|limited|income|protect}
 
 
 def _use_v4() -> bool:
@@ -77,7 +78,7 @@ def process_belief(request: BeliefRequest):
             from backend.v4 import engine as v4_engine
             try:
                 result = v4_engine.process_belief(request.belief, request.user_id or "anonymous",
-                                                  request.risk_profile or "moderate")
+                                                  request.risk_profile or "moderate", prefs=request.prefs)
             except v4_engine.BeliefError as e:
                 raise HTTPException(status_code=400, detail=str(e))
         else:

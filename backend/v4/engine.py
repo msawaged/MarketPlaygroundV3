@@ -36,7 +36,7 @@ def _norm(text: str) -> str:
 
 
 def _cached_interpretation(norm: str, risk: str) -> Optional[tuple[dict, dict]]:
-    key = hashlib.sha1(f"{norm}|{risk}".encode()).hexdigest()
+    key = hashlib.sha1(f"{norm}|{risk}".encode()).hexdigest()  # risk carries the prefs too (see process_belief)
     row = db.query_one("SELECT v, created_at FROM kv_cache WHERE k = ?", (key,))
     if not row:
         return None
@@ -63,6 +63,7 @@ def process_belief(
     source: str = "user",
     model: Optional[str] = None,
     claude_client: Any = None,
+    prefs: Optional[dict] = None,
 ) -> dict:
     belief = (belief or "").strip()
     if not belief:
@@ -77,17 +78,19 @@ def process_belief(
     norm = _norm(belief)
 
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
-    cached = None if backfill else _cached_interpretation(norm, risk_profile)
+    prefs = strategy.normalize_prefs(prefs)
+    cache_key = f"{risk_profile}|{prefs['instrument']}|{prefs['goal']}"
+    cached = None if backfill else _cached_interpretation(norm, cache_key)
     if cached:
         interp, usage = cached
     else:
         context = learning.build_context(belief)
         interp, usage = interpreter.interpret(
             belief, risk_profile, as_of=as_of if backfill else None,
-            context=context, model=model, client=claude_client,
+            context=context, model=model, client=claude_client, prefs=prefs,
         )
         if not backfill:
-            _store_interpretation(norm, risk_profile, interp, usage)
+            _store_interpretation(norm, cache_key, interp, usage)
 
     belief_id = f"b-{uuid.uuid4().hex[:16]}"
     now = datetime.now(timezone.utc).isoformat()
@@ -95,7 +98,7 @@ def process_belief(
         "belief_id": belief_id, "user_id": user_id, "risk_profile": risk_profile,
         "interpretation": {k: interp.get(k) for k in ("summary", "causal_chain", "themes", "horizon_days", "conviction", "direction",
                                                       "wrong_if", "exit_rule", "clarify_question", "clarify_options")},
-        "engine": "v4", "usage": usage,
+        "engine": "v4", "usage": usage, "prefs": prefs,
     }
 
     if not interp.get("is_market_belief") or not interp.get("candidates"):
@@ -145,12 +148,14 @@ def process_belief(
     rows_picks, rows_themes = [], []
     for final_rank, v in enumerate(valid):
         sstats = learning.structure_stats(v["direction"], interp["horizon_days"])
-        structure, why = strategy.choose_structure(v["direction"], interp["horizon_days"], interp["conviction"], risk_profile, sstats)
-        if why == "rule":
-            structure, mix_why = strategy.vary_structure(structure, v["direction"], risk_profile, final_rank,
-                                                         bool(v["info"].get("is_etf")), float(v["price"]))
-            why = mix_why or why
-        trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]), interp["horizon_days"])
+        tp = float(interp.get("target_price") or 0) if final_rank == 0 else 0.0
+        structure, why = strategy.select(
+            v["direction"], interp["horizon_days"], interp["conviction"], risk_profile, prefs,
+            claude_pick=v.get("strategy", ""), claude_why=v.get("strategy_why", ""), stats=sstats, rank=final_rank,
+            is_etf=bool(v["info"].get("is_etf")), price=float(v["price"]), target_price=tp,
+        )
+        trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
+                                     interp["horizon_days"], target_price=tp if structure == "Long Call Butterfly" else 0.0)
         pick_id = f"p-{uuid.uuid4().hex[:16]}"
         shown = final_rank < SHOW_TOP
         pick = {

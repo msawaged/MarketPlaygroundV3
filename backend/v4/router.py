@@ -19,6 +19,7 @@ class BeliefIn(BaseModel):
     belief: str
     user_id: str = "anonymous"
     risk_profile: str = "moderate"
+    prefs: Optional[dict] = None
 
 
 class WaitlistIn(BaseModel):
@@ -44,9 +45,9 @@ def _check_admin(token: Optional[str]) -> None:
         raise HTTPException(status_code=403, detail="admin token required (set MP_ADMIN_TOKEN)")
 
 
-async def run_belief(belief: str, user_id: str, risk_profile: str) -> dict:
+async def run_belief(belief: str, user_id: str, risk_profile: str, prefs: Optional[dict] = None) -> dict:
     try:
-        return await run_in_threadpool(engine.process_belief, belief, user_id, risk_profile)
+        return await run_in_threadpool(lambda: engine.process_belief(belief, user_id, risk_profile, prefs=prefs))
     except engine.BeliefError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except interpreter.InterpreterError as e:
@@ -57,7 +58,7 @@ async def run_belief(belief: str, user_id: str, risk_profile: str) -> dict:
 
 @router.post("/belief")
 async def post_belief(body: BeliefIn):
-    return await run_belief(body.belief, body.user_id, body.risk_profile)
+    return await run_belief(body.belief, body.user_id, body.risk_profile, body.prefs)
 
 
 @router.post("/feedback")

@@ -596,3 +596,44 @@ def test_big_move_beliefs_get_straddles_and_strangles():
     assert all(p["structure"] in strategy.VOLATILE or p["price"] < 10 for p in shown)
     # graded on size of move vs the market, not up/down
     grader.grade()
+
+
+def test_strategy_library_and_preferences():
+    from backend.v4 import library
+    # every structure builds, and its economics come off the payoff
+    for name in strategy.STRUCTURES:
+        tr = strategy.build_trade(name, "WINR", 100.0, 0.35, TODAY, 90, target_price=110 if "Butterfly" in name else 0)
+        assert tr["type"] == name
+    cc = strategy.build_trade("Covered Call", "WINR", 100.0, 0.35, TODAY, 90)
+    assert [l["instrument"] for l in cc["trade_legs"]] == ["stock", "option"] and cc["max_profit"] != "Unlimited"
+    pp = strategy.build_trade("Protective Put", "WINR", 100.0, 0.35, TODAY, 90)
+    assert pp["max_profit"] == "Unlimited" and pp["max_loss"] < 2000  # the put puts a floor under 100 shares
+    csp = strategy.build_trade("Cash-Secured Put", "WINR", 100.0, 0.35, TODAY, 90)
+    k = csp["trade_legs"][0]["strike_price"]
+    assert abs(csp["capital"] - (k * 100 - csp["trade_legs"][0]["est_premium"] * 100)) < 30
+    assert strategy.structure_return(cc, 100, 120, TODAY, TODAY + timedelta(days=95), 0.35) > 0
+    assert strategy.structure_return(pp, 100, 60, TODAY, TODAY + timedelta(days=95), 0.35) > -0.2  # floor works
+
+    P = strategy.normalize_prefs
+    assert library.allowed("bullish", "moderate", "shares") == ["Buy Stock"]
+    assert library.allowed("bullish", "moderate", "options", "income")[0] == "Cash-Secured Put"
+    assert "Long Call" not in library.allowed("bullish", "conservative", "options")
+    assert "Long Call Butterfly" not in library.allowed("bullish", "aggressive")  # needs a target price
+    s, why = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options", "goal": "protect"}), claude_pick="Long Call")
+    assert s == "Protective Put"  # Claude's pick ignored: it doesn't serve the goal
+    s, why = strategy.select("bullish", 90, "medium", "moderate", P({}), claude_pick="Covered Call", claude_why="Earns income.")
+    assert s == "Covered Call" and why == "Earns income."
+    s, _ = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options"}), price=6.0)
+    assert s == "Buy Stock"  # options on a $6 stock are thin
+
+    payload = default_interp("plumbing")
+    for c in payload["candidates"]:
+        c["strategy"], c["strategy_why"] = "Cash-Secured Put", "Get paid to wait."
+    r = engine.process_belief("plumbing demand rises a lot", "u-p", "moderate", claude_client=FakeClaude(payload),
+                              prefs={"instrument": "options", "goal": "income"})
+    shown = [p for p in r["picks"] if p["shown"]]
+    assert r["prefs"] == {"instrument": "options", "goal": "income"}
+    assert all(p["structure"] == "Cash-Secured Put" and p["structure_reason"] == "Get paid to wait." for p in shown)
+    r2 = engine.process_belief("plumbing demand rises a lot", "u-p", "moderate", claude_client=FakeClaude(payload),
+                               prefs={"instrument": "shares"})
+    assert all(p["structure"] == "Buy Stock" for p in r2["picks"] if p["shown"])

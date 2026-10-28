@@ -9,6 +9,7 @@ import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
 import Term from './ui/Term';
 import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
+import { getPrefs } from '../lib/prefs';
 
 const EXAMPLES = [
   'Plumbing demand is about to boom',
@@ -110,10 +111,11 @@ export default function ChatInterface() {
     return () => clearInterval(id);
   }, [loading]);
 
-  const send = async (text, riskOverride) => {
+  const send = async (text, riskOverride, prefsOverride) => {
     const belief = (text ?? input).trim();
     if (!belief || loading) return;
     const useRisk = riskOverride || risk;
+    const usePrefs = prefsOverride || getPrefs();
     setInput('');
     if (showHow) { setShowHow(false); markSeen('how'); }
     rememberBelief(belief);
@@ -121,13 +123,13 @@ export default function ChatInterface() {
     setMessages((m) => [...m, { id: Date.now(), role: 'user', text: belief, risk: riskOverride ? useRisk : null }]);
     setLoading(true);
     try {
-      const data = await processBelief(belief, { riskProfile: useRisk });
+      const data = await processBelief(belief, { riskProfile: useRisk, prefs: usePrefs });
       if (!data?.strategy || !data?.picks?.length) {
         setMessages((m) => [...m, { id: Date.now() + 1, role: 'ai', suggest: true, text: data?.reason || "I couldn't turn that into a trade idea. Try saying what you think will grow, shrink, or change." }]);
       } else {
         setMessages((m) => [...m, {
-          id: Date.now() + 1, role: 'ai', data, belief, risk: useRisk,
-          text: riskOverride ? `Here's a ${RISK_LABEL[useRisk].toLowerCase()} version.` : "Here's how you could trade that.",
+          id: Date.now() + 1, role: 'ai', data, belief, risk: useRisk, prefs: usePrefs,
+          text: prefsOverride ? "Here it is with the strategy you picked." : riskOverride ? `Here's a ${RISK_LABEL[useRisk].toLowerCase()} version.` : "Here's how you could trade that.",
         }]);
       }
     } catch (e) {
@@ -288,7 +290,8 @@ export default function ChatInterface() {
                       </div>
                     )}
                     {m.data && (
-                      <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} onRefine={(o) => send(`${m.belief} (${o})`, m.risk || undefined)} />
+                      <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} onRefine={(o) => send(`${m.belief} (${o})`, m.risk || undefined)}
+                        prefs={m.prefs} onTune={(p) => send(m.belief, m.risk || undefined, p)} />
                     )}
                   </div>
                 )}

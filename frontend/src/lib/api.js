@@ -49,10 +49,10 @@ export async function request(path, { method = "GET", body, signal } = {}) {
 }
 
 /** Belief -> strategy (v4 engine behind the existing endpoint). */
-export function processBelief(belief, { riskProfile = "moderate", signal } = {}) {
+export function processBelief(belief, { riskProfile = "moderate", prefs = null, signal } = {}) {
   return request("/strategy/process_belief", {
     method: "POST",
-    body: { belief, user_id: userId(), risk_profile: riskProfile },
+    body: { belief, user_id: userId(), risk_profile: riskProfile, prefs },
     signal,
   });
 }

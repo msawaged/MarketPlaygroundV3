@@ -99,3 +99,28 @@ console.log('payoff tests passed');
   if (!/up or down/.test(txt) || !/exactly \$100/.test(txt)) throw new Error('straddle text: ' + txt);
   console.log('straddle ok');
 }
+
+// shares + options, income strategies
+{
+  const { buildModel, summarize, plainEnglish, sizePosition } = await import('./payoff.js');
+  const exp = '2027-01-15', T = new Date('2026-10-27T12:00:00Z');
+  const cc = buildModel({ type: 'Covered Call', vol: 0.3, trade_legs: [
+    { instrument: 'stock', action: 'Buy', quantity: 100, ticker: 'X' },
+    { instrument: 'option', action: 'Sell', option_type: 'Call', strike_price: 110, est_premium: 3, expiration: exp }] }, 100, T);
+  const s1 = summarize(cc);
+  if (Math.abs(cc.capitalPerUnit - 9700) > 1) throw new Error('covered call capital ' + cc.capitalPerUnit);
+  if (s1.unlimitedUp || Math.abs(s1.maxProfit - 1300) > 5) throw new Error('covered call max profit ' + s1.maxProfit);
+  if (Math.abs(s1.breakevens[0] - 97) > 0.5) throw new Error('covered call breakeven ' + s1.breakevens);
+  const csp = buildModel({ type: 'Cash-Secured Put', vol: 0.3, trade_legs: [
+    { instrument: 'option', action: 'Sell', option_type: 'Put', strike_price: 90, est_premium: 2, expiration: exp }] }, 100, T);
+  if (Math.abs(csp.capitalPerUnit - 8800) > 20) throw new Error('csp capital ' + csp.capitalPerUnit);
+  if (sizePosition(csp, 1000).note.indexOf('needs about') < 0) throw new Error('csp sizing note');
+  const t1 = plainEnglish(csp, summarize(csp), 1, 'X', 1000).map((l) => l.text).join(' | ');
+  if (!/set aside/.test(t1) || !/buy the shares at that price/.test(t1)) throw new Error('csp text ' + t1);
+  const pp = buildModel({ type: 'Protective Put', vol: 0.3, trade_legs: [
+    { instrument: 'stock', action: 'Buy', quantity: 100, ticker: 'X' },
+    { instrument: 'option', action: 'Buy', option_type: 'Put', strike_price: 90, est_premium: 2, expiration: exp }] }, 100, T);
+  const s3 = summarize(pp);
+  if (!s3.unlimitedUp || Math.abs(s3.maxLoss + 1200) > 5) throw new Error('protective put ' + s3.maxLoss);
+  console.log('income + protection ok');
+}

@@ -37,7 +37,7 @@ SCHEMA: dict[str, Any] = {
     "required": [
         "is_market_belief", "note", "summary", "direction", "horizon_days",
         "conviction", "themes", "causal_chain", "candidates",
-        "wrong_if", "exit_rule", "clarify_question", "clarify_options",
+        "wrong_if", "exit_rule", "clarify_question", "clarify_options", "target_price",
     ],
     "properties": {
         "is_market_belief": {"type": "boolean"},
@@ -51,13 +51,14 @@ SCHEMA: dict[str, Any] = {
         "wrong_if": {"type": "array", "items": {"type": "string"}},
         "exit_rule": {"type": "string"},
         "clarify_question": {"type": "string"},
+        "target_price": {"type": "number"},
         "clarify_options": {"type": "array", "items": {"type": "string"}},
         "candidates": {
             "type": "array",
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["ticker", "name", "exposure", "direction", "rationale", "score"],
+                "required": ["ticker", "name", "exposure", "direction", "rationale", "score", "strategy", "strategy_why"],
                 "properties": {
                     "ticker": {"type": "string"},
                     "name": {"type": "string"},
@@ -65,6 +66,8 @@ SCHEMA: dict[str, Any] = {
                     "direction": {"type": "string", "enum": ["bullish", "bearish", "volatile"]},
                     "rationale": {"type": "string"},
                     "score": {"type": "number"},
+                    "strategy": {"type": "string"},
+                    "strategy_why": {"type": "string"},
                 },
             },
         },
@@ -88,6 +91,28 @@ Return:
 - wrong_if: 2-3 short, observable signs that the belief is failing (e.g. "Housing starts fall two months in a row"). Plain words, no jargon.
 - exit_rule: one plain sentence a beginner can follow to get out (e.g. "Sell if it drops 10% from where you bought, or if two of the signs above happen.").
 - clarify_question / clarify_options: if ONE short question would clearly change which companies fit (region, time frame, which part of the trend), ask it with 2-3 short tappable options (each under 25 characters). Otherwise return "" and []. Still return your best-guess candidates either way.
+
+- target_price: if the belief names a price target for the main company ("AAPL hits 250"), that number; otherwise 0.
+- strategy / strategy_why: for each candidate, the single best way to trade it from the STRATEGY LIBRARY below, given its direction, the time frame, the user's risk profile and the user's preferences (if any). One plain sentence on why (no jargon, e.g. "Earns cash while you wait to buy it cheaper."). Respect the preferences: "shares" means only Buy Stock / Sell / Avoid; "options" means only options strategies; a goal means pick a strategy that serves it. Careful (conservative) users: only defined-risk or income strategies (Buy Stock, Bull Call Spread, Bear Put Spread, Cash-Secured Put, Covered Call, Protective Put, Collar, Sell / Avoid).
+
+STRATEGY LIBRARY (name: when it fits):
+- Buy Stock: bullish, simplest; also for funds/ETFs.
+- Sell / Avoid: bearish or no clear trade; stay out or trim.
+- Long Call: strongly bullish, wants big upside, accepts losing the premium.
+- Bull Call Spread: bullish, wants a cheaper bet with capped risk and capped gain.
+- Bull Put Spread: mildly bullish, wants income; keeps the credit if the stock stays up.
+- Cash-Secured Put: bullish long-term, happy to buy lower; gets paid to wait.
+- Covered Call: owns or will own 100 shares, mildly bullish or flat, wants income.
+- Protective Put: owns the stock and worries about a drop; insurance with open upside.
+- Collar: owns the stock, wants cheap protection, OK capping upside.
+- Long Put: strongly bearish, wants big payoff from a fall.
+- Bear Put Spread: bearish with capped risk.
+- Bear Call Spread: mildly bearish, wants income; keeps the credit if the stock stays down.
+- Iron Condor: expects a calm, range-bound stock; income.
+- Iron Butterfly: expects the stock to sit very near today's price; bigger income, narrower.
+- Long Call Butterfly: has a specific target price on a date (needs target_price).
+- Long Straddle: expects a big move either way, wants the most exposure.
+- Long Strangle: expects a big move either way, wants it cheaper.
 
 Rules:
 - Only real, currently listed US tickers in uppercase. No OTC, no foreign-only listings, no crypto.
@@ -131,8 +156,12 @@ def _context_block(context: Optional[dict]) -> str:
     return "\n".join(lines)
 
 
-def build_user_message(belief: str, risk_profile: str, as_of: Optional[date], context: Optional[dict]) -> str:
+def build_user_message(belief: str, risk_profile: str, as_of: Optional[date], context: Optional[dict],
+                       prefs: Optional[dict] = None) -> str:
     parts = [f"Belief: {belief.strip()}", f"User risk profile: {risk_profile}"]
+    if prefs and (prefs.get("instrument", "auto") != "auto" or prefs.get("goal")):
+        parts.append(f"User preferences: trade with {prefs.get('instrument', 'auto')}"
+                     + (f"; what matters most: {prefs['goal']}" if prefs.get("goal") else ""))
     if as_of:
         parts.append(f"As of: {as_of.isoformat()}")
     ctx = _context_block(context)
@@ -153,10 +182,16 @@ def _sanitize(out: dict) -> dict:
         seen.add(t)
         c["ticker"] = t
         c["score"] = float(max(0.0, min(1.0, c.get("score") or 0.5)))
+        c["strategy"] = str(c.get("strategy") or "").strip()
+        c["strategy_why"] = str(c.get("strategy_why") or "").strip()[:200]
         cands.append(c)
     out["candidates"] = cands[:12]
     out["wrong_if"] = [str(w).strip() for w in (out.get("wrong_if") or []) if str(w).strip()][:3]
     out["exit_rule"] = str(out.get("exit_rule") or "").strip()
+    try:
+        out["target_price"] = max(0.0, float(out.get("target_price") or 0))
+    except (TypeError, ValueError):
+        out["target_price"] = 0.0
     opts = [str(o).strip()[:40] for o in (out.get("clarify_options") or []) if str(o).strip()][:3]
     q = str(out.get("clarify_question") or "").strip()
     out["clarify_question"], out["clarify_options"] = (q, opts) if q and len(opts) >= 2 else ("", [])
@@ -170,6 +205,7 @@ def interpret(
     context: Optional[dict] = None,
     model: Optional[str] = None,
     client: Any = None,
+    prefs: Optional[dict] = None,
 ) -> tuple[dict, dict]:
     """Returns (interpretation, usage) where usage = {model, input_tokens, output_tokens, cost_usd}."""
     model = model or DEFAULT_MODEL
@@ -178,7 +214,7 @@ def interpret(
         model=model,
         max_tokens=int(os.getenv("MP_CLAUDE_MAX_TOKENS", "3000")),
         system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": build_user_message(belief, risk_profile, as_of, context)}],
+        messages=[{"role": "user", "content": build_user_message(belief, risk_profile, as_of, context, prefs)}],
         extra_body={
             "output_config": {
                 "effort": os.getenv("MP_CLAUDE_EFFORT", "low"),

@@ -22,6 +22,17 @@ export const GLOSSARY = {
   'straddle': ['Straddle', 'Buying a call and a put at the same strike. It pays when the stock makes a big move in either direction, and loses when it sits still.'],
   'strangle': ['Strangle', 'Like a straddle, but the call is above and the put below today\'s price. It costs less, and needs a bigger move to pay off.'],
   'big move': ['Big move', 'You expect a large swing but not which way: think a make-or-break earnings report or a court ruling.'],
+  'covered call': ['Covered call', 'You own 100 shares and sell someone the right to buy them at a higher price. You get paid now; if the stock shoots past that price, your shares get sold there.'],
+  'cash-secured put': ['Cash-secured put', 'You get paid now for agreeing to buy 100 shares at a lower price. The cash to buy them is set aside. If the stock stays up, you just keep the payment.'],
+  'protective put': ['Protective put', 'Insurance for shares you own: a put lets you sell at a set price, so your loss has a floor.'],
+  'collar': ['Collar', 'Shares plus a put below (your floor) and a call sold above (your ceiling). The call pays for most of the insurance.'],
+  'bull put spread': ['Bull put spread', 'Sell a put and buy a lower one. You collect cash up front and keep it if the stock stays above your strike. Risk is capped.'],
+  'bear call spread': ['Bear call spread', 'Sell a call and buy a higher one. You collect cash up front and keep it if the stock stays below your strike. Risk is capped.'],
+  'iron butterfly': ['Iron butterfly', 'Like an iron condor, but betting the stock ends very close to today\'s price. Pays more, wins in a narrower range.'],
+  'long call butterfly': ['Call butterfly', 'Three call strikes that pay the most if the stock lands right on your target price at expiration. Cheap, with capped risk.'],
+  'long call': ['Long call', 'The right to buy 100 shares at a set price. Big upside if the stock rises; you can lose what you paid.'],
+  'long put': ['Long put', 'The right to sell 100 shares at a set price. It pays if the stock falls; you can lose what you paid.'],
+  'buy stock': ['Buying shares', 'Owning a piece of the company (or a fund). Simple: you make or lose what the price does.'],
   'iron condor': ['Iron condor', 'Four options that pay you if the stock stays inside a range. You collect money up front; you lose if it breaks out.'],
 };
 
