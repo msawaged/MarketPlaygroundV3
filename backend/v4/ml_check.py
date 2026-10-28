@@ -152,7 +152,7 @@ def run_world(signal: bool, n_beliefs: int, seed: int = 1) -> dict:
     t0 = time.time()
     # Past beliefs spread over ~3 years (like the backfill seeder), graded with real prices.
     for i in range(n_beliefs):
-        as_of = TODAY - timedelta(days=rnd.randint(45, 1095))
+        as_of = TODAY - timedelta(days=rnd.randint(100, 1095))
         while as_of.weekday() >= 5:
             as_of -= timedelta(days=1)
         engine.process_belief(f"{_belief_text(rnd)} #{i}", "sim", rnd.choice(["conservative", "moderate", "aggressive"]),

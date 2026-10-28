@@ -37,7 +37,9 @@ import numpy as np
 
 from . import db
 
-LABEL_DAYS = int(os.getenv("MP_LABEL_DAYS", "30"))
+# 90 days: in the offline check this got promoted only on real signal, while 30-day labels were
+# too noisy to ever clear the bar. (Track record in learning.py stays at 30 days: it reacts faster.)
+LABEL_DAYS = int(os.getenv("MP_NN_LABEL_DAYS", "90"))
 MIN_TRAIN = int(os.getenv("MP_NN_MIN_TRAIN", "300"))
 MIN_TEST = int(os.getenv("MP_NN_MIN_TEST", "80"))
 MAX_WEIGHT = float(os.getenv("MP_NN_MAX_WEIGHT", "0.6"))

@@ -104,7 +104,7 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
     max_days = int(365 * years)
 
     def one(text: str) -> dict:
-        as_of = _random_past_weekday(45, max_days) if mode == "backfill" else None
+        as_of = _random_past_weekday(100, max_days) if mode == "backfill" else None
         return engine.process_belief(
             text, user_id="seed", risk_profile=random.choice(RISKS), as_of=as_of,
             source="seed_backfill" if mode == "backfill" else "seed_live",
