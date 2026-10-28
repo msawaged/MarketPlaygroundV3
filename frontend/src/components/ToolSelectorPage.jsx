@@ -7,6 +7,7 @@ import BottomNavigation from './BottomNavigation';
 import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
 import { themeLabel } from '../lib/text';
+import { useAccount, initials } from '../lib/auth';
 
 const ROTATE = [
   'plumbing demand is about to boom',
@@ -30,6 +31,7 @@ export default function ToolSelectorPage() {
   const [i, setI] = useState(0);
   const [hot, setHot] = useState([]);
   const recent = recentBeliefs();
+  const acc = useAccount();
 
   useEffect(() => {
     const id = setInterval(() => setI((x) => (x + 1) % ROTATE.length), 2600);
@@ -50,9 +52,20 @@ export default function ToolSelectorPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-black shadow-lg shadow-blue-600/30">M</div>
-            <div className="font-bold">MarketPlayground</div>
+            <div>
+              <div className="font-bold leading-tight">MarketPlayground</div>
+              <div className="text-[10px] font-bold tracking-wider uppercase text-blue-300">Free beta</div>
+            </div>
           </div>
-          <span className="text-[10px] font-bold tracking-wider uppercase text-blue-200 bg-blue-500/15 border border-blue-400/30 rounded-full px-2.5 py-1">Free beta</span>
+          {acc ? (
+            <button onClick={() => navigate('/account')} aria-label="Your account" className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-extrabold shadow-lg shadow-blue-700/30">
+              {initials(acc)}
+            </button>
+          ) : (
+            <button onClick={() => navigate('/account?mode=login')} className="text-sm font-bold text-white bg-slate-800/80 border border-slate-600 rounded-full px-4 py-2 hover:border-blue-400">
+              Log in
+            </button>
+          )}
         </div>
 
         <h1 className="mt-8 text-[2.6rem] leading-[1.05] font-extrabold tracking-tight">

@@ -212,6 +212,22 @@ def _schema() -> list[str]:
             source TEXT,
             created_at TEXT NOT NULL
         )""",
+        """CREATE TABLE IF NOT EXISTS accounts (
+            id TEXT PRIMARY KEY,
+            uid TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL UNIQUE,
+            name TEXT,
+            pw_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            last_login TEXT
+        )""",
+        """CREATE TABLE IF NOT EXISTS sessions (
+            token_hash TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_sessions_account ON sessions(account_id)",
         """CREATE TABLE IF NOT EXISTS kv_cache (
             k TEXT PRIMARY KEY,
             v TEXT NOT NULL,

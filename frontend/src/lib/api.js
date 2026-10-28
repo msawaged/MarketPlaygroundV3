@@ -26,11 +26,15 @@ export function userId() {
   }
 }
 
-async function request(path, { method = "GET", body, signal } = {}) {
+function authHeader() {
+  try { const t = localStorage.getItem("mp_token"); return t ? { Authorization: `Bearer ${t}` } : {}; } catch { return {}; }
+}
+
+export async function request(path, { method = "GET", body, signal } = {}) {
   const r = await fetch(`${API_BASE}${path}`, {
     method,
     signal,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...authHeader() },
     body: body ? JSON.stringify(body) : undefined,
   });
   let data = null;

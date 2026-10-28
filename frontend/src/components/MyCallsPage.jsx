@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Page, { Card, pct } from './ui/Page';
 import Term from './ui/Term';
 import { getMyBeliefs } from '../lib/api';
+import { useAccount } from '../lib/auth';
 
 function ago(iso) {
   const d = (Date.now() - new Date(iso).getTime()) / 86400000;
@@ -28,6 +29,7 @@ function Ring({ ahead, total }) {
 export default function MyCallsPage() {
   const navigate = useNavigate();
   const [s, setS] = useState({ loading: true });
+  const acc = useAccount();
 
   useEffect(() => {
     let alive = true;
@@ -69,6 +71,13 @@ export default function MyCallsPage() {
         </Card>
       )}
 
+      {!acc && beliefs.length > 0 && (
+        <button onClick={() => navigate('/account?next=/my')} className="mt-4 w-full text-left rounded-3xl border border-blue-400/40 bg-blue-500/10 p-4 hover:border-blue-300">
+          <div className="font-bold">💾 Keep these on every device</div>
+          <div className="text-sm text-slate-300">Create a free account. Takes 20 seconds; everything here comes with you.</div>
+        </button>
+      )}
+
       <div className="mt-4 space-y-3">
         {beliefs.map((b, i) => (
           <motion.div key={b.belief_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
@@ -104,7 +113,7 @@ export default function MyCallsPage() {
 
       {beliefs.length > 0 && (
         <p className="mt-5 text-[11px] text-slate-500 leading-relaxed">
-          Numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls. Options would have moved differently. Saved on this device only.
+          Numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls. Options would have moved differently. {acc ? 'Saved to your account.' : 'Saved on this device only.'}
         </p>
       )}
     </Page>

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import db, engine, grader, interpreter, market, nn
+from . import auth, db, engine, grader, interpreter, market, nn
 
 router = APIRouter()
 
@@ -84,6 +84,103 @@ async def get_trending(days: int = 14, limit: int = 8):
 @router.get("/stats")
 async def get_stats():
     return await run_in_threadpool(engine.stats)
+
+
+# ---------------- accounts ----------------
+
+class SignupIn(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = ""
+    device_id: Optional[str] = None
+
+
+class LoginIn(BaseModel):
+    email: str
+    password: str
+    device_id: Optional[str] = None
+
+
+class ProfileIn(BaseModel):
+    name: str = ""
+
+
+class PasswordIn(BaseModel):
+    current: str
+    new: str
+
+
+class DeleteIn(BaseModel):
+    password: str
+
+
+def _token(authorization: Optional[str]) -> Optional[str]:
+    if authorization and authorization.lower().startswith("bearer "):
+        return authorization[7:].strip()
+    return None
+
+
+async def _auth_call(fn, *args):
+    try:
+        return await run_in_threadpool(fn, *args)
+    except auth.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+
+
+@router.post("/auth/signup")
+async def auth_signup(body: SignupIn):
+    return await _auth_call(auth.signup, body.email, body.password, body.name or "", body.device_id)
+
+
+@router.post("/auth/login")
+async def auth_login(body: LoginIn):
+    return await _auth_call(auth.login, body.email, body.password, body.device_id)
+
+
+@router.get("/auth/me")
+async def auth_me(authorization: Optional[str] = Header(None)):
+    acc = await _auth_call(auth.require, _token(authorization))
+    return {"account": auth._public(acc)}
+
+
+@router.post("/auth/logout")
+async def auth_logout(authorization: Optional[str] = Header(None)):
+    await _auth_call(auth.logout, _token(authorization))
+    return {"ok": True}
+
+
+@router.post("/auth/profile")
+async def auth_profile(body: ProfileIn, authorization: Optional[str] = Header(None)):
+    return {"account": await _auth_call(auth.update_profile, _token(authorization), body.name)}
+
+
+@router.post("/auth/password")
+async def auth_password(body: PasswordIn, authorization: Optional[str] = Header(None)):
+    await _auth_call(auth.change_password, _token(authorization), body.current, body.new)
+    return {"ok": True}
+
+
+@router.post("/auth/delete")
+async def auth_delete(body: DeleteIn, authorization: Optional[str] = Header(None)):
+    await _auth_call(auth.delete_account, _token(authorization), body.password)
+    return {"ok": True}
+
+
+class ResetIn(BaseModel):
+    email: str
+
+
+@router.post("/admin/reset_password")
+async def admin_reset(body: ResetIn, x_admin_token: Optional[str] = Header(None)):
+    _check_admin(x_admin_token)
+    return {"temporary_password": await _auth_call(auth.admin_reset_password, body.email)}
+
+
+@router.get("/admin/accounts")
+async def admin_accounts(x_admin_token: Optional[str] = Header(None)):
+    _check_admin(x_admin_token)
+    rows = await run_in_threadpool(db.query, "SELECT email, name, created_at, last_login FROM accounts ORDER BY created_at DESC")
+    return {"count": len(rows), "accounts": rows}
 
 
 @router.get("/learning")

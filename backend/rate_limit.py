@@ -22,6 +22,8 @@ COSTLY_PREFIXES = (
     "/market-events/strategies",
     "/news/ingest",
     "/alpaca/preview_trade",
+    "/v4/auth/login",   # slows down password guessing
+    "/v4/auth/signup",
 )
 
 _lock = threading.Lock()

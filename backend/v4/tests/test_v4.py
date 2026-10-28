@@ -44,7 +44,7 @@ def env(tmp_path, monkeypatch):
         monkeypatch.setenv("DATABASE_URL", pg)
         import psycopg
         with psycopg.connect(pg) as conn:
-            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist CASCADE")
+            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist, accounts, sessions CASCADE")
     else:
         monkeypatch.delenv("DATABASE_URL", raising=False)
         monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
@@ -422,3 +422,66 @@ def test_balanced_results_mix_shares_and_options():
     bold = engine.process_belief("plumbing demand is going to be high", "u-mix", "aggressive", claude_client=fake)
     assert all(p["structure"] in strategy.OPTION_STRUCTURES for p in bold["picks"] if p["shown"] and p["price"] >= 10)
     assert strategy.vary_structure("Bull Call Spread", "bullish", "aggressive", 0, False, 5.0)[0] == "Buy Stock"
+
+
+def _client():
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    return TestClient(app)
+
+
+def test_accounts_signup_login_merge_and_delete(monkeypatch):
+    from backend.v4 import auth
+    c = _client()
+    fake = FakeClaude()
+    dev1, dev2 = "u-11111111-aaaa", "u-22222222-bbbb"
+    engine.process_belief("plumbing demand is going to be high", dev1, claude_client=fake)
+    engine.process_belief("potatoes are in demand", dev2, claude_client=fake)
+
+    r = c.post("/v4/auth/signup", json={"email": "Pat@Example.com", "password": "short", "device_id": dev1})
+    assert r.status_code == 400
+    r = c.post("/v4/auth/signup", json={"email": "Pat@Example.com", "password": "correct horse", "name": "Pat", "device_id": dev1})
+    assert r.status_code == 200, r.text
+    tok = r.json()["token"]; acc = r.json()["account"]
+    assert acc["email"] == "pat@example.com" and acc["uid"] == dev1 and acc["name"] == "Pat"
+    stored = db.query_one("SELECT pw_hash FROM accounts")["pw_hash"]
+    assert "correct horse" not in stored and stored.startswith("scrypt$")
+    assert c.post("/v4/auth/signup", json={"email": "pat@example.com", "password": "another one"}).status_code == 409
+
+    assert c.get("/v4/auth/me", headers={"Authorization": f"Bearer {tok}"}).json()["account"]["email"] == "pat@example.com"
+    assert c.get("/v4/auth/me", headers={"Authorization": "Bearer nope"}).status_code == 401
+
+    assert c.post("/v4/auth/login", json={"email": "pat@example.com", "password": "wrong pass"}).status_code == 401
+    r = c.post("/v4/auth/login", json={"email": " PAT@example.com", "password": "correct horse", "device_id": dev2})
+    assert r.status_code == 200 and r.json()["moved_beliefs"] == 1
+    tok2 = r.json()["token"]
+    assert len(engine.my_beliefs(dev1)["beliefs"]) == 2  # both devices' beliefs now under the account
+
+    # change password signs out other sessions
+    h2 = {"Authorization": f"Bearer {tok2}"}
+    assert c.post("/v4/auth/password", json={"current": "correct horse", "new": "battery staple"}, headers=h2).status_code == 200
+    assert c.get("/v4/auth/me", headers={"Authorization": f"Bearer {tok}"}).status_code == 401
+    assert c.get("/v4/auth/me", headers=h2).status_code == 200
+
+    assert c.post("/v4/auth/logout", headers=h2).status_code == 200
+    assert c.get("/v4/auth/me", headers=h2).status_code == 401
+
+    r = c.post("/v4/auth/login", json={"email": "pat@example.com", "password": "battery staple"})
+    h3 = {"Authorization": f"Bearer {r.json()['token']}"}
+    assert c.post("/v4/auth/delete", json={"password": "nope nope"}, headers=h3).status_code == 401
+    assert c.post("/v4/auth/delete", json={"password": "battery staple"}, headers=h3).status_code == 200
+    assert db.query_one("SELECT COUNT(*) AS n FROM accounts")["n"] == 0
+    assert engine.my_beliefs(dev1)["beliefs"] == []  # detached from the person, kept for learning
+    assert db.query_one("SELECT COUNT(*) AS n FROM beliefs")["n"] == 2
+
+
+def test_admin_password_reset(monkeypatch):
+    monkeypatch.setenv("MP_ADMIN_TOKEN", "secret")
+    c = _client()
+    c.post("/v4/auth/signup", json={"email": "sam@example.com", "password": "first password"})
+    assert c.post("/v4/admin/reset_password", json={"email": "sam@example.com"}).status_code == 403
+    temp = c.post("/v4/admin/reset_password", json={"email": "sam@example.com"}, headers={"X-Admin-Token": "secret"}).json()["temporary_password"]
+    assert c.post("/v4/auth/login", json={"email": "sam@example.com", "password": temp}).status_code == 200
+    assert c.get("/v4/admin/accounts", headers={"X-Admin-Token": "secret"}).json()["count"] == 1
