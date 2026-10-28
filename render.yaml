@@ -48,8 +48,10 @@ services:
   - type: web
     runtime: static
     name: marketplayground-web
-    buildCommand: "cd frontend && npm ci && npm run build"
-    staticPublishPath: frontend/dist
+    # rootDir keeps Render from seeing the backend's requirements.txt and trying to pip-install it here.
+    rootDir: frontend
+    buildCommand: "npm ci && npm run build"
+    staticPublishPath: dist
     routes:
       - type: rewrite
         source: /*
@@ -59,6 +61,8 @@ services:
       # update this and redeploy the website.
       - key: VITE_API_BASE
         value: https://marketplayground-backend.onrender.com
+      - key: NODE_VERSION
+        value: "22"
 
   # (v4) The hourly news-ingestor cron was removed: it wrote headlines to a local file that
   #      Render erases after each run, so it cost money and kept nothing. Code: backend/news_ingestor.py.
