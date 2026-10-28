@@ -68,7 +68,7 @@ export default function BasketBuilderPage() {
   const items = result?.basket || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pb-28">
+    <div className="min-h-screen mp-bg text-white pb-28">
       <div className="max-w-lg mx-auto px-4" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <h1 className="text-3xl font-extrabold">Build a basket</h1>
         <p className="mt-1 text-slate-300">Describe what you want your money to do. You'll get a simple mix of funds.</p>

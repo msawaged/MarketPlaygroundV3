@@ -18,6 +18,7 @@ export const GLOSSARY = {
   'fit': ['Fit with your belief', "How directly this company or fund is tied to what you believe, according to the AI. It's not a prediction of returns."],
   'track record': ['Track record', 'How past picks for similar beliefs actually did against the S&P 500, graded automatically after 30 days.'],
   'vs s&p': ['vs S&P 500', 'How much better or worse a pick did than simply owning the S&P 500, in the direction the belief expected.'],
+  'risk level': ['Careful · Balanced · Bold', 'Careful leans on shares, funds and capped-risk trades. Balanced mixes shares and spreads. Bold allows options that can move a lot, both ways. You can switch any time, or tap Safer/Bolder on a result.'],
   'iron condor': ['Iron condor', 'Four options that pay you if the stock stays inside a range. You collect money up front; you lose if it breaks out.'],
 };
 

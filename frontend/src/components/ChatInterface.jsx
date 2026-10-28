@@ -7,6 +7,7 @@ import { processBelief } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
 import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
+import Term from './ui/Term';
 import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
 
 const EXAMPLES = [
@@ -126,12 +127,13 @@ export default function ChatInterface() {
       <div className="shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <TickerStrip />
         <header className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black">M</div>
+          <a href="/select-tool" aria-label="Home" className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-black">M</a>
           <div className="min-w-0">
-            <h1 className="font-bold leading-tight truncate">MarketPlayground</h1>
-            <p className="text-[11px] text-blue-300 truncate">Your belief. The right strategy.</p>
+            <h1 className="font-bold leading-tight truncate">Believe</h1>
+            <p className="text-[11px] text-blue-300 truncate">MarketPlayground</p>
           </div>
-          <div className="ml-auto flex rounded-lg bg-slate-800 p-0.5" role="radiogroup" aria-label="Risk level">
+          <span className="ml-auto text-[11px] text-slate-400 hidden min-[380px]:inline"><Term k="risk level">Risk</Term></span>
+          <div className="flex rounded-lg bg-slate-800 p-0.5" role="radiogroup" aria-label="Risk level">
             {RISK.map((r) => (
               <button
                 key={r.id}
