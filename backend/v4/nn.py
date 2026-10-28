@@ -50,6 +50,12 @@ NUMERIC = [
     "has_claude", "claude_score", "claude_rank_frac", "n_cands", "is_etf", "backfill",
 ]
 
+# Stored with every pick for analysis, but NOT fed to the network: training data is mostly
+# backfill (where Claude's score is hidden) while live picks have it, so feeding it would
+# make live inputs look unlike anything the network trained on. Claude's view is blended
+# in separately, with a weight the walk-forward test earns (see train()).
+MODEL_NUMERIC = [k for k in NUMERIC if k not in ("has_claude", "claude_score", "claude_rank_frac", "backfill")]
+
 _load_lock = threading.Lock()
 _loaded: dict = {"at": 0.0, "row": None, "model": None}
 
@@ -114,6 +120,20 @@ def _vectorizers():
     return tv, ch
 
 
+def on_claude_scale(preds, claude_parts) -> list[float]:
+    """Put network predictions on the same spread as one belief's Claude scores.
+
+    The network predicts small excess returns (often within a few %), so a fixed
+    mapping makes every candidate look alike and the network can never change the
+    order. Standardize within the belief, then use Claude's spread (at least 0.08)."""
+    p = np.asarray(preds, dtype=float)
+    c = np.asarray(claude_parts, dtype=float)
+    if len(p) < 2 or p.std() < 1e-9:
+        return list(c)
+    z = np.clip((p - p.mean()) / p.std(), -2.0, 2.0)
+    return list(c.mean() + z * max(float(c.std()), 0.08))
+
+
 def _clip(v: float) -> float:
     if v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v))):
         return 0.0
@@ -126,7 +146,7 @@ def vectorize(records: list[dict]):
     tv, ch = _vectorizers()
     xt = tv.transform([r["text"] for r in records])
     xc = ch.transform([r["cats"] for r in records])
-    xn = csr_matrix(np.array([[_clip(r["num"].get(k, 0.0)) for k in NUMERIC] for r in records], dtype=np.float32))
+    xn = csr_matrix(np.array([[_clip(r["num"].get(k, 0.0)) for k in MODEL_NUMERIC] for r in records], dtype=np.float32))
     return hstack([xt, xc, xn]).tocsr()
 
 
@@ -178,9 +198,59 @@ def _top_pick_lift(belief_ids: list[str], scores: np.ndarray, labels: np.ndarray
     return (float(np.mean(lifts)) if lifts else 0.0), len(lifts)
 
 
+class Ensemble:
+    """Average of a few small networks trained with different seeds (steadier than one)."""
+
+    def __init__(self, models):
+        self.models = models
+
+    def predict(self, x):
+        return np.mean([m.predict(x) for m in self.models], axis=0)
+
+
+def _fit_ensemble(x, y, n: int, seed: int):
+    from sklearn.neural_network import MLPRegressor
+
+    models = []
+    for k in range(n):
+        # Small and strongly regularized: returns are noisy. In the offline check
+        # (ml_check.py) this matched the hidden truth better than (64, 32) / alpha 1e-3.
+        m = MLPRegressor(hidden_layer_sizes=HIDDEN, activation="relu", alpha=ALPHA,
+                         learning_rate_init=1e-3, max_iter=300, early_stopping=x.shape[0] >= 50,
+                         n_iter_no_change=15, random_state=seed + k)
+        m.fit(x, y)
+        models.append(m)
+    return Ensemble(models)
+
+
+def _lift_detail(belief_ids, scores, labels) -> tuple[float, float, int]:
+    """(mean lift, t-stat, n beliefs) for 'top-scored pick vs average pick' per belief."""
+    groups: dict[str, list[int]] = {}
+    for i, b in enumerate(belief_ids):
+        groups.setdefault(b, []).append(i)
+    lifts = []
+    for idx in groups.values():
+        if len(idx) < 2:
+            continue
+        a = np.array(idx)
+        lifts.append(labels[a[np.argmax(scores[a])]] - labels[a].mean())
+    if not lifts:
+        return 0.0, 0.0, 0
+    arr = np.array(lifts)
+    se = arr.std(ddof=1) / math.sqrt(len(arr)) if len(arr) > 1 else float("inf")
+    return float(arr.mean()), float(arr.mean() / se) if se > 0 else 0.0, len(arr)
+
+
+ENSEMBLE = int(os.getenv("MP_NN_ENSEMBLE", "3"))
+HIDDEN = tuple(int(x) for x in os.getenv("MP_NN_HIDDEN", "32").split(","))
+ALPHA = float(os.getenv("MP_NN_ALPHA", "0.1"))
+MIN_T = float(os.getenv("MP_NN_MIN_T", "2.0"))
+KEEP_VERSIONS = int(os.getenv("MP_NN_KEEP_VERSIONS", "8"))
+
+
 def train(force: bool = False, seed: int = 7) -> dict:
     """Train a new version, evaluate walk-forward, save as active/shadow/rejected."""
-    from sklearn.neural_network import MLPRegressor
+    from sklearn.linear_model import Ridge
 
     rows = _training_rows()
     if len(rows) < MIN_TRAIN + MIN_TEST and not force:
@@ -190,7 +260,7 @@ def train(force: bool = False, seed: int = 7) -> dict:
 
     entry_dates = sorted(r["entry_date"] for r in rows)
     cutoff = entry_dates[int(len(entry_dates) * 0.8)]
-    train_rows = [r for r in rows if r["eval_date"] < cutoff]
+    train_rows = [r for r in rows if r["eval_date"] < cutoff]   # outcome known before the test period
     test_rows = [r for r in rows if r["entry_date"] >= cutoff]
     if len(train_rows) < 10 or len(test_rows) < 5:
         return {"status": "skipped", "reason": "not enough rows on both sides of the walk-forward split"}
@@ -200,38 +270,81 @@ def train(force: bool = False, seed: int = 7) -> dict:
     xte = vectorize([r["features"] for r in test_rows])
     yte = np.array([r["label"] for r in test_rows], dtype=np.float32)
 
-    model = MLPRegressor(hidden_layer_sizes=(64, 32), activation="relu", alpha=1e-3,
-                         learning_rate_init=1e-3, max_iter=300, early_stopping=len(train_rows) >= 50,
-                         n_iter_no_change=15, random_state=seed)
-    model.fit(xtr, ytr)
+    model = _fit_ensemble(xtr, ytr, ENSEMBLE, seed)
     pred = model.predict(xte)
+    lin_pred = Ridge(alpha=1.0).fit(xtr, ytr).predict(xte)
 
     base_mse = float(np.mean((yte - ytr.mean()) ** 2))
     mse = float(np.mean((yte - pred) ** 2))
     bids = [r["belief_id"] for r in test_rows]
-    nn_lift, n_groups = _top_pick_lift(bids, pred, yte)
+    nn_lift, nn_t, n_groups = _lift_detail(bids, pred, yte)
+    lin_lift, _, _ = _lift_detail(bids, lin_pred, yte)
     claude_scores = np.array([float(r["claude_score"] or 0.0) for r in test_rows])
-    has_claude = np.array([r["source"] != "seed_backfill" for r in test_rows])
-    claude_lift, _ = _top_pick_lift(
-        [b for b, h in zip(bids, has_claude) if h], claude_scores[has_claude], yte[has_claude]
-    ) if has_claude.any() else (0.0, 0)
     rho = _spearman(pred, yte)
 
+    # Claude baseline. Prefer live beliefs; with too few, use all test beliefs (for backfill
+    # rows Claude may know how history played out, which only makes the bar HIGHER).
+    live = np.array([r["source"] != "seed_backfill" for r in test_rows])
+    use = live if len({b for b, l in zip(bids, live) if l}) >= 30 else np.ones(len(test_rows), bool)
+    ub = [b for b, u in zip(bids, use) if u]
+    uc, up, uy = claude_scores[use], pred[use], yte[use]
+    claude_lift, _, n_claude = _lift_detail(ub, uc, uy)
+
+    # How much should the network move Claude's ordering? Try a few weights on unseen beliefs.
+    groups: dict[str, list[int]] = {}
+    for i, b in enumerate(ub):
+        groups.setdefault(b, []).append(i)
+    blended_nn = np.zeros(len(ub))
+    for idx in groups.values():
+        a = np.array(idx)
+        blended_nn[a] = on_claude_scale(up[a], uc[a])
+    trials = {}
+    for w in (0.2, 0.35, 0.5, 0.65):
+        mix = (1 - w) * uc + w * blended_nn
+        lift, _, _ = _lift_detail(ub, mix, uy)
+        diffs = []
+        for idx in groups.values():
+            a = np.array(idx)
+            if len(a) < 2:
+                continue
+            diffs.append(uy[a[np.argmax(mix[a])]] - uy[a[np.argmax(uc[a])]])
+        d = np.array(diffs) if diffs else np.zeros(1)
+        se = d.std(ddof=1) / math.sqrt(len(d)) if len(d) > 1 and d.std() > 0 else float("inf")
+        trials[w] = {"lift": float(lift), "gain_vs_claude": float(d.mean()), "t": float(d.mean() / se)}
+    best_w = max(trials, key=lambda w: trials[w]["gain_vs_claude"])
+    best = trials[best_w]
+
     enough = len(train_rows) >= MIN_TRAIN and len(test_rows) >= MIN_TEST
-    beats = rho > 0.03 and nn_lift > 0 and nn_lift > claude_lift
+    beats = rho > 0.03 and nn_lift > 0 and best["gain_vs_claude"] > 0 and best["t"] >= MIN_T
     status = "active" if (enough and beats) else "shadow" if rho > -0.05 else "rejected"
+    if status == "active":
+        reason = "improved Claude's picks on later beliefs it had never seen"
+    elif not enough:
+        reason = "needs more graded picks before it can be trusted"
+    elif nn_lift > 0 and best["gain_vs_claude"] > 0:
+        reason = "looks promising but the edge isn't clear of luck yet"
+    elif nn_lift > 0:
+        reason = "learned something, but not more than Claude already knows"
+    else:
+        reason = "did not beat the baselines yet"
     metrics = {
-        "label_days": LABEL_DAYS, "cutoff": cutoff,
+        "label_days": LABEL_DAYS, "cutoff": cutoff, "ensemble": ENSEMBLE,
         "mse": mse, "baseline_mse": base_mse, "spearman": rho,
-        "top_pick_lift": nn_lift, "claude_top_pick_lift": claude_lift, "beliefs_in_test": n_groups,
+        "top_pick_lift": nn_lift, "top_pick_lift_t": nn_t,
+        "linear_top_pick_lift": lin_lift, "linear_spearman": _spearman(lin_pred, yte),
+        "claude_top_pick_lift": claude_lift, "claude_beliefs_in_test": n_claude,
+        "claude_baseline": "live" if use is live else "all",
+        "blend_weight": best_w if status == "active" else 0.0,
+        "blend_gain_vs_claude": best["gain_vs_claude"], "blend_gain_t": best["t"],
+        "blend_trials": {str(k): v for k, v in trials.items()},
+        "beliefs_in_test": n_groups,
         "train_backfill_share": float(np.mean([r["source"] == "seed_backfill" for r in train_rows])),
-        "reason": ("beat baselines on unseen later beliefs" if status == "active" else
-                   "needs more data" if not enough else "did not beat baselines yet"),
+        "reason": reason,
     }
 
-    # Refit on all rows for the stored version (evaluation above is what decides status).
-    final = MLPRegressor(**model.get_params())
-    final.fit(vectorize([r["features"] for r in rows]), np.array([r["label"] for r in rows], dtype=np.float32))
+    # Refit on all rows for the stored version (the evaluation above decides status).
+    final = _fit_ensemble(vectorize([r["features"] for r in rows]),
+                          np.array([r["label"] for r in rows], dtype=np.float32), ENSEMBLE, seed)
 
     buf = io.BytesIO()
     pickle.dump(final, buf)
@@ -243,9 +356,32 @@ def train(force: bool = False, seed: int = 7) -> dict:
         (mid, datetime.now(timezone.utc).isoformat(), status, len(train_rows), len(test_rows),
          db.dumps(metrics), buf.getvalue()),
     )
+    _prune()
     with _load_lock:
         _loaded["at"] = 0.0
     return {"status": status, "id": mid, "n_train": len(train_rows), "n_test": len(test_rows), **metrics}
+
+
+def _prune() -> None:
+    """Keep the active model plus the newest few versions' weights; older ones keep metrics only."""
+    rows = db.query("SELECT id, status FROM nn_models WHERE length(blob) > 0 ORDER BY created_at DESC")
+    keep = 0
+    for r in rows:
+        if r["status"] == "active":
+            continue
+        keep += 1
+        if keep > KEEP_VERSIONS:
+            db.execute("UPDATE nn_models SET blob = ? WHERE id = ?", (b"", r["id"]))
+
+
+def history(limit: int = 20) -> list[dict]:
+    rows = db.query(
+        "SELECT id, created_at, status, n_train, n_test, metrics FROM nn_models ORDER BY created_at DESC LIMIT ?",
+        (limit,),
+    )
+    for r in rows:
+        r["metrics"] = db.loads(r["metrics"], {})
+    return rows
 
 
 # ---------------- inference ----------------
@@ -256,7 +392,7 @@ def _current() -> tuple[Optional[dict], object]:
             return _loaded["row"], _loaded["model"]
         row = db.query_one(
             """SELECT id, status, n_train, n_test, metrics, blob FROM nn_models
-               WHERE status IN ('active','shadow')
+               WHERE status IN ('active','shadow') AND length(blob) > 0
                ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, created_at DESC LIMIT 1"""
         )
         model = None
@@ -278,6 +414,9 @@ def status() -> dict:
 def blend_weight(row: Optional[dict]) -> float:
     if not row or row.get("status") != "active":
         return 0.0
+    m = row.get("metrics") or {}
+    if "blend_weight" in m:  # earned on the walk-forward test
+        return float(min(MAX_WEIGHT, m["blend_weight"]))
     return min(MAX_WEIGHT, row.get("n_train", 0) / 3000.0 + 0.1)
 
 

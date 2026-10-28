@@ -130,13 +130,12 @@ def process_belief(
     ]
     preds, w, model_id = nn.predict(records)
     stats = {s["ticker"]: s for s in learning.ticker_stats(interp["themes"], [v["ticker"] for v in valid])}
+    claude_parts = [v["score"] + learning.ticker_adjustment(stats.get(v["ticker"]), v.get("direction", "bullish")) for v in valid]
+    nn_parts = nn.on_claude_scale(preds, claude_parts) if preds else claude_parts
     for i, v in enumerate(valid):
         v["features"] = records[i]
         v["nn_score"] = preds[i] if preds else None
-        claude_part = v["score"] + learning.ticker_adjustment(stats.get(v["ticker"]))
-        # NN predicts expected directional excess (~ -0.5..0.5); map to a 0-1-ish scale
-        nn_part = 0.5 + 2.0 * preds[i] if preds else claude_part
-        v["final_score"] = (1 - w) * claude_part + w * nn_part
+        v["final_score"] = (1 - w) * claude_parts[i] + w * nn_parts[i]
         v["track"] = stats.get(v["ticker"])
     valid.sort(key=lambda v: v["final_score"], reverse=True)
 
@@ -344,3 +343,106 @@ def trending(days: int = 14, limit: int = 8) -> dict:
             ],
         })
     return {"window": window, "themes": out}
+
+
+# ---------------- what users see about learning and their own calls ----------------
+
+def learning_status() -> dict:
+    """Plain-English, aggregate-only view of how the shared learning is going (public)."""
+    st = stats()
+    seeds = sum(v["count"] for k, v in st["beliefs"].items() if k.startswith("seed"))
+    users_beliefs = st["beliefs"].get("user", {}).get("count", 0)
+    graded = st["graded_picks"]
+    net = st["network"]
+    m = net.get("metrics") or {}
+    if net.get("status") == "active":
+        net_line = (f"On. It earned a {int(round(net.get('weight', 0) * 100))}% say in ranking by improving "
+                    "picks on later beliefs it had never seen.")
+    elif net.get("status") == "shadow":
+        net_line = f"Practicing in the background. Not changing your picks yet: {m.get('reason', 'still learning')}."
+    else:
+        need = nn.MIN_TRAIN + nn.MIN_TEST
+        net_line = f"Waiting for data. Starts training after {need} graded picks ({graded} so far)."
+    track_on = graded >= 20
+    versions = []
+    for h in reversed(nn.history(12)):
+        hm = h["metrics"] or {}
+        versions.append({
+            "date": (h["created_at"] or "")[:10], "status": h["status"], "examples": h["n_train"],
+            "accuracy": round(float(hm.get("spearman", 0.0)), 3),
+            "gain_vs_claude": round(float(hm.get("blend_gain_vs_claude", 0.0)), 4),
+        })
+    return {
+        "beliefs_from_people": users_beliefs,
+        "people": st["users"],
+        "practice_beliefs": seeds,
+        "graded_picks": graded,
+        "label_days": st["label_days"],
+        "layers": [
+            {"name": "Claude", "on": True,
+             "what": "Reads your belief and finds the companies and funds it affects."},
+            {"name": "Track record", "on": track_on,
+             "what": ("Nudges picks up or down based on how similar picks actually did." if track_on
+                      else "Turns on once enough picks have been graded.")},
+            {"name": "MarketPlayground network", "on": net.get("status") == "active", "status": net.get("status", "none"),
+             "what": net_line},
+        ],
+        "versions": versions,
+    }
+
+
+def _close_on(symbol: str, d: str) -> Optional[float]:
+    try:
+        dates, closes = market.daily_closes(symbol)
+    except Exception:
+        return None
+    import bisect
+    i = bisect.bisect_right(dates, d) - 1
+    return closes[i] if i >= 0 else None
+
+
+def my_beliefs(user_id: str, limit: int = 30) -> dict:
+    """A user's own beliefs with how the picks they were shown are doing so far."""
+    if not user_id or user_id == "anonymous":
+        return {"beliefs": [], "summary": None}
+    rows = db.query(
+        "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation FROM beliefs "
+        "WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
+        (user_id, int(limit)),
+    )
+    if not rows:
+        return {"beliefs": [], "summary": None}
+    ids = [r["id"] for r in rows]
+    ph = ",".join("?" for _ in ids)
+    picks = db.query(
+        f"SELECT id, belief_id, ticker, name, direction, entry_date, entry_price, structure, final_rank "
+        f"FROM picks WHERE shown = 1 AND belief_id IN ({ph}) ORDER BY final_rank",
+        ids,
+    )
+    today_s = market.today().isoformat()
+    spy_now = _close_on("SPY", today_s)
+    by_belief: dict = {}
+    wins = total = 0
+    for p in picks:
+        now = _close_on(p["ticker"], today_s)
+        spy0 = _close_on("SPY", p["entry_date"])
+        item = {"pick_id": p["id"], "ticker": p["ticker"], "name": p["name"], "direction": p["direction"],
+                "structure": p["structure"], "entry_date": p["entry_date"], "entry_price": p["entry_price"],
+                "price_now": now, "return": None, "vs_spy": None}
+        if now and p["entry_price"]:
+            ret = now / float(p["entry_price"]) - 1
+            sign = -1.0 if p["direction"] == "bearish" else 1.0
+            item["return"] = round(ret, 4)
+            if spy_now and spy0:
+                item["vs_spy"] = round(sign * (ret - (spy_now / spy0 - 1)), 4)
+                if p["entry_date"] < today_s:
+                    total += 1
+                    wins += item["vs_spy"] > 0
+        by_belief.setdefault(p["belief_id"], []).append(item)
+    out = []
+    for r in rows:
+        interp = db.loads(r["interpretation"], {}) or {}
+        out.append({"belief_id": r["id"], "text": r["text"], "created_at": r["created_at"],
+                    "summary": interp.get("summary"), "direction": r["direction"],
+                    "horizon_days": r["horizon_days"], "picks": by_belief.get(r["id"], [])})
+    return {"beliefs": out, "summary": {"tracked": total, "ahead": wins} if total else None, "as_of": today_s}

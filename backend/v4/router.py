@@ -86,6 +86,24 @@ async def get_stats():
     return await run_in_threadpool(engine.stats)
 
 
+@router.get("/learning")
+async def get_learning():
+    """How the shared learning is going, in plain words (aggregate only)."""
+    return await run_in_threadpool(engine.learning_status)
+
+
+@router.get("/my_beliefs")
+async def get_my_beliefs(user_id: str):
+    return await run_in_threadpool(engine.my_beliefs, user_id)
+
+
+@router.get("/admin/ml")
+async def admin_ml(x_admin_token: Optional[str] = Header(None)):
+    """Full network report: data counts, every version's walk-forward metrics."""
+    _check_admin(x_admin_token)
+    return {"stats": await run_in_threadpool(engine.stats), "versions": await run_in_threadpool(nn.history, 30)}
+
+
 @router.post("/admin/grade")
 async def admin_grade(train: bool = False, x_admin_token: Optional[str] = Header(None)):
     _check_admin(x_admin_token)

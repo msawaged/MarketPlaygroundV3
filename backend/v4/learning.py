@@ -99,6 +99,7 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
         f"""SELECT p.ticker,
                    COUNT(DISTINCT p.id) AS n,
                    AVG(o.dir_excess) AS mean,
+                   AVG(CASE WHEN p.direction = 'bearish' THEN -o.dir_excess ELSE o.dir_excess END) AS raw_mean,
                    AVG(CASE WHEN o.dir_excess > 0 THEN 1.0 ELSE 0.0 END) AS hit
             FROM picks p
             JOIN outcomes o ON o.pick_id = p.id AND o.checkpoint_days = ?
@@ -110,7 +111,8 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
     )
     fb = feedback_counts([r["ticker"] for r in rows])
     for r in rows:
-        r["mean"] = float(r["mean"] or 0.0)
+        r["mean"] = float(r["mean"] or 0.0)          # how picks did in the direction they called
+        r["raw_mean"] = float(r["raw_mean"] or 0.0)  # how the stock itself did vs SPY
         r["hit"] = float(r["hit"] or 0.0)
         r["n"] = int(r["n"])
         r.update(fb.get(r["ticker"], {"up": 0, "down": 0}))
@@ -132,12 +134,18 @@ def feedback_counts(tickers: list[str]) -> dict[str, dict]:
     return {r["ticker"]: {"up": int(r["up"] or 0), "down": int(r["down"] or 0)} for r in rows}
 
 
-def ticker_adjustment(stat: Optional[dict], prior_n: int = 20) -> float:
-    """Shrunk score nudge in [-0.25, 0.25] from graded history + user votes."""
+def ticker_adjustment(stat: Optional[dict], direction: str = "bullish", prior_n: int = 20) -> float:
+    """Shrunk score nudge in [-0.25, 0.25] from graded history + user votes.
+
+    Uses how the stock itself did vs SPY, pointed in THIS pick's direction. (Averaging
+    past bullish and bearish picks together rewarded stocks that rose even when the new
+    pick was a bet against them; the offline check in ml_check.py caught this.)"""
     if not stat:
         return 0.0
     n = stat.get("n", 0)
-    market = (n / (n + prior_n)) * max(-0.15, min(0.15, stat.get("mean", 0.0))) * 1.5
+    sign = -1.0 if direction == "bearish" else 1.0
+    raw = stat.get("raw_mean", stat.get("mean", 0.0))
+    market = (n / (n + prior_n)) * max(-0.15, min(0.15, sign * raw)) * 1.5
     up, down = stat.get("up", 0), stat.get("down", 0)
     votes = (up - down) / (up + down + 10)
     return max(-0.25, min(0.25, market + 0.05 * votes))

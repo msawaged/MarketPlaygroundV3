@@ -147,6 +147,7 @@ def _schema() -> list[str]:
         )""",
         "CREATE INDEX IF NOT EXISTS ix_beliefs_norm ON beliefs(norm_text)",
         "CREATE INDEX IF NOT EXISTS ix_beliefs_asof ON beliefs(as_of_date)",
+        "CREATE INDEX IF NOT EXISTS ix_beliefs_user ON beliefs(user_id)",
         """CREATE TABLE IF NOT EXISTS picks (
             id TEXT PRIMARY KEY,
             belief_id TEXT NOT NULL REFERENCES beliefs(id),
