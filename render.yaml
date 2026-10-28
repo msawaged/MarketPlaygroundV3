@@ -8,6 +8,7 @@ services:
     rootDir: .
     buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ uvicorn backend.app:app --host 0.0.0.0 --port 10000"
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 10000
@@ -36,40 +37,24 @@ services:
   # (v4) The old retrain-worker was removed: it retrained the legacy ML models nonstop.
   #      Suspend/delete it in the Render dashboard. Code kept in backend/retrain_worker.py.
 
-  # 📰 News Ingestor (Cron Job every hour)
-  - type: cron
-    name: news-ingestor
-    runtime: python
-    schedule: "0 * * * *"     # hourly
-    rootDir: .
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "PYTHONPATH=./ python backend/news_ingestor.py"
+  # 🌐 The app website (React frontend), served as a static site
+  - type: web
+    runtime: static
+    name: marketplayground-web
+    buildCommand: "cd frontend && npm ci && npm run build"
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
-      # Safety gates (no-code throttles)
-      - key: NEWS_INGESTOR_ENABLED
-        value: "true"
-      - key: NEWS_USE_LOCKFILE
-        value: "true"         # refuse if previous hour still running
-      - key: NEWS_MAX_FEEDS
-        value: "5"
-      - key: NEWS_PER_FEED_LIMIT
-        value: "10"
-      - key: NEWS_MAX_CONCURRENCY
-        value: "1"            # keep it single-threaded on Starter
-      - key: NEWS_POLL_SECONDS
-        value: "999999"       # cron should do ONE pass and exit
-      - key: NEWS_HTTP_TIMEOUT
-        value: "10"
-      - key: NEWS_RETRY_MAX
-        value: "3"
-      - key: NEWS_GLOBAL_RATE_QPS
-        value: "1"            # simple global rate limit
-      - key: NEWS_HARD_RSS_MB
-        value: "450"          # self-terminate if memory climbs
-      - key: NEWS_RUN_ONCE
-        value: "true"         # if supported; otherwise LOG & exit after pass
+      # Backend address. If Render gives the backend a different URL (shown on its page),
+      # update this and redeploy the website.
+      - key: VITE_API_BASE
+        value: https://marketplayground-backend.onrender.com
+
+  # (v4) The hourly news-ingestor cron was removed: it wrote headlines to a local file that
+  #      Render erases after each run, so it cost money and kept nothing. Code: backend/news_ingestor.py.
 
   # (v4) The old belief-feeder worker was removed: it only fed the legacy ML training CSV.
   #      Suspend/delete it in the Render dashboard. Code kept in backend/belief_feeder.py.

@@ -164,6 +164,34 @@ def _normalize_alpaca_equity_order(data: Dict[str, Any]) -> Tuple[Optional[Dict[
 # -----------------------------------------------------------------------------
 # Paper trading: Portfolio
 # -----------------------------------------------------------------------------
+class PaperTradeRequest(BaseModel):
+    user_id: str = "demo_user"
+    strategy_data: Dict[str, Any]
+    belief: Optional[str] = ""
+
+
+@router.post("/execute")
+def execute_paper(request: PaperTradeRequest):
+    """
+    Simulated (paper) trade in the app's own practice account. No real money.
+    The chat's "Paper trade" button calls this. Stock/ETF positions only: options
+    ideas are tracked and graded by the v4 engine instead.
+    """
+    data = dict(request.strategy_data or {})
+    if not data.get("ticker"):
+        raise HTTPException(status_code=400, detail="ticker is required")
+    if not data.get("trade_legs"):
+        data["trade_legs"] = [{"action": "Buy", "ticker": data["ticker"]}]
+    try:
+        result = paper_engine.execute_paper_trade(request.user_id, data, request.belief or "")
+    except Exception as e:
+        logger.exception(f"Paper trade error: {e}")
+        raise HTTPException(status_code=500, detail="Paper trade failed")
+    from fastapi.encoders import jsonable_encoder
+
+    return JSONResponse(content=jsonable_encoder(result), headers={"Cache-Control": "no-store"})
+
+
 @router.get("/portfolio/{user_id}")
 def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="Bypass any caches")):
     """Return latest paper portfolio snapshot with no-store headers."""

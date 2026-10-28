@@ -47,7 +47,8 @@ const SimulatedChart3D = ({
    * Can evolve to include curve shapes, risk surfaces, or payoff maps
    */
   const getGeometry = () => {
-    switch (assetClass) {
+    const kind = { options: 'option', equity: 'stock', bonds: 'bond' }[assetClass] || assetClass;
+    switch (kind) {
       case 'option':
         return <torusKnotGeometry args={[0.7, 0.2, 128, 16]} />;
       case 'stock':

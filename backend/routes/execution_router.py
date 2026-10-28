@@ -23,7 +23,15 @@ router = APIRouter()
 async def execute_trade(request: Request):
     """
     Executes a user-submitted belief via AI and places trade if eligible.
+    Admin only (X-Admin-Token): it acts on the server's Alpaca account. The app uses
+    /api/paper-trading/execute (practice account) instead.
     """
+    import os
+    from fastapi import HTTPException
+
+    expected = os.getenv("MP_ADMIN_TOKEN")
+    if not expected or request.headers.get("x-admin-token") != expected:
+        raise HTTPException(status_code=403, detail="admin token required (X-Admin-Token)")
     data = await request.json()
     user_id = data.get("user_id", "anonymous")
     belief = data.get("belief", "")

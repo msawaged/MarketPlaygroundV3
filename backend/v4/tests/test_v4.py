@@ -337,3 +337,29 @@ def test_engine_switch_routes_to_v4_and_legacy_is_lazy(monkeypatch):
     monkeypatch.setenv("ENGINE_VERSION", "legacy")
     assert engine_switch.engine_version() == "legacy"
     assert "backend.ai_engine.ai_engine" not in sys.modules or True  # legacy only imported when legacy runs
+
+
+def test_rate_limit_on_costly_endpoints(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from backend import rate_limit
+
+    rate_limit.reset_for_tests()
+    monkeypatch.setenv("MP_RATE_LIMIT", "3")
+    app = FastAPI()
+    app.add_middleware(rate_limit.CostlyEndpointRateLimit)
+
+    @app.post("/v4/belief")
+    def b():
+        return {"ok": True}
+
+    @app.get("/v4/stats")
+    def s():
+        return {"ok": True}
+
+    c = TestClient(app)
+    assert [c.post("/v4/belief").status_code for _ in range(4)] == [200, 200, 200, 429]
+    assert c.get("/v4/stats").status_code == 200            # free endpoints are not limited
+    other = c.post("/v4/belief", headers={"x-forwarded-for": "9.9.9.9"})
+    assert other.status_code == 200                         # limit is per visitor
+    rate_limit.reset_for_tests()

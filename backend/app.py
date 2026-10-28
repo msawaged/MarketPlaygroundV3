@@ -22,6 +22,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 from backend.engine_switch import engine_version
+from backend.rate_limit import CostlyEndpointRateLimit
 from backend.feedback_handler import save_feedback_entry
 from backend.user_models import init_db
 
@@ -66,6 +67,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(CostlyEndpointRateLimit)
 
 init_db()
 

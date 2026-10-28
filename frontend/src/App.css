@@ -1,13 +1,12 @@
 /* App.css — Dark mode UI cleanup */
-body {
+/* Scoped to the classic generator page (.mp-classic) so it doesn't restyle the rest of the app. */
+.mp-classic {
     background-color: #0d1117;
     color: #ffffff;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
+    min-height: 100vh;
   }
   
-  input, textarea {
+  .mp-classic input, .mp-classic textarea {
     background-color: #161b22;
     color: #ffffff;
     border: 1px solid #30363d;
@@ -15,15 +14,15 @@ body {
     border-radius: 6px;
   }
   
-  button {
+  .mp-classic button {
     border-radius: 6px;
   }
   
-  h1, h2, h3 {
+  .mp-classic h1, .mp-classic h2, .mp-classic h3 {
     color: #f0f6fc;
   }
   
-  form, .strategy-container {
+  .mp-classic form, .mp-classic .strategy-container {
     background-color: #161b22;
     padding: 1.5rem;
     border-radius: 10px;
@@ -31,23 +30,23 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.4);
   }
   
-  .strategy-container p {
+  .mp-classic .strategy-container p {
     color: #c9d1d9;
     line-height: 1.5;
   }
   
-  button:disabled {
+  .mp-classic button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
   /* Force visibility of output */
-.strategy-container {
+.mp-classic .strategy-container {
     opacity: 1 !important;
     color: #ffffff;
   }
   
   /* Fix simulation button visibility */
-  button.simulate-btn {
+  .mp-classic button.simulate-btn {
     background-color: #1f6feb;
     color: white;
     font-weight: bold;

@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { API_BASE } from "../lib/api";
+import { API_BASE, userId as currentUserId } from "../lib/api";
 
 // Now uses centralized API base from Vite env
 const BACKEND_URL = API_BASE;
@@ -22,7 +22,7 @@ const PortfolioSummary = ({ refreshNonce = 0 }) => {
   const fetchPortfolio = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+        `${BACKEND_URL}/api/paper-trading/portfolio/${encodeURIComponent(currentUserId())}?ts=${Date.now()}`,
         { headers: { "Cache-Control": "no-store" } }
       );
       const data = await response.json();
@@ -127,7 +127,7 @@ const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
   const fetchPositions = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+        `${BACKEND_URL}/api/paper-trading/portfolio/${encodeURIComponent(currentUserId())}?ts=${Date.now()}`,
         { headers: { "Cache-Control": "no-store" } }
       );
       const data = await response.json();
@@ -183,8 +183,7 @@ const ActivePositions = ({ refreshNonce = 0, onChanged }) => {
 
       if (!positionId) throw new Error("Missing position_id on position payload");
 
-      // If your backend needs a real user id, replace 'demo_user'
-      const userId = "demo_user";
+      const userId = currentUserId();
 
       // Optional partial close: only include qty if > 0
       const params = new URLSearchParams({
@@ -435,7 +434,7 @@ const PortfolioButton = () => {
     const fetchSummary = async () => {
       try {
         const response = await fetch(
-          `${BACKEND_URL}/api/paper-trading/portfolio/demo_user?ts=${Date.now()}`,
+          `${BACKEND_URL}/api/paper-trading/portfolio/${encodeURIComponent(currentUserId())}?ts=${Date.now()}`,
           { headers: { "Cache-Control": "no-store" } }
         );
         const data = await response.json();
