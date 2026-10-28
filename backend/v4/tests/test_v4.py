@@ -44,7 +44,7 @@ def env(tmp_path, monkeypatch):
         monkeypatch.setenv("DATABASE_URL", pg)
         import psycopg
         with psycopg.connect(pg) as conn:
-            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist, accounts, sessions, broker_links, broker_orders CASCADE")
+            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist, accounts, sessions, broker_links, broker_orders, email_tokens CASCADE")
     else:
         monkeypatch.delenv("DATABASE_URL", raising=False)
         monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
@@ -667,3 +667,38 @@ def test_users_never_see_practice_beliefs():
     t = engine.trending()
     assert len(t["themes"]) > 0 and all(th["beliefs"] == 1 for th in t["themes"])
 
+
+
+def test_email_verification_and_password_reset(monkeypatch):
+    from backend.v4 import mailer
+    monkeypatch.setenv("MP_MAIL_TEST_SINK", "1"); mailer._sent_for_tests.clear()
+    monkeypatch.setenv("MP_SITE_URL", "https://site.example")
+    c = _client()
+    r = c.post("/v4/auth/signup", json={"email": "new@example.com", "password": "a good password", "name": "Ana"}).json()
+    assert r["needs_verification"] and "token" not in r
+    mail = mailer._sent_for_tests[-1]
+    assert mail["to"] == "new@example.com" and "https://site.example/verify?token=" in mail["text"]
+    login = c.post("/v4/auth/login", json={"email": "new@example.com", "password": "a good password"})
+    assert login.status_code == 403 and "confirm your email" in login.json()["detail"]
+    assert c.post("/v4/auth/resend", json={"email": "nobody@example.com"}).status_code == 200  # same answer for unknown emails
+    c.post("/v4/auth/resend", json={"email": "new@example.com"})
+    tok = mailer._sent_for_tests[-1]["text"].split("verify?token=")[1].split()[0]
+    v = c.post("/v4/auth/verify", json={"token": tok}).json()
+    assert v["account"]["email"] == "new@example.com" and v["token"]
+    assert c.post("/v4/auth/verify", json={"token": tok}).status_code == 400  # one use only
+    assert c.post("/v4/auth/login", json={"email": "new@example.com", "password": "a good password"}).status_code == 200
+    # forgot password
+    c.post("/v4/auth/forgot", json={"email": "new@example.com"})
+    rt = mailer._sent_for_tests[-1]["text"].split("reset?token=")[1].split()[0]
+    assert c.post("/v4/auth/reset", json={"token": rt, "password": "short"}).status_code == 400
+    assert c.post("/v4/auth/reset", json={"token": rt, "password": "brand new password"}).status_code == 200
+    assert c.post("/v4/auth/login", json={"email": "new@example.com", "password": "brand new password"}).status_code == 200
+    assert c.post("/v4/auth/login", json={"email": "new@example.com", "password": "a good password"}).status_code == 401
+
+
+def test_accounts_made_before_verification_still_log_in(monkeypatch):
+    from backend.v4 import mailer
+    c = _client()
+    c.post("/v4/auth/signup", json={"email": "old@example.com", "password": "old password ok"})  # email not configured -> verified
+    monkeypatch.setenv("MP_MAIL_TEST_SINK", "1")
+    assert c.post("/v4/auth/login", json={"email": "old@example.com", "password": "old password ok"}).status_code == 200

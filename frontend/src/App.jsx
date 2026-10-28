@@ -8,6 +8,7 @@ import LearningPage from './components/LearningPage';
 import BasketBuilderPage from './BasketBuilderPage';
 import PracticePage from './components/PracticePage';
 import AccountPage from './components/AccountPage';
+import { VerifyPage, ResetPage } from './components/EmailLinkPage';
 
 // Heavier, less-used screens load on demand.
 const GeneratorPage = lazy(() => import('./components/GeneratorPage'));
@@ -30,6 +31,8 @@ export default function App() {
           <Route path="/my" element={<MyCallsPage />} />
           <Route path="/learning" element={<LearningPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/verify" element={<VerifyPage />} />
+          <Route path="/reset" element={<ResetPage />} />
           <Route path="/basket-builder" element={<BasketBuilderPage />} />
           <Route path="/portfolio" element={<PracticePage />} />
           <Route path="/generator" element={<GeneratorPage />} />

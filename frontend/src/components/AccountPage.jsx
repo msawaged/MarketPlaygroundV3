@@ -6,6 +6,7 @@ import { Eye, EyeOff, Check } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import {
   useAccount, signup, login, logout, refreshAccount, updateName, changePassword, deleteAccount, initials,
+  resendVerification, forgotPassword,
 } from '../lib/auth';
 import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
 
@@ -46,19 +47,51 @@ function SignedOut() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [check, setCheck] = useState(null);   // email waiting for confirmation
+  const [notice, setNotice] = useState(null);
+  const [unverified, setUnverified] = useState(false);
+
+  const resend = async () => {
+    try { await resendVerification(check || email); setNotice('Sent. Check your inbox (and spam).'); } catch (e2) { setErr(e2.message); }
+  };
+  const forgot = async () => {
+    if (!email) { setErr('Type your email above first.'); return; }
+    try { await forgotPassword(email); setNotice(`If there's an account for ${email}, we just emailed a link to reset the password.`); }
+    catch (e2) { setErr(e2.message); }
+  };
+
+  if (check) {
+    return (
+      <Card className="mt-6 text-center py-7">
+        <div className="text-4xl" aria-hidden>📬</div>
+        <div className="mt-2 text-xl font-extrabold">Check your email</div>
+        <p className="mt-2 text-sm text-slate-300 max-w-xs mx-auto">We sent a link to <b className="text-white">{check}</b>. Tap it to confirm your email and you're in.</p>
+        <p className="mt-2 text-xs text-slate-500">Not there after a minute? Check spam or promotions.</p>
+        {notice && <p className="mt-3 text-sm text-green-300">{notice}</p>}
+        {err && <p className="mt-3 text-sm text-red-300">{err}</p>}
+        <div className="mt-5 flex justify-center gap-3">
+          <button onClick={resend} className="rounded-2xl bg-slate-800 border border-slate-600 px-4 py-2.5 text-sm font-bold">Send it again</button>
+          <button onClick={() => { setCheck(null); setMode('login'); setNotice(null); }} className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold">I confirmed: log in</button>
+        </div>
+      </Card>
+    );
+  }
 
   const submit = async (e) => {
     e.preventDefault();
-    setErr(null);
+    setErr(null); setNotice(null); setUnverified(false);
     if (mode === 'signup' && password.length < 8) { setErr('Use at least 8 characters for your password.'); return; }
     setBusy(true);
     try {
-      if (mode === 'signup') await signup({ email, password, name });
-      else await login({ email, password });
+      if (mode === 'signup') {
+        const r = await signup({ email, password, name });
+        if (r?.needs_verification) { setCheck(r.email); if (!r.sent) setErr("We couldn't send the email just now. Tap 'Send it again'."); return; }
+      } else await login({ email, password });
       const next = new URLSearchParams(loc.search).get('next');
       if (next) navigate(next);
     } catch (e2) {
       setErr(e2.message);
+      if (e2.status === 403) setUnverified(true);
     } finally {
       setBusy(false);
     }
@@ -96,13 +129,16 @@ function SignedOut() {
         <Field label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="you@example.com" />
         <Field label="Password" type="password" value={password} onChange={setPassword} reveal
           autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'At least 8 characters' : ''} />
-        {err && <div className="rounded-2xl bg-red-950/50 border border-red-500/40 px-3.5 py-2.5 text-sm text-red-200" role="alert">{err}</div>}
+        {err && <div className="rounded-2xl bg-red-950/50 border border-red-500/40 px-3.5 py-2.5 text-sm text-red-200" role="alert">{err}
+          {unverified && <button type="button" onClick={resend} className="block mt-1.5 underline font-semibold text-white">Send the confirmation email again</button>}
+        </div>}
+        {notice && <div className="rounded-2xl bg-green-950/40 border border-green-500/30 px-3.5 py-2.5 text-sm text-green-200" role="status">{notice}</div>}
         <button type="submit" disabled={busy || !email || !password}
           className="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 py-3.5 font-bold">
           {busy ? 'One moment…' : mode === 'signup' ? 'Create my free account' : 'Log in'}
         </button>
         {mode === 'login' && (
-          <p className="text-xs text-slate-400 text-center">Forgot your password? Self-service resets are coming soon. For now, contact the MarketPlayground team and we'll reset it.</p>
+          <p className="text-xs text-slate-400 text-center"><button type="button" onClick={forgot} className="underline text-blue-300 font-semibold">Forgot your password?</button> We'll email you a link.</p>
         )}
         {mode === 'signup' && (
           <p className="text-[11px] text-slate-500 text-center leading-relaxed">

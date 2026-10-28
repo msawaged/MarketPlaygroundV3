@@ -167,6 +167,42 @@ async def auth_delete(body: DeleteIn, authorization: Optional[str] = Header(None
     return {"ok": True}
 
 
+class TokenIn(BaseModel):
+    token: str
+    device_id: Optional[str] = None
+
+
+class EmailIn(BaseModel):
+    email: str
+
+
+class NewPasswordIn(BaseModel):
+    token: str
+    password: str
+
+
+@router.post("/auth/verify")
+async def auth_verify(body: TokenIn):
+    return await _auth_call(auth.verify_email, body.token, body.device_id)
+
+
+@router.post("/auth/resend")
+async def auth_resend(body: EmailIn):
+    await _auth_call(auth.resend_verification, body.email)
+    return {"ok": True}
+
+
+@router.post("/auth/forgot")
+async def auth_forgot(body: EmailIn):
+    await _auth_call(auth.forgot_password, body.email)
+    return {"ok": True}
+
+
+@router.post("/auth/reset")
+async def auth_reset(body: NewPasswordIn):
+    return await _auth_call(auth.reset_password, body.token, body.password)
+
+
 class ResetIn(BaseModel):
     email: str
 

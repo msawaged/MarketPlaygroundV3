@@ -19,7 +19,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from . import db
+from . import db, mailer
 
 SESSION_DAYS = int(os.getenv("MP_SESSION_DAYS", "60"))
 EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,255}\.[A-Za-z]{2,24}$")
@@ -93,6 +93,55 @@ def _merge_device(device_id: Optional[str], uid: str) -> int:
     return int(n["n"] if n else 0)
 
 
+def verification_required() -> bool:
+    """On whenever email can be sent (MP_REQUIRE_VERIFY=off turns it off; =on forces it)."""
+    v = os.getenv("MP_REQUIRE_VERIFY", "auto").lower()
+    if v in ("off", "false", "0"):
+        return False
+    if v in ("on", "true", "1"):
+        return True
+    return mailer.configured() or bool(os.getenv("MP_MAIL_TEST_SINK"))
+
+
+def _site() -> str:
+    return os.getenv("MP_SITE_URL", "https://marketplayground-web.onrender.com").rstrip("/")
+
+
+def _new_email_token(account_id: str, kind: str, hours: int) -> str:
+    token = secrets.token_urlsafe(32)
+    db.execute("INSERT INTO email_tokens (token_hash, account_id, kind, created_at, expires_at, used) VALUES (?,?,?,?,?,0)",
+               (hashlib.sha256(token.encode()).hexdigest(), account_id, kind, _now().isoformat(),
+                (_now() + timedelta(hours=hours)).isoformat()))
+    return token
+
+
+def _use_email_token(token: str, kind: str) -> dict:
+    row = db.query_one("SELECT * FROM email_tokens WHERE token_hash = ? AND kind = ?",
+                       (hashlib.sha256((token or "").encode()).hexdigest(), kind))
+    if not row or row["used"] or row["expires_at"] < _now().isoformat():
+        raise AuthError("That link has expired or was already used. Ask for a new one.", 400)
+    db.execute("UPDATE email_tokens SET used = 1 WHERE token_hash = ?", (row["token_hash"],))
+    acc = db.query_one("SELECT * FROM accounts WHERE id = ?", (row["account_id"],))
+    if not acc:
+        raise AuthError("That account no longer exists.", 404)
+    return acc
+
+
+def _send_verify(acc: dict) -> bool:
+    url = f"{_site()}/verify?token={_new_email_token(acc['id'], 'verify', 48)}"
+    hi = f"Hi {acc.get('name')}," if acc.get("name") else "Hi,"
+    try:
+        mailer.send(acc["email"], "Confirm your MarketPlayground account",
+                    f"{hi}\n\nTap to confirm your email and finish creating your account:\n{url}\n\nThe link works for 48 hours. "
+                    "If you didn't sign up, ignore this email.\n\nMarketPlayground",
+                    mailer.button_html("Confirm your email", f"{hi} tap below to finish creating your MarketPlayground account.",
+                                       url, "Confirm my email", "The link works for 48 hours. If you didn't sign up, ignore this email."))
+        return True
+    except Exception as e:
+        print(f"[auth] verification email failed: {e}")
+        return False
+
+
 def signup(email: str, password: str, name: str = "", device_id: Optional[str] = None) -> dict:
     e = _clean_email(email)
     _check_new_password(password)
@@ -102,9 +151,13 @@ def signup(email: str, password: str, name: str = "", device_id: Optional[str] =
     uid = dev if dev and not db.query_one("SELECT id FROM accounts WHERE uid = ?", (dev,)) else f"u-{uuid.uuid4()}"
     acc = {"id": f"a-{uuid.uuid4().hex[:16]}", "uid": uid, "email": e, "name": (name or "").strip()[:60],
            "created_at": _now().isoformat()}
-    db.execute("INSERT INTO accounts (id, uid, email, name, pw_hash, created_at, last_login) VALUES (?,?,?,?,?,?,?)",
-               (acc["id"], uid, e, acc["name"], hash_password(password), acc["created_at"], acc["created_at"]))
+    must_verify = verification_required()
+    db.execute("INSERT INTO accounts (id, uid, email, name, pw_hash, created_at, last_login, verified) VALUES (?,?,?,?,?,?,?,?)",
+               (acc["id"], uid, e, acc["name"], hash_password(password), acc["created_at"], acc["created_at"], 0 if must_verify else 1))
     moved = _merge_device(dev, uid)
+    if must_verify:
+        sent = _send_verify(acc)
+        return {"needs_verification": True, "email": e, "sent": sent, "moved_beliefs": moved}
     return {"token": _new_session(acc["id"]), "account": _public(acc), "moved_beliefs": moved}
 
 
@@ -113,6 +166,8 @@ def login(email: str, password: str, device_id: Optional[str] = None) -> dict:
     acc = db.query_one("SELECT * FROM accounts WHERE email = ?", (e,))
     if not acc or not check_password(password or "", acc["pw_hash"]):
         raise AuthError("Email or password is wrong.", 401)
+    if verification_required() and not acc.get("verified", 1):
+        raise AuthError("Please confirm your email first. Check your inbox for the link from MarketPlayground.", 403)
     db.execute("UPDATE accounts SET last_login = ? WHERE id = ?", (_now().isoformat(), acc["id"]))
     moved = _merge_device(_clean_device(device_id), acc["uid"])
     return {"token": _new_session(acc["id"]), "account": _public(acc), "moved_beliefs": moved}
@@ -180,3 +235,40 @@ def admin_reset_password(email: str) -> str:
     db.execute("UPDATE accounts SET pw_hash = ? WHERE id = ?", (hash_password(temp), acc["id"]))
     db.execute("DELETE FROM sessions WHERE account_id = ?", (acc["id"],))
     return temp
+
+
+def verify_email(token: str, device_id: Optional[str] = None) -> dict:
+    acc = _use_email_token(token, "verify")
+    db.execute("UPDATE accounts SET verified = 1, last_login = ? WHERE id = ?", (_now().isoformat(), acc["id"]))
+    moved = _merge_device(_clean_device(device_id), acc["uid"])
+    return {"token": _new_session(acc["id"]), "account": _public(acc), "moved_beliefs": moved}
+
+
+def resend_verification(email: str) -> None:
+    """Always answers the same way, so nobody can test which emails have accounts."""
+    acc = db.query_one("SELECT * FROM accounts WHERE email = ?", ((email or "").strip().lower(),))
+    if acc and not acc.get("verified", 1):
+        _send_verify(acc)
+
+
+def forgot_password(email: str) -> None:
+    acc = db.query_one("SELECT * FROM accounts WHERE email = ?", ((email or "").strip().lower(),))
+    if not acc:
+        return
+    url = f"{_site()}/reset?token={_new_email_token(acc['id'], 'reset', 1)}"
+    try:
+        mailer.send(acc["email"], "Reset your MarketPlayground password",
+                    f"Tap to choose a new password:\n{url}\n\nThe link works for 1 hour. If you didn't ask for this, ignore this email.",
+                    mailer.button_html("Reset your password", "Tap below to choose a new password.", url, "Choose a new password",
+                                       "The link works for 1 hour. If you didn't ask for this, ignore this email."))
+    except Exception as e:
+        print(f"[auth] reset email failed: {e}")
+
+
+def reset_password(token: str, new: str) -> dict:
+    _check_new_password(new)
+    acc = _use_email_token(token, "reset")
+    db.execute("UPDATE accounts SET pw_hash = ?, verified = 1 WHERE id = ?", (hash_password(new), acc["id"]))
+    db.execute("DELETE FROM sessions WHERE account_id = ?", (acc["id"],))
+    return {"token": _new_session(acc["id"]), "account": _public(acc)}
+

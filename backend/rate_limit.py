@@ -24,6 +24,8 @@ COSTLY_PREFIXES = (
     "/alpaca/preview_trade",
     "/v4/auth/login",   # slows down password guessing
     "/v4/auth/signup",
+    "/v4/auth/resend",  # each sends an email
+    "/v4/auth/forgot",
 )
 
 _lock = threading.Lock()

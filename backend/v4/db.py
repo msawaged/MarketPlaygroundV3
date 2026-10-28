@@ -221,6 +221,14 @@ def _schema() -> list[str]:
             created_at TEXT NOT NULL,
             last_login TEXT
         )""",
+        """CREATE TABLE IF NOT EXISTS email_tokens (
+            token_hash TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            used INTEGER NOT NULL DEFAULT 0
+        )""",
         """CREATE TABLE IF NOT EXISTS sessions (
             token_hash TEXT PRIMARY KEY,
             account_id TEXT NOT NULL,
@@ -269,7 +277,21 @@ def ensure_schema() -> None:
             cur = conn.cursor()
             for stmt in _schema():
                 cur.execute(stmt)
+        # additive migrations for tables that already exist (each in its own transaction; "already there" is fine)
+        for stmt in _migrations():
+            try:
+                with connect() as conn:
+                    conn.cursor().execute(stmt)
+            except Exception:
+                pass
         _initialized.add(key)
+
+
+def _migrations() -> list[str]:
+    return [
+        # accounts made before email verification existed count as verified
+        "ALTER TABLE accounts ADD COLUMN verified INTEGER NOT NULL DEFAULT 1",
+    ]
 
 
 def reset_for_tests() -> None:

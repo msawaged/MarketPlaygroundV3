@@ -21,7 +21,24 @@ function adopt(res) {
 }
 
 export async function signup({ email, password, name }) {
-  return adopt(await request('/v4/auth/signup', { method: 'POST', body: { email, password, name, device_id: userId() } }));
+  const res = await request('/v4/auth/signup', { method: 'POST', body: { email, password, name, device_id: userId() } });
+  return res.needs_verification ? res : adopt(res);  // with email set up, the account opens after the link is tapped
+}
+
+export async function verifyEmail(token) {
+  return adopt(await request('/v4/auth/verify', { method: 'POST', body: { token, device_id: userId() } }));
+}
+
+export function resendVerification(email) {
+  return request('/v4/auth/resend', { method: 'POST', body: { email } });
+}
+
+export function forgotPassword(email) {
+  return request('/v4/auth/forgot', { method: 'POST', body: { email } });
+}
+
+export async function resetPassword(token, password) {
+  return adopt(await request('/v4/auth/reset', { method: 'POST', body: { token, password } }));
 }
 
 export async function login({ email, password }) {
