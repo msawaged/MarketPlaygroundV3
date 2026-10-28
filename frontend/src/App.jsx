@@ -1,28 +1,16 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ToolSelectorPage from './components/ToolSelectorPage';
 import ChatInterface from './components/ChatInterface';
 import TrendingPage from './components/TrendingPage';
 import MyCallsPage from './components/MyCallsPage';
 import LearningPage from './components/LearningPage';
 import BasketBuilderPage from './BasketBuilderPage';
-import { PortfolioModal } from './components/PortfolioComponents';
-import BottomNavigation from './components/BottomNavigation';
-import { API_BASE } from './lib/api';
+import PracticePage from './components/PracticePage';
 
 // Heavier, less-used screens load on demand.
 const GeneratorPage = lazy(() => import('./components/GeneratorPage'));
 const StrategyOpsPage = lazy(() => import('./components/StrategyOpsPage'));
-
-function PortfolioPage() {
-  const navigate = useNavigate();
-  return (
-    <div className="min-h-screen bg-slate-950">
-      <PortfolioModal isOpen onClose={() => navigate('/chat')} BACKEND_URL={API_BASE} />
-      <BottomNavigation />
-    </div>
-  );
-}
 
 function Loading() {
   return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center">Loading…</div>;
@@ -41,7 +29,7 @@ export default function App() {
           <Route path="/my" element={<MyCallsPage />} />
           <Route path="/learning" element={<LearningPage />} />
           <Route path="/basket-builder" element={<BasketBuilderPage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/portfolio" element={<PracticePage />} />
           <Route path="/generator" element={<GeneratorPage />} />
           <Route path="/strategy-ops" element={<StrategyOpsPage />} />
           <Route path="*" element={<Navigate to="/select-tool" replace />} />

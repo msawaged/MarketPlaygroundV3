@@ -92,3 +92,11 @@ export function getLearning() {
 export function getMyBeliefs() {
   return request(`/v4/my_beliefs?user_id=${encodeURIComponent(userId())}`);
 }
+
+export function getPortfolio() {
+  return request(`/api/paper-trading/portfolio/${encodeURIComponent(userId())}?ts=${Date.now()}`);
+}
+
+export function closePosition(positionId) {
+  return request("/api/paper-trading/close_position", { method: "POST", body: { user_id: userId(), position_id: positionId } });
+}

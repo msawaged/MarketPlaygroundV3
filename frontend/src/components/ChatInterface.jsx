@@ -3,9 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
-import { API_BASE, processBelief } from '../lib/api';
+import { processBelief } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
-import { PortfolioModal } from './PortfolioComponents';
 import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
 import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
@@ -45,7 +44,6 @@ export default function ChatInterface() {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [risk, setRisk] = useState(loadRisk);
-  const [showPortfolio, setShowPortfolio] = useState(false);
   const [listening, setListening] = useState(false);
   const [recent, setRecent] = useState(recentBeliefs);
   const [showHow, setShowHow] = useState(() => !seen('how'));
@@ -86,7 +84,7 @@ export default function ChatInterface() {
     try {
       const data = await processBelief(belief, { riskProfile: useRisk });
       if (!data?.strategy || !data?.picks?.length) {
-        setMessages((m) => [...m, { id: Date.now() + 1, role: 'ai', text: data?.reason || "I couldn't turn that into a trade idea. Try saying what you think will grow, shrink, or change." }]);
+        setMessages((m) => [...m, { id: Date.now() + 1, role: 'ai', suggest: true, text: data?.reason || "I couldn't turn that into a trade idea. Try saying what you think will grow, shrink, or change." }]);
       } else {
         setMessages((m) => [...m, {
           id: Date.now() + 1, role: 'ai', data, belief, risk: useRisk,
@@ -97,7 +95,7 @@ export default function ChatInterface() {
       const offline = e instanceof TypeError; // fetch network failure
       setMessages((m) => [...m, {
         id: Date.now() + 1, role: 'error',
-        text: offline ? `Can't reach the MarketPlayground server (${API_BASE}). Check your connection and try again.` : e.message,
+        text: offline ? "Can't reach MarketPlayground right now. Check your connection and try again." : e.message,
         retry: belief,
       }]);
     } finally {
@@ -225,6 +223,13 @@ export default function ChatInterface() {
                 ) : (
                   <div>
                     <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-slate-800 border border-slate-700 px-4 py-3 text-sm text-slate-100">{m.text}</div>
+                    {m.suggest && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {EXAMPLES.slice(0, 3).map((ex) => (
+                          <button key={ex} onClick={() => send(ex)} className="text-xs px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400">Try: {ex}</button>
+                        ))}
+                      </div>
+                    )}
                     {m.data && (
                       <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} />
                     )}
@@ -294,8 +299,7 @@ export default function ChatInterface() {
         </form>
       </div>
 
-      {showPortfolio && <PortfolioModal isOpen={showPortfolio} onClose={() => setShowPortfolio(false)} BACKEND_URL={API_BASE} />}
-      <BottomNavigation onPortfolioClick={() => setShowPortfolio(true)} />
+      <BottomNavigation />
     </div>
   );
 }

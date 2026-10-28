@@ -479,6 +479,7 @@ class PaperTradingEngine:
                 """, (current_price, market_value, unrealized_pnl, pos['position_id']))
                 
                 position_data = {
+                    'position_id': pos['position_id'],
                     'ticker': pos['ticker'],
                     'position_type': pos['position_type'],
                     'quantity': pos['quantity'],
@@ -581,15 +582,18 @@ class PaperTradingEngine:
                     # Get current market price
                     current_price = self._get_real_market_price(position['ticker'])
                     
-                    # Calculate realized P&L
+                    # Calculate realized P&L (sqlite returns floats; keep money math in Decimal)
+                    current_price = Decimal(str(current_price))
+                    avg = Decimal(str(position['avg_price']))
+                    qty_d = Decimal(str(position['quantity']))
                     if position['position_type'] == 'long':
-                        realized_pnl = (current_price - position['avg_price']) * position['quantity']
-                        proceeds = position['quantity'] * current_price
+                        realized_pnl = (current_price - avg) * qty_d
+                        proceeds = qty_d * current_price
                     else:  # short
-                        realized_pnl = (position['avg_price'] - current_price) * position['quantity']
-                        proceeds = position['quantity'] * current_price
+                        realized_pnl = (avg - current_price) * qty_d
+                        proceeds = qty_d * current_price
                     
-                    commission = self._calculate_commission(position['quantity'], current_price)
+                    commission = Decimal(str(self._calculate_commission(position['quantity'], current_price)))
                     net_proceeds = proceeds - commission
                     
                     # Create closing order
@@ -604,17 +608,18 @@ class PaperTradingEngine:
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                     """, (
                         str(uuid.uuid4()), user_id, order_id, position['ticker'],
-                        transaction_type, position['quantity'], current_price,
-                        proceeds, commission, net_proceeds
+                        transaction_type, position['quantity'], float(current_price),
+                        float(proceeds), float(commission), float(net_proceeds)
                     ))
                     
                     # Update user balance
                     conn.execute("""
                         UPDATE users 
                         SET cash_balance = cash_balance + ?,
+                            buying_power = buying_power + ?,
                             total_pnl = total_pnl + ?
                         WHERE user_id = ?
-                    """, (net_proceeds, realized_pnl, user_id))
+                    """, (float(net_proceeds), float(net_proceeds), float(realized_pnl), user_id))
                     
                     # Remove position
                     conn.execute("""
