@@ -44,7 +44,7 @@ def env(tmp_path, monkeypatch):
         monkeypatch.setenv("DATABASE_URL", pg)
         import psycopg
         with psycopg.connect(pg) as conn:
-            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist, accounts, sessions CASCADE")
+            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist, accounts, sessions, broker_links, broker_orders CASCADE")
     else:
         monkeypatch.delenv("DATABASE_URL", raising=False)
         monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
@@ -526,3 +526,46 @@ def test_headlines_route(monkeypatch):
     monkeypatch.setattr(market, "headlines", lambda limit=6: [{"headline": "Copper hits record", "source": "x", "url": "", "symbols": ["FCX"], "created_at": ""}][:limit])
     r = _client().get("/v4/headlines", params={"limit": 3})
     assert r.status_code == 200 and r.json()["headlines"][0]["headline"] == "Copper hits record"
+
+
+def test_real_money_is_off_by_default_and_safe_when_on(monkeypatch):
+    pytest.importorskip("cryptography")
+    from backend.v4 import brokerage
+    c = _client()
+    tok = c.post("/v4/auth/signup", json={"email": "rm@example.com", "password": "long enough pw"}).json()["token"]
+    h = {"Authorization": f"Bearer {tok}"}
+    monkeypatch.delenv("MP_REAL_MONEY", raising=False)
+    assert c.get("/v4/broker/status", headers=h).json()["enabled"] is False
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 50}, headers=h).status_code == 403
+    assert c.get("/v4/broker/connect", headers=h).status_code == 403
+
+    # switched on, with a fake Alpaca behind it
+    monkeypatch.setenv("MP_REAL_MONEY", "on"); monkeypatch.setenv("MP_TOKEN_KEY", "k")
+    monkeypatch.setenv("ALPACA_OAUTH_CLIENT_ID", "cid"); monkeypatch.setenv("MP_MAX_ORDER_USD", "500")
+    url = c.get("/v4/broker/connect", headers=h).json()["url"]
+    assert "env=paper" in url and "client_id=cid" in url
+    state = url.split("state=")[1].split("&")[0]
+    sent = []
+
+    class R:
+        def __init__(self, code, js): self.status_code, self._js, self.content, self.text = code, js, b"x", ""
+        def json(self): return self._js
+    monkeypatch.setattr(brokerage.requests, "post", lambda *a, **k: R(200, {"access_token": "secret-token"}))
+    def fake_request(method, url, headers=None, json=None, timeout=None):
+        assert headers["Authorization"] == "Bearer secret-token" and url.startswith("https://paper-api.alpaca.markets")
+        if url.endswith("/v2/account"): return R(200, {"buying_power": "300", "cash": "300", "equity": "1000", "status": "ACTIVE"})
+        sent.append(json); return R(200, {"id": "o1", "status": "accepted"})
+    monkeypatch.setattr(brokerage.requests, "request", fake_request)
+    assert c.get("/v4/broker/callback", params={"code": "abc", "state": state}, follow_redirects=False).status_code in (302, 307)
+    assert "secret-token" not in db.query_one("SELECT token_enc FROM broker_links")["token_enc"]  # encrypted at rest
+    assert c.get("/v4/broker/status", headers=h).json()["connected"] is True
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 900}, headers=h).status_code == 400  # over cap
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 400}, headers=h).status_code == 400  # over buying power
+    pv = c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 100}, headers=h).json()
+    assert pv["env"] == "paper" and "You'll buy about $100.00 of WINR" in pv["plain"]
+    assert c.post("/v4/broker/order", json={"preview_id": pv["preview_id"]}, headers=h).status_code == 400  # must confirm
+    r = c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h)
+    assert r.status_code == 200 and sent[-1]["notional"] == "100.00" and sent[-1]["symbol"] == "WINR"
+    assert c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h).status_code == 409  # no double send
+    monkeypatch.setenv("MP_REAL_MONEY_PILOT", "someone@else.com")
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10}, headers=h).status_code == 403

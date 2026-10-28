@@ -228,6 +228,28 @@ def _schema() -> list[str]:
             expires_at TEXT NOT NULL
         )""",
         "CREATE INDEX IF NOT EXISTS ix_sessions_account ON sessions(account_id)",
+        """CREATE TABLE IF NOT EXISTS broker_links (
+            account_id TEXT PRIMARY KEY,
+            broker TEXT NOT NULL,
+            env TEXT NOT NULL,
+            token_enc TEXT NOT NULL,
+            connected_at TEXT NOT NULL
+        )""",
+        """CREATE TABLE IF NOT EXISTS broker_orders (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL,
+            env TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            status TEXT NOT NULL,
+            ticker TEXT NOT NULL,
+            side TEXT NOT NULL,
+            notional REAL NOT NULL,
+            est_price REAL,
+            belief_id TEXT,
+            pick_id TEXT,
+            request TEXT,
+            response TEXT
+        )""",
         """CREATE TABLE IF NOT EXISTS kv_cache (
             k TEXT PRIMARY KEY,
             v TEXT NOT NULL,

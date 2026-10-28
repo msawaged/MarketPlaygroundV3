@@ -7,6 +7,7 @@ import Page, { Card } from './ui/Page';
 import {
   useAccount, signup, login, logout, refreshAccount, updateName, changePassword, deleteAccount, initials,
 } from '../lib/auth';
+import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
 
 function Field({ label, type = 'text', value, onChange, autoComplete, placeholder, reveal }) {
   const [show, setShow] = useState(false);
@@ -113,6 +114,47 @@ function SignedOut() {
   );
 }
 
+function Brokerage() {
+  const b = useBroker();
+  const loc = useLocation();
+  const [err, setErr] = useState(null);
+  const flag = new URLSearchParams(loc.search).get('broker');
+  useEffect(() => { refreshBroker(); }, []);
+  if (!b) return null;
+  if (!b.enabled) {
+    return (
+      <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
+        <div className="text-sm font-bold">💵 Real money: coming after the beta</div>
+        <p className="mt-1 text-sm text-slate-300">You'll be able to connect your own brokerage account and act on your beliefs with real money, approving every single trade. Practice stays free.</p>
+      </Card>
+    );
+  }
+  return (
+    <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-bold">💵 Your brokerage</div>
+        <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-amber-400/15 text-amber-200">{b.env === 'live' ? 'Real money' : 'Alpaca practice side'}</span>
+      </div>
+      {flag === 'connected' && <p className="mt-2 text-sm text-green-300">✓ Connected.</p>}
+      {flag === 'failed' && <p className="mt-2 text-sm text-red-300">That didn't work. Please try again.</p>}
+      {b.connected ? (
+        <>
+          <p className="mt-2 text-sm text-slate-300">Alpaca account connected{b.account ? ` · buying power $${b.account.buying_power.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}. Stock ideas now show a button to invest; you approve every order.</p>
+          <button onClick={() => disconnectBroker().catch((e) => setErr(e.message))} className="mt-3 text-xs text-slate-400 underline">Disconnect</button>
+        </>
+      ) : b.pilot === false ? (
+        <p className="mt-2 text-sm text-slate-300">Real money is in a small private pilot right now.</p>
+      ) : (
+        <>
+          <p className="mt-2 text-sm text-slate-300">Connect your own Alpaca account. Alpaca holds your money; MarketPlayground never does, and nothing is bought without your OK.</p>
+          <button onClick={() => connectBroker().catch((e) => setErr(e.message))} className="mt-3 w-full rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 py-3 font-bold">Connect Alpaca</button>
+        </>
+      )}
+      {err && <p className="mt-2 text-sm text-red-300">{err}</p>}
+    </Card>
+  );
+}
+
 function SignedIn({ acc }) {
   const navigate = useNavigate();
   const [name, setName] = useState(acc.name || '');
@@ -161,6 +203,8 @@ function SignedIn({ acc }) {
           <button onClick={saveName} className="rounded-2xl bg-slate-800 border border-slate-700 px-4 text-sm font-bold hover:border-blue-400">{saved ? '✓ Saved' : 'Save'}</button>
         </div>
       </Card>
+
+      <Brokerage />
 
       {msg && <div className={`mt-3 rounded-2xl px-3.5 py-2.5 text-sm ${msg.bad ? 'bg-red-950/50 border border-red-500/40 text-red-200' : 'bg-green-950/40 border border-green-500/30 text-green-200'}`} role="status">{msg.text}</div>}
 

@@ -9,6 +9,8 @@ import { sendFeedback, paperTrade } from '../../lib/api';
 import Term from '../ui/Term';
 import ReplayPanel from './ReplayPanel';
 import { shareCard } from '../../lib/shareCard';
+import { useBroker } from '../../lib/broker';
+import RealMoneySheet from './RealMoneySheet';
 
 const PLAIN = {
   'Buy Stock': 'Own the shares. You gain if the price rises; your risk is what you put in.',
@@ -60,6 +62,8 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const navigate = useNavigate();
   const [shared, setShared] = useState(null);
   const [replay, setReplay] = useState(null);
+  const broker = useBroker();
+  const [realOpen, setRealOpen] = useState(false);
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
   const [amount, setAmount] = useState(1000);
@@ -369,6 +373,13 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </p>
           )}
           {st?.startsWith?.('error:') && <p className="text-xs text-red-400">{st.slice(6)}</p>}
+
+          {broker?.enabled && broker?.connected && pick.structure === 'Buy Stock' && pick.direction === 'bullish' && (
+            <button onClick={() => setRealOpen(true)} className="w-full rounded-lg py-3 text-sm font-bold border border-amber-300/50 bg-amber-400/10 text-amber-100 hover:border-amber-200">
+              {broker.env === 'live' ? '💵 Invest real money in' : '💵 Buy in my Alpaca account (practice side):'} {pick.ticker}
+            </button>
+          )}
+          <RealMoneySheet open={realOpen} onClose={() => setRealOpen(false)} pick={pick} beliefId={data.belief_id} defaultAmount={amount} broker={broker} />
 
           {/* Variations + share */}
           <div className="grid grid-cols-3 gap-2 pt-1">

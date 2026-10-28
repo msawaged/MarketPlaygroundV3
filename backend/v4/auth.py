@@ -164,6 +164,7 @@ def delete_account(token: Optional[str], password: str) -> None:
     if not check_password(password or "", acc["pw_hash"]):
         raise AuthError("Password is wrong.", 401)
     db.execute("DELETE FROM sessions WHERE account_id = ?", (acc["id"],))
+    db.execute("DELETE FROM broker_links WHERE account_id = ?", (acc["id"],))
     db.execute("DELETE FROM accounts WHERE id = ?", (acc["id"],))
     # Beliefs stay (anonymous) so the shared learning keeps them; they're no longer tied to an email.
     db.execute("UPDATE beliefs SET user_id = ? WHERE user_id = ?", (f"deleted-{uuid.uuid4().hex[:8]}", acc["uid"]))

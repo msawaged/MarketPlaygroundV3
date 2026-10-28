@@ -55,3 +55,17 @@ cd frontend && npm test                              # profit/loss math behind t
 | `ALLOWED_ORIGINS` | — | Extra website origins allowed to call the API (comma-separated) |
 
 For education, not investment advice.
+
+## Real money (Stage 2) — switched off
+
+People connect their **own** Alpaca account (Alpaca Connect / OAuth) and approve every order; Alpaca holds
+the money. Code: `backend/v4/brokerage.py`, `/v4/broker/*`, the Account page card, and the "Buy in my
+Alpaca account" button on stock ideas. Stocks only, dollar-amount market orders, preview → tick → confirm,
+2-minute preview expiry, per-order cap, encrypted tokens, every order logged in `broker_orders`.
+
+Turn on only after a securities lawyer signs off:
+1. Alpaca dashboard → OAuth Apps → register the app; callback URL `<backend>/v4/broker/callback`.
+   Live trading for other people needs Alpaca's approval.
+2. On the backend in Render set `ALPACA_OAUTH_CLIENT_ID`, `ALPACA_OAUTH_CLIENT_SECRET`,
+   `ALPACA_OAUTH_REDIRECT_URI`, optionally `MP_REAL_MONEY_PILOT=email1,email2`, then `MP_REAL_MONEY=on`.
+3. Test with `MP_BROKER_ENV=paper` (the practice side of real Alpaca accounts) before switching to `live`.

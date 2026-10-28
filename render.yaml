@@ -36,10 +36,23 @@ services:
         value: claude-sonnet-5-5
       - key: MP_ADMIN_TOKEN
         generateValue: true
+      # Real money (Stage 2: people connect their own Alpaca account). OFF until a lawyer signs off.
+      - key: MP_REAL_MONEY
+        value: "off"
+      - key: MP_BROKER_ENV
+        value: paper
+      - key: MP_MAX_ORDER_USD
+        value: "1000"
+      - key: MP_TOKEN_KEY
+        generateValue: true
+      - key: MP_SITE_URL
+        value: https://marketplayground-web.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: marketplayground-db
           property: connectionString
+      # When turning real money on, add ALPACA_OAUTH_CLIENT_ID, ALPACA_OAUTH_CLIENT_SECRET and
+      # ALPACA_OAUTH_REDIRECT_URI (= <backend>/v4/broker/callback) by hand in the Render dashboard.
 
   # (v4) The old retrain-worker was removed: it retrained the legacy ML models nonstop.
   #      Suspend/delete it in the Render dashboard. Code kept in backend/retrain_worker.py.

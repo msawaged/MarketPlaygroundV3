@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, db, engine, grader, interpreter, market, nn
+from . import auth, brokerage, db, engine, grader, interpreter, market, nn
 
 router = APIRouter()
 
@@ -181,6 +181,69 @@ async def admin_accounts(x_admin_token: Optional[str] = Header(None)):
     _check_admin(x_admin_token)
     rows = await run_in_threadpool(db.query, "SELECT email, name, created_at, last_login FROM accounts ORDER BY created_at DESC")
     return {"count": len(rows), "accounts": rows}
+
+
+# ---------------- real money (switched off until MP_REAL_MONEY=on) ----------------
+
+class PreviewIn(BaseModel):
+    ticker: str
+    side: str = "buy"
+    amount_usd: float
+    belief_id: Optional[str] = None
+    pick_id: Optional[str] = None
+
+
+class PlaceIn(BaseModel):
+    preview_id: str
+    confirm: bool = False
+
+
+async def _broker_call(fn, *args):
+    try:
+        return await run_in_threadpool(fn, *args)
+    except brokerage.BrokerError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+    except auth.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+
+
+@router.get("/broker/status")
+async def broker_status(authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.status, _token(authorization))
+
+
+@router.get("/broker/connect")
+async def broker_connect(authorization: Optional[str] = Header(None)):
+    return {"url": await _broker_call(brokerage.connect_url, _token(authorization))}
+
+
+@router.get("/broker/callback")
+async def broker_callback(code: str = "", state: str = "", error: str = ""):
+    from fastapi.responses import RedirectResponse
+    site = os.getenv("MP_SITE_URL", "").rstrip("/")
+    if error or not code:
+        return RedirectResponse(f"{site}/account?broker=cancelled")
+    try:
+        await run_in_threadpool(brokerage.finish_connect, code, state)
+    except brokerage.BrokerError:
+        return RedirectResponse(f"{site}/account?broker=failed")
+    return RedirectResponse(f"{site}/account?broker=connected")
+
+
+@router.post("/broker/disconnect")
+async def broker_disconnect(authorization: Optional[str] = Header(None)):
+    await _broker_call(brokerage.disconnect, _token(authorization))
+    return {"ok": True}
+
+
+@router.post("/broker/preview")
+async def broker_preview(body: PreviewIn, authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.preview, _token(authorization), body.ticker, body.side, body.amount_usd, body.belief_id, body.pick_id)
+
+
+@router.post("/broker/order")
+async def broker_order(body: PlaceIn, authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.place, _token(authorization), body.preview_id, body.confirm)
 
 
 @router.get("/headlines")
