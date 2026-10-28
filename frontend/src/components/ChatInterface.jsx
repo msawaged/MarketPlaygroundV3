@@ -98,7 +98,7 @@ export default function ChatInterface() {
     const q = new URLSearchParams(location.search);
     const b = q.get('b');
     if (!b) return;
-    if (q.get('go') === '1' && !autoSent.current) { autoSent.current = true; send(b); return; }
+    if (q.get('go') === '1') { if (!autoSent.current) { autoSent.current = true; send(b); } return; }
     setInput(b); inputRef.current?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
