@@ -26,14 +26,17 @@ export default function LearningPage() {
   const [s, setS] = useState({ loading: true });
   useEffect(() => {
     let alive = true;
+    // Owner opens /learning?key=<MP_ADMIN_TOKEN> once on their device; regular users get a 'private' note.
+    const k = new URLSearchParams(window.location.search).get('key');
+    if (k) { try { localStorage.setItem('mp_owner_key', k); } catch { /* ignore */ } window.history.replaceState(null, '', '/learning'); }
     getLearning().then((d) => alive && setS({ data: d })).catch((e) => alive && setS({ error: e.message }));
     return () => { alive = false; };
   }, []);
   const d = s.data;
 
   return (
-    <Page title="How it learns" subtitle="MarketPlayground gets better with every belief, from everyone.">
-      {s.error && <Card className="mt-6 text-sm text-red-200 border-red-500/40">Couldn't load: {s.error}</Card>}
+    <Page title="How it learns" subtitle="Owner view: the learning loop, the practice feed and the network.">
+      {s.error && <Card className="mt-6 text-sm text-slate-300">This page is private.</Card>}
       {s.loading && <div className="mt-6 h-24 rounded-3xl bg-slate-800/50 animate-pulse" />}
 
       {d && (

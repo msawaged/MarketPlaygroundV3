@@ -94,10 +94,7 @@ export default function TrendingPage() {
           ))}
         </div>
 
-        <button onClick={() => navigate('/learning')} className="mt-6 w-full rounded-3xl border border-slate-700/70 bg-gradient-to-r from-blue-600/20 to-slate-900/70 p-4 text-left hover:border-blue-400/50">
-          <div className="font-bold">🧠 How these picks get smarter</div>
-          <div className="text-xs text-slate-400">Every belief here is graded against the market and feeds the shared learning.</div>
-        </button>
+
 
         <p className="mt-6 text-[11px] text-slate-500">
           "vs S&amp;P" is how a pick did against the S&amp;P 500, in the direction people expected, 30 days after it was suggested. Past results don't predict future ones.

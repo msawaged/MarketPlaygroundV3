@@ -266,8 +266,9 @@ async def get_replay(tickers: str, directions: str = "", days: int = 365):
 
 
 @router.get("/learning")
-async def get_learning():
-    """How the shared learning is going, in plain words (aggregate only)."""
+async def get_learning(x_admin_token: Optional[str] = Header(None)):
+    """How the shared learning is going (owner only: it shows the practice feed and network internals)."""
+    _check_admin(x_admin_token)
     return await run_in_threadpool(engine.learning_status)
 
 

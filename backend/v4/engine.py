@@ -135,12 +135,14 @@ def process_belief(
     preds, w, model_id = nn.predict(records)
     stats = {s["ticker"]: s for s in learning.ticker_stats(interp["themes"], [v["ticker"] for v in valid])}
     claude_parts = [v["score"] + learning.ticker_adjustment(stats.get(v["ticker"]), v.get("direction", "bullish")) for v in valid]
+    # what people see: track records from real people's beliefs only (never the practice feed)
+    shown_stats = {s["ticker"]: s for s in learning.ticker_stats(interp["themes"], [v["ticker"] for v in valid], real_only=True)}
     nn_parts = nn.on_claude_scale(preds, claude_parts) if preds else claude_parts
     for i, v in enumerate(valid):
         v["features"] = records[i]
         v["nn_score"] = preds[i] if preds else None
         v["final_score"] = (1 - w) * claude_parts[i] + w * nn_parts[i]
-        v["track"] = stats.get(v["ticker"])
+        v["track"] = shown_stats.get(v["ticker"])
     valid.sort(key=lambda v: v["final_score"], reverse=True)
 
     # 5. structures
@@ -307,14 +309,14 @@ def trending(days: int = 14, limit: int = 8) -> dict:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     rows = db.query(
         "SELECT id, themes, direction, interpretation, source FROM beliefs "
-        "WHERE created_at >= ? AND source != 'seed_backfill' ORDER BY created_at DESC LIMIT 5000",
+        "WHERE created_at >= ? AND source = 'user' ORDER BY created_at DESC LIMIT 5000",
         (cutoff,),
     )
     window = f"last {days} days"
     if len(rows) < 5:  # quiet period: fall back to all recent history
         rows = db.query(
             "SELECT id, themes, direction, interpretation, source FROM beliefs "
-            "WHERE source != 'seed_backfill' ORDER BY created_at DESC LIMIT 5000"
+            "WHERE source = 'user' ORDER BY created_at DESC LIMIT 5000"
         )
         window = "all time"
     counts: Counter = Counter()
@@ -338,7 +340,7 @@ def trending(days: int = 14, limit: int = 8) -> dict:
             f"GROUP BY ticker ORDER BY COUNT(*) DESC LIMIT 3",
             ids,
         )
-        stats = {s["ticker"]: s for s in learning.ticker_stats([theme], [t["ticker"] for t in top])} if top else {}
+        stats = {s["ticker"]: s for s in learning.ticker_stats([theme], [t["ticker"] for t in top], real_only=True)} if top else {}
         out.append({
             "theme": theme,
             "beliefs": n,

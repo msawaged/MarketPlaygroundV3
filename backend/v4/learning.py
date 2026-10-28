@@ -85,8 +85,11 @@ def similar_beliefs(text: str, k: int = 6, min_sim: float = 0.12) -> list[dict]:
     return out
 
 
-def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: int = 10) -> list[dict]:
-    """Aggregate graded results per ticker for picks tagged with any of `themes`."""
+def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: int = 10,
+                 real_only: bool = False) -> list[dict]:
+    """Aggregate graded results per ticker for picks tagged with any of `themes`.
+    real_only=True counts only beliefs from real people (what users are shown); the learning
+    itself uses everything, including the practice beliefs the system feeds itself."""
     if not themes:
         return []
     ph = ",".join("?" for _ in themes)
@@ -95,6 +98,7 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
     if tickers:
         tick_sql = f" AND p.ticker IN ({','.join('?' for _ in tickers)})"
         params += list(tickers)
+    real_sql = " AND p.belief_id IN (SELECT id FROM beliefs WHERE source = 'user')" if real_only else ""
     rows = db.query(
         f"""SELECT p.ticker,
                    COUNT(DISTINCT p.id) AS n,
@@ -103,7 +107,7 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
                    AVG(CASE WHEN o.dir_excess > 0 THEN 1.0 ELSE 0.0 END) AS hit
             FROM picks p
             JOIN outcomes o ON o.pick_id = p.id AND o.checkpoint_days = ?
-            WHERE p.id IN (SELECT pick_id FROM pick_themes WHERE theme IN ({ph})){tick_sql}
+            WHERE p.id IN (SELECT pick_id FROM pick_themes WHERE theme IN ({ph})){tick_sql}{real_sql}
             GROUP BY p.ticker
             ORDER BY COUNT(DISTINCT p.id) DESC
             LIMIT {int(limit) if not tickers else 1000}""",

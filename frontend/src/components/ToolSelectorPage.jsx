@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ShoppingBasket, TrendingUp, Brain, ArrowRight, Target } from 'lucide-react';
+import { Flame, ShoppingBasket, TrendingUp, ArrowRight, Target } from 'lucide-react';
 import BottomNavigation from './BottomNavigation';
 import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
@@ -150,14 +150,7 @@ export default function ToolSelectorPage() {
           })}
         </div>
 
-        <button onClick={() => navigate('/learning')} className="mt-2.5 w-full text-left rounded-3xl border border-slate-700/70 bg-gradient-to-r from-blue-600/20 to-slate-900/70 p-4 flex items-center gap-3 hover:border-blue-400/50">
-          <span className="w-10 h-10 rounded-2xl flex items-center justify-center text-blue-200 bg-blue-400/15"><Brain className="w-5 h-5" aria-hidden /></span>
-          <span className="min-w-0">
-            <span className="block font-bold">How it learns</span>
-            <span className="block text-xs text-slate-400">Every belief from everyone makes the next pick smarter</span>
-          </span>
-          <ArrowRight className="w-4 h-4 ml-auto text-slate-400 shrink-0" aria-hidden />
-        </button>
+
 
         <div className="mt-8 flex items-center justify-between text-[11px] text-slate-500">
           <span>For education, not investment advice.</span>

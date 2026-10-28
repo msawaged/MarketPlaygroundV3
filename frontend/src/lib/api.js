@@ -30,11 +30,11 @@ function authHeader() {
   try { const t = localStorage.getItem("mp_token"); return t ? { Authorization: `Bearer ${t}` } : {}; } catch { return {}; }
 }
 
-export async function request(path, { method = "GET", body, signal } = {}) {
+export async function request(path, { method = "GET", body, signal, headers = {} } = {}) {
   const r = await fetch(`${API_BASE}${path}`, {
     method,
     signal,
-    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...authHeader() },
+    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...authHeader(), ...headers },
     body: body ? JSON.stringify(body) : undefined,
   });
   let data = null;
@@ -88,8 +88,13 @@ export function generateBasket(inputText) {
 }
 
 /** How the shared learning is going (aggregate, plain English). */
+/** Owner-only: the learning page shows the practice feed and network internals. */
+export function ownerKey() {
+  try { return localStorage.getItem("mp_owner_key") || ""; } catch { return ""; }
+}
+
 export function getLearning() {
-  return request("/v4/learning");
+  return request("/v4/learning", { headers: { "X-Admin-Token": ownerKey() } });
 }
 
 /** This device's beliefs and how the picks it was shown are doing so far. */

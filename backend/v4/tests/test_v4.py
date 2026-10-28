@@ -396,7 +396,9 @@ def test_learning_status_and_my_beliefs(monkeypatch):
     from backend.v4.router import router
     app = FastAPI(); app.include_router(router, prefix="/v4")
     c = TestClient(app)
-    assert c.get("/v4/learning").status_code == 200
+    assert c.get("/v4/learning").status_code == 403  # owner only
+    monkeypatch.setenv("MP_ADMIN_TOKEN", "owner")
+    assert c.get("/v4/learning", headers={"X-Admin-Token": "owner"}).status_code == 200
     assert c.get("/v4/my_beliefs", params={"user_id": "u-me"}).json()["beliefs"][0]["text"].startswith("plumbing")
     assert c.get("/v4/admin/ml").status_code == 403
 
@@ -653,3 +655,15 @@ def test_auto_warmup_force_feeds_until_target(monkeypatch):
     monkeypatch.setenv("MP_WARMUP_GRADED", "1")
     out3 = seeder.auto(claude_client=fake)
     assert "backfill" not in out3  # warmed up: stop force-feeding
+
+
+def test_users_never_see_practice_beliefs():
+    fake = FakeClaude()
+    seeder.run("backfill", 6, claude_client=fake)       # practice feed, graded right away
+    seeder.run("live", 3, claude_client=fake)
+    assert engine.trending()["themes"] == []             # nothing from real people yet
+    r = engine.process_belief("plumbing demand is going to be high", "u-real", claude_client=fake)
+    assert all(p["track_record"] is None for p in r["picks"])  # practice results never shown as a track record
+    t = engine.trending()
+    assert len(t["themes"]) > 0 and all(th["beliefs"] == 1 for th in t["themes"])
+
