@@ -149,8 +149,13 @@ def third_friday(year: int, month: int) -> date:
     return d
 
 
+MIN_DAYS_TO_EXPIRY = 30
+
+
 def pick_expiry(as_of: date, horizon_days: int) -> date:
-    target = as_of + timedelta(days=max(21, min(horizon_days, 730)))
+    # Never short-fuse: at least 30 days. Same-day and short-dated options lose beginners the most
+    # (Bogousslavsky & Muravyev 2025: 0DTE trades averaged -4.6% vs +0.1% for other options).
+    target = as_of + timedelta(days=max(MIN_DAYS_TO_EXPIRY, min(horizon_days, 730)))
     y, m = target.year, target.month
     exp = third_friday(y, m)
     if exp < target:

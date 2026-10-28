@@ -93,7 +93,8 @@ def process_belief(
     now = datetime.now(timezone.utc).isoformat()
     base = {
         "belief_id": belief_id, "user_id": user_id, "risk_profile": risk_profile,
-        "interpretation": {k: interp.get(k) for k in ("summary", "causal_chain", "themes", "horizon_days", "conviction", "direction")},
+        "interpretation": {k: interp.get(k) for k in ("summary", "causal_chain", "themes", "horizon_days", "conviction", "direction",
+                                                      "wrong_if", "exit_rule", "clarify_question", "clarify_options")},
         "engine": "v4", "usage": usage,
     }
 
@@ -450,3 +451,56 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
                     "summary": interp.get("summary"), "direction": r["direction"],
                     "horizon_days": r["horizon_days"], "picks": by_belief.get(r["id"], [])})
     return {"beliefs": out, "summary": {"tracked": total, "ahead": wins} if total else None, "as_of": today_s}
+
+
+# ---------------- one-year replay ----------------
+
+def replay(tickers: list[str], directions: list[str], days: int = 365) -> dict:
+    """How these picks did over the past `days`, vs SPY, from real daily closes. No Claude call."""
+    days = int(max(30, min(days, 365 * 3)))
+    import bisect
+    end_d = market.today()
+    start_s = (end_d - timedelta(days=days)).isoformat()
+    try:
+        sdates, scloses = market.daily_closes("SPY")
+    except Exception as e:
+        raise market.MarketDataError(f"no SPY history: {e}")
+    i0 = bisect.bisect_left(sdates, start_s)
+    if i0 >= len(sdates) - 5:
+        raise market.MarketDataError("not enough history")
+    axis = sdates[i0:]
+    step = max(1, len(axis) // 52)
+    marks = axis[::step] + ([axis[-1]] if axis[-1] not in axis[::step] else [])
+    spy0 = scloses[i0]
+    spy_pts = [round(scloses[bisect.bisect_left(sdates, d)] / spy0 - 1, 4) for d in marks]
+
+    picks, series = [], []
+    for t, dirn in zip(tickers[:5], directions[:5]):
+        try:
+            dates, closes = market.daily_closes(t)
+        except Exception:
+            continue
+        j0 = bisect.bisect_left(dates, axis[0])
+        if j0 >= len(dates) or dates[j0] > (end_d - timedelta(days=days - 10)).isoformat():
+            continue  # listed too recently for a fair replay
+        p0 = closes[j0]
+        pts = []
+        for d in marks:
+            k = bisect.bisect_right(dates, d) - 1
+            pts.append(round(closes[max(k, j0)] / p0 - 1, 4))
+        ret = closes[-1] / p0 - 1
+        sign = -1.0 if dirn == "bearish" else 1.0
+        picks.append({"ticker": t, "direction": dirn, "return": round(ret, 4),
+                      "vs_spy": round(sign * (ret - spy_pts[-1]), 4), "right": sign * ret > 0})
+        series.append(pts)
+    if not picks:
+        raise market.MarketDataError("no history for these picks")
+    basket = [round(sum(s[i] for s in series) / len(series), 4) for i in range(len(marks))]
+    bull = sum(1 for p in picks if p["direction"] != "bearish") >= len(picks) / 2
+    return {
+        "days": days, "start": axis[0], "end": axis[-1], "dates": marks,
+        "basket": basket, "spy": spy_pts, "picks": picks,
+        "basket_return": basket[-1], "spy_return": spy_pts[-1],
+        "belief_right": (basket[-1] > 0) if bull else (basket[-1] < 0),
+        "beat_spy": (basket[-1] > spy_pts[-1]) if bull else (basket[-1] < spy_pts[-1]),
+    }

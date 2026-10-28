@@ -217,3 +217,33 @@ def clear_cache() -> None:
     with _lock:
         _bars_cache.clear()
         _asset_cache.clear()
+
+
+_news_cache: dict = {"at": 0.0, "items": []}
+
+
+def headlines(limit: int = 6) -> list[dict]:
+    """Latest market headlines from Alpaca's news feed, cached 20 minutes. [] when unavailable."""
+    import time
+    with _lock:
+        if time.time() - _news_cache["at"] < 1200 and _news_cache["items"]:
+            return _news_cache["items"][:limit]
+    try:
+        r = _session.get(f"{_data_base()}/v1beta1/news", headers=_headers(),
+                         params={"limit": 30, "sort": "desc", "include_content": "false"}, timeout=8)
+        r.raise_for_status()
+        raw = r.json().get("news", [])
+    except Exception:
+        return []
+    items, seen = [], set()
+    for n in raw:
+        h = (n.get("headline") or "").strip()
+        key = h.lower()[:60]
+        if not h or key in seen or len(h) > 160:
+            continue
+        seen.add(key)
+        items.append({"headline": h, "source": n.get("source") or "", "url": n.get("url") or "",
+                      "symbols": (n.get("symbols") or [])[:4], "created_at": n.get("created_at") or ""})
+    with _lock:
+        _news_cache.update(at=time.time(), items=items)
+    return items[:limit]

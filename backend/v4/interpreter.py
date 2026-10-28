@@ -37,6 +37,7 @@ SCHEMA: dict[str, Any] = {
     "required": [
         "is_market_belief", "note", "summary", "direction", "horizon_days",
         "conviction", "themes", "causal_chain", "candidates",
+        "wrong_if", "exit_rule", "clarify_question", "clarify_options",
     ],
     "properties": {
         "is_market_belief": {"type": "boolean"},
@@ -47,6 +48,10 @@ SCHEMA: dict[str, Any] = {
         "conviction": {"type": "string", "enum": ["low", "medium", "high"]},
         "themes": {"type": "array", "items": {"type": "string"}},
         "causal_chain": {"type": "string"},
+        "wrong_if": {"type": "array", "items": {"type": "string"}},
+        "exit_rule": {"type": "string"},
+        "clarify_question": {"type": "string"},
+        "clarify_options": {"type": "array", "items": {"type": "string"}},
         "candidates": {
             "type": "array",
             "items": {
@@ -79,6 +84,10 @@ Return:
 - themes: 2-5 short lowercase tags that a different user with a similar idea would also produce (e.g. "plumbing", "housing", "water infrastructure"). Prefer common, reusable words over clever ones.
 - causal_chain: 1-3 sentences: belief -> what changes in the real economy -> who earns more or less.
 - candidates: 5 to 12 US-listed stocks or ETFs that express the belief, best first. Mix the most direct pure-plays, key suppliers or beneficiaries, and one relevant sector ETF when one exists. Each candidate has its own direction (a belief can be bullish for one company and bearish for another). score is 0-1: how directly and cleanly that ticker expresses the belief.
+
+- wrong_if: 2-3 short, observable signs that the belief is failing (e.g. "Housing starts fall two months in a row"). Plain words, no jargon.
+- exit_rule: one plain sentence a beginner can follow to get out (e.g. "Sell if it drops 10% from where you bought, or if two of the signs above happen.").
+- clarify_question / clarify_options: if ONE short question would clearly change which companies fit (region, time frame, which part of the trend), ask it with 2-3 short tappable options (each under 25 characters). Otherwise return "" and []. Still return your best-guess candidates either way.
 
 Rules:
 - Only real, currently listed US tickers in uppercase. No OTC, no foreign-only listings, no crypto.
@@ -146,6 +155,11 @@ def _sanitize(out: dict) -> dict:
         c["score"] = float(max(0.0, min(1.0, c.get("score") or 0.5)))
         cands.append(c)
     out["candidates"] = cands[:12]
+    out["wrong_if"] = [str(w).strip() for w in (out.get("wrong_if") or []) if str(w).strip()][:3]
+    out["exit_rule"] = str(out.get("exit_rule") or "").strip()
+    opts = [str(o).strip()[:40] for o in (out.get("clarify_options") or []) if str(o).strip()][:3]
+    q = str(out.get("clarify_question") or "").strip()
+    out["clarify_question"], out["clarify_options"] = (q, opts) if q and len(opts) >= 2 else ("", [])
     return out
 
 

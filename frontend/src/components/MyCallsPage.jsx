@@ -6,6 +6,7 @@ import Page, { Card, pct } from './ui/Page';
 import Term from './ui/Term';
 import { getMyBeliefs } from '../lib/api';
 import { useAccount } from '../lib/auth';
+import { shareCard } from '../lib/shareCard';
 
 function ago(iso) {
   const d = (Date.now() - new Date(iso).getTime()) / 86400000;
@@ -13,6 +14,20 @@ function ago(iso) {
   if (d < 2) return 'yesterday';
   if (d < 30) return `${Math.floor(d)} days ago`;
   return `${Math.floor(d / 30)} mo ago`;
+}
+
+async function shareCall(b) {
+  const graded = b.picks.filter((p) => p.vs_spy != null);
+  const avg = graded.reduce((s, p) => s + p.vs_spy, 0) / Math.max(1, graded.length);
+  const days = Math.max(1, Math.round((Date.now() - new Date(b.created_at).getTime()) / 86400000));
+  return shareCard({
+    kicker: avg >= 0 ? 'I called it' : 'My call, so far',
+    belief: b.text,
+    headline: `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)}% vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
+    good: avg >= 0,
+    picks: b.picks.map((p) => ({ ticker: p.ticker, label: 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)}%`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
+    url: window.location.host,
+  }, `My call on MarketPlayground: "${b.text}"`);
 }
 
 function Ring({ ahead, total }) {
@@ -87,7 +102,12 @@ export default function MyCallsPage() {
                   <div className="font-semibold leading-snug">“{b.text}”</div>
                   <div className="mt-0.5 text-xs text-slate-500">{ago(b.created_at)}{b.horizon_days ? ` · plays out over ~${b.horizon_days >= 60 ? `${Math.round(b.horizon_days / 30)} months` : `${b.horizon_days} days`}` : ''}</div>
                 </div>
-                <button onClick={() => navigate(`/chat?b=${encodeURIComponent(b.text)}&go=1`)} className="shrink-0 text-xs font-semibold text-blue-300 hover:text-blue-200">Run again</button>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <button onClick={() => navigate(`/chat?b=${encodeURIComponent(b.text)}&go=1`)} className="text-xs font-semibold text-blue-300 hover:text-blue-200">Run again</button>
+                  {b.picks.some((p) => p.vs_spy != null) && (
+                    <button onClick={() => shareCall(b)} className="text-xs font-semibold text-slate-300 hover:text-white">↗ Share</button>
+                  )}
+                </div>
               </div>
               {b.picks.length > 0 && (
                 <div className="mt-3 grid grid-cols-3 gap-2">

@@ -183,6 +183,24 @@ async def admin_accounts(x_admin_token: Optional[str] = Header(None)):
     return {"count": len(rows), "accounts": rows}
 
 
+@router.get("/headlines")
+async def get_headlines(limit: int = 6):
+    return {"headlines": await run_in_threadpool(market.headlines, max(1, min(limit, 12)))}
+
+
+@router.get("/replay")
+async def get_replay(tickers: str, directions: str = "", days: int = 365):
+    ts = [t.strip().upper() for t in tickers.split(",") if t.strip()][:5]
+    ds = [d.strip().lower() for d in directions.split(",")] if directions else []
+    ds = (ds + ["bullish"] * len(ts))[:len(ts)]
+    if not ts:
+        raise HTTPException(status_code=400, detail="tickers required")
+    try:
+        return await run_in_threadpool(engine.replay, ts, ds, days)
+    except market.MarketDataError as e:
+        raise HTTPException(status_code=404, detail=f"Not enough price history for a replay ({e}).")
+
+
 @router.get("/learning")
 async def get_learning():
     """How the shared learning is going, in plain words (aggregate only)."""

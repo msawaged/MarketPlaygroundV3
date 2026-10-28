@@ -104,3 +104,13 @@ export function getPortfolio() {
 export function closePosition(positionId) {
   return request("/api/paper-trading/close_position", { method: "POST", body: { user_id: userId(), position_id: positionId } });
 }
+
+export function getHeadlines(limit = 4) {
+  return request(`/v4/headlines?limit=${limit}`);
+}
+
+export function getReplay(picks, days = 365) {
+  const t = picks.map((p) => p.ticker).join(",");
+  const d = picks.map((p) => p.direction || "bullish").join(",");
+  return request(`/v4/replay?tickers=${encodeURIComponent(t)}&directions=${encodeURIComponent(d)}&days=${days}`);
+}

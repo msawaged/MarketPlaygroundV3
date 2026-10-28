@@ -485,3 +485,44 @@ def test_admin_password_reset(monkeypatch):
     temp = c.post("/v4/admin/reset_password", json={"email": "sam@example.com"}, headers={"X-Admin-Token": "secret"}).json()["temporary_password"]
     assert c.post("/v4/auth/login", json={"email": "sam@example.com", "password": temp}).status_code == 200
     assert c.get("/v4/admin/accounts", headers={"X-Admin-Token": "secret"}).json()["count"] == 1
+
+
+def test_replay_one_year():
+    r = engine.replay(["WINR", "LOSR", "NOPE"], ["bullish", "bullish", "bullish"], 365)
+    assert [p["ticker"] for p in r["picks"]] == ["WINR", "LOSR"]  # NOPE has no history
+    assert len(r["dates"]) == len(r["basket"]) == len(r["spy"]) and len(r["dates"]) > 40
+    winr = r["picks"][0]
+    assert winr["return"] > 0 and winr["right"] is True
+    assert r["picks"][1]["right"] is False  # LOSR trends down
+    bear = engine.replay(["LOSR"], ["bearish"], 365)
+    assert bear["picks"][0]["right"] is True and bear["picks"][0]["vs_spy"] > 0 and bear["belief_right"] is True
+    c = _client()
+    assert c.get("/v4/replay", params={"tickers": "WINR", "directions": "bullish"}).status_code == 200
+    assert c.get("/v4/replay", params={"tickers": "NOPE"}).status_code == 404
+
+
+def test_options_never_short_fuse():
+    for h in (7, 14, 21, 30):
+        exp = strategy.pick_expiry(TODAY, h)
+        assert (exp - TODAY).days >= 30 and exp.weekday() == 4
+
+
+def test_interpretation_has_exit_plan_and_optional_question():
+    from backend.v4 import interpreter
+    out = interpreter._sanitize({"horizon_days": 90, "themes": ["X"], "candidates": [],
+                                 "wrong_if": ["a", "b", "c", "d"], "exit_rule": " sell at -10% ",
+                                 "clarify_question": "US or worldwide?", "clarify_options": ["US"]})
+    assert out["wrong_if"] == ["a", "b", "c"] and out["exit_rule"] == "sell at -10%"
+    assert out["clarify_question"] == "" and out["clarify_options"] == []  # one option isn't a choice
+    payload = default_interp("plumbing")
+    payload.update(wrong_if=["Housing starts fall"], exit_rule="Sell if down 10%.",
+                   clarify_question="Which part?", clarify_options=["Repairs", "New homes"])
+    r = engine.process_belief("plumbing demand rises", "u-x", claude_client=FakeClaude(payload))
+    i = r["interpretation"]
+    assert i["wrong_if"] == ["Housing starts fall"] and i["clarify_options"] == ["Repairs", "New homes"]
+
+
+def test_headlines_route(monkeypatch):
+    monkeypatch.setattr(market, "headlines", lambda limit=6: [{"headline": "Copper hits record", "source": "x", "url": "", "symbols": ["FCX"], "created_at": ""}][:limit])
+    r = _client().get("/v4/headlines", params={"limit": 3})
+    assert r.status_code == 200 and r.json()["headlines"][0]["headline"] == "Copper hits record"

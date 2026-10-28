@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
-import { processBelief } from '../lib/api';
+import { processBelief, getHeadlines } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
 import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
@@ -26,6 +26,42 @@ const RISK = [
 ];
 
 const STAGES = ['Reading your belief', 'Finding who it affects', 'Checking live prices', 'Building strategies'];
+const MORE_LESS = ['more', 'less'];
+const WHEN = [['next few months', 'over the next few months'], ['next year', 'over the next year'], ['next 5 years', 'over the next five years']];
+const THINGS = ['electric cars', 'pet food', 'air travel', 'home repairs', 'AI chips', 'streaming', 'fast food', 'solar panels'];
+
+function Builder({ onGo }) {
+  const [ml, setMl] = useState('more');
+  const [thing, setThing] = useState('');
+  const [when, setWhen] = useState(WHEN[1]);
+  const go = () => thing.trim() && onGo(`People will buy ${ml} ${thing.trim()} ${when[1]}`);
+  return (
+    <div className="mt-5 rounded-3xl border border-slate-700/80 bg-slate-900/70 p-4">
+      <div className="text-xs uppercase tracking-wider text-blue-300 font-semibold">Not sure how to say it? Build one</div>
+      <div className="mt-3 text-lg font-semibold leading-relaxed text-white">
+        People will buy{' '}
+        <span className="inline-flex rounded-xl bg-slate-800 p-0.5 align-middle">
+          {MORE_LESS.map((o) => (
+            <button key={o} onClick={() => setMl(o)} className={`px-2.5 py-0.5 rounded-lg text-sm font-bold ${ml === o ? 'bg-blue-600 text-white' : 'text-slate-300'}`}>{o}</button>
+          ))}
+        </span>{' '}
+        <input value={thing} onChange={(e) => setThing(e.target.value)} placeholder="what?" maxLength={60} aria-label="What will people buy?"
+          onKeyDown={(e) => e.key === 'Enter' && go()}
+          className="w-36 bg-transparent border-b-2 border-blue-400/60 focus:border-blue-300 focus:outline-none text-white placeholder-slate-500 px-1" />
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {THINGS.map((t) => <button key={t} onClick={() => setThing(t)} className="text-xs px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:border-blue-400">{t}</button>)}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {WHEN.map((w) => (
+          <button key={w[0]} onClick={() => setWhen(w)} className={`text-xs px-2.5 py-1 rounded-full border ${when[0] === w[0] ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>{w[0]}</button>
+        ))}
+      </div>
+      <button onClick={go} disabled={!thing.trim()} className="mt-4 w-full rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 py-3 font-bold">Show me how to trade it</button>
+    </div>
+  );
+}
+
 const RISK_LABEL = { conservative: 'Careful', moderate: 'Balanced', aggressive: 'Bold' };
 
 const HOW = [
@@ -49,6 +85,8 @@ export default function ChatInterface() {
   const [recent, setRecent] = useState(recentBeliefs);
   const [showHow, setShowHow] = useState(() => !seen('how'));
   const autoSent = useRef(false);
+  const [news, setNews] = useState([]);
+  useEffect(() => { getHeadlines(4).then((d) => setNews(d?.headlines || [])).catch(() => {}); }, []);
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -189,6 +227,23 @@ export default function ChatInterface() {
               </>
             )}
 
+            {news.length > 0 && (
+              <>
+                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">📰 In the news: what do you believe?</div>
+                <div className="mt-2 space-y-2">
+                  {news.map((n) => (
+                    <button key={n.headline} onClick={() => { setInput(`${n.headline}. I think this means `); inputRef.current?.focus(); }}
+                      className="w-full text-left rounded-2xl bg-slate-900/70 border border-slate-700/80 px-3.5 py-2.5 hover:border-blue-400/60">
+                      <div className="text-sm text-slate-100 leading-snug">{n.headline}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{n.source}{n.symbols?.length ? ` · ${n.symbols.join(', ')}` : ''} · tap to add your take</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <Builder onGo={(b) => send(b)} />
+
             <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">Try one</div>
             <div className="mt-2 flex flex-wrap gap-2">
               {EXAMPLES.map((ex) => (
@@ -233,7 +288,7 @@ export default function ChatInterface() {
                       </div>
                     )}
                     {m.data && (
-                      <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} />
+                      <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} onRefine={(o) => send(`${m.belief} (${o})`, m.risk || undefined)} />
                     )}
                   </div>
                 )}

@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { buildModel, sizePosition, scenarios, summarize, money, plainEnglish, niceDate } from '../../lib/payoff';
 import { sendFeedback, paperTrade } from '../../lib/api';
 import Term from '../ui/Term';
+import ReplayPanel from './ReplayPanel';
+import { shareCard } from '../../lib/shareCard';
 
 const PLAIN = {
   'Buy Stock': 'Own the shares. You gain if the price rises; your risk is what you put in.',
@@ -54,9 +56,10 @@ function Stat({ label, value, tone }) {
   );
 }
 
-export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun }) {
+export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine }) {
   const navigate = useNavigate();
-  const [shared, setShared] = useState(false);
+  const [shared, setShared] = useState(null);
+  const [replay, setReplay] = useState(null);
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
   const [amount, setAmount] = useState(1000);
@@ -89,11 +92,26 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 
   const share = async () => {
     const url = `${window.location.origin}/chat?b=${encodeURIComponent(belief || '')}`;
-    const text = `My belief: "${belief}". See how MarketPlayground would trade it.`;
+    const pctTxt = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
+    const card = replay ? {
+      kicker: 'If I\u2019d believed this a year ago', belief,
+      headline: `My picks ${pctTxt(replay.basket_return)} vs S&P 500 ${pctTxt(replay.spy_return)}`,
+      good: replay.belief_right,
+      picks: replay.picks.map((p) => ({ ticker: p.ticker, label: 'past 12 months', value: pctTxt(p.return), good: p.right })),
+      url: `${window.location.host}`,
+    } : {
+      kicker: 'My belief', belief, headline: `${picks.length} ways to trade it`,
+      picks: picks.map((p) => ({ ticker: p.ticker, label: p.structure, value: `${Math.round((p.claude_score ?? 0.5) * 100)}% fit`, good: null })),
+      url: `${window.location.host}`,
+    };
+    setShared('making');
     try {
-      if (navigator.share) await navigator.share({ title: 'MarketPlayground', text, url });
-      else { await navigator.clipboard.writeText(`${text} ${url}`); setShared(true); setTimeout(() => setShared(false), 2500); }
-    } catch { /* user cancelled */ }
+      const how = await shareCard(card, `My belief: "${belief}" ${url}`);
+      setShared(how === 'downloaded' ? 'saved' : null);
+      if (how === 'downloaded') setTimeout(() => setShared(null), 2500);
+    } catch {
+      try { await navigator.clipboard.writeText(url); setShared('copied'); setTimeout(() => setShared(null), 2500); } catch { setShared(null); }
+    }
   };
   const next = RISK_NEXT[riskProfile] || RISK_NEXT.moderate;
 
@@ -146,6 +164,24 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </span>
           )}
         </div>
+      </div>
+
+      {(interp.clarify_question && onRefine) && (
+        <div className="px-4 pt-3">
+          <div className="rounded-2xl bg-amber-400/10 border border-amber-300/30 p-3">
+            <div className="text-sm text-amber-100"><span className="font-bold">Quick question:</span> {interp.clarify_question}</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {interp.clarify_options.map((o) => (
+                <button key={o} onClick={() => onRefine(o)} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-slate-900/80 border border-amber-300/40 text-amber-50 hover:border-amber-200">{o}</button>
+              ))}
+            </div>
+            <div className="mt-1.5 text-[11px] text-amber-200/70">Or keep going: these picks are my best guess.</div>
+          </div>
+        </div>
+      )}
+
+      <div className="px-4 pt-3">
+        <ReplayPanel picks={picks} onResult={setReplay} />
       </div>
 
       {/* Pick tabs */}
@@ -218,6 +254,11 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || ''}</p>
+            {isOptions && model?.daysToExp > 0 && (
+              <p className="text-[11px] text-slate-500 mt-1.5">
+                ⏳ {model.daysToExp} days until it expires. Options lose value as time passes, so we never suggest ones with under 30 days left.
+              </p>
+            )}
             {legs.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {legs.map((l, i) => (
@@ -342,11 +383,23 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               </button>
             )}
             <button onClick={share} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400 col-start-3">
-              {shared ? '✓ Link copied' : '↗ Share'}
+              {shared === 'making' ? 'Making…' : shared === 'saved' ? '✓ Image saved' : shared === 'copied' ? '✓ Link copied' : '↗ Share'}
             </button>
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {(interp.wrong_if?.length > 0 || interp.exit_rule) && (
+        <div className="mx-4 mb-4 rounded-2xl border border-slate-700 bg-slate-800/40 p-3.5">
+          <div className="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">🧭 What would prove this wrong</div>
+          {interp.wrong_if?.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {interp.wrong_if.map((w) => <li key={w} className="text-sm text-slate-200 flex gap-2"><span className="text-slate-500">•</span>{w}</li>)}
+            </ul>
+          )}
+          {interp.exit_rule && <p className="mt-2 text-sm text-white"><span className="font-semibold text-blue-300">Exit plan: </span>{interp.exit_rule}</p>}
+        </div>
+      )}
 
       <div className="px-4 py-3 bg-slate-950/60 border-t border-slate-800 text-[11px] text-slate-500 leading-relaxed">
         Ideas for education, not investment advice. Prices are delayed; option prices are estimates. Trading involves risk, including loss of what you invest.
