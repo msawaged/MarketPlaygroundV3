@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import random
 from datetime import date, timedelta
 from types import SimpleNamespace
@@ -38,8 +39,15 @@ def _series(sym: str):
 
 @pytest.fixture(autouse=True)
 def env(tmp_path, monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
+    pg = os.getenv("MP_TEST_DATABASE_URL")  # set to run the suite against a real Postgres
+    if pg:
+        monkeypatch.setenv("DATABASE_URL", pg)
+        import psycopg
+        with psycopg.connect(pg) as conn:
+            conn.execute("DROP TABLE IF EXISTS outcomes, pick_themes, feedback, picks, beliefs, nn_models, kv_cache, waitlist CASCADE")
+    else:
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        monkeypatch.setenv("MP_SQLITE_PATH", str(tmp_path / "t.db"))
     db.reset_for_tests()
     learning.invalidate()
     nn._loaded.update(at=0.0, row=None, model=None)

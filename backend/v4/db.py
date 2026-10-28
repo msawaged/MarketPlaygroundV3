@@ -61,15 +61,27 @@ def connect():
         conn.close()
 
 
-def _sql(sql: str) -> str:
-    return sql.replace("?", "%s") if is_postgres() else sql
+def _sql(sql: str, has_params: bool = True) -> str:
+    """Write SQL with `?` placeholders; for Postgres, convert to %s and escape literal %."""
+    if not is_postgres():
+        return sql
+    if not has_params:
+        return sql  # no parameters: psycopg leaves % alone
+    return sql.replace("%", "%%").replace("?", "%s")
+
+
+def _run(cur, sql: str, params: Iterable[Any]) -> None:
+    params = tuple(params)
+    if params:
+        cur.execute(_sql(sql), params)
+    else:
+        cur.execute(_sql(sql, has_params=False))
 
 
 def execute(sql: str, params: Iterable[Any] = ()) -> None:
     ensure_schema()
     with _lock, connect() as conn:
-        cur = conn.cursor()
-        cur.execute(_sql(sql), tuple(params))
+        _run(conn.cursor(), sql, params)
 
 
 def executemany(sql: str, rows: Iterable[Iterable[Any]]) -> None:
@@ -86,7 +98,7 @@ def query(sql: str, params: Iterable[Any] = ()) -> list[dict]:
     ensure_schema()
     with _lock, connect() as conn:
         cur = conn.cursor()
-        cur.execute(_sql(sql), tuple(params))
+        _run(cur, sql, params)
         if cur.description is None:
             return []
         cols = [d[0] for d in cur.description]
