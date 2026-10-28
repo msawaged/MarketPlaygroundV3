@@ -103,14 +103,16 @@ services:
           name: marketplayground-db
           property: connectionString
 
-  # 🌱 v4: daily live seeding so the network keeps getting clean, forward-graded examples
+  # 🌱 v4: force-feeds beliefs so the network learns. Hourly: while warming up it adds a batch of
+  #    past-dated beliefs graded right away (capped by MP_WARMUP_BUDGET_USD in total); once a day it
+  #    adds fresh live beliefs; then grades and retrains. (Name kept so Render updates it in place.)
   - type: cron
     name: v4-seed-live
     runtime: python
-    schedule: "13 15 * * 1-5"   # 15:13 UTC weekdays (market open)
+    schedule: "13 * * * *"   # every hour at :13
     rootDir: .
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "PYTHONPATH=./ python -m backend.v4.seeder live"
+    startCommand: "PYTHONPATH=./ python -m backend.v4.seeder auto"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -124,6 +126,12 @@ services:
         value: "1"             # hard daily cap on Claude spend
       - key: MP_SEED_MODEL
         value: claude-haiku-5-5
+      - key: MP_WARMUP_GRADED
+        value: "4000"          # stop force-feeding once this many picks are graded at 90 days
+      - key: MP_WARMUP_BUDGET_USD
+        value: "8"             # total Claude spend allowed for the warm-up, ever
+      - key: MP_WARMUP_BATCH
+        value: "80"            # past-dated beliefs per hourly run
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: ALPACA_API_KEY

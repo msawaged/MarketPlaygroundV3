@@ -637,3 +637,19 @@ def test_strategy_library_and_preferences():
     r2 = engine.process_belief("plumbing demand rises a lot", "u-p", "moderate", claude_client=FakeClaude(payload),
                                prefs={"instrument": "shares"})
     assert all(p["structure"] == "Buy Stock" for p in r2["picks"] if p["shown"])
+
+
+def test_auto_warmup_force_feeds_until_target(monkeypatch):
+    monkeypatch.setenv("MP_WARMUP_GRADED", "100000"); monkeypatch.setenv("MP_WARMUP_BUDGET_USD", "1")
+    monkeypatch.setenv("MP_WARMUP_BATCH", "12"); monkeypatch.setenv("MP_WARMUP_GENERATE", "0")
+    monkeypatch.setenv("MP_SEED_N", "3"); monkeypatch.setenv("MP_SEED_GENERATE", "0")
+    monkeypatch.setattr(nn, "train", lambda force=False: {"status": "skipped", "reason": "test"})
+    fake = FakeClaude()
+    out = seeder.auto(claude_client=fake)
+    assert out["backfill"]["ok"] > 0 and out["backfill"]["grading"]["graded"] > 0 and "train" in out
+    assert out["live"]["ok"] == 3  # TODAY is a weekday
+    out2 = seeder.auto(claude_client=fake)
+    assert "live" not in out2  # live batch only once a day
+    monkeypatch.setenv("MP_WARMUP_GRADED", "1")
+    out3 = seeder.auto(claude_client=fake)
+    assert "backfill" not in out3  # warmed up: stop force-feeding
