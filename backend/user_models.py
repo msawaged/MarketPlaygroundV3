@@ -6,7 +6,9 @@ import os
 os.makedirs("backend/data", exist_ok=True)
 
 # Initialize database
-db = TinyDB("backend/data/users.json")
+_DATA_DIR = os.getenv("MP_DATA_DIR", os.path.join("backend", "data"))
+os.makedirs(_DATA_DIR, exist_ok=True)
+db = TinyDB(os.path.join(_DATA_DIR, "users.json"))
 User = Query()
 
 def init_db():

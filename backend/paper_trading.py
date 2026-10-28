@@ -1,3 +1,4 @@
+import os
 # backend/paper_trading.py
 import sqlite3
 import json
@@ -56,7 +57,12 @@ class Order:
     commission: Decimal = Decimal('0.00')
     
 class PaperTradingEngine:
-    def __init__(self, db_path: str = "backend/paper_trading.db"):
+    def __init__(self, db_path: str = None):
+        # MP_DATA_DIR points at a persistent disk on Render so practice portfolios survive deploys.
+        if db_path is None:
+            data_dir = os.getenv("MP_DATA_DIR", "backend")
+            os.makedirs(data_dir, exist_ok=True)
+            db_path = os.path.join(data_dir, "paper_trading.db")
         self.db_path = db_path
         self.commission_rate = Decimal('0.005')  # 0.5% commission
         self.min_commission = Decimal('1.00')    # $1 minimum

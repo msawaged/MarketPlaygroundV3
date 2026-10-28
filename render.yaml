@@ -9,6 +9,11 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "PYTHONPATH=./ uvicorn backend.app:app --host 0.0.0.0 --port 10000"
     healthCheckPath: /health
+    # Persistent disk: practice portfolios and user accounts survive deploys.
+    disk:
+      name: mp-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PORT
         value: 10000
@@ -19,6 +24,8 @@ services:
       # v4 belief engine (set ENGINE_VERSION=legacy to use the old GPT-4 + ML engine)
       - key: ENGINE_VERSION
         value: v4
+      - key: MP_DATA_DIR
+        value: /var/data
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: ALPACA_API_KEY
