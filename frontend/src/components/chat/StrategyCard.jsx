@@ -26,6 +26,7 @@ const PLAIN = {
 };
 
 const AMOUNTS = [500, 1000, 2500, 5000];
+const MAX_AMOUNT = 100000; // the practice account starts with $100,000
 const TERM_FOR = { 'Per contract': 'contract', 'Max gain': 'max gain', Breakeven: 'breakeven' };
 
 function DirectionBadge({ direction }) {
@@ -77,6 +78,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
   const [amount, setAmount] = useState(1000);
+  const [custom, setCustom] = useState('');
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
   const pick = picks[idx];
@@ -327,13 +329,30 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   {AMOUNTS.map((a) => (
                     <button
                       key={a}
-                      onClick={() => setAmount(a)}
-                      className={`rounded-lg py-2 text-sm font-bold border ${a === amount ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}
+                      onClick={() => { setAmount(a); setCustom(''); }}
+                      className={`rounded-lg py-2 text-sm font-bold border ${a === amount && !custom ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}
                     >
                       ${a.toLocaleString()}
                     </button>
                   ))}
                 </div>
+                <label className={`mt-2 flex items-center gap-2 rounded-lg border px-3 py-2 ${custom ? 'border-blue-400 bg-blue-600/10' : 'border-slate-700 bg-slate-800/60'}`}>
+                  <span className="text-xs text-slate-400 shrink-0">Or type any amount</span>
+                  <span className="ml-auto text-slate-400 font-bold">$</span>
+                  <input
+                    type="text" inputMode="decimal" placeholder="e.g. 750" value={custom}
+                    aria-label="Custom amount in dollars"
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9.]/g, '');
+                      setCustom(raw);
+                      const n = Math.round(Number(raw));
+                      if (n >= 1) setAmount(Math.min(n, MAX_AMOUNT));
+                    }}
+                    onBlur={() => { if (custom && !(Number(custom) >= 1)) { setCustom(''); setAmount(1000); } }}
+                    className="w-28 bg-transparent text-right font-bold text-white placeholder:text-slate-500 focus:outline-none"
+                  />
+                </label>
+                {Number(custom) > MAX_AMOUNT && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_AMOUNT.toLocaleString()}, so this uses ${MAX_AMOUNT.toLocaleString()}.</p>}
                 {sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
               </div>
 

@@ -1,4 +1,5 @@
 // MarketPlayground chat: type (or say) a belief, get trade ideas that express it.
+import { LogoMark } from './ui/Logo';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
@@ -167,7 +168,7 @@ export default function ChatInterface() {
       <div className="shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <TickerStrip />
         <header className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur flex items-center gap-3">
-          <a href="/select-tool" aria-label="Home" className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-black">M</a>
+          <a href="/select-tool" aria-label="Home" className="w-9 h-9 shrink-0"><LogoMark size={36} /></a>
           <div className="min-w-0">
             <h1 className="font-bold leading-tight truncate">Believe</h1>
             <p className="text-[11px] text-blue-300 truncate">MarketPlayground</p>

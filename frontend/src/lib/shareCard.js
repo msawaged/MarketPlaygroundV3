@@ -38,8 +38,19 @@ export async function drawCard(card) {
   ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
   // brand
-  ctx.fillStyle = '#2563eb'; roundRect(ctx, 80, 80, 88, 88, 22); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = `800 52px ${FONT}`; ctx.textAlign = 'center'; ctx.fillText('M', 124, 142);
+  // the swing-M mark (white tile, blue M whose middle is a swing seat)
+  ctx.fillStyle = '#fff'; roundRect(ctx, 80, 80, 88, 88, 22); ctx.fill();
+  ctx.save(); ctx.translate(80, 80); ctx.scale(88 / 120, 88 / 120);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#bfdbfe'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(60, 26, 48, Math.PI * 0.778, Math.PI * 0.222, true); ctx.stroke();
+  ctx.strokeStyle = 'rgba(37,99,235,0.25)'; ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(26, 30); ctx.lineTo(60, 74); ctx.lineTo(94, 30); ctx.stroke();
+  ctx.strokeStyle = '#2563eb';
+  ctx.beginPath(); ctx.moveTo(26, 92); ctx.lineTo(26, 30); ctx.lineTo(72, 72.5); ctx.lineTo(94, 30); ctx.lineTo(94, 92); ctx.stroke();
+  ctx.fillStyle = '#2563eb'; ctx.beginPath(); ctx.arc(72, 72.5, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = '#fff';
   ctx.textAlign = 'left'; ctx.font = `700 38px ${FONT}`; ctx.fillText('MarketPlayground', 190, 136);
 
   // kicker + belief
