@@ -1,4 +1,5 @@
 // Home: start with a belief, see what's hot, jump to your calls and tools.
+import { LogoMark, Wordmark } from './ui/Logo';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,9 +52,9 @@ export default function ToolSelectorPage() {
       <div className="max-w-lg mx-auto px-4" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-black shadow-lg shadow-blue-600/30">M</div>
+            <LogoMark size={36} />
             <div>
-              <div className="font-bold leading-tight">MarketPlayground</div>
+              <div className="leading-tight"><Wordmark /></div>
               <div className="text-[10px] font-bold tracking-wider uppercase text-blue-300">Free beta</div>
             </div>
           </div>

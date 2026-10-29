@@ -48,8 +48,9 @@ def send(to: str, subject: str, text: str, html: str = "") -> None:
 
 
 def button_html(title: str, lead: str, url: str, label: str, foot: str) -> str:
+    site = (os.getenv("MP_SITE_URL") or "https://marketplayground-web.onrender.com").rstrip("/")
     return f"""<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0f172a">
-<div style="width:44px;height:44px;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;font-size:24px;text-align:center;line-height:44px">M</div>
+<img src="{site}/icon-192.png" width="44" height="44" alt="MarketPlayground" style="border-radius:12px;border:1px solid #e2e8f0;display:block">
 <h1 style="font-size:22px;margin:20px 0 8px">{title}</h1>
 <p style="font-size:15px;line-height:1.5;color:#334155">{lead}</p>
 <p style="margin:24px 0"><a href="{url}" style="background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:12px;display:inline-block">{label}</a></p>
