@@ -189,6 +189,10 @@ def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, bel
         raise BrokerError(f"That's more than your buying power (${bp:,.2f}).")
     if side == "buy" and amount > 0.25 * float(a.get("equity") or amount):
         warnings.append("This is more than a quarter of your account. Consider a smaller amount.")
+    clk = market.clock()
+    if not clk.get("is_open"):
+        warnings.insert(0, f"The market is closed. This order will wait and fill when it opens ({_when(clk.get('next_open'))}). "
+                           "Prices can jump overnight, so the price you get may be very different from now.")
     pid = f"pv-{uuid.uuid4().hex[:16]}"
     order = {"symbol": ticker.upper(), "side": side, "type": "market", "time_in_force": "day",
              "notional": f"{amount:.2f}", "client_order_id": f"mp-{pid}"}
@@ -198,10 +202,20 @@ def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, bel
         "preview_id": pid, "env": env(), "ticker": ticker.upper(), "name": info.get("name"), "side": side,
         "amount_usd": amount, "est_price": price, "est_shares": round(amount / price, 4) if price else None,
         "buying_power": bp, "expires_in": PREVIEW_SECONDS, "warnings": warnings,
+        "market_open": bool(clk.get("is_open")), "next_open": clk.get("next_open"),
         "plain": (f"You'll {'buy' if side == 'buy' else 'sell'} about ${amount:,.2f} of {ticker.upper()} "
                   f"(~{amount / price:.4f} shares at about ${price:,.2f}) in your own Alpaca account. "
                   "The final price can differ a little. You can lose money."),
     }
+
+
+def _when(iso: Optional[str]) -> str:
+    """'Thursday 9:30am ET' from an ISO time."""
+    try:
+        d = datetime.fromisoformat((iso or "").replace("Z", "+00:00")).astimezone(market.NY)
+        return d.strftime("%A %-I:%M%p").replace("AM", "am").replace("PM", "pm") + " ET"
+    except Exception:
+        return "next trading day, 9:30am ET"
 
 
 def place(token: Optional[str], preview_id: str, confirm: bool) -> dict:

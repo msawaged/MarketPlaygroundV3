@@ -192,6 +192,20 @@ def execute_paper(request: PaperTradeRequest):
     return JSONResponse(content=jsonable_encoder(result), headers={"Cache-Control": "no-store"})
 
 
+class CancelQueuedPayload(BaseModel):
+    user_id: str
+    order_id: str
+
+
+@router.post("/cancel_queued")
+def cancel_queued(payload: CancelQueuedPayload):
+    """Cancel a practice order that's waiting for the market to open."""
+    result = paper_engine.cancel_queued(payload.user_id, payload.order_id)
+    if result.get("status") == "error":
+        raise HTTPException(status_code=400, detail=result["message"])
+    return JSONResponse(content=result, headers={"Cache-Control": "no-store"})
+
+
 @router.get("/portfolio/{user_id}")
 def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="Bypass any caches")):
     """Return latest paper portfolio snapshot with no-store headers."""

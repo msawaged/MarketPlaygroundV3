@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import Term from './ui/Term';
-import { getPortfolio, closePosition } from '../lib/api';
+import { getPortfolio, closePosition, cancelQueued } from '../lib/api';
 
 const usd = (v, d = 0) => `${v < 0 ? '−' : ''}$${Math.abs(Number(v || 0)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const signed = (v, d = 2) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
@@ -27,9 +27,14 @@ export default function PracticePage() {
     setClosing(p.position_id);
     try {
       const r = await closePosition(p.position_id);
-      const pnl = Number(r?.realized_pnl ?? 0);
-      setToast(`Sold ${p.ticker}: ${signed(pnl)} ${pnl >= 0 ? '🎉' : ''}`);
-      setTimeout(() => setToast(null), 3500);
+      if (r?.status === 'queued') {
+        setToast(r.message);
+        setTimeout(() => setToast(null), 5000);
+      } else {
+        const pnl = Number(r?.realized_pnl ?? 0);
+        setToast(`Sold ${p.ticker}: ${signed(pnl)} ${pnl >= 0 ? '🎉' : ''}`);
+        setTimeout(() => setToast(null), 3500);
+      }
       load();
     } catch (e) {
       setToast(`Couldn't sell: ${e.message}`);
@@ -39,8 +44,18 @@ export default function PracticePage() {
     }
   };
 
+  const cancel = async (o) => {
+    try { await cancelQueued(o.order_id); setToast(`Cancelled the queued ${o.ticker} order`); }
+    catch (e) { setToast(`Couldn't cancel: ${e.message}`); }
+    setTimeout(() => setToast(null), 3500);
+    load();
+  };
+
   const a = s.data?.account;
   const positions = s.data?.positions || [];
+  const queued = s.data?.queued_orders || [];
+  const mkt = s.data?.market;
+  const sellQueued = new Set(queued.filter((o) => o.side === 'sell').map((o) => o.ticker));
   const start = s.data?.summary?.starting_balance || 100000;
   const investedPct = a ? Math.min(100, (a.equity_value / Math.max(1, a.total_value)) * 100) : 0;
 
@@ -84,7 +99,30 @@ export default function PracticePage() {
         </Card>
       )}
 
-      {a && positions.length === 0 && (
+      {mkt && !mkt.is_open && (
+        <div className="mt-4 rounded-2xl bg-amber-400/10 border border-amber-300/30 px-4 py-3 text-sm text-amber-100" role="status">
+          <b>The market is closed.</b> New trades wait and fill at the opening price ({mkt.next_open_text}), just like a real broker. Prices can jump overnight.
+        </div>
+      )}
+
+      {queued.length > 0 && (
+        <>
+          <div className="mt-6 text-xs uppercase tracking-wider text-slate-400 font-semibold">Waiting for the open</div>
+          <div className="mt-2 space-y-2">
+            {queued.map((o) => (
+              <Card key={o.order_id} className="flex items-center justify-between gap-3 py-3">
+                <div>
+                  <div className="font-bold">{o.side === 'sell' ? 'Sell' : 'Buy'} {o.ticker}</div>
+                  <div className="text-xs text-slate-400">{o.quantity} shares · fills at the opening price{o.side !== 'sell' ? ` · about ${usd(o.quantity * o.est_price)} now` : ''}</div>
+                </div>
+                <button onClick={() => cancel(o)} className="rounded-xl border border-slate-600 px-3 py-2 text-sm font-semibold hover:border-slate-400">Cancel</button>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+
+      {a && positions.length === 0 && queued.length === 0 && (
         <Card className="mt-4 text-center py-7">
           <div className="text-4xl" aria-hidden>🧪</div>
           <div className="mt-2 font-bold text-lg">Nothing here yet</div>
@@ -121,11 +159,13 @@ export default function PracticePage() {
                       <span className="flex gap-2">
                         <button onClick={() => setConfirm(null)} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700">Keep</button>
                         <button onClick={() => sell(p)} disabled={closing === p.position_id} className="rounded-xl px-3 py-2 text-xs font-bold bg-red-600 hover:bg-red-500 disabled:opacity-60">
-                          {closing === p.position_id ? 'Selling…' : `Sell for ${usd(p.market_value)}`}
+                          {closing === p.position_id ? 'Selling…' : mkt && !mkt.is_open ? 'Sell at the open' : `Sell for ${usd(p.market_value)}`}
                         </button>
                       </span>
                     ) : (
-                      <button onClick={() => setConfirm(p.position_id)} disabled={!p.position_id} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Sell</button>
+                      sellQueued.has(p.ticker)
+                        ? <span className="rounded-xl px-3 py-2 text-xs font-semibold bg-amber-400/10 border border-amber-300/30 text-amber-100">Sale queued</span>
+                        : <button onClick={() => setConfirm(p.position_id)} disabled={!p.position_id} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Sell</button>
                     )}
                   </div>
                 </Card>

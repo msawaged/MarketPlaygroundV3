@@ -110,6 +110,10 @@ export function closePosition(positionId) {
   return request("/api/paper-trading/close_position", { method: "POST", body: { user_id: userId(), position_id: positionId } });
 }
 
+export function cancelQueued(orderId) {
+  return request("/api/paper-trading/cancel_queued", { method: "POST", body: { user_id: userId(), order_id: orderId } });
+}
+
 export function getHeadlines(limit = 4) {
   return request(`/v4/headlines?limit=${limit}`);
 }

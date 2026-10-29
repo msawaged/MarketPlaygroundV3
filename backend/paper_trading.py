@@ -4,7 +4,7 @@ import sqlite3
 import json
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
 from dataclasses import dataclass, asdict
@@ -56,6 +56,32 @@ class Order:
     filled_quantity: int = 0
     commission: Decimal = Decimal('0.00')
     
+def _clock() -> dict:
+    """Market open/closed from the shared v4 market clock (Alpaca, holiday-aware)."""
+    try:
+        from backend.v4 import market as _m
+        return _m.clock()
+    except Exception:
+        return {"is_open": True}
+
+
+def _when(iso) -> str:
+    try:
+        from backend.v4 import brokerage as _b
+        return _b._when(iso)
+    except Exception:
+        return "next trading day, 9:30am ET"
+
+
+def _open_after(ticker: str, after_iso: str):
+    """(date, opening price) of the first session that opened after this order was placed, or None."""
+    from backend.v4 import market as _m
+    after = datetime.fromisoformat(str(after_iso).replace("Z", "+00:00"))
+    if after.tzinfo is None:
+        after = after.replace(tzinfo=timezone.utc)
+    return _m.session_open_after(ticker, after)
+
+
 class PaperTradingEngine:
     def __init__(self, db_path: str = None):
         # MP_DATA_DIR points at a persistent disk on Render so practice portfolios survive deploys.
@@ -313,6 +339,34 @@ class PaperTradingEngine:
                         "message": f"Insufficient buying power. Required: ${total_cost}, Available: ${user_data['buying_power']}"
                     }
                 
+                # Market closed: queue the orders like a real broker would. Buying power is held now;
+                # the fill happens at the next session's opening price (see _fill_queued).
+                clk = _clock()
+                if not clk.get("is_open"):
+                    now_utc = datetime.now(timezone.utc)
+                    with self._get_db_connection() as conn:
+                        for order in orders:
+                            conn.execute("""
+                                INSERT INTO orders
+                                (order_id, user_id, ticker, order_type, position_type, quantity,
+                                 price, status, strategy_id, belief, created_at, commission)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (order.order_id, order.user_id, order.ticker, order.order_type.value,
+                                  order.position_type.value, order.quantity, float(order.price),
+                                  OrderStatus.PENDING.value, order.strategy_id, order.belief,
+                                  now_utc.isoformat(), float(order.commission)))
+                        conn.execute("UPDATE users SET buying_power = buying_power - ? WHERE user_id = ?",
+                                     (float(total_cost), user_id))
+                    return {
+                        "status": "queued",
+                        "message": f"The market is closed, so your {ticker} order is queued. It fills at the opening price "
+                                   f"({_when(clk.get('next_open'))}). The price can be different from now.",
+                        "next_open": clk.get("next_open"),
+                        "orders": [asdict(o) for o in orders],
+                        "total_cost": float(total_cost),
+                        "current_price": float(current_price),
+                    }
+
                 # Execute orders
                 executed_orders = []
                 with self._get_db_connection() as conn:
@@ -445,9 +499,82 @@ class PaperTradingEngine:
                 return dict(result)
             return {}
     
+    def _pending(self, conn, user_id: str):
+        return conn.execute("SELECT * FROM orders WHERE user_id = ? AND status = 'pending' ORDER BY created_at",
+                            (user_id,)).fetchall()
+
+    def _fill_queued(self, user_id: str) -> int:
+        """Fill orders placed while the market was closed, at the opening price of the next session."""
+        filled = 0
+        with self._lock, self._get_db_connection() as conn:
+            for o in self._pending(conn, user_id):
+                try:
+                    hit = _open_after(o['ticker'], o['created_at'])
+                except Exception as e:
+                    logger.warning(f"queued fill check failed for {o['ticker']}: {e}")
+                    continue
+                if not hit:
+                    continue
+                day, open_px = hit
+                when = f"{day}T09:30:00-04:00"
+                px = Decimal(str(round(open_px, 4)))
+                if o['order_type'] == 'close':
+                    pos = conn.execute("SELECT * FROM positions WHERE position_id = ? AND user_id = ?",
+                                       (o['strategy_id'], user_id)).fetchone()
+                    if pos:
+                        self._close_at(conn, pos, px, executed_at=when)
+                    conn.execute("UPDATE orders SET status = ?, filled_at = ?, filled_price = ?, filled_quantity = ? WHERE order_id = ?",
+                                 ('filled' if pos else 'cancelled', when, float(px), o['quantity'] if pos else 0, o['order_id']))
+                    filled += 1
+                    continue
+                qty = int(o['quantity'])
+                est_px = Decimal(str(o['price']))
+                est_comm = Decimal(str(o['commission'] or 0))
+                is_long = o['position_type'] == PositionType.LONG.value
+                mult = Decimal('1') if is_long else Decimal(str(self.margin_requirement))
+                held = qty * est_px * mult + est_comm
+                comm = Decimal(str(self._calculate_commission(qty, px)))
+                actual = qty * px * mult + comm
+                order = Order(order_id=o['order_id'], user_id=user_id, ticker=o['ticker'], order_type=OrderType.MARKET,
+                              position_type=PositionType(o['position_type']), quantity=qty, price=est_px, stop_price=None,
+                              status=OrderStatus.FILLED, strategy_id=o['strategy_id'], belief=o['belief'],
+                              created_at=o['created_at'], filled_at=when, filled_price=px, filled_quantity=qty, commission=comm)
+                conn.execute("UPDATE orders SET status = 'filled', filled_at = ?, filled_price = ?, filled_quantity = ?, commission = ? WHERE order_id = ?",
+                             (when, float(px), qty, float(comm), o['order_id']))
+                self._update_position(conn, order, px)
+                conn.execute("""
+                    INSERT INTO transactions (transaction_id, user_id, order_id, ticker, transaction_type,
+                                              quantity, price, amount, commission, net_amount, executed_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (str(uuid.uuid4()), user_id, o['order_id'], o['ticker'], "BUY" if is_long else "SELL_SHORT",
+                      qty, float(px), float(qty * px), float(comm), float(qty * px + comm), when))
+                # swap the hold for the real cost
+                conn.execute("UPDATE users SET cash_balance = cash_balance - ?, buying_power = buying_power + ? - ? WHERE user_id = ?",
+                             (float(actual) if is_long else 0.0, float(held), float(actual), user_id))
+                filled += 1
+        return filled
+
+    def cancel_queued(self, user_id: str, order_id: str) -> dict:
+        """Cancel an order that hasn't filled yet; a held buy gives its buying power back."""
+        with self._lock, self._get_db_connection() as conn:
+            o = conn.execute("SELECT * FROM orders WHERE order_id = ? AND user_id = ? AND status = 'pending'",
+                             (order_id, user_id)).fetchone()
+            if not o:
+                return {"status": "error", "message": "That order already filled or was cancelled."}
+            if o['order_type'] != 'close':
+                mult = Decimal('1') if o['position_type'] == PositionType.LONG.value else Decimal(str(self.margin_requirement))
+                held = int(o['quantity']) * Decimal(str(o['price'])) * mult + Decimal(str(o['commission'] or 0))
+                conn.execute("UPDATE users SET buying_power = buying_power + ? WHERE user_id = ?", (float(held), user_id))
+            conn.execute("UPDATE orders SET status = 'cancelled' WHERE order_id = ?", (order_id,))
+        return {"status": "cancelled", "message": f"Cancelled the queued {o['ticker']} order."}
+
     def get_portfolio(self, user_id: str, force_refresh: bool = True):
         """Get comprehensive portfolio with real-time data"""
         self._initialize_user(user_id)
+        try:
+            self._fill_queued(user_id)
+        except Exception as e:
+            logger.warning(f"queued fills skipped: {e}")
         
         with self._get_db_connection() as conn:
             # Get user account data
@@ -502,8 +629,17 @@ class PaperTradingEngine:
             total_return = total_value - self.starting_balance
             total_return_pct = (total_return / self.starting_balance) * 100
             
+            clk = _clock()
+            queued = [{
+                "order_id": o['order_id'], "ticker": o['ticker'],
+                "side": "sell" if o['order_type'] == 'close' else ("buy" if o['position_type'] == 'long' else "short"),
+                "quantity": o['quantity'], "est_price": float(o['price']), "placed_at": o['created_at'],
+            } for o in self._pending(conn, user_id)]
             return {
                 "user_id": user_id,
+                "market": {"is_open": bool(clk.get("is_open")), "next_open": clk.get("next_open"),
+                           "next_open_text": _when(clk.get("next_open"))},
+                "queued_orders": queued,
                 "account": {
                     "cash_balance": float(user_data['cash_balance']),
                     "equity_value": float(total_equity),
@@ -578,65 +714,84 @@ class PaperTradingEngine:
                     
                     if not position:
                         return {"status": "error", "message": "Position not found"}
-                    
-                    # Get current market price
-                    current_price = self._get_real_market_price(position['ticker'])
-                    
-                    # Calculate realized P&L (sqlite returns floats; keep money math in Decimal)
-                    current_price = Decimal(str(current_price))
-                    avg = Decimal(str(position['avg_price']))
-                    qty_d = Decimal(str(position['quantity']))
-                    if position['position_type'] == 'long':
-                        realized_pnl = (current_price - avg) * qty_d
-                        proceeds = qty_d * current_price
-                    else:  # short
-                        realized_pnl = (avg - current_price) * qty_d
-                        proceeds = qty_d * current_price
-                    
-                    commission = Decimal(str(self._calculate_commission(position['quantity'], current_price)))
-                    net_proceeds = proceeds - commission
-                    
-                    # Create closing order
-                    order_id = str(uuid.uuid4())
-                    transaction_type = "SELL" if position['position_type'] == 'long' else "BUY_TO_COVER"
-                    
-                    # Record transaction
-                    conn.execute("""
-                        INSERT INTO transactions 
-                        (transaction_id, user_id, order_id, ticker, transaction_type,
-                         quantity, price, amount, commission, net_amount, executed_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                    """, (
-                        str(uuid.uuid4()), user_id, order_id, position['ticker'],
-                        transaction_type, position['quantity'], float(current_price),
-                        float(proceeds), float(commission), float(net_proceeds)
-                    ))
-                    
-                    # Update user balance
-                    conn.execute("""
-                        UPDATE users 
-                        SET cash_balance = cash_balance + ?,
-                            buying_power = buying_power + ?,
-                            total_pnl = total_pnl + ?
-                        WHERE user_id = ?
-                    """, (float(net_proceeds), float(net_proceeds), float(realized_pnl), user_id))
-                    
-                    # Remove position
-                    conn.execute("""
-                        DELETE FROM positions WHERE position_id = ?
-                    """, (position_id,))
-                    
-                    return {
-                        "status": "success",
-                        "message": f"Position closed successfully",
-                        "realized_pnl": float(realized_pnl),
-                        "proceeds": float(net_proceeds),
-                        "commission": float(commission)
-                    }
-                    
+
+                    clk = _clock()
+                    if not clk.get("is_open"):
+                        dup = conn.execute("SELECT order_id FROM orders WHERE user_id = ? AND status = 'pending' AND order_type = 'close' AND strategy_id = ?",
+                                           (user_id, position_id)).fetchone()
+                        if not dup:
+                            conn.execute("""
+                                INSERT INTO orders (order_id, user_id, ticker, order_type, position_type, quantity,
+                                                    price, status, strategy_id, belief, created_at, commission)
+                                VALUES (?, ?, ?, 'close', ?, ?, ?, 'pending', ?, ?, ?, 0)
+                            """, (str(uuid.uuid4()), user_id, position['ticker'], position['position_type'],
+                                  position['quantity'], float(position['current_price'] or position['avg_price']),
+                                  position_id, position['belief'], datetime.now(timezone.utc).isoformat()))
+                        return {"status": "queued",
+                                "message": f"The market is closed, so selling {position['ticker']} is queued for the opening price "
+                                           f"({_when(clk.get('next_open'))}).",
+                                "next_open": clk.get("next_open")}
+                    return self._close_at(conn, position, self._get_real_market_price(position['ticker']))
             except Exception as e:
                 logger.error(f"Failed to close position: {e}")
                 return {"status": "error", "message": f"Failed to close position: {str(e)}"}
+
+    def _close_at(self, conn, position, current_price, executed_at=None):
+        """Realize a position at a given price (now, or a queued sale at the open)."""
+        
+        # Calculate realized P&L (sqlite returns floats; keep money math in Decimal)
+        current_price = Decimal(str(current_price))
+        avg = Decimal(str(position['avg_price']))
+        qty_d = Decimal(str(position['quantity']))
+        if position['position_type'] == 'long':
+            realized_pnl = (current_price - avg) * qty_d
+            proceeds = qty_d * current_price
+        else:  # short
+            realized_pnl = (avg - current_price) * qty_d
+            proceeds = qty_d * current_price
+        
+        commission = Decimal(str(self._calculate_commission(position['quantity'], current_price)))
+        net_proceeds = proceeds - commission
+        
+        # Create closing order
+        order_id = str(uuid.uuid4())
+        transaction_type = "SELL" if position['position_type'] == 'long' else "BUY_TO_COVER"
+        
+        # Record transaction
+        user_id = position['user_id']
+        conn.execute("""
+            INSERT INTO transactions 
+            (transaction_id, user_id, order_id, ticker, transaction_type,
+             quantity, price, amount, commission, net_amount, executed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            str(uuid.uuid4()), user_id, order_id, position['ticker'],
+            transaction_type, position['quantity'], float(current_price),
+            float(proceeds), float(commission), float(net_proceeds),
+            executed_at or datetime.now(timezone.utc).isoformat()
+        ))
+        
+        # Update user balance
+        conn.execute("""
+            UPDATE users 
+            SET cash_balance = cash_balance + ?,
+                buying_power = buying_power + ?,
+                total_pnl = total_pnl + ?
+            WHERE user_id = ?
+        """, (float(net_proceeds), float(net_proceeds), float(realized_pnl), user_id))
+        
+        # Remove position
+        conn.execute("""
+            DELETE FROM positions WHERE position_id = ?
+        """, (position['position_id'],))
+        
+        return {
+            "status": "success",
+            "message": f"Position closed successfully",
+            "realized_pnl": float(realized_pnl),
+            "proceeds": float(net_proceeds),
+            "commission": float(commission)
+        }
 
     def evaluate_strategy_performance(self, evaluation_days: int = 7):
         """

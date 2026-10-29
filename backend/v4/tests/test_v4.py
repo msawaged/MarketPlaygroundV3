@@ -54,6 +54,7 @@ def env(tmp_path, monkeypatch):
     market.clear_cache()
     series = {s: _series(s) for s in DRIFTS}
     monkeypatch.setattr(market, "today", lambda: TODAY)
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True, "next_open": None, "next_close": None})
     monkeypatch.setattr(market, "daily_closes", lambda s: series[s.upper()] if s.upper() in series else (_ for _ in ()).throw(market.MarketDataError("no data")))
     monkeypatch.setattr(market, "latest_price", lambda s: series[s.upper()][1][-1])
     monkeypatch.setattr(market, "asset_info", lambda s: (

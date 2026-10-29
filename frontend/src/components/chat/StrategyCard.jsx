@@ -141,9 +141,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
         ticker: pick.ticker, type: pick.trade.type, asset_class: 'equity',
         trade_legs: [{ action: 'Buy', ticker: pick.ticker }], investment_amount: amount,
       }, belief);
-      if (r?.status === 'success') {
+      if (r?.status === 'success' || r?.status === 'queued') {
         sendFeedback(data.belief_id, 'executed', pick.pick_id);
-        setStatus((s) => ({ ...s, [pick.pick_id]: 'traded' }));
+        setStatus((s) => ({ ...s, [pick.pick_id]: r.status === 'queued' ? `queued:${r.message}` : 'traded' }));
       } else {
         setStatus((s) => ({ ...s, [pick.pick_id]: `error:${r?.message || 'The paper trade did not go through.'}` }));
       }
@@ -377,14 +377,15 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </button>
             <button
               onClick={doPaperTrade}
-              disabled={busy || st === 'traded' || st === 'tracking'}
+              disabled={busy || st === 'traded' || st === 'tracking' || st?.startsWith?.('queued:')}
               className="rounded-lg py-3 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-60"
             >
-              {busy ? 'Placing…' : st === 'traded' ? 'Paper traded' : st === 'tracking' ? 'Tracking' : isOptions || avoid ? 'Track it' : 'Paper trade'}
+              {busy ? 'Placing…' : st === 'traded' ? 'Paper traded' : st?.startsWith?.('queued:') ? 'Queued for the open' : st === 'tracking' ? 'Tracking' : isOptions || avoid ? 'Track it' : 'Paper trade'}
             </button>
           </div>
           {st === 'up' && <p className="text-xs text-green-400">Thanks. Your vote helps everyone get better picks.</p>}
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
+          {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Practice.</p>}
           {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money.</p>}
           {(st === 'tracking' || st === 'traded') && (
             <p className="text-xs text-blue-300">
