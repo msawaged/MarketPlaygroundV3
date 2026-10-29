@@ -8,6 +8,7 @@ import BottomNavigation from './BottomNavigation';
 import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
 import { themeLabel } from '../lib/text';
+import { useMovers, believeUrl } from './MoversFeed';
 import { useAccount, initials } from '../lib/auth';
 
 const ROTATE = [
@@ -20,7 +21,7 @@ const ROTATE = [
 ];
 
 const TOOLS = [
-  { path: '/trending', icon: Flame, title: 'Trending', body: 'What people believe now', tint: 'text-amber-300 bg-amber-400/10' },
+  { path: '/trending', icon: Flame, title: 'Trending', body: 'Today’s news, as hunches', tint: 'text-amber-300 bg-amber-400/10' },
   { path: '/my', icon: Target, title: 'My calls', body: 'How your picks are doing', tint: 'text-blue-300 bg-blue-400/10' },
   { path: '/basket-builder', icon: ShoppingBasket, title: 'Baskets', body: 'A goal → a simple fund mix', tint: 'text-sky-300 bg-sky-400/10' },
   { path: '/portfolio', icon: TrendingUp, title: 'Practice', body: 'Paper trades, no real money', tint: 'text-green-300 bg-green-400/10' },
@@ -31,6 +32,7 @@ export default function ToolSelectorPage() {
   const [text, setText] = useState('');
   const [i, setI] = useState(0);
   const [hot, setHot] = useState([]);
+  const moving = useMovers().data?.items || [];
   const recent = recentBeliefs();
   const acc = useAccount();
 
@@ -102,6 +104,32 @@ export default function ToolSelectorPage() {
             </button>
           </div>
         </form>
+
+        {/* Moving now: today's news as hunches */}
+        {moving.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">📰 Moving now</div>
+              <button onClick={() => navigate('/trending')} className="text-xs text-blue-300">See all</button>
+            </div>
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
+              {moving.slice(0, 5).map((m) => (
+                <button key={m.headline} onClick={() => navigate(believeUrl(m.hunch))}
+                  className="snap-start shrink-0 w-60 text-left rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3 hover:border-blue-400/60">
+                  <div className="font-bold leading-snug line-clamp-2">{m.hunch}</div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {m.companies.slice(0, 3).map((c) => (
+                      <span key={c.ticker} className="text-[11px] rounded-md bg-slate-800 px-1.5 py-0.5">
+                        <span className="font-bold text-white">{c.ticker}</span>
+                        {c.change != null && <span className={c.change >= 0 ? 'text-green-400' : 'text-red-400'}> {c.change >= 0 ? '+' : ''}{(c.change * 100).toFixed(1)}%</span>}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Hot themes */}
         {hot.length > 0 && (

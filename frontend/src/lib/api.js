@@ -123,3 +123,8 @@ export function getReplay(picks, days = 365) {
   const d = picks.map((p) => p.direction || "bullish").join(",");
   return request(`/v4/replay?tickers=${encodeURIComponent(t)}&directions=${encodeURIComponent(d)}&days=${days}`);
 }
+
+/** Today's headlines as hunches, with the companies each one moves (shared feed, refreshed ~30 min). */
+export function getMovers() {
+  return request("/v4/movers");
+}

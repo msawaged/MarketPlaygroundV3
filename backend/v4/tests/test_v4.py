@@ -978,3 +978,39 @@ def test_shares_lead_and_every_pick_can_switch():
     assert strategy.alternative("Buy Stock", "bullish", 60, "medium", "moderate", 150) in strategy.OPTION_STRUCTURES
     assert strategy.alternative("Bear Put Spread", "bearish", 60, "medium", "moderate", 150) == "Sell / Avoid"
     assert strategy.alternative("Buy Stock", "bullish", 60, "medium", "moderate", 5) == ""
+
+
+def test_movers_feed_turns_headlines_into_hunches(monkeypatch):
+    from backend.v4 import movers
+    news = [
+        {"headline": "Airlines add record holiday flights as bookings jump", "symbols": ["DAL", "UAL"], "source": "x", "url": "u", "created_at": "t"},
+        {"headline": "Stocks mixed in afternoon trade", "symbols": [], "source": "x", "url": "u", "created_at": "t"},
+        {"headline": "Chipmaker warns on demand", "symbols": ["NOPE"], "source": "x", "url": "u", "created_at": "t"},
+    ]
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: None if s in ("FAKE", "NOPE") else {"symbol": s})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 10.0, "change": 0.01} for s in syms})
+    payload = {"items": [
+        {"n": 0, "keep": True, "hunch": "People will fly more this holiday season", "why": "More seats sold.",
+         "companies": [{"ticker": "$DAL", "direction": "up", "why": "more fares"}, {"ticker": "FAKE", "direction": "up", "why": "x"},
+                       {"ticker": "dal", "direction": "up", "why": "dup"}, {"ticker": "JETS", "direction": "sideways", "why": "fund"}]},
+        {"n": 1, "keep": False, "hunch": "", "why": "", "companies": []},
+        {"n": 2, "keep": True, "hunch": "Chip demand is cooling", "why": "", "companies": [{"ticker": "NOPE", "direction": "down", "why": "x"}]},
+    ]}
+    fake = FakeClaude(payload)
+    out = movers.feed(client=fake)
+    assert len(out["items"]) == 1  # the vague one dropped, the one with no real tickers dropped
+    it = out["items"][0]
+    assert it["hunch"].startswith("People will fly")
+    assert [c["ticker"] for c in it["companies"]] == ["DAL", "JETS"]
+    assert it["companies"][1]["direction"] == "up" and it["companies"][0]["change"] == 0.01
+    movers.feed(client=fake)
+    assert len(fake.calls) == 1  # cached: one Claude call shared by everyone
+
+    # no Claude: still a feed, headline is the hunch, tagged tickers are the companies
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (movers.KEY,))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    plain = movers.feed()
+    assert plain["ai"] is False and plain["items"][0]["hunch"] == news[0]["headline"]
+    assert [c["ticker"] for c in plain["items"][0]["companies"]] == ["DAL", "UAL"]

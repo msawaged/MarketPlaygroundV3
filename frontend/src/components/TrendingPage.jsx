@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { getTrending } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
 import { themeLabel } from '../lib/text';
+import { useMovers, MoverCard, ago } from './MoversFeed';
 
 function pct(v) {
   if (v == null) return null;
@@ -23,15 +24,31 @@ export default function TrendingPage() {
     return () => { alive = false; };
   }, []);
 
+  const movers = useMovers();
+  const items = movers.data?.items || [];
   const themes = state.data?.themes || [];
   const tryIt = (theme, example) => navigate(`/chat?b=${encodeURIComponent(example || `${theme} demand will grow`)}`);
 
   return (
     <div className="min-h-screen mp-bg text-white pb-28">
       <div className="max-w-lg mx-auto px-4 pt-8" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
-        <h1 className="text-3xl font-extrabold">Trending beliefs</h1>
+        <h1 className="text-3xl font-extrabold">Moving now</h1>
+        <p className="mt-1 text-slate-300">Today's news, the hunch behind it, and the companies it moves.</p>
+        <p className="mt-1 text-[11px] text-slate-500">
+          <span className="text-green-400">▲</span> helped if it's true · <span className="text-red-400">▼</span> hurt if it's true · % is today's move
+          {movers.data?.built_at ? ` · updated ${ago(movers.data.built_at)}` : ''}
+        </p>
+        {movers.loading && <div className="mt-6 text-slate-400">Reading today's news…</div>}
+        {!movers.loading && items.length === 0 && (
+          <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-400">The news feed is quiet right now. Check back soon.</div>
+        )}
+        <div className="mt-4 space-y-3">
+          {items.map((it, i) => <MoverCard key={it.headline} item={it} i={i} />)}
+        </div>
+
+        <h2 className="mt-10 text-2xl font-extrabold">What people believe</h2>
         <p className="mt-1 text-slate-300">
-          What MarketPlayground users believe right now, and the picks that keep coming up.
+          The hunches MarketPlayground users are backing, and the picks that keep coming up.
           {state.data?.window ? <span className="text-slate-500"> ({state.data.window})</span> : null}
         </p>
 
@@ -43,8 +60,8 @@ export default function TrendingPage() {
         )}
         {!state.loading && !state.error && themes.length === 0 && (
           <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-5">
-            <div className="font-semibold">Nothing trending yet</div>
-            <p className="mt-1 text-sm text-slate-400">Be the first. Share a belief and it will show up here as more people join.</p>
+            <div className="font-semibold">No shared beliefs yet</div>
+            <p className="mt-1 text-sm text-slate-400">Be the first: pick a hunch above, or type your own.</p>
             <button onClick={() => navigate('/chat')} className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold">Share a belief</button>
           </div>
         )}
