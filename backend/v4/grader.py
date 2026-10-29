@@ -24,7 +24,7 @@ CHECKPOINTS = (7, 30, 90, 180, 365)
 def _due_picks(limit: int) -> list[dict]:
     last_cp = (market.today() - timedelta(days=min(CHECKPOINTS) + 1)).isoformat()
     return db.query(
-        """SELECT p.id, p.ticker, p.direction, p.entry_date, p.entry_price, p.legs,
+        """SELECT p.id, p.ticker, p.direction, p.entry_date, p.entry_price, p.legs, p.spy_entry,
                   (SELECT COUNT(*) FROM outcomes o WHERE o.pick_id = p.id) AS n_done
            FROM picks p
            WHERE p.entry_date <= ?
@@ -45,7 +45,7 @@ def grade(limit: int = 50000) -> dict:
             continue
         have = {r["checkpoint_days"] for r in db.query("SELECT checkpoint_days FROM outcomes WHERE pick_id = ?", (p["id"],))}
         try:
-            spy_entry = market.price_on("SPY", entry)[1]
+            spy_entry = float(p["spy_entry"]) if p.get("spy_entry") else market.price_on("SPY", entry)[1]
             dates, closes = market.daily_closes(p["ticker"])
             i0 = max(0, bisect.bisect_right(dates, p["entry_date"]) - 1)
             vol = market.realized_vol(closes, i0, 60) if closes else 0.35

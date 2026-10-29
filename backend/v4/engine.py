@@ -107,6 +107,14 @@ def process_belief(
                 "reason": interp.get("note") or "I couldn't find a market angle in that. Try describing what you think will grow, shrink, or change."}
 
     # 3. validate candidates
+    # SPY is priced at the same moment as the picks so the "vs the market" grade compares like with like,
+    # whatever hour the belief comes in (before the open, after the close, weekends).
+    spy_entry: Optional[float] = None
+    if not backfill:
+        try:
+            spy_entry = float(market.latest_price("SPY"))
+        except Exception:
+            spy_entry = None
     cands = interp["candidates"]
     valid: list[dict] = []
     for rank, c in enumerate(cands):
@@ -180,7 +188,7 @@ def process_belief(
         rows_picks.append((
             pick_id, belief_id, v["ticker"], pick["name"], v["exposure"], v["direction"], v["rationale"],
             v["rank"], v["score"], v["nn_score"], v["final_score"], final_rank, 1 if shown else 0,
-            v["entry_date"], v["price"], structure, db.dumps(trade), db.dumps(v["features"]),
+            v["entry_date"], v["price"], structure, db.dumps(trade), db.dumps(v["features"]), spy_entry,
         ))
         rows_themes += [(pick_id, t) for t in interp["themes"]]
 
@@ -195,8 +203,8 @@ def process_belief(
     )
     db.executemany(
         """INSERT INTO picks (id, belief_id, ticker, name, exposure, direction, rationale, claude_rank, claude_score,
-                              nn_score, final_score, final_rank, shown, entry_date, entry_price, structure, legs, features)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                              nn_score, final_score, final_rank, shown, entry_date, entry_price, structure, legs, features, spy_entry)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         rows_picks,
     )
     db.executemany("INSERT INTO pick_themes (pick_id, theme) VALUES (?,?)", rows_themes)
@@ -410,6 +418,23 @@ def learning_status() -> dict:
     }
 
 
+_live_cache: dict = {}
+
+
+def _live_price(symbol: str) -> Optional[float]:
+    """Latest trade, cached 60s per symbol (My calls shows many picks at once)."""
+    import time as _t
+    hit = _live_cache.get(symbol)
+    if hit and _t.time() - hit[0] < 60:
+        return hit[1]
+    try:
+        v = float(market.latest_price(symbol))
+    except Exception:
+        return None
+    _live_cache[symbol] = (_t.time(), v)
+    return v
+
+
 def _close_on(symbol: str, d: str) -> Optional[float]:
     try:
         dates, closes = market.daily_closes(symbol)
@@ -434,17 +459,17 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
     ids = [r["id"] for r in rows]
     ph = ",".join("?" for _ in ids)
     picks = db.query(
-        f"SELECT id, belief_id, ticker, name, direction, entry_date, entry_price, structure, final_rank "
+        f"SELECT id, belief_id, ticker, name, direction, entry_date, entry_price, structure, final_rank, spy_entry "
         f"FROM picks WHERE shown = 1 AND belief_id IN ({ph}) ORDER BY final_rank",
         ids,
     )
     today_s = market.today().isoformat()
-    spy_now = _close_on("SPY", today_s)
+    spy_now = _live_price("SPY") or _close_on("SPY", today_s)
     by_belief: dict = {}
     wins = total = 0
     for p in picks:
-        now = _close_on(p["ticker"], today_s)
-        spy0 = _close_on("SPY", p["entry_date"])
+        now = _live_price(p["ticker"]) or _close_on(p["ticker"], today_s)
+        spy0 = p.get("spy_entry") or _close_on("SPY", p["entry_date"])
         item = {"pick_id": p["id"], "ticker": p["ticker"], "name": p["name"], "direction": p["direction"],
                 "structure": p["structure"], "entry_date": p["entry_date"], "entry_price": p["entry_price"],
                 "price_now": now, "return": None, "vs_spy": None}

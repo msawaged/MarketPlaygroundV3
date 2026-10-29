@@ -291,6 +291,8 @@ def _migrations() -> list[str]:
     return [
         # accounts made before email verification existed count as verified
         "ALTER TABLE accounts ADD COLUMN verified INTEGER NOT NULL DEFAULT 1",
+        # SPY's price at the same moment as the pick's entry price (fair baseline at any hour)
+        "ALTER TABLE picks ADD COLUMN spy_entry REAL",
     ]
 
 

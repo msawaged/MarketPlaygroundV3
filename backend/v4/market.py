@@ -30,6 +30,8 @@ _session = requests.Session()
 _lock = threading.RLock()
 _bars_cache: dict[str, tuple[list[str], list[float]]] = {}
 _asset_cache: dict[str, Optional[dict]] = {}
+_bars_at: dict[str, float] = {}
+BARS_TTL = float(os.getenv("MP_BARS_TTL_SECONDS", str(6 * 3600)))
 HISTORY_YEARS = int(os.getenv("MP_HISTORY_YEARS", "5"))
 
 
@@ -53,8 +55,89 @@ def _data_base() -> str:
     return os.getenv("ALPACA_DATA_BASE", "https://data.alpaca.markets").rstrip("/")
 
 
+NY = None
+try:
+    from zoneinfo import ZoneInfo
+    NY = ZoneInfo("America/New_York")
+except Exception:  # pragma: no cover
+    pass
+
+
+def now_ny() -> datetime:
+    return datetime.now(NY) if NY else datetime.now(timezone.utc) - timedelta(hours=5)
+
+
 def today() -> date:
-    return datetime.now(timezone.utc).date()
+    """The trading calendar's date (New York). UTC rolled over at 6pm Denver and stamped
+    evening beliefs with tomorrow's date."""
+    return now_ny().date()
+
+
+def _session_open_dt(d: str) -> datetime:
+    """9:30am New York on trading date d (YYYY-MM-DD), as an aware datetime."""
+    y, m, dd = (int(x) for x in d.split("-"))
+    return datetime(y, m, dd, 9, 30, tzinfo=NY) if NY else datetime(y, m, dd, 14, 30, tzinfo=timezone.utc)
+
+
+_clock_cache: dict = {"at": 0.0, "v": None}
+
+
+def _fallback_clock() -> dict:
+    """Weekdays 9:30-16:00 New York (ignores holidays) when Alpaca's clock can't be reached."""
+    n = now_ny()
+    is_open = n.weekday() < 5 and (n.hour, n.minute) >= (9, 30) and n.hour < 16
+    d = n.date()
+    if n.weekday() >= 5 or (n.hour, n.minute) >= (9, 30):
+        d += timedelta(days=1)
+    while d.weekday() >= 5:
+        d += timedelta(days=1)
+    return {"is_open": is_open, "next_open": _session_open_dt(d.isoformat()).isoformat(), "next_close": None, "source": "fallback"}
+
+
+def clock() -> dict:
+    """{'is_open', 'next_open', 'next_close'} from Alpaca's market clock (handles holidays), cached 60s."""
+    import time as _t
+    with _lock:
+        if _clock_cache["v"] and _t.time() - _clock_cache["at"] < 60:
+            return _clock_cache["v"]
+    v = None
+    try:
+        r = _session.get(f"{_trading_base()}/v2/clock", headers=_headers(), timeout=6)
+        if r.status_code == 200:
+            j = r.json()
+            v = {"is_open": bool(j.get("is_open")), "next_open": j.get("next_open"), "next_close": j.get("next_close"), "source": "alpaca"}
+    except requests.RequestException:
+        pass
+    v = v or _fallback_clock()
+    with _lock:
+        _clock_cache.update(at=_t.time(), v=v)
+    return v
+
+
+def is_open() -> bool:
+    return bool(clock().get("is_open"))
+
+
+def session_open_after(symbol: str, after: datetime) -> Optional[tuple[str, float]]:
+    """(trading date, opening price) of the first regular session that opens at or after `after`
+    (aware datetime). None if that session hasn't opened yet. Used to fill orders placed while the
+    market was closed at the price they would really have gotten."""
+    if after.tzinfo is None:
+        after = after.replace(tzinfo=timezone.utc)
+    start = (after.astimezone(NY).date() if NY else after.date()) - timedelta(days=1)
+    try:
+        r = _session.get(f"{_data_base()}/v2/stocks/{symbol.upper()}/bars", headers=_headers(), params={
+            "timeframe": "1Day", "start": start.isoformat(), "adjustment": "raw",
+            "feed": os.getenv("ALPACA_DATA_FEED", "iex"), "limit": 30}, timeout=10)
+    except requests.RequestException as e:
+        raise MarketDataError(f"bars fetch failed for {symbol}: {e}") from e
+    if r.status_code != 200:
+        raise MarketDataError(f"bars {symbol}: HTTP {r.status_code}")
+    for b in r.json().get("bars") or []:
+        d = b["t"][:10]
+        if _session_open_dt(d) >= after and _session_open_dt(d) <= datetime.now(timezone.utc):
+            return d, float(b["o"])
+    return None
 
 
 def asset_info(symbol: str) -> Optional[dict]:
@@ -95,8 +178,9 @@ def _looks_like_etf(name: str) -> bool:
 def daily_closes(symbol: str) -> tuple[list[str], list[float]]:
     """(dates ascending as 'YYYY-MM-DD', closes). Cached per process."""
     symbol = symbol.upper()
+    import time as _t
     with _lock:
-        if symbol in _bars_cache:
+        if symbol in _bars_cache and _t.time() - _bars_at.get(symbol, 0) < BARS_TTL:
             return _bars_cache[symbol]
     start = (today() - timedelta(days=365 * HISTORY_YEARS + 30)).isoformat()
     params = {
@@ -127,6 +211,7 @@ def daily_closes(symbol: str) -> tuple[list[str], list[float]]:
             break
     with _lock:
         _bars_cache[symbol] = (dates, closes)
+        _bars_at[symbol] = _t.time()
     return dates, closes
 
 
@@ -217,6 +302,7 @@ def clear_cache() -> None:
     with _lock:
         _bars_cache.clear()
         _asset_cache.clear()
+        _clock_cache.update(at=0.0, v=None)
 
 
 _news_cache: dict = {"at": 0.0, "items": []}
