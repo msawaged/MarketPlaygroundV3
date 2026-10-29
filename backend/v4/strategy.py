@@ -331,5 +331,30 @@ def select(direction: str, horizon_days: int, conviction: str, risk: str, prefs:
             if st.get("n", 0) >= 40 and st.get("mean") is not None and st["mean"] > best_mean + 0.02:
                 best, best_mean = s_, st["mean"]
         if best != structure:
-            return best, f"Learned: {best} has done better than {structure} for beliefs like this."
+            structure, why = best, f"Learned: {best} has done better than {structure} for beliefs like this."
+    # Shares first. With "Let the AI pick", the top two bullish ideas are plain shares for Careful and
+    # Balanced users; the third keeps its options strategy. Bold gets options first, shares second.
+    # Every card can switch to the other version (see alternative()).
+    lead_shares = rank < 2 if risk != "aggressive" else rank == 1
+    if (prefs["instrument"] == "auto" and not prefs["goal"] and direction == "bullish"
+            and structure in library.LIB and library.LIB[structure]["family"] == "options" and lead_shares):
+        return "Buy Stock", "Shares first: the simplest way to back your belief. Tap Options to see a version with more leverage."
     return structure, why
+
+
+def alternative(structure: str, direction: str, horizon_days: int, conviction: str, risk: str, price: float) -> str:
+    """The other way to trade the same idea, so every card can switch Shares <-> Options.
+    Returns "" when there is no sensible other version."""
+    risk = (risk or "moderate").lower()
+    fam = (library.LIB.get(structure) or {}).get("family")
+    if fam == "options":
+        return "Buy Stock" if direction == "bullish" else "Sell / Avoid"
+    if fam == "shares":
+        if price < 10:
+            return ""  # options on cheap stocks are thin
+        opts = library.allowed(direction, risk if risk != "conservative" else "moderate", "options", "")
+        if not opts:
+            return ""
+        base = default_structure(direction, horizon_days, conviction, risk if risk != "conservative" else "moderate")
+        return base if base in opts else opts[0]
+    return ""

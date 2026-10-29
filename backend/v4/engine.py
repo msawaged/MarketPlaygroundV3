@@ -110,7 +110,7 @@ def process_belief(
 
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
     prefs = strategy.normalize_prefs(prefs)
-    cache_key = f"p2|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
+    cache_key = f"p3|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
     cached = None if backfill else _cached_interpretation(norm, cache_key)
     if cached:
         interp, usage = cached
@@ -206,6 +206,16 @@ def process_belief(
         )
         trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
                                      interp["horizon_days"], target_price=tp if structure == "Long Call Butterfly" else 0.0)
+        alt = None
+        alt_name = strategy.alternative(structure, v["direction"], interp["horizon_days"], interp["conviction"],
+                                        risk_profile, float(v["price"]))
+        if alt_name:
+            try:
+                alt = {"structure": alt_name, "trade": strategy.build_trade(
+                    alt_name, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
+                    interp["horizon_days"])}
+            except Exception:
+                alt = None
         pick_id = f"p-{uuid.uuid4().hex[:16]}"
         shown = final_rank < SHOW_TOP
         pick = {
@@ -215,7 +225,7 @@ def process_belief(
             "structure": structure, "structure_reason": why, "trade": trade,
             "score": round(v["final_score"], 4), "claude_score": v["score"],
             "nn_score": None if v["nn_score"] is None else round(v["nn_score"], 4),
-            "track_record": v["track"], "shown": shown,
+            "track_record": v["track"], "shown": shown, "alt": alt,
         }
         picks_out.append(pick)
         rows_picks.append((

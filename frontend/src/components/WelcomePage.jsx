@@ -18,11 +18,12 @@ export default function WelcomePage() {
           <div className="w-full rounded-3xl bg-slate-900/80 border border-slate-700/70 p-4 text-left" aria-label="Example">
             <div className="text-[11px] font-bold tracking-wider uppercase text-slate-400">You type</div>
             <div className="mt-1 font-semibold">“People will travel more next summer”</div>
-            <div className="mt-3 text-[11px] font-bold tracking-wider uppercase text-slate-400">You get trades on real stocks</div>
+            <div className="mt-3 text-[11px] font-bold tracking-wider uppercase text-slate-400">You get real stocks to buy</div>
             <div className="mt-2 flex flex-col gap-2">
               <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 px-3 py-2.5"><span className="font-bold">Delta Air Lines <span className="text-slate-400 font-semibold">DAL</span></span><span className="text-sm text-blue-300 font-semibold">Buy shares</span></div>
-              <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 px-3 py-2.5"><span className="font-bold">Booking <span className="text-slate-400 font-semibold">BKNG</span></span><span className="text-sm text-blue-300 font-semibold">Call spread</span></div>
+              <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 px-3 py-2.5"><span className="font-bold">Booking <span className="text-slate-400 font-semibold">BKNG</span></span><span className="text-sm text-blue-300 font-semibold">Buy shares</span></div>
             </div>
+            <div className="mt-2 text-xs text-slate-400">Shares by default. Options if you want them.</div>
           </div>
         </div>
         <div className="text-center">

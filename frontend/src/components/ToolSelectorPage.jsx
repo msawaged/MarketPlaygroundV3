@@ -72,7 +72,7 @@ export default function ToolSelectorPage() {
         <h1 className="mt-8 text-[2.6rem] leading-[1.05] font-extrabold tracking-tight">
           Your hunch.<br /><span className="mp-gradient-text">Real stocks.</span>
         </h1>
-        <p className="mt-3 text-slate-300">Type what you think will happen. We find the companies it affects and build a stock or options trade around it.</p>
+        <p className="mt-3 text-slate-300">Type what you think will happen. We find the companies it affects and show you which shares to buy. Options are there too, if you want them.</p>
 
         {/* The belief box */}
         <form onSubmit={(e) => { e.preventDefault(); go(); }} className="mt-6 rounded-3xl p-[1.5px] bg-gradient-to-br from-blue-400/70 via-blue-600/40 to-slate-700/40 shadow-2xl shadow-blue-900/40">

@@ -10,8 +10,8 @@ export function setPrefs(p) {
 }
 
 export const INSTRUMENTS = [
-  { id: 'auto', label: '✨ Let the AI pick', hint: 'The best fit for each company' },
   { id: 'shares', label: '📈 Shares & funds', hint: 'Simple: own a piece of the company' },
+  { id: 'auto', label: '✨ Let the AI pick', hint: 'Shares first, options when they fit better' },
   { id: 'options', label: '🎯 Options', hint: 'More ways to win, more to learn' },
 ];
 
@@ -23,7 +23,7 @@ export const GOALS = [
 ];
 
 export function prefsLabel(p) {
-  if (!p || p.instrument === 'auto' || !p.instrument) return 'AI picks the strategy';
+  if (!p || p.instrument === 'auto' || !p.instrument) return 'Shares first, AI picks';
   if (p.instrument === 'shares') return 'Shares & funds';
   const g = GOALS.find((x) => x.id === p.goal);
   return `Options${g ? ` · ${g.label.replace(/^\S+\s/, '')}` : ''}`;

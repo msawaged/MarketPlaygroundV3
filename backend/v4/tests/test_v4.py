@@ -440,7 +440,11 @@ def test_balanced_results_mix_shares_and_options():
     shown = [p["structure"] for p in r["picks"] if p["shown"]]
     assert "Buy Stock" in shown and any(s in strategy.OPTION_STRUCTURES for s in shown)
     bold = engine.process_belief("plumbing demand is going to be high", "u-mix", "aggressive", claude_client=fake)
-    assert all(p["structure"] in strategy.OPTION_STRUCTURES for p in bold["picks"] if p["shown"] and p["price"] >= 10)
+    bs = [p for p in bold["picks"] if p["shown"] and p["price"] >= 10]
+    assert bs[0]["structure"] in strategy.OPTION_STRUCTURES  # Bold: options first
+    assert all(p.get("alt") for p in r["picks"] if p["shown"])  # every card can switch Shares <-> Options
+    top = r["picks"][0]
+    assert top["structure"] == "Buy Stock" and top["alt"]["structure"] in strategy.OPTION_STRUCTURES
     assert strategy.vary_structure("Bull Call Spread", "bullish", "aggressive", 0, False, 5.0)[0] == "Buy Stock"
 
 
@@ -641,7 +645,7 @@ def test_strategy_library_and_preferences():
     assert "Long Call Butterfly" not in library.allowed("bullish", "aggressive")  # needs a target price
     s, why = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options", "goal": "protect"}), claude_pick="Long Call")
     assert s == "Protective Put"  # Claude's pick ignored: it doesn't serve the goal
-    s, why = strategy.select("bullish", 90, "medium", "moderate", P({}), claude_pick="Covered Call", claude_why="Earns income.")
+    s, why = strategy.select("bullish", 90, "medium", "moderate", P({}), claude_pick="Covered Call", claude_why="Earns income.", rank=2)
     assert s == "Covered Call" and why == "Earns income."
     s, _ = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options"}), price=6.0)
     assert s == "Buy Stock"  # options on a $6 stock are thin
@@ -954,3 +958,23 @@ def test_every_structure_has_sane_numbers_across_prices_and_horizons():
             if isinstance(t.get("max_profit"), (int, float)):
                 assert math.isfinite(t["max_profit"]), (name, t)
     assert n == 40 * len(strategy.STRUCTURES)
+
+
+def test_shares_lead_and_every_pick_can_switch():
+    from backend.v4 import strategy
+    auto = strategy.normalize_prefs({})
+    # Balanced, bullish: the top idea is plain shares even if Claude suggested an option
+    s, why = strategy.select("bullish", 60, "medium", "moderate", auto, claude_pick="Bull Call Spread", rank=0, price=150)
+    assert s == "Buy Stock" and "Shares first" in why
+    assert strategy.select("bullish", 60, "medium", "moderate", auto, rank=1, price=150)[0] == "Buy Stock"
+    assert strategy.select("bullish", 60, "medium", "moderate", auto, rank=2, price=150)[0] != "Buy Stock"
+    # Bold: options first, shares second
+    assert strategy.select("bullish", 60, "high", "aggressive", auto, rank=0, price=150)[0] != "Buy Stock"
+    assert strategy.select("bullish", 60, "high", "aggressive", auto, rank=1, price=150)[0] == "Buy Stock"
+    # Someone who chose options keeps options
+    s, _ = strategy.select("bullish", 60, "medium", "moderate", strategy.normalize_prefs({"instrument": "options"}), rank=0, price=150)
+    assert s != "Buy Stock"
+    # The other version exists both ways
+    assert strategy.alternative("Buy Stock", "bullish", 60, "medium", "moderate", 150) in strategy.OPTION_STRUCTURES
+    assert strategy.alternative("Bear Put Spread", "bearish", 60, "medium", "moderate", 150) == "Sell / Avoid"
+    assert strategy.alternative("Buy Stock", "bullish", 60, "medium", "moderate", 5) == ""

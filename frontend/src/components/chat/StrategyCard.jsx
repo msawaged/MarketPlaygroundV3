@@ -69,6 +69,9 @@ function Stat({ label, value, tone }) {
   );
 }
 
+const FAMILY_SHARES = new Set(['Buy Stock', 'Sell / Avoid']);
+const kindLabel = (s) => (s === 'Buy Stock' ? 'Shares' : s === 'Sell / Avoid' ? 'Stay out' : 'Options');
+
 export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine, prefs, onTune }) {
   const navigate = useNavigate();
   const [shared, setShared] = useState(null);
@@ -81,7 +84,11 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const [custom, setCustom] = useState('');
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
-  const pick = picks[idx];
+  const [useAlt, setUseAlt] = useState({}); // pick_id -> true when showing the other version
+  const basePick = picks[idx];
+  const pick = basePick && useAlt[basePick.pick_id] && basePick.alt
+    ? { ...basePick, structure: basePick.alt.structure, trade: basePick.alt.trade, structure_reason: '' }
+    : basePick;
   const interp = data.interpretation || {};
 
   const model = useMemo(() => (pick ? buildModel(pick.trade, pick.price) : null), [pick]);
@@ -97,12 +104,13 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const isOptions = model?.kind === 'options';
   const avoid = model?.kind === 'avoid';
   const legs = pick.trade?.trade_legs || [];
-  const st = status[pick.pick_id];
+  const skey = `${pick.pick_id}${useAlt[pick.pick_id] && basePick.alt ? ':alt' : ''}`;
+  const st = status[skey];
   const track = pick.track_record;
   const fit = Math.max(0, Math.min(100, Math.round((pick.claude_score ?? pick.score ?? 0.5) * 100)));
 
   const feedback = (kind) => {
-    setStatus((s) => ({ ...s, [pick.pick_id]: kind }));
+    setStatus((s) => ({ ...s, [skey]: kind }));
     sendFeedback(data.belief_id, kind, pick.pick_id);
   };
 
@@ -134,7 +142,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const doPaperTrade = async () => {
     if (isOptions || avoid) {
       feedback('executed');
-      setStatus((s) => ({ ...s, [pick.pick_id]: 'tracking' }));
+      setStatus((s) => ({ ...s, [skey]: 'tracking' }));
       return;
     }
     setBusy(true);
@@ -145,12 +153,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
       }, belief);
       if (r?.status === 'success' || r?.status === 'queued') {
         sendFeedback(data.belief_id, 'executed', pick.pick_id);
-        setStatus((s) => ({ ...s, [pick.pick_id]: r.status === 'queued' ? `queued:${r.message}` : 'traded' }));
+        setStatus((s) => ({ ...s, [skey]: r.status === 'queued' ? `queued:${r.message}` : 'traded' }));
       } else {
-        setStatus((s) => ({ ...s, [pick.pick_id]: `error:${r?.message || 'The paper trade did not go through.'}` }));
+        setStatus((s) => ({ ...s, [skey]: `error:${r?.message || 'The paper trade did not go through.'}` }));
       }
     } catch (e) {
-      setStatus((s) => ({ ...s, [pick.pick_id]: `error:${e.message}` }));
+      setStatus((s) => ({ ...s, [skey]: `error:${e.message}` }));
     } finally {
       setBusy(false);
     }
@@ -217,7 +225,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             }`}
           >
             <div className="text-sm font-bold">{p.ticker}</div>
-            <div className={`text-[11px] ${i === idx ? 'text-blue-100' : 'text-slate-400'}`}>{p.structure}</div>
+            <div className={`text-[11px] ${i === idx ? 'text-blue-100' : 'text-slate-400'}`}>{kindLabel(useAlt[p.pick_id] && p.alt ? p.alt.structure : p.structure)}</div>
           </button>
         ))}
       </div>
@@ -263,6 +271,26 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               </p>
             )}
           </div>
+
+          {basePick.alt && (
+            <div>
+              <div className="text-xs text-slate-400 mb-1.5">How do you want to trade {pick.ticker}?</div>
+              <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-800 p-1" role="radiogroup" aria-label="Shares or options">
+                {[basePick, { ...basePick, ...basePick.alt, _alt: true }].map((v) => {
+                  const shares = FAMILY_SHARES.has(v.structure);
+                  const on = !!useAlt[basePick.pick_id] === !!v._alt;
+                  return (
+                    <button key={v._alt ? 'alt' : 'main'} role="radio" aria-checked={on}
+                      onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !!v._alt }))}
+                      className={`rounded-lg py-2 text-sm font-bold ${on ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'}`}>
+                      {shares ? '📈 Shares' : '🎯 Options'}
+                      <span className={`block text-[11px] font-medium ${on ? 'text-blue-100' : 'text-slate-500'}`}>{shares ? (v.structure === 'Buy Stock' ? 'Simple: own it' : 'Stay out / sell') : v.structure}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Strategy */}
           <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-3">
@@ -357,7 +385,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               </div>
 
               <PayoffChart
-                key={pick.pick_id}
+                key={skey}
                 model={model}
                 units={sizing?.units || 1}
                 ticker={pick.ticker}
