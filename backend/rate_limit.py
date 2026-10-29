@@ -33,9 +33,14 @@ _hits: dict[str, deque] = defaultdict(deque)
 
 
 def _client_id(request) -> str:
-    fwd = request.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    """The visitor's address. Render APPENDS to X-Forwarded-For without removing what the visitor
+    sent, so the leftmost entry can be faked (a script could dodge the limit by changing it each
+    time). The real address is the one Render added: MP_PROXY_HOPS entries from the right
+    (default 1 = second-to-last, i.e. just before Render's own proxy)."""
+    parts = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p.strip()]
+    hops = int(os.getenv("MP_PROXY_HOPS", "1"))
+    if parts:
+        return parts[-1 - hops] if len(parts) > hops else parts[0]
     return request.client.host if request.client else "unknown"
 
 

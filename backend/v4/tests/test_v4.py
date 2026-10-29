@@ -369,9 +369,26 @@ def test_rate_limit_on_costly_endpoints(monkeypatch):
     c = TestClient(app)
     assert [c.post("/v4/belief").status_code for _ in range(4)] == [200, 200, 200, 429]
     assert c.get("/v4/stats").status_code == 200            # free endpoints are not limited
-    other = c.post("/v4/belief", headers={"x-forwarded-for": "9.9.9.9"})
-    assert other.status_code == 200                         # limit is per visitor
+    # behind Render: "<what the visitor sent>, <real visitor>, <render proxy>"
+    real = lambda fake: {"x-forwarded-for": f"{fake}, 5.5.5.5, 10.0.0.1"}
+    assert [c.post("/v4/belief", headers=real(f"1.2.3.{i}")).status_code for i in range(4)] == [200, 200, 200, 429]  # faking the first entry doesn't help
+    assert c.post("/v4/belief", headers={"x-forwarded-for": "9.9.9.9, 10.0.0.1"}).status_code == 200  # a different real visitor
     rate_limit.reset_for_tests()
+
+
+def test_daily_caps_protect_the_claude_bill(monkeypatch):
+    monkeypatch.setenv("MP_USER_DAILY_CAP", "2")
+    monkeypatch.setenv("MP_DAILY_CLAUDE_CAP", "3")
+    fake = FakeClaude()
+    engine.process_belief("plumbing one", "u-cap", claude_client=fake)
+    engine.process_belief("plumbing two", "u-cap", claude_client=fake)
+    with pytest.raises(engine.BudgetError):
+        engine.process_belief("plumbing three", "u-cap", claude_client=fake)
+    engine.process_belief("plumbing one", "u-cap", claude_client=fake)       # a repeat is cached: free, still works
+    engine.process_belief("plumbing four", "u-other", claude_client=fake)    # 3rd fresh call today: hits the global cap next
+    with pytest.raises(engine.BudgetError):
+        engine.process_belief("plumbing five", "u-third", claude_client=fake)
+    seeder.run("backfill", n=2, years=1, concurrency=1, claude_client=fake)  # the practice feed isn't capped
 
 
 def test_learning_status_and_my_beliefs(monkeypatch):

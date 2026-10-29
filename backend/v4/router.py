@@ -48,12 +48,16 @@ def _check_admin(token: Optional[str]) -> None:
 async def run_belief(belief: str, user_id: str, risk_profile: str, prefs: Optional[dict] = None) -> dict:
     try:
         return await run_in_threadpool(lambda: engine.process_belief(belief, user_id, risk_profile, prefs=prefs))
+    except engine.BudgetError as e:
+        raise HTTPException(status_code=429, detail=str(e))
     except engine.BeliefError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except interpreter.InterpreterError as e:
-        raise HTTPException(status_code=502, detail=f"belief interpreter failed: {e}")
+        print(f"[v4] interpreter failed: {e}")
+        raise HTTPException(status_code=502, detail="The AI had trouble reading that one. Please try again in a moment.")
     except market.MarketDataError as e:
-        raise HTTPException(status_code=502, detail=f"market data unavailable: {e}")
+        print(f"[v4] market data failed: {e}")
+        raise HTTPException(status_code=502, detail="Market prices are unavailable right now. Please try again in a moment.")
 
 
 @router.post("/belief")

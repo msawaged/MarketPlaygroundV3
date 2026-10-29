@@ -15,6 +15,7 @@ list with the alternatives.
 """
 from __future__ import annotations
 
+import os
 import hashlib
 import re
 import uuid
@@ -33,6 +34,36 @@ class BeliefError(ValueError):
 
 def _norm(text: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9$%.\s]", " ", text.lower())).strip()
+
+
+class BudgetError(BeliefError):
+    """Today's cap on Claude calls was reached (protects the bill from scripts and runaway use)."""
+
+
+def _bump(key: str) -> int:
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (key,))
+    n = int(row["v"]) + 1 if row and str(row["v"]).isdigit() else 1
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (key,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (key, str(n), datetime.now(timezone.utc).isoformat()))
+    return n
+
+
+def _spend_guard(user_id: str) -> None:
+    """Caps on fresh Claude calls from people (cached repeats and the practice feed don't count):
+    MP_DAILY_CLAUDE_CAP for everyone together per day (default 1500, roughly a few dollars),
+    MP_USER_DAILY_CAP per person per day (default 60)."""
+    day = market.today().isoformat()
+    cap_all = int(os.getenv("MP_DAILY_CLAUDE_CAP", "1500"))
+    cap_user = int(os.getenv("MP_USER_DAILY_CAP", "60"))
+    total = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (f"claude_calls:{day}",))
+    if cap_all > 0 and total and str(total["v"]).isdigit() and int(total["v"]) >= cap_all:
+        raise BudgetError("MarketPlayground is very busy today and hit its beta limit. Please try again tomorrow.")
+    if cap_user > 0 and user_id and user_id != "anonymous":
+        mine = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (f"claude_calls:{day}:{user_id}",))
+        if mine and str(mine["v"]).isdigit() and int(mine["v"]) >= cap_user:
+            raise BudgetError("You've explored a lot of ideas today! Fresh ideas reset tomorrow; repeats still work.")
+        _bump(f"claude_calls:{day}:{user_id}")
+    _bump(f"claude_calls:{day}")
 
 
 def _cached_interpretation(norm: str, risk: str) -> Optional[tuple[dict, dict]]:
@@ -84,6 +115,8 @@ def process_belief(
     if cached:
         interp, usage = cached
     else:
+        if source == "user":
+            _spend_guard(user_id)
         context = learning.build_context(belief)
         interp, usage = interpreter.interpret(
             belief, risk_profile, as_of=as_of if backfill else None,

@@ -81,8 +81,16 @@ def process_belief(request: BeliefRequest):
             try:
                 result = v4_engine.process_belief(request.belief, request.user_id or "anonymous",
                                                   request.risk_profile or "moderate", prefs=request.prefs)
+            except v4_engine.BudgetError as e:
+                raise HTTPException(status_code=429, detail=str(e))
             except v4_engine.BeliefError as e:
                 raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:  # interpreter / market data: friendly message, details in the logs
+                from backend.v4 import interpreter as _i, market as _m
+                if isinstance(e, (_i.InterpreterError, _m.MarketDataError)):
+                    print(f"[strategy] v4 failed: {e}")
+                    raise HTTPException(status_code=502, detail="Something on our side hiccuped reading that. Please try again in a moment.")
+                raise
         else:
             from backend.ai_engine.ai_engine import run_ai_engine
             result = run_ai_engine(request.belief)
