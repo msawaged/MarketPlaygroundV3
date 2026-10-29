@@ -1,3 +1,5 @@
+from fastapi import Depends
+from backend.security import admin_only
 # backend/routes/paper_trading_router.py
 # -----------------------------------------------------------------------------
 # Paper & Live Trading Router (MarketPlayground)
@@ -323,7 +325,7 @@ def close_position(payload: ClosePositionPayload):
 # -----------------------------------------------------------------------------
 # Paper trading: Leaderboard
 # -----------------------------------------------------------------------------
-@router.get("/leaderboard")
+@router.get("/leaderboard", dependencies=[Depends(admin_only)])
 def get_leaderboard():
     """Get performance leaderboard"""
     try:
@@ -343,7 +345,7 @@ def get_leaderboard():
 # -----------------------------------------------------------------------------
 # LIVE trading: status probe
 # -----------------------------------------------------------------------------
-@router.get("/live_status/{user_id}")
+@router.get("/live_status/{user_id}", dependencies=[Depends(admin_only)])
 def live_status(user_id: str):
     """
     Returns whether live trading is enabled and whether the user is whitelisted.
@@ -362,7 +364,7 @@ def live_status(user_id: str):
 # -----------------------------------------------------------------------------
 # LIVE trading: execute order (stock OR options)
 # -----------------------------------------------------------------------------
-@router.post("/execute_live")
+@router.post("/execute_live", dependencies=[Depends(admin_only)])
 async def execute_live_trade(request: TradeRequest):
     """
     Execute a LIVE trade via Alpaca.
@@ -464,7 +466,7 @@ async def execute_live_trade(request: TradeRequest):
 # -----------------------------------------------------------------------------
 # LIVE trading: portfolio
 # -----------------------------------------------------------------------------
-@router.get("/portfolio_live/{user_id}")
+@router.get("/portfolio_live/{user_id}", dependencies=[Depends(admin_only)])
 def get_live_portfolio(user_id: str):
     """
     Fetch LIVE Alpaca portfolio snapshot (account + positions).

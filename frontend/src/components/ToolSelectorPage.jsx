@@ -154,8 +154,7 @@ export default function ToolSelectorPage() {
 
 
         <div className="mt-8 flex items-center justify-between text-[11px] text-slate-500">
-          <span>For education, not investment advice.</span>
-          <button onClick={() => navigate('/generator')} className="underline hover:text-slate-300">Classic generator</button>
+          <span>For education, not investment advice. MarketPlayground is a MuLabs product.</span>
         </div>
       </div>
       <BottomNavigation />

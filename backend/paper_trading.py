@@ -448,22 +448,24 @@ class PaperTradingEngine:
         """, (order.user_id, order.ticker, order.position_type.value)).fetchone()
         
         if existing:
-            # Update existing position (average price calculation)
-            total_quantity = existing['quantity'] + order.filled_quantity
-            total_cost = (existing['quantity'] * existing['avg_price']) + \
-                        (order.filled_quantity * order.filled_price)
-            new_avg_price = total_cost / total_quantity
-            
-            market_value = total_quantity * current_price
+            # Update existing position (average price). sqlite hands back floats; keep the math in Decimal.
+            fq = int(order.filled_quantity)
+            fp = Decimal(str(order.filled_price))
+            cp = Decimal(str(current_price))
+            old_q = int(existing['quantity'])
+            old_avg = Decimal(str(existing['avg_price']))
+            total_quantity = old_q + fq
+            new_avg_price = ((old_q * old_avg) + (fq * fp)) / total_quantity
+            market_value = total_quantity * cp
             unrealized_pnl = market_value - (total_quantity * new_avg_price)
-            
+
             conn.execute("""
                 UPDATE positions 
                 SET quantity = ?, avg_price = ?, current_price = ?,
                     market_value = ?, unrealized_pnl = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE position_id = ?
-            """, (total_quantity, new_avg_price, current_price,
-                  market_value, unrealized_pnl, existing['position_id']))
+            """, (total_quantity, float(new_avg_price), float(cp),
+                  float(market_value), float(unrealized_pnl), existing['position_id']))
         else:
             # Create new position
             market_value = order.filled_quantity * current_price
@@ -481,12 +483,16 @@ class PaperTradingEngine:
             ))
     
     def _cache_market_data(self, ticker: str, price: Decimal):
-        """Cache market data for later use"""
-        with self._get_db_connection() as conn:
-            conn.execute("""
-                INSERT INTO market_data (ticker, price, timestamp)
-                VALUES (?, ?, CURRENT_TIMESTAMP)
-            """, (ticker, price))
+        """Cache market data for later use. Best effort: a cache hiccup must never turn a trade that
+        already went through into an error (two trades in the same second used to do exactly that)."""
+        try:
+            with self._get_db_connection() as conn:
+                conn.execute("""
+                    INSERT OR REPLACE INTO market_data (ticker, price, timestamp)
+                    VALUES (?, ?, CURRENT_TIMESTAMP)
+                """, (ticker, float(price)))
+        except Exception as e:
+            logger.warning(f"price cache skipped for {ticker}: {e}")
     
     def _get_user_data(self, user_id: str) -> Dict:
         """Get user account data"""
@@ -535,6 +541,18 @@ class PaperTradingEngine:
                 held = qty * est_px * mult + est_comm
                 comm = Decimal(str(self._calculate_commission(qty, px)))
                 actual = qty * px * mult + comm
+                # If it opened higher than the estimate, buy only what the account can afford
+                # (the money held for this order + spare buying power), like a real broker would.
+                u = conn.execute("SELECT buying_power FROM users WHERE user_id = ?", (user_id,)).fetchone()
+                available = held + Decimal(str(u['buying_power'] if u else 0))
+                while qty > 0 and actual > available:
+                    qty -= max(1, qty // 20)
+                    comm = Decimal(str(self._calculate_commission(qty, px))) if qty > 0 else Decimal('0')
+                    actual = qty * px * mult + comm
+                if qty <= 0:
+                    conn.execute("UPDATE orders SET status = 'cancelled' WHERE order_id = ?", (o['order_id'],))
+                    conn.execute("UPDATE users SET buying_power = buying_power + ? WHERE user_id = ?", (float(held), user_id))
+                    continue
                 order = Order(order_id=o['order_id'], user_id=user_id, ticker=o['ticker'], order_type=OrderType.MARKET,
                               position_type=PositionType(o['position_type']), quantity=qty, price=est_px, stop_price=None,
                               status=OrderStatus.FILLED, strategy_id=o['strategy_id'], belief=o['belief'],

@@ -1,3 +1,5 @@
+from fastapi import Depends
+from backend.security import admin_only
 # backend/routes/strategy_router.py
 
 from fastapi import APIRouter, Query, HTTPException
@@ -169,7 +171,7 @@ def process_belief(request: BeliefRequest):
         print(f"🔧 [DEBUG] ERROR! {type(e).__name__}: {str(e)[:50]}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/submit_feedback")
+@router.post("/submit_feedback", dependencies=[Depends(admin_only)])
 def submit_feedback(request: FeedbackRequest):
     """
     Saves user feedback on a generated strategy.
@@ -177,7 +179,7 @@ def submit_feedback(request: FeedbackRequest):
     save_feedback_entry(request.belief, request.strategy, request.feedback, request.user_id)
     return {"message": "✅ Feedback saved"}
 
-@router.post("/mark_outcome")
+@router.post("/mark_outcome", dependencies=[Depends(admin_only)])
 def mark_strategy_outcome(request: OutcomeRequest):
     """
     Logs actual result (win/loss, PnL%) for a strategy previously generated.
@@ -203,7 +205,7 @@ def mark_strategy_outcome(request: OutcomeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error logging outcome: {str(e)}")
 
-@router.get("/summary")
+@router.get("/summary", dependencies=[Depends(admin_only)])
 def strategy_summary(user_id: Optional[str] = Query(default=None)):
     """
     Returns summary metrics (PnL, win ratio, top strategies/tickers).

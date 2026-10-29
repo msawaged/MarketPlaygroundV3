@@ -13,8 +13,6 @@ import WelcomePage from './components/WelcomePage';
 import { useAccount } from './lib/auth';
 
 // Heavier, less-used screens load on demand.
-const GeneratorPage = lazy(() => import('./components/GeneratorPage'));
-const StrategyOpsPage = lazy(() => import('./components/StrategyOpsPage'));
 
 function Loading() {
   return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center">Loading…</div>;
@@ -48,8 +46,6 @@ export default function App() {
           <Route path="/reset" element={<ResetPage />} />
           <Route path="/basket-builder" element={g(<BasketBuilderPage />)} />
           <Route path="/portfolio" element={g(<PracticePage />)} />
-          <Route path="/generator" element={g(<GeneratorPage />)} />
-          <Route path="/strategy-ops" element={g(<StrategyOpsPage />)} />
           <Route path="*" element={<Navigate to="/select-tool" replace />} />
         </Routes>
       </Suspense>

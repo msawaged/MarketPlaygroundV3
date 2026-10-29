@@ -767,3 +767,112 @@ def test_my_calls_compares_picks_with_the_sector_fund():
     b = engine.my_beliefs("u-fund")["beliefs"][0]
     assert any(p["vs_simple"] is not None and p["simple"] == "XLI" for p in b["picks"])
     assert all(p["ticker"] != "XLI" or p["vs_simple"] is None for p in b["picks"])
+
+
+# ---------------- fuzz: hostile and random input never crashes the server ----------------
+
+_NASTY = ["", " ", "\n\t", "a", "x" * 5000, "🚀📉💸" * 50, "'; DROP TABLE beliefs; --", "<script>alert(1)</script>",
+          "\u0000null\u0000byte", "Robert'); --", "../../etc/passwd", "%00%0a", "TSLA " * 400, "١٢٣ أسهم", "ñandú café",
+          "{\"json\": true}", "null", "None", "-1", "1e309", "NaN"]
+
+
+def _rand_val(rng):
+    pick = rng.randrange(9)
+    if pick == 0:
+        return rng.choice(_NASTY)
+    if pick == 1:
+        return rng.randint(-10**12, 10**12)
+    if pick == 2:
+        return rng.random() * rng.choice([1, -1, 1e12])
+    if pick == 3:
+        return None
+    if pick == 4:
+        return [rng.choice(_NASTY) for _ in range(rng.randint(0, 3))]
+    if pick == 5:
+        return {rng.choice(_NASTY)[:20]: rng.choice(_NASTY) for _ in range(rng.randint(0, 3))}
+    if pick == 6:
+        return rng.choice([True, False])
+    if pick == 7:
+        return rng.choice(["plumbing will boom", "potatoes are in demand", "airlines will crash", "AAPL hits 300"])
+    return rng.choice(["conservative", "moderate", "aggressive", "bold", "MODERATE", "careful"])
+
+
+def test_fuzz_api_never_500s(monkeypatch):
+    import random as _r
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from backend.v4 import interpreter, mailer
+    from backend.v4.router import router
+    from urllib.parse import quote
+
+    fake = FakeClaude()
+    monkeypatch.setattr(interpreter, "_client", lambda: fake)
+    monkeypatch.setattr(market, "headlines", lambda limit=4: [])
+    monkeypatch.setenv("MP_MAIL_TEST_SINK", "1")
+    monkeypatch.setenv("MP_ADMIN_TOKEN", "owner")
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    c = TestClient(app, raise_server_exceptions=False)
+    rng = _r.Random(20261029)
+    posts = {
+        "/v4/belief": ["belief", "user_id", "risk_profile", "prefs"],
+        "/v4/feedback": ["belief_id", "kind", "user_id", "pick_id"],
+        "/v4/waitlist": ["email", "belief", "source", "website"],
+        "/v4/auth/signup": ["email", "password", "name", "device_id"],
+        "/v4/auth/login": ["email", "password", "device_id"],
+        "/v4/auth/profile": ["name"],
+        "/v4/auth/password": ["current", "new"],
+        "/v4/auth/delete": ["password"],
+        "/v4/auth/verify": ["token", "device_id"],
+        "/v4/auth/resend": ["email"],
+        "/v4/auth/forgot": ["email"],
+        "/v4/auth/reset": ["token", "password"],
+        "/v4/auth/logout": [],
+        "/v4/broker/preview": ["ticker", "side", "amount_usd", "belief_id", "pick_id"],
+        "/v4/broker/order": ["preview_id", "confirm"],
+        "/v4/broker/disconnect": [],
+        "/v4/admin/reset_password": ["email"],
+    }
+    gets = ["/v4/belief/{x}", "/v4/trending?days={x}", "/v4/stats", "/v4/headlines?limit={x}",
+            "/v4/replay?tickers={x}&directions={x}&days={x}", "/v4/my_beliefs?user_id={x}", "/v4/learning",
+            "/v4/auth/me", "/v4/broker/status", "/v4/broker/connect", "/v4/broker/callback?code={x}&state={x}",
+            "/v4/admin/accounts", "/v4/admin/ml", "/v4/admin/waitlist"]
+    n = 0
+    for _ in range(int(os.getenv("MP_FUZZ_ROUNDS", "25"))):
+        for path, fields in posts.items():
+            body = {f: _rand_val(rng) for f in fields if rng.random() < 0.85}
+            if rng.random() < 0.1:
+                body = rng.choice([[], "text", 5, None])
+            hdr = rng.choice([{}, {"Authorization": "Bearer " + quote(str(rng.choice(_NASTY)))[:300]}, {"X-Admin-Token": "nope"}])
+            r = c.post(path, json=body, headers=hdr)
+            assert r.status_code < 500 or path == "/v4/belief" and r.status_code in (502,), (path, body, r.status_code, r.text[:200])
+            n += 1
+        for g in gets:
+            url = g.replace("{x}", quote(str(_rand_val(rng)), safe=""))
+            r = c.get(url, headers=rng.choice([{}, {"Authorization": "Bearer junk"}, {"X-Admin-Token": "nope"}]))
+            assert r.status_code < 500, (url, r.status_code, r.text[:200])
+            n += 1
+    assert n > 700
+    # admin routes never answer to a wrong token
+    for g in ["/v4/admin/accounts", "/v4/admin/ml", "/v4/admin/waitlist", "/v4/learning"]:
+        assert c.get(g, headers={"X-Admin-Token": "nope"}).status_code == 403
+
+
+def test_fuzz_engine_with_well_formed_but_weird_beliefs():
+    import random as _r
+    rng = _r.Random(7)
+    fake = FakeClaude()
+    risks = ["conservative", "moderate", "aggressive", "", "BOLD", "x" * 300]
+    prefs_pool = [None, {}, {"instrument": "options"}, {"instrument": "shares", "goal": "income"},
+                  {"instrument": "bogus", "goal": "moon"}, {"goal": ["list"]}, {"instrument": None}, {"x": 1}]
+    for i in range(150):
+        text = rng.choice(_NASTY + ["plumbing will boom", "potatoes are in demand", "airlines will crash"])
+        if not text.strip():
+            continue
+        r = engine.process_belief(text[:1000], f"u-fz{i % 7}", rng.choice(risks), claude_client=fake,
+                                  prefs=rng.choice(prefs_pool))
+        assert isinstance(r, dict) and "picks" in r
+        for p in r["picks"]:
+            t = p["trade"]
+            assert p["structure"] and t is not None
+            assert all(math.isfinite(float(x)) for x in [p["price"], p["score"]])
+    assert engine.my_beliefs("u-fz1")["beliefs"]

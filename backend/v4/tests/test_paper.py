@@ -78,3 +78,71 @@ def test_cancel_queued_returns_buying_power(tmp_path, monkeypatch):
     p = eng.get_portfolio("u3")
     assert p["queued_orders"] == [] and abs(p["account"]["buying_power"] - bp0) < 1e-6
     assert eng.cancel_queued("u3", oid)["status"] == "error"
+
+
+@pytest.mark.parametrize("seed", [4, 11, 42])
+def test_random_trade_sequences_keep_the_books_balanced(tmp_path, monkeypatch, seed):
+    """300 random buys, sells, queued orders, cancels and fills across market open/close.
+    The money must always add up: cash == start - what was paid + what came back, and buying
+    power == cash - money held for orders still waiting for the open."""
+    import random
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "f.db"))
+    rng = random.Random(seed)
+    prices = {t: Decimal(str(rng.randint(5, 400))) for t in ("AAA", "BBB", "CCC", "DDD")}
+    state = {"open": True, "day": 0}
+    monkeypatch.setattr(eng, "_get_real_market_price", lambda t: prices[t])
+    monkeypatch.setattr(pt, "_clock", lambda: {"is_open": state["open"], "next_open": None})
+    # a queued order fills at the "next open" price once the market has opened again
+    monkeypatch.setattr(pt, "_open_after", lambda t, after: (f"2026-11-{state['day'] % 28 + 1:02d}", float(prices[t])) if state["open"] else None)
+    uid = "fuzz"
+    start = eng.get_portfolio(uid)["account"]["cash_balance"]
+
+    def check():
+        p = eng.get_portfolio(uid)
+        a = p["account"]
+        with eng._get_db_connection() as conn:
+            paid = conn.execute("SELECT COALESCE(SUM(net_amount),0) FROM transactions WHERE user_id=? AND transaction_type IN ('BUY')", (uid,)).fetchone()[0]
+            got = conn.execute("SELECT COALESCE(SUM(net_amount),0) FROM transactions WHERE user_id=? AND transaction_type IN ('SELL')", (uid,)).fetchone()[0]
+            holds = 0.0
+            for o in conn.execute("SELECT * FROM orders WHERE user_id=? AND status='pending' AND order_type!='close'", (uid,)).fetchall():
+                holds += o["quantity"] * o["price"] + (o["commission"] or 0)
+            n_pos = conn.execute("SELECT COUNT(*) FROM positions WHERE user_id=?", (uid,)).fetchone()[0]
+        assert abs(a["cash_balance"] - (start - paid + got)) < 0.05, (a, paid, got)
+        assert abs(a["buying_power"] - (a["cash_balance"] - holds)) < 0.05, (a, holds)
+        assert a["buying_power"] >= -0.01 and a["cash_balance"] >= -0.01
+        mv = sum(x["market_value"] for x in p["positions"])
+        assert abs(a["total_value"] - (a["cash_balance"] + mv)) < 0.05
+        assert len(p["positions"]) == n_pos
+        return p
+
+    ops = {"buy": 0, "sell": 0, "cancel": 0, "queued": 0, "rejected": 0}
+    for step in range(300):
+        r = rng.random()
+        if r < 0.1:
+            state["open"] = not state["open"]; state["day"] += 1
+        elif r < 0.2:
+            t = rng.choice(list(prices)); prices[t] = max(Decimal("1"), prices[t] * Decimal(str(round(rng.uniform(0.8, 1.25), 3))))
+        elif r < 0.6:
+            t = rng.choice(list(prices))
+            res = eng.execute_paper_trade(uid, {"ticker": t, "type": "Buy Stock", "asset_class": "equity",
+                                                "trade_legs": [{"action": "Buy", "ticker": t}],
+                                                "investment_amount": rng.choice([1, 50, 500, 2500, 20000, 90000])}, "b")
+            ops["queued" if res["status"] == "queued" else "buy" if res["status"] == "success" else "rejected"] += 1
+        elif r < 0.85:
+            pos = eng.get_portfolio(uid)["positions"]
+            if pos:
+                res = eng.close_position(uid, rng.choice(pos)["position_id"])
+                assert res["status"] in ("success", "queued"), res
+                ops["sell"] += 1
+        else:
+            q = eng.get_portfolio(uid)["queued_orders"]
+            if q:
+                assert eng.cancel_queued(uid, rng.choice(q)["order_id"])["status"] == "cancelled"
+                ops["cancel"] += 1
+        check()
+    state["open"] = True
+    final = check()
+    assert final["queued_orders"] == [] or all(o["side"] for o in final["queued_orders"])
+    assert ops["buy"] > 20 and ops["queued"] > 5 and ops["sell"] > 10, ops

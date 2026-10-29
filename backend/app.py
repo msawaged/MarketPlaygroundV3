@@ -14,7 +14,7 @@ from typing import Optional
 
 import pandas as pd
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
@@ -79,27 +79,31 @@ if not os.path.exists(strategy_csv_path):
         strategy_csv_path, index=False
     )
 
+from backend.security import admin_only  # noqa: E402
+
+_ADMIN = [Depends(admin_only)]
+
 # === Routers ===
-app.include_router(auth_router,              prefix="/auth",              tags=["Auth"])
-app.include_router(feedback_router,          prefix="/feedback",          tags=["Feedback"])
-app.include_router(feedback_predictor,       prefix="/predict",           tags=["Predictor"])
-app.include_router(portfolio_router,         prefix="/portfolio",         tags=["Portfolio"])
+app.include_router(auth_router,              prefix="/auth",              tags=["Auth"], dependencies=_ADMIN)
+app.include_router(feedback_router,          prefix="/feedback",          tags=["Feedback"], dependencies=_ADMIN)
+app.include_router(feedback_predictor,       prefix="/predict",           tags=["Predictor"], dependencies=_ADMIN)
+app.include_router(portfolio_router,         prefix="/portfolio",         tags=["Portfolio"], dependencies=_ADMIN)
 app.include_router(strategy_router,          prefix="/strategy",          tags=["Strategy"])
-app.include_router(strategy_logger_router,   prefix="/strategy",          tags=["Strategy Logger"])
-app.include_router(news_router,              prefix="/news",              tags=["News"])
-app.include_router(hot_trades_router,                                     tags=["Hot Trades"])
+app.include_router(strategy_logger_router,   prefix="/strategy",          tags=["Strategy Logger"], dependencies=_ADMIN)
+app.include_router(news_router,              prefix="/news",              tags=["News"], dependencies=_ADMIN)
+app.include_router(hot_trades_router,                                     tags=["Hot Trades"], dependencies=_ADMIN)
 app.include_router(basket_router,            prefix="/basket",            tags=["Asset Baskets"])
-app.include_router(alpaca_router,            prefix="/alpaca",            tags=["Alpaca"])
-app.include_router(execution_router,         prefix="/alpaca",            tags=["Execution"])
-app.include_router(pnl_router,               prefix="/pnl",               tags=["PnL"])
-app.include_router(market_router,            prefix="/market",            tags=["Market"])
-app.include_router(analytics_router,         prefix="/analytics",         tags=["Analytics"])
-app.include_router(debug_router,             prefix="/debug",             tags=["Debug"])
-app.include_router(ibkr_router,              prefix="/ibkr",              tags=["IBKR"])
+app.include_router(alpaca_router,            prefix="/alpaca",            tags=["Alpaca"], dependencies=_ADMIN)
+app.include_router(execution_router,         prefix="/alpaca",            tags=["Execution"], dependencies=_ADMIN)
+app.include_router(pnl_router,               prefix="/pnl",               tags=["PnL"], dependencies=_ADMIN)
+app.include_router(market_router,            prefix="/market",            tags=["Market"], dependencies=_ADMIN)
+app.include_router(analytics_router,         prefix="/analytics",         tags=["Analytics"], dependencies=_ADMIN)
+app.include_router(debug_router,             prefix="/debug",             tags=["Debug"], dependencies=_ADMIN)
+app.include_router(ibkr_router,              prefix="/ibkr",              tags=["IBKR"], dependencies=_ADMIN)
 app.include_router(paper_trading_router,     prefix="/api/paper-trading", tags=["Paper Trading"])
-app.include_router(trade_confirmation_router,                             tags=["Trade Confirmation"])
-app.include_router(market_events_router)
-app.include_router(alpaca_probe_router)
+app.include_router(trade_confirmation_router,                             tags=["Trade Confirmation"], dependencies=_ADMIN)
+app.include_router(market_events_router, dependencies=_ADMIN)
+app.include_router(alpaca_probe_router, dependencies=_ADMIN)
 app.include_router(market_ticker_router)
 app.include_router(v4_router,                prefix="/v4",                tags=["v4 Belief Engine"])
 
@@ -134,7 +138,7 @@ def health():
     }
 
 
-@app.post("/submit_feedback")
+@app.post("/submit_feedback", dependencies=_ADMIN)
 def submit_feedback(request: FeedbackRequest):
     try:
         save_feedback_entry(request.belief, request.strategy, request.feedback)
@@ -159,7 +163,7 @@ def retrain_legacy_models(x_admin_token: Optional[str] = Header(None)):
         raise HTTPException(status_code=500, detail=f"Retrain failed: {e}")
 
 
-@app.get("/analytics/strategy_distribution")
+@app.get("/analytics/strategy_distribution", dependencies=_ADMIN)
 def strategy_distribution(asset_class: Optional[str] = Query(None), belief_contains: Optional[str] = Query(None)):
     try:
         df = pd.read_csv(strategy_csv_path, on_bad_lines="skip", engine="python")
@@ -173,7 +177,7 @@ def strategy_distribution(asset_class: Optional[str] = Query(None), belief_conta
         raise HTTPException(status_code=500, detail=f"Error loading strategy data: {e}")
 
 
-@app.get("/analytics/trending_strategies")
+@app.get("/analytics/trending_strategies", dependencies=_ADMIN)
 def trending_strategies(limit: int = 5):
     try:
         df = pd.read_csv(strategy_csv_path, on_bad_lines="skip", engine="python")
@@ -183,7 +187,7 @@ def trending_strategies(limit: int = 5):
         raise HTTPException(status_code=500, detail="Failed to load trending strategies")
 
 
-@app.get("/analytics/top_tags")
+@app.get("/analytics/top_tags", dependencies=_ADMIN)
 def top_tags(limit: int = 10):
     try:
         df = pd.read_csv(strategy_csv_path, on_bad_lines="skip", engine="python")
@@ -196,7 +200,7 @@ def top_tags(limit: int = 10):
         raise HTTPException(status_code=500, detail="Failed to compute top tags")
 
 
-@app.get("/logs/recent")
+@app.get("/logs/recent", dependencies=_ADMIN)
 def fetch_recent_logs(limit: int = 10):
     """Most recent entries from backend/logs/last_training_log.txt as {timestamp, message}."""
     log_path = os.path.join("backend", "logs", "last_training_log.txt")
