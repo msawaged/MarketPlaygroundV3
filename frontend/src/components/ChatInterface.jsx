@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
 import { processBelief, getHeadlines } from '../lib/api';
+import { useMovers } from './MoversFeed';
 import BottomNavigation from './BottomNavigation';
 import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
@@ -88,7 +89,8 @@ export default function ChatInterface() {
   const [showHow, setShowHow] = useState(() => !seen('how'));
   const autoSent = useRef(false);
   const [news, setNews] = useState([]);
-  useEffect(() => { getHeadlines(4).then((d) => setNews(d?.headlines || [])).catch(() => {}); }, []);
+  const moving = useMovers().data?.items || [];
+  useEffect(() => { if (!moving.length) getHeadlines(4).then((d) => setNews(d?.headlines || [])).catch(() => {}); }, [moving.length]);
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -230,7 +232,22 @@ export default function ChatInterface() {
               </>
             )}
 
-            {news.length > 0 && (
+            {moving.length > 0 && (
+              <>
+                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">📰 From today's news</div>
+                <div className="mt-2 space-y-2">
+                  {moving.slice(0, 4).map((m) => (
+                    <button key={m.headline} onClick={() => send(m.hunch)}
+                      className="w-full text-left rounded-2xl bg-slate-900/70 border border-slate-700/80 px-3.5 py-2.5 hover:border-blue-400/60">
+                      <div className="text-sm text-slate-100 leading-snug">{m.hunch}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{m.companies.map((c) => c.ticker).join(' · ')} · tap to see the picks</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {!moving.length && news.length > 0 && (
               <>
                 <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">📰 In the news: what do you believe?</div>
                 <div className="mt-2 space-y-2">

@@ -21,7 +21,7 @@ const ROTATE = [
 ];
 
 const TOOLS = [
-  { path: '/trending', icon: Flame, title: 'Trending', body: 'Today’s news, as hunches', tint: 'text-amber-300 bg-amber-400/10' },
+  { path: '/trending', icon: Flame, title: 'News', body: 'Today’s news and the companies it moves', tint: 'text-amber-300 bg-amber-400/10' },
   { path: '/my', icon: Target, title: 'My calls', body: 'How your picks are doing', tint: 'text-blue-300 bg-blue-400/10' },
   { path: '/basket-builder', icon: ShoppingBasket, title: 'Baskets', body: 'A goal → a simple fund mix', tint: 'text-sky-300 bg-sky-400/10' },
   { path: '/portfolio', icon: TrendingUp, title: 'Practice', body: 'Paper trades, no real money', tint: 'text-green-300 bg-green-400/10' },
