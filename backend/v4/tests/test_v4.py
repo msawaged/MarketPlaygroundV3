@@ -1065,3 +1065,29 @@ def test_movers_falls_back_when_claude_keeps_nothing(monkeypatch):
     monkeypatch.setattr(movers, "_snapshots", lambda syms: {})
     out = movers.feed(client=FakeClaude({"items": [{"n": 0, "keep": False, "hunch": "", "why": "", "companies": []}]}))
     assert [it["headline"] for it in out["items"]] == ["Delta raises outlook"] and out["diag"]["headlines"] == 1
+
+
+def test_called_it_email_once_and_unsubscribe(monkeypatch):
+    from backend.v4 import notify, mailer
+    from datetime import datetime, timedelta, timezone
+    monkeypatch.setenv("MP_MAIL_TEST_SINK", "1")
+    mailer._sent_for_tests.clear()
+    db.execute("INSERT INTO accounts (id, uid, email, name, pw_hash, created_at, verified) VALUES (?,?,?,?,?,?,?)",
+               ("a-n1", "u-n1", "n1@example.com", "Sam Lee", "x", "2026-01-01", 1))
+    db.execute("INSERT INTO accounts (id, uid, email, name, pw_hash, created_at, verified) VALUES (?,?,?,?,?,?,?)",
+               ("a-n2", "u-n2", "n2@example.com", "", "x", "2026-01-01", 0))  # not confirmed: never emailed
+    old = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
+    new = datetime.now(timezone.utc).isoformat()
+    beliefs = {"u-n1": [{"belief_id": "b-new", "text": "too new", "created_at": new, "call": {"playing_out": True, "vs_spy": 0.2}},
+                        {"belief_id": "b-1", "text": "AI will need more power", "created_at": old, "call": {"playing_out": True, "vs_spy": 0.051}}],
+               "u-n2": [{"belief_id": "b-2", "text": "x", "created_at": old, "call": {"playing_out": True, "vs_spy": 0.3}}]}
+    monkeypatch.setattr(engine, "my_beliefs", lambda uid, limit=30: {"beliefs": beliefs.get(uid, [])})
+    assert notify.run()["sent"] == 1
+    m = mailer._sent_for_tests[-1]
+    assert m["to"] == "n1@example.com" and "AI will need more power" in m["text"] and "+5.1 points" in m["text"]
+    assert "Hi Sam" in m["text"] and "Unsubscribe" in m["text"]
+    assert notify.run()["sent"] == 0  # once per belief, and at most weekly
+    assert not notify.unsubscribe("a-n1", "wrong")
+    assert notify.unsubscribe("a-n1", notify.unsubscribe_sig("a-n1"))
+    db.execute("DELETE FROM kv_cache WHERE k LIKE 'notify%'")
+    assert notify.run()["accounts"] == 0  # unsubscribed and unconfirmed people are skipped

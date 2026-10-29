@@ -51,6 +51,12 @@ from backend.v4.router import router as v4_router
 
 app = FastAPI(title="MarketPlayground API")
 
+
+@app.on_event("startup")
+def _start_notify() -> None:
+    from backend.v4 import notify
+    notify.start_background()
+
 # === CORS ===
 # Local dev servers, the GitHub Pages landing page, any Render-hosted frontend,
 # plus anything listed in ALLOWED_ORIGINS (comma-separated).

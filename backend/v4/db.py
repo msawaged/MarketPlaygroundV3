@@ -308,6 +308,8 @@ def _migrations() -> list[str]:
         "ALTER TABLE outcomes ADD COLUMN sel_edge REAL",
         "ALTER TABLE outcomes ADD COLUMN belief_right INTEGER",
         "ALTER TABLE outcomes ADD COLUMN bench_kind TEXT",
+        # "You called it" emails (notify.py); people can unsubscribe
+        "ALTER TABLE accounts ADD COLUMN notify_calls INTEGER NOT NULL DEFAULT 1",
     ]
 
 

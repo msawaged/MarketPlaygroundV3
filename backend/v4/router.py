@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn
+from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify
 
 router = APIRouter()
 
@@ -296,6 +296,15 @@ async def get_headlines(limit: int = 6):
 async def get_movers():
     """Today's headlines as hunches, with the companies each one moves and their move today."""
     return await run_in_threadpool(movers.feed)
+
+
+@router.get("/unsubscribe")
+async def get_unsubscribe(a: str = "", s: str = ""):
+    from fastapi.responses import HTMLResponse
+    ok = await run_in_threadpool(notify.unsubscribe, a, s)
+    msg = "You won't get these emails anymore." if ok else "That link didn't work. Reply to any of our emails and we'll take you off."
+    return HTMLResponse(f"<html><body style='font-family:-apple-system,Arial;padding:40px;max-width:480px;margin:auto'>"
+                        f"<h2>MarketPlayground</h2><p>{msg}</p></body></html>")
 
 
 @router.get("/replay")
