@@ -98,7 +98,7 @@ export function sizePosition(model, amount) {
   const note = amount < per
     ? `One contract needs about $${Math.round(per).toLocaleString()}, so this shows 1 contract`
     : `${units} contract${units > 1 ? 's' : ''} at about $${Math.round(per).toLocaleString()} each`;
-  return { units, cost: units * per, note };
+  return { units, cost: units * per, note, over: amount < per, per };
 }
 
 /** Summary at expiration over a wide price range: breakevens, max profit, max loss (per unit). */

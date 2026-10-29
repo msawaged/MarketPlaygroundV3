@@ -128,3 +128,14 @@ export function getReplay(picks, days = 365) {
 export function getMovers() {
   return request("/v4/movers");
 }
+
+/** Practice options: the server re-prices every leg; we only send which contracts. */
+export function paperTradeOptions({ ticker, structure, trade_legs, contracts, belief }) {
+  return request("/api/paper-trading/execute_options", {
+    method: "POST", body: { user_id: userId(), ticker, structure, trade_legs, contracts, belief },
+  });
+}
+
+export function closeOption(positionId) {
+  return request("/api/paper-trading/close_option", { method: "POST", body: { user_id: userId(), position_id: positionId } });
+}

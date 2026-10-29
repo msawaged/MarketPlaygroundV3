@@ -146,3 +146,50 @@ def test_random_trade_sequences_keep_the_books_balanced(tmp_path, monkeypatch, s
     final = check()
     assert final["queued_orders"] == [] or all(o["side"] for o in final["queued_orders"])
     assert ops["buy"] > 20 and ops["queued"] > 5 and ops["sell"] > 10, ops
+
+
+def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.v4 import market, practice_options as po
+    from datetime import date, timedelta
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "o.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    spot = {"v": 100.0}
+    today = {"d": date(2026, 6, 1)}
+    monkeypatch.setattr(market, "latest_price", lambda t: spot["v"])
+    monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
+    monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
+    monkeypatch.setattr(market, "today", lambda: today["d"])
+    exp = (date(2026, 6, 1) + timedelta(days=90)).isoformat()
+    legs = [{"action": "Buy", "option_type": "Call", "strike_price": 100, "expiration": exp, "quantity": 1, "instrument": "option"},
+            {"action": "Sell", "option_type": "Call", "strike_price": 110, "expiration": exp, "quantity": 1, "instrument": "option",
+             "est_premium": 0.01}]  # a client-sent price is ignored
+    cash0 = 100000.0
+    r = po.open_trade("u9", "XYZ", "Bull Call Spread", legs, 2, "it'll rise")
+    assert r["status"] == "success" and 100 < r["set_aside"] < 2000  # a 10-wide spread costs < $1,000 a contract
+    pos = po.positions("u9")
+    assert len(pos) == 1 and abs(pos[0]["pnl"]) < 1e-6
+    spot["v"] = 115.0
+    gain = po.positions("u9")[0]["pnl"]
+    assert gain > 0
+    c = po.close("u9", pos[0]["position_id"])
+    assert abs(c["pnl"] - gain) < 1e-6
+    with eng._get_db_connection() as conn:
+        cash = float(conn.execute("SELECT cash_balance FROM users WHERE user_id = 'u9'").fetchone()["cash_balance"])
+    assert abs(cash - (cash0 + gain)) < 0.05
+    # a credit trade sets aside its worst case, and settles at expiration on its own
+    put_credit = [{"action": "Sell", "option_type": "Put", "strike_price": 95, "expiration": exp, "quantity": 1, "instrument": "option"},
+                  {"action": "Buy", "option_type": "Put", "strike_price": 90, "expiration": exp, "quantity": 1, "instrument": "option"}]
+    r2 = po.open_trade("u9", "XYZ", "Bull Put Spread", put_credit, 1)
+    assert 300 < r2["set_aside"] <= 500  # worst case of a 5-wide spread, less the credit
+    today["d"] = date(2026, 6, 1) + timedelta(days=91)
+    spot["v"] = 120.0  # puts expire worthless: keep the credit
+    assert po.positions("u9") == []
+    with eng._get_db_connection() as conn:
+        cash2 = float(conn.execute("SELECT cash_balance FROM users WHERE user_id = 'u9'").fetchone()["cash_balance"])
+    assert cash2 > cash  # the credit was kept
+    with pytest.raises(po.PracticeError):
+        po.open_trade("u9", "XYZ", "x", [{"action": "Buy", "option_type": "Call", "strike_price": -5, "expiration": exp}], 1)
+    with pytest.raises(po.PracticeError):
+        po.open_trade("u9", "XYZ", "x", legs, 100000)

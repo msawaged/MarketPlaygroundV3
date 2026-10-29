@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import Term from './ui/Term';
-import { getPortfolio, closePosition, cancelQueued } from '../lib/api';
+import { getPortfolio, closePosition, cancelQueued, closeOption } from '../lib/api';
 
 const usd = (v, d = 0) => `${v < 0 ? '−' : ''}$${Math.abs(Number(v || 0)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const signed = (v, d = 2) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
@@ -54,6 +54,16 @@ export default function PracticePage() {
   const a = s.data?.account;
   const positions = s.data?.positions || [];
   const queued = s.data?.queued_orders || [];
+  const opts = s.data?.option_positions || [];
+  const closeOpt = async (o) => {
+    setClosing(o.position_id);
+    try {
+      const r = await closeOption(o.position_id);
+      setToast(r?.status === 'success' ? r.message : `Couldn't close: ${r?.message || 'try again'}`);
+      load();
+    } catch (e) { setToast(`Couldn't close: ${e.message}`); }
+    finally { setClosing(null); setConfirm(null); setTimeout(() => setToast(null), 3500); }
+  };
   const mkt = s.data?.market;
   const sellQueued = new Set(queued.filter((o) => o.side === 'sell').map((o) => o.ticker));
   const start = s.data?.summary?.starting_balance || 100000;
@@ -122,7 +132,7 @@ export default function PracticePage() {
         </>
       )}
 
-      {a && positions.length === 0 && queued.length === 0 && (
+      {a && positions.length === 0 && queued.length === 0 && opts.length === 0 && (
         <Card className="mt-4 text-center py-7">
           <div className="text-4xl" aria-hidden>🧪</div>
           <div className="mt-2 font-bold text-lg">Nothing here yet</div>
@@ -175,7 +185,45 @@ export default function PracticePage() {
         </AnimatePresence>
       </div>
 
-      <p className="mt-5 text-[11px] text-slate-500">Practice account. No real money moves. Prices may be delayed.</p>
+      {opts.length > 0 && <div className="mt-6 text-xs uppercase tracking-wider text-slate-400 font-semibold">Your options trades</div>}
+      <div className="mt-2 space-y-3">
+        {opts.map((o) => {
+          const up = o.pnl >= 0;
+          return (
+            <Card key={o.position_id}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-extrabold">{o.ticker}</span>
+                    <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-200">{o.structure}</span>
+                  </div>
+                  <div className="text-xs text-slate-400">{o.contracts} contract{o.contracts > 1 ? 's' : ''} · expires {new Date(o.expiration + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · stock {usd(o.spot, 2)}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className={`text-lg font-extrabold ${up ? 'text-green-300' : 'text-red-300'}`}>{signed(o.pnl)}</div>
+                  <div className={`text-xs ${up ? 'text-green-400/80' : 'text-red-400/80'}`}>{o.pnl_pct >= 0 ? '+' : ''}{o.pnl_pct.toFixed(1)}%</div>
+                </div>
+              </div>
+              {o.belief && <p className="mt-2 text-sm text-slate-300 italic truncate">“{o.belief}”</p>}
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-xs text-slate-500">Worth about {usd(o.value)} (estimated)</span>
+                {confirm === o.position_id ? (
+                  <span className="flex gap-2">
+                    <button onClick={() => setConfirm(null)} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700">Keep</button>
+                    <button onClick={() => closeOpt(o)} disabled={closing === o.position_id} className="rounded-xl px-3 py-2 text-xs font-bold bg-red-600 hover:bg-red-500 disabled:opacity-60">
+                      {closing === o.position_id ? 'Closing…' : `Close for about ${usd(o.value)}`}
+                    </button>
+                  </span>
+                ) : (
+                  <button onClick={() => setConfirm(o.position_id)} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Close</button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <p className="mt-5 text-[11px] text-slate-500">Practice account. No real money moves. Prices may be delayed; options prices are estimates.</p>
 
       <AnimatePresence>
         {toast && (

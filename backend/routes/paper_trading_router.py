@@ -212,7 +212,23 @@ def cancel_queued(payload: CancelQueuedPayload):
 def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="Bypass any caches")):
     """Return latest paper portfolio snapshot with no-store headers."""
     try:
+        from backend.v4 import practice_options
+        try:
+            opts = practice_options.positions(user_id)  # first: trades past expiration settle into cash
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"option positions skipped: {e}")
+            opts = []
         portfolio = paper_engine.get_portfolio(user_id, force_refresh=force_refresh)
+        portfolio["option_positions"] = opts
+        if opts:
+            acc = portfolio["account"]
+            ov = sum(o["value"] for o in opts)
+            start = portfolio["summary"]["starting_balance"]
+            acc["equity_value"] += ov
+            acc["total_value"] += ov
+            acc["total_pnl"] = acc["total_value"] - start
+            acc["total_return_pct"] = acc["total_pnl"] / start * 100
+            portfolio["summary"]["total_positions"] += len(opts)
         return JSONResponse(
             content=portfolio,
             headers={
@@ -228,6 +244,40 @@ def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="B
 # -----------------------------------------------------------------------------
 # Paper trading: Close position with optional partial qty + polling
 # -----------------------------------------------------------------------------
+class OptionTradePayload(BaseModel):
+    user_id: str
+    ticker: str
+    structure: Optional[str] = ""
+    trade_legs: List[Dict[str, Any]]
+    contracts: int = 1
+    belief: Optional[str] = ""
+
+
+class OptionClosePayload(BaseModel):
+    user_id: str
+    position_id: str
+
+
+@router.post("/execute_options")
+def execute_options(payload: OptionTradePayload):
+    """Open a practice options trade. Every leg is re-priced on the server."""
+    from backend.v4 import practice_options
+    try:
+        return practice_options.open_trade(payload.user_id, payload.ticker, payload.structure or "",
+                                           payload.trade_legs, payload.contracts, payload.belief or "")
+    except practice_options.PracticeError as e:
+        return {"status": "error", "message": str(e)}
+
+
+@router.post("/close_option")
+def close_option(payload: OptionClosePayload):
+    from backend.v4 import practice_options
+    try:
+        return practice_options.close(payload.user_id, payload.position_id)
+    except practice_options.PracticeError as e:
+        return {"status": "error", "message": str(e)}
+
+
 @router.post("/close_position")
 def close_position(payload: ClosePositionPayload):
     """

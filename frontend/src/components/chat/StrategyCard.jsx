@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PayoffChart from './PayoffChart';
 import { useNavigate } from 'react-router-dom';
 import { buildModel, sizePosition, scenarios, summarize, money, plainEnglish, niceDate } from '../../lib/payoff';
-import { sendFeedback, paperTrade } from '../../lib/api';
+import { sendFeedback, paperTrade, paperTradeOptions } from '../../lib/api';
 import Term from '../ui/Term';
 import ReplayPanel from './ReplayPanel';
 import { shareCard } from '../../lib/shareCard';
@@ -140,9 +140,30 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const next = RISK_NEXT[riskProfile] || RISK_NEXT.moderate;
 
   const doPaperTrade = async () => {
-    if (isOptions || avoid) {
+    if (avoid) {
       feedback('executed');
       setStatus((s) => ({ ...s, [skey]: 'tracking' }));
+      return;
+    }
+    if (isOptions) {
+      if (sizing?.over) {
+        setStatus((s) => ({ ...s, [skey]: `error:One contract costs about $${Math.round(sizing.per).toLocaleString()}. Raise the amount or switch to shares.` }));
+        return;
+      }
+      setBusy(true);
+      try {
+        const r = await paperTradeOptions({ ticker: pick.ticker, structure: pick.structure, trade_legs: legs, contracts: Math.min(1000, sizing?.units || 1), belief });
+        if (r?.status === 'success') {
+          sendFeedback(data.belief_id, 'executed', pick.pick_id);
+          setStatus((s) => ({ ...s, [skey]: `opt:${r.message}` }));
+        } else {
+          setStatus((s) => ({ ...s, [skey]: `error:${r?.message || 'The practice trade did not go through.'}` }));
+        }
+      } catch (e) {
+        setStatus((s) => ({ ...s, [skey]: `error:${e.message}` }));
+      } finally {
+        setBusy(false);
+      }
       return;
     }
     setBusy(true);
@@ -381,7 +402,22 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   />
                 </label>
                 {Number(custom) > MAX_AMOUNT && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_AMOUNT.toLocaleString()}, so this uses ${MAX_AMOUNT.toLocaleString()}.</p>}
-                {sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
+                {sizing?.over ? (
+                  <div className="mt-2 rounded-xl border border-amber-300/40 bg-amber-400/10 p-3 text-sm text-amber-100">
+                    One {pick.ticker} contract costs about ${Math.round(sizing.per).toLocaleString()}, more than your ${amount.toLocaleString()}.
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {basePick.alt && FAMILY_SHARES.has(useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure)
+                        && (useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) === 'Buy Stock' && (
+                        <button onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !u[basePick.pick_id] }))}
+                          className="rounded-lg bg-blue-600 hover:bg-blue-500 px-3 py-1.5 text-xs font-bold text-white">Buy ${amount.toLocaleString()} of shares instead</button>
+                      )}
+                      {Math.ceil(sizing.per) <= MAX_AMOUNT && (
+                        <button onClick={() => { const n = Math.ceil(sizing.per / 50) * 50; setAmount(n); setCustom(String(n)); }}
+                          className="rounded-lg border border-amber-200/50 px-3 py-1.5 text-xs font-bold">Put in ${(Math.ceil(sizing.per / 50) * 50).toLocaleString()}</button>
+                      )}
+                    </div>
+                  </div>
+                ) : sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
               </div>
 
               <PayoffChart
@@ -424,15 +460,16 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </button>
             <button
               onClick={doPaperTrade}
-              disabled={busy || st === 'traded' || st === 'tracking' || st?.startsWith?.('queued:')}
+              disabled={busy || st === 'traded' || st === 'tracking' || st?.startsWith?.('queued:') || st?.startsWith?.('opt:')}
               className="rounded-lg py-3 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-60"
             >
-              {busy ? 'Placing…' : st === 'traded' ? 'Paper traded' : st?.startsWith?.('queued:') ? 'Queued for the open' : st === 'tracking' ? 'Tracking' : isOptions || avoid ? 'Track it' : 'Paper trade'}
+              {busy ? 'Placing…' : st === 'traded' || st?.startsWith?.('opt:') ? 'Paper traded' : st?.startsWith?.('queued:') ? 'Queued for the open' : st === 'tracking' ? 'Tracking' : avoid ? 'Track it' : 'Paper trade'}
             </button>
           </div>
           {st === 'up' && <p className="text-xs text-green-400">Thanks. Your vote helps everyone get better picks.</p>}
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
           {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Practice.</p>}
+          {st?.startsWith?.('opt:') && <p className="text-xs text-blue-300">{st.slice(4)} <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
           {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money.</p>}
           {(st === 'tracking' || st === 'traded') && (
             <p className="text-xs text-blue-300">
