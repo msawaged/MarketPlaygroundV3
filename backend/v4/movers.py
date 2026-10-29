@@ -66,7 +66,11 @@ SCHEMA: dict[str, Any] = {
 PROMPT = """You turn market news into hunches a regular person could believe or doubt.
 
 For each numbered headline:
-- keep: false for headlines that are only a price move with no reason, an ad, a listicle, or too vague to act on.
+- keep: false for routine noise: analyst rating or price-target changes ("maintains", "raises price target", "upgrades"),
+  a single small company's earnings numbers beat/miss, dividend or buyback notices, price moves with no reason, ads,
+  listicles, or anything too vague. keep: true for news about the wider world that touches several companies:
+  demand shifts, prices of commodities, policy and rates, new technology, consumer habits, big company moves that
+  ripple to suppliers and rivals. Keep at most 8, the most interesting first.
 - hunch: what someone would believe if they took this news seriously, as a plain sentence under 14 words,
   written as a forward-looking belief ("Weight-loss drugs will keep cutting snack sales"). No tickers, no jargon.
 - why: one short sentence on why it matters for companies.
@@ -113,7 +117,7 @@ def _ask_claude(news: list[dict], client: Any = None) -> Optional[dict[int, dict
         lines = [f"{i}. {n['headline']}" + (f"  [tagged: {', '.join(n['symbols'])}]" if n.get("symbols") else "")
                  for i, n in enumerate(news)]
         resp = client.messages.create(
-            model=MODEL, max_tokens=2500, system=PROMPT,
+            model=MODEL, max_tokens=5000, system=PROMPT,
             messages=[{"role": "user", "content": "\n".join(lines)}],
             extra_body={"output_config": {"effort": "low", "format": {"type": "json_schema", "schema": SCHEMA}}},
         )
@@ -168,7 +172,7 @@ def _items(news: list[dict], ai: Optional[dict]) -> list[dict]:
 
 def build(client: Any = None) -> dict:
     _last_error["v"] = ""
-    news = [n for n in market.headlines(30) if n.get("headline")][:14]
+    news = [n for n in market.headlines(50) if n.get("headline")][:30]
     ai = _ask_claude(news, client) if news else None
     items = _items(news, ai)
     if ai is not None and not items:  # Claude kept nothing: fall back to the headlines themselves

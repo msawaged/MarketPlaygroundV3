@@ -319,7 +319,7 @@ def headlines(limit: int = 6) -> list[dict]:
             return _news_cache["items"][:limit]
     try:
         r = _session.get(f"{_data_base()}/v1beta1/news", headers=_headers(),
-                         params={"limit": 30, "sort": "desc", "include_content": "false"}, timeout=8)
+                         params={"limit": 50, "sort": "desc", "include_content": "false"}, timeout=8)
         if r.status_code != 200:
             news_error["v"] = f"news HTTP {r.status_code}: {r.text[:120]}"
             return []
