@@ -925,3 +925,32 @@ def test_messy_claude_answers_never_break_a_belief():
         assert isinstance(r, dict)
         tickers = [p["ticker"] for p in r.get("picks", [])]
         assert len(tickers) == len(set(tickers)), tickers  # no duplicate picks
+
+
+def test_every_structure_has_sane_numbers_across_prices_and_horizons():
+    import random as _r
+    rng = _r.Random(11)
+    entry = date(2026, 10, 15)
+    n = 0
+    for name in strategy.STRUCTURES:
+        for _ in range(40):
+            price = rng.choice([1.5, 4.8, 12.3, 47.0, 103.9, 488.0, 1520.0, 6100.0]) * rng.uniform(0.9, 1.1)
+            vol = rng.choice([0.08, 0.2, 0.35, 0.8, 1.6])
+            horizon = rng.choice([7, 30, 90, 180, 365, 730])
+            tp = price * rng.uniform(0.8, 1.4) if name == "Long Call Butterfly" else 0.0
+            t = strategy.build_trade(name, "TEST", price, vol, entry, horizon, target_price=tp)
+            n += 1
+            for leg in t.get("trade_legs", []):
+                if leg.get("instrument") == "stock":
+                    assert leg["quantity"] > 0
+                    continue
+                assert leg["strike_price"] > 0, (name, price, leg)
+                assert leg["est_premium"] >= 0 and math.isfinite(leg["est_premium"]), (name, leg)
+                exp = date.fromisoformat(leg["expiration"])
+                assert (exp - entry).days >= strategy.MIN_DAYS_TO_EXPIRY, (name, horizon, leg["expiration"])
+            for k in ("max_loss", "capital"):
+                if k in t and isinstance(t[k], (int, float)):
+                    assert math.isfinite(t[k]) and t[k] >= 0, (name, k, t[k])
+            if isinstance(t.get("max_profit"), (int, float)):
+                assert math.isfinite(t["max_profit"]), (name, t)
+    assert n == 40 * len(strategy.STRUCTURES)

@@ -35747,5 +35747,3224 @@
       "structure_reason": "Fits your belief's direction, time frame and risk level.",
       "ticker": "VOLA"
     }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:40.819999",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:44.162503",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:47.733810",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:50.967539",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:55.100595",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "housing will recover next year",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:30:58.467241",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:01.589804",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:05.617011",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:09.052259",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:10.415522",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:15.841984",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:19.182133",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "AI needs way more electricity",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:25.133163",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:28.802843",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:32.516665",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:37.330526",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:42.377131",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:46.791285",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:50.020804",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "housing will recover next year",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:55.256424",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:31:58.575082",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:01.431247",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:03.823325",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:07.835764",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:10.680096",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:14.053163",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:18.362550",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "AI needs way more electricity",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:23.010224",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:28.191185",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:31.960941",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:36.132166",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:37.808270",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:41.958229",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:46.332054",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:51.210857",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:55.452009",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:32:59.704024",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:02.879640",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:06.464672",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:09.570421",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:13.920000",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:17.676928",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:22.160774",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:25.196609",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:28.421172",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:33.276254",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:36.901798",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:41.349133",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:45.693642",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:48.752315",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:50.080556",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:54.112113",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:33:58.032162",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:02.675928",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:08.457295",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:14.151003",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:17.196769",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:20.940332",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:24.080199",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "housing will recover next year",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:28.135283",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:32.328238",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "AI needs way more electricity",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:36.469523",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:38.769378",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:42.339826",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:45.584140",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:48.856004",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:51.940059",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:34:55.284551",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:00.026423",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:03.384829",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:06.796657",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:10.034518",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:14.343315",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:17.427297",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:21.779744",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "housing will recover next year",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:24.149950",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:27.428271",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "AI needs way more electricity",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:30.702604",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:35.501449",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "Plumbing demand is about to boom",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:38.125328",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "airlines will crash this winter",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:40.653868",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "\ud83d\ude80\ud83d\ude80 to the moon",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:46.282129",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "this FDA decision will make or break them, a big move either way",
+    "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Long Strangle",
+      "description": "Long Strangle on VOLA",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Call",
+          "strike_price": 160.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 5.47,
+          "instrument": "option"
+        },
+        {
+          "action": "Buy",
+          "ticker": "VOLA",
+          "option_type": "Put",
+          "strike_price": 137.5,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 3.83,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. VOLA: VOLA direct Also consider: WINR. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "VOLA"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:48.022393",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:50.883398",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "people will travel more next summer",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:54.433748",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "restaurants will struggle as people stop eating out",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:35:59.764049",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "pet food sales will grow",
+    "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bull Call Spread",
+      "description": "Bull Call Spread on PIPE",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1095.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 72.8,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "PIPE",
+          "option_type": "Call",
+          "strike_price": 1215.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 28.07,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. PIPE: PIPE direct Also consider: WINR, FLAT. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "PIPE"
+    }
+  },
+  {
+    "timestamp": "2026-10-29T07:36:03.184103",
+    "user_id": "u-197e6517-fe08-49cf-b1ae-f12ffb46a29e",
+    "belief": "oil prices will drop",
+    "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+    "strategy": {
+      "type": "Bear Put Spread",
+      "description": "Bear Put Spread on AIRL",
+      "trade_legs": [
+        {
+          "action": "Buy",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 11.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.41,
+          "instrument": "option"
+        },
+        {
+          "action": "Sell",
+          "ticker": "AIRL",
+          "option_type": "Put",
+          "strike_price": 10.0,
+          "expiration": "2027-03-19",
+          "quantity": 1,
+          "est_premium": 0.11,
+          "instrument": "option"
+        }
+      ],
+      "expiration": "2027-03-19",
+      "explanation": "Something changes, some companies earn more, others less. AIRL: AIRL direct Also consider: LOSR, JETS. Option prices are estimates \u2014 check the live quote before trading.",
+      "source": "claude",
+      "structure_reason": "Fits your belief's direction, time frame and risk level.",
+      "ticker": "AIRL"
+    }
   }
 ]

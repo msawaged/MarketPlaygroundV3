@@ -116,7 +116,7 @@ def _ncdf(x: float) -> float:
 
 
 def bs_price(spot: float, strike: float, t_years: float, vol: float, kind: str) -> float:
-    if t_years <= 0 or vol <= 0:
+    if t_years <= 0 or vol <= 0 or strike <= 0 or spot <= 0:
         return max(0.0, spot - strike) if kind == "call" else max(0.0, strike - spot)
     sq = vol * math.sqrt(t_years)
     d1 = (math.log(spot / strike) + (RISK_FREE + 0.5 * vol * vol) * t_years) / sq
@@ -139,7 +139,7 @@ def strike_step(price: float) -> float:
 
 def round_strike(x: float, price: float) -> float:
     step = strike_step(price)
-    return round(round(x / step) * step, 2)
+    return max(step, round(round(x / step) * step, 2))  # never $0 or below on cheap, jumpy stocks
 
 
 def third_friday(year: int, month: int) -> date:
@@ -188,6 +188,7 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
     legs: list[dict] = []
 
     def leg(action: str, kind: str, k: float, qty: int = 1) -> dict:
+        k = max(strike_step(price), round(k, 2))  # a strike can't be $0 or negative
         prem = bs_price(price, k, t, vol, kind)
         legs.append({
             "action": action, "ticker": ticker, "option_type": kind.capitalize(),
