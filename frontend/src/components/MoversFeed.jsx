@@ -32,39 +32,46 @@ const lower = (s) => s.charAt(0).toLowerCase() + s.slice(1);
 export const believeUrl = (hunch) => `/chat?b=${encodeURIComponent(hunch)}&go=1`;
 export const doubtUrl = (hunch) => `/chat?b=${encodeURIComponent(`I don't think ${lower(hunch).replace(/\.$/, '')}`)}&go=1`;
 
-function Chip({ c }) {
-  const ch = c.change;
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-sm" title={c.why || undefined}>
-      {c.direction && (
-        <span className={c.direction === 'up' ? 'text-green-400' : 'text-red-400'} aria-label={c.direction === 'up' ? 'helped if true' : 'hurt if true'}>
-          {c.direction === 'up' ? '▲' : '▼'}
-        </span>
-      )}
-      <span className="font-bold">{c.ticker}</span>
-      {ch != null && <span className={`text-xs ${ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>{ch >= 0 ? '+' : ''}{(ch * 100).toFixed(1)}%</span>}
-    </span>
-  );
+function Pct({ v }) {
+  if (v == null) return null;
+  return <span className={`text-xs font-semibold tabular-nums ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}% today</span>;
 }
 
+// Leads with the news and the companies it touches (a stock research card), not a statement to vote on.
 export function MoverCard({ item, i = 0 }) {
   const navigate = useNavigate();
+  const ai = item.hunch && item.hunch !== item.headline;
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
       className="rounded-2xl border border-slate-700 bg-slate-900/90 p-4">
       <div className="text-[11px] text-slate-500">{[item.source, ago(item.created_at)].filter(Boolean).join(' · ')}</div>
-      <div className="mt-1 text-lg font-bold leading-snug">{item.hunch}</div>
-      {item.hunch !== item.headline && (
-        <p className="mt-1 text-sm text-slate-400 leading-snug">
-          {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-slate-200">📰 {item.headline}</a> : <>📰 {item.headline}</>}
-        </p>
-      )}
-      {item.why && <p className="mt-1.5 text-sm text-slate-300">{item.why}</p>}
-      <div className="mt-3 flex flex-wrap gap-2">{item.companies.map((c) => <Chip key={c.ticker} c={c} />)}</div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button onClick={() => navigate(believeUrl(item.hunch))} className="rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold">I believe it →</button>
-        <button onClick={() => navigate(doubtUrl(item.hunch))} className="rounded-xl bg-slate-800 border border-slate-700 hover:border-slate-500 py-2.5 text-sm font-bold text-slate-200">I don't</button>
+      <div className="mt-1 text-base font-bold leading-snug">
+        {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200">{item.headline}</a> : item.headline}
       </div>
+      {ai && <p className="mt-1 text-sm text-slate-400"><span className="text-slate-500">What it could mean: </span>{item.hunch}.</p>}
+
+      <div className="mt-3 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Companies it touches</div>
+      <ul className="mt-1.5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950/50">
+        {item.companies.map((c) => (
+          <li key={c.ticker} className="flex items-center gap-3 px-3 py-2">
+            <span className="font-bold w-14 shrink-0">{c.ticker}</span>
+            <span className="min-w-0 flex-1 text-xs text-slate-400 truncate">{c.why}</span>
+            <span className="shrink-0 text-right leading-tight">
+              {c.direction && <span className={`block text-[11px] ${c.direction === 'up' ? 'text-green-300' : 'text-red-300'}`}>{c.direction === 'up' ? 'could gain' : 'could lose'}</span>}
+              <Pct v={c.change} />
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <button onClick={() => navigate(believeUrl(item.hunch))} className="mt-3 w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold">
+        See how to invest in this →
+      </button>
+      {ai && (
+        <button onClick={() => navigate(doubtUrl(item.hunch))} className="mt-2 w-full text-xs text-slate-400 hover:text-slate-200">
+          Think it's overblown? See the other side
+        </button>
+      )}
     </motion.div>
   );
 }

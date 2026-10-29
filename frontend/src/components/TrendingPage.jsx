@@ -33,11 +33,8 @@ export default function TrendingPage() {
     <div className="min-h-screen mp-bg text-white pb-28">
       <div className="max-w-lg mx-auto px-4 pt-8" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <h1 className="text-3xl font-extrabold">Moving now</h1>
-        <p className="mt-1 text-slate-300">Today's news, the hunch behind it, and the companies it moves.</p>
-        <p className="mt-1 text-[11px] text-slate-500">
-          <span className="text-green-400">▲</span> helped if it's true · <span className="text-red-400">▼</span> hurt if it's true · % is today's move
-          {movers.data?.built_at ? ` · updated ${ago(movers.data.built_at)}` : ''}
-        </p>
+        <p className="mt-1 text-slate-300">Today's market news and the companies it touches.</p>
+        {movers.data?.built_at && <p className="mt-1 text-[11px] text-slate-500">Updated {ago(movers.data.built_at)}</p>}
         {movers.loading && <div className="mt-6 text-slate-400">Reading today's news…</div>}
         {!movers.loading && items.length === 0 && (
           <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-400">The news feed is quiet right now. Check back soon.</div>

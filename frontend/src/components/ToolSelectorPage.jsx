@@ -8,7 +8,7 @@ import BottomNavigation from './BottomNavigation';
 import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
 import { themeLabel } from '../lib/text';
-import { useMovers, believeUrl } from './MoversFeed';
+import { useMovers } from './MoversFeed';
 import { useAccount, initials } from '../lib/auth';
 
 const ROTATE = [
@@ -114,9 +114,9 @@ export default function ToolSelectorPage() {
             </div>
             <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
               {moving.slice(0, 5).map((m) => (
-                <button key={m.headline} onClick={() => navigate(believeUrl(m.hunch))}
+                <button key={m.headline} onClick={() => navigate('/trending')}
                   className="snap-start shrink-0 w-60 text-left rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3 hover:border-blue-400/60">
-                  <div className="font-bold leading-snug line-clamp-2">{m.hunch}</div>
+                  <div className="text-sm font-bold leading-snug line-clamp-2">{m.headline}</div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {m.companies.slice(0, 3).map((c) => (
                       <span key={c.ticker} className="text-[11px] rounded-md bg-slate-800 px-1.5 py-0.5">
