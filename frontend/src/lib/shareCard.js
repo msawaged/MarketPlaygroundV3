@@ -74,7 +74,7 @@ export async function drawCard(card) {
   });
 
   // footer
-  ctx.fillStyle = '#4DA3FF'; ctx.font = `800 40px ${FONT}`; ctx.fillText('Your belief. The right strategy.', 80, H - 150);
+  ctx.fillStyle = '#4DA3FF'; ctx.font = `800 40px ${FONT}`; ctx.fillText('Your hunch. Real stocks.', 80, H - 150);
   ctx.fillStyle = '#94a3b8'; ctx.font = `500 30px ${FONT}`;
   ctx.fillText(`What do you believe? Try yours free: ${card.url || window.location.host}`, 80, H - 100);
   ctx.fillStyle = '#64748b'; ctx.font = `500 24px ${FONT}`;

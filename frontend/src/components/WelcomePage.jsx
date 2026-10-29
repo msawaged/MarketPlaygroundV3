@@ -12,11 +12,21 @@ export default function WelcomePage() {
     <div className="min-h-screen mp-bg text-white flex flex-col">
       <div className="max-w-sm w-full mx-auto px-6 flex-1 flex flex-col" style={{ paddingTop: 'max(3rem, env(safe-area-inset-top))', paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
         <div className="text-center text-lg"><Wordmark /></div>
-        <div className="flex-1 flex items-center justify-center py-10">
-          <LogoMark size={176} title="MarketPlayground" className="drop-shadow-[0_20px_50px_rgba(37,99,235,0.35)]" />
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 py-8">
+          <LogoMark size={96} title="MarketPlayground" className="drop-shadow-[0_16px_40px_rgba(37,99,235,0.35)]" />
+          {/* An example, so nobody mistakes this for a yes/no betting app */}
+          <div className="w-full rounded-3xl bg-slate-900/80 border border-slate-700/70 p-4 text-left" aria-label="Example">
+            <div className="text-[11px] font-bold tracking-wider uppercase text-slate-400">You type</div>
+            <div className="mt-1 font-semibold">“People will travel more next summer”</div>
+            <div className="mt-3 text-[11px] font-bold tracking-wider uppercase text-slate-400">You get trades on real stocks</div>
+            <div className="mt-2 flex flex-col gap-2">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 px-3 py-2.5"><span className="font-bold">Delta Air Lines <span className="text-slate-400 font-semibold">DAL</span></span><span className="text-sm text-blue-300 font-semibold">Buy shares</span></div>
+              <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 px-3 py-2.5"><span className="font-bold">Booking <span className="text-slate-400 font-semibold">BKNG</span></span><span className="text-sm text-blue-300 font-semibold">Call spread</span></div>
+            </div>
+          </div>
         </div>
         <div className="text-center">
-          <h1 className="text-[34px] leading-[1.1] font-extrabold">Got a hunch?<br />Trade it.</h1>
+          <h1 className="text-[28px] leading-[1.15] font-extrabold">Got a hunch?<br />Turn it into a <span className="whitespace-nowrap">stock trade.</span></h1>
           <p className="mt-3 text-slate-300">Practice free today.<br />Real money coming soon.</p>
         </div>
         <div className="mt-8 flex flex-col gap-3">

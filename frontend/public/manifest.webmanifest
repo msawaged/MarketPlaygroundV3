@@ -1,7 +1,7 @@
 {
   "name": "MarketPlayground",
   "short_name": "MarketPlay",
-  "description": "Got a hunch? Trade it.",
+  "description": "Got a hunch? Turn it into a stock trade.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
