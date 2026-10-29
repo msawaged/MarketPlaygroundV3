@@ -308,6 +308,9 @@ def clear_cache() -> None:
 _news_cache: dict = {"at": 0.0, "items": []}
 
 
+news_error = {"v": ""}
+
+
 def headlines(limit: int = 6) -> list[dict]:
     """Latest market headlines from Alpaca's news feed, cached 20 minutes. [] when unavailable."""
     import time
@@ -317,9 +320,13 @@ def headlines(limit: int = 6) -> list[dict]:
     try:
         r = _session.get(f"{_data_base()}/v1beta1/news", headers=_headers(),
                          params={"limit": 30, "sort": "desc", "include_content": "false"}, timeout=8)
-        r.raise_for_status()
+        if r.status_code != 200:
+            news_error["v"] = f"news HTTP {r.status_code}: {r.text[:120]}"
+            return []
         raw = r.json().get("news", [])
-    except Exception:
+        news_error["v"] = "" if raw else "news source returned 0 articles"
+    except Exception as e:
+        news_error["v"] = f"news: {type(e).__name__}: {str(e)[:120]}"
         return []
     items, seen = [], set()
     for n in raw:

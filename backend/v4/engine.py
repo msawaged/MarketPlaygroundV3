@@ -188,6 +188,7 @@ def process_belief(
     # come first, and opposite-direction ideas (e.g. a competitor that benefits) can only follow them.
     # Scores still order picks within each group. (Without this, a network trained mostly in a rising
     # market learned "bullish picks score higher" and floated beneficiaries above the user's actual call.)
+    _fix_direction_from_target(interp, valid, belief)
     core = interp["direction"]
     def _leads(v):
         return 1 if core not in ("bullish", "bearish") or v.get("direction") == core else 0
@@ -254,6 +255,29 @@ def process_belief(
     db.executemany("INSERT INTO pick_themes (pick_id, theme) VALUES (?,?)", rows_themes)
 
     return _legacy_shape(base, interp, picks_out, model_id, w)
+
+
+_FLIP = {"bullish": "bearish", "bearish": "bullish"}
+
+
+def _fix_direction_from_target(interp: dict, valid: list[dict], belief: str) -> None:
+    """A stated price target settles the direction: "SLS will fall to $5" while SLS trades at $9 is bearish,
+    whatever the model labelled it. When the target contradicts the label, flip the belief and its picks."""
+    tp = float(interp.get("target_price") or 0)
+    core = interp.get("direction")
+    if tp <= 0 or core not in _FLIP or not valid:
+        return
+    text = belief.upper()
+    named = next((v for v in valid if re.search(rf"\b{re.escape(v['ticker'])}\b", text)), valid[0])
+    price = float(named.get("price") or 0)
+    if price <= 0:
+        return
+    implied = "bullish" if tp > price * 1.03 else "bearish" if tp < price * 0.97 else None
+    if implied and implied != core:
+        interp["direction"] = implied
+        for v in valid:
+            if v.get("direction") in _FLIP:
+                v["direction"] = _FLIP[v["direction"]]
 
 
 def _legacy_shape(base: dict, interp: dict, picks: list[dict], model_id: Optional[str], w: float) -> dict:
@@ -366,30 +390,38 @@ def trending(days: int = 14, limit: int = 8) -> dict:
     from collections import Counter, defaultdict
 
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-    rows = db.query(
-        "SELECT id, themes, direction, interpretation, source FROM beliefs "
-        "WHERE created_at >= ? AND source = 'user' ORDER BY created_at DESC LIMIT 5000",
-        (cutoff,),
-    )
+    cols = "SELECT id, user_id, norm_text, themes, direction, interpretation, source FROM beliefs "
+    rows = db.query(cols + "WHERE created_at >= ? AND source = 'user' ORDER BY created_at DESC LIMIT 5000", (cutoff,))
     window = f"last {days} days"
     if len(rows) < 5:  # quiet period: fall back to all recent history
-        rows = db.query(
-            "SELECT id, themes, direction, interpretation, source FROM beliefs "
-            "WHERE source = 'user' ORDER BY created_at DESC LIMIT 5000"
-        )
+        rows = db.query(cols + "WHERE source = 'user' ORDER BY created_at DESC LIMIT 5000")
         window = "all time"
+    # One entry per distinct belief (re-runs and risk changes of the same text count once, newest wins),
+    # filed under its main theme only, so the same belief never shows up as two cards.
     counts: Counter = Counter()
+    people: dict = defaultdict(set)
     dirs: dict = defaultdict(Counter)
     examples: dict = {}
     ids_by_theme: dict = defaultdict(list)
+    seen_text: set = set()
+    key_of = lambda r: (r["norm_text"] or r["id"]).strip().lower()  # noqa: E731
+    who: dict = defaultdict(set)
     for r in rows:
+        who[key_of(r)].add(r["user_id"])
+    for r in rows:
+        key = key_of(r)
+        themes = db.loads(r["themes"], [])
+        if key in seen_text or not themes:
+            continue
+        seen_text.add(key)
+        t = themes[0]
         interp = db.loads(r["interpretation"], {})
-        for t in db.loads(r["themes"], [])[:3]:
-            counts[t] += 1
-            dirs[t][r["direction"] or "neutral"] += 1
-            ids_by_theme[t].append(r["id"])
-            if t not in examples and interp.get("summary"):
-                examples[t] = interp["summary"]
+        counts[t] += 1
+        people[t] |= who[key]
+        dirs[t][r["direction"] or "neutral"] += 1
+        ids_by_theme[t].append(r["id"])
+        if t not in examples and interp.get("summary"):
+            examples[t] = interp["summary"]
     out = []
     for theme, n in counts.most_common(limit):
         ids = ids_by_theme[theme][:500]
@@ -403,6 +435,7 @@ def trending(days: int = 14, limit: int = 8) -> dict:
         out.append({
             "theme": theme,
             "beliefs": n,
+            "people": len(people[theme]),
             "direction": dirs[theme].most_common(1)[0][0],
             "example": examples.get(theme, ""),
             "tickers": [

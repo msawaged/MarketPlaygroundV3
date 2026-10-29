@@ -1028,3 +1028,40 @@ def test_brain_learns_from_real_news_both_sides(monkeypatch):
     monkeypatch.setattr(seeder.engine, "process_belief", lambda text, **kw: seen.append((text, kw["source"])) or {"valid": True, "usage": {"cost_usd": 0.001}})
     r = seeder.run("live", n=len(got), beliefs=got, source="seed_news", max_usd=1)
     assert r["ok"] == 2 and {s for _, s in seen} == {"seed_news"} and {t for t, _ in seen} == set(got)
+
+
+def test_price_target_below_today_means_bearish():
+    interp = {"direction": "bullish", "target_price": 5.0}
+    valid = [{"ticker": "SLS", "price": 9.0, "direction": "bullish"}, {"ticker": "XBI", "price": 90.0, "direction": "bullish"}]
+    engine._fix_direction_from_target(interp, valid, "SELLAS (SLS) will fall to $5 by December")
+    assert interp["direction"] == "bearish" and [v["direction"] for v in valid] == ["bearish", "bearish"]
+    ok = {"direction": "bullish", "target_price": 15.0}
+    v2 = [{"ticker": "SLS", "price": 9.0, "direction": "bullish"}]
+    engine._fix_direction_from_target(ok, v2, "SLS to $15")
+    assert ok["direction"] == "bullish" and v2[0]["direction"] == "bullish"
+
+
+def test_trending_counts_each_belief_once_under_one_theme():
+    fake = FakeClaude()
+    for risk in ("moderate", "aggressive", "conservative"):
+        engine.process_belief("plumbing demand is going to be high", "u-t1", risk, claude_client=fake)
+    engine.process_belief("Plumbing demand is going to be high", "u-t2", "moderate", claude_client=fake)
+    for i in range(4):
+        engine.process_belief(f"people want cheaper food {i}", "u-t3", "moderate", claude_client=fake)
+    themes = engine.trending(days=14)["themes"]
+    names = [t["theme"] for t in themes]
+    assert "housing" not in names and "potatoes" not in names  # filed under the main theme only, no twin cards
+    plumbing = next(t for t in themes if t["theme"].lower() == "plumbing")
+    assert plumbing["beliefs"] == 1 and plumbing["people"] == 2  # re-runs and case changes count once
+    food = next(t for t in themes if t["theme"] == "food")
+    assert food["beliefs"] == 4 and food["people"] == 1
+
+
+def test_movers_falls_back_when_claude_keeps_nothing(monkeypatch):
+    from backend.v4 import movers
+    monkeypatch.setattr(market, "headlines", lambda limit=6: [{"headline": "Delta raises outlook", "symbols": ["DAL"], "source": "x", "url": "", "created_at": ""}])
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {})
+    out = movers.feed(client=FakeClaude({"items": [{"n": 0, "keep": False, "hunch": "", "why": "", "companies": []}]}))
+    assert [it["headline"] for it in out["items"]] == ["Delta raises outlook"] and out["diag"]["headlines"] == 1

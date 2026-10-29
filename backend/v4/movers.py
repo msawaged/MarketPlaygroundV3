@@ -100,8 +100,12 @@ def _snapshots(symbols: list[str]) -> dict[str, dict]:
     return out
 
 
+_last_error = {"v": ""}
+
+
 def _ask_claude(news: list[dict], client: Any = None) -> Optional[dict[int, dict]]:
     if not client and not os.getenv("ANTHROPIC_API_KEY"):
+        _last_error["v"] = "no Claude key"
         return None
     try:
         from .interpreter import _client
@@ -115,9 +119,14 @@ def _ask_claude(news: list[dict], client: Any = None) -> Optional[dict[int, dict
         )
         text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), "")
         data = json.loads(text)
-        return {int(it["n"]): it for it in data.get("items", []) if isinstance(it, dict) and "n" in it}
+        out = {int(it["n"]): it for it in data.get("items", []) if isinstance(it, dict) and "n" in it}
+        if out and min(out) == 1 and 0 not in out:  # numbered from 1 instead of 0
+            out = {k - 1: v for k, v in out.items()}
+        _last_error["v"] = "" if out else "Claude returned no items"
+        return out or None
     except Exception as e:  # the feed must never break because of this
         log.warning("movers: Claude step failed: %s", e)
+        _last_error["v"] = f"Claude: {type(e).__name__}: {str(e)[:160]}"
         return None
 
 
@@ -139,9 +148,7 @@ def _clean_companies(raw: Any, tagged: list[str]) -> list[dict]:
     return out
 
 
-def build(client: Any = None) -> dict:
-    news = [n for n in market.headlines(30) if n.get("headline")][:14]
-    ai = _ask_claude(news, client) if news else None
+def _items(news: list[dict], ai: Optional[dict]) -> list[dict]:
     items = []
     for i, n in enumerate(news):
         a = (ai or {}).get(i)
@@ -156,6 +163,16 @@ def build(client: Any = None) -> dict:
         })
         if len(items) == MAX_ITEMS:
             break
+    return items
+
+
+def build(client: Any = None) -> dict:
+    _last_error["v"] = ""
+    news = [n for n in market.headlines(30) if n.get("headline")][:14]
+    ai = _ask_claude(news, client) if news else None
+    items = _items(news, ai)
+    if ai is not None and not items:  # Claude kept nothing: fall back to the headlines themselves
+        ai, items = None, _items(news, None)
     # drop tickers that aren't tradable US stocks (cheap: asset_info is cached per process)
     for it in items:
         ok = []
@@ -167,7 +184,8 @@ def build(client: Any = None) -> dict:
                 ok.append(c)  # lookup down: keep it rather than empty the card
         it["companies"] = ok
     items = [it for it in items if it["companies"]]
-    return {"items": items, "built_at": datetime.now(timezone.utc).isoformat(), "ai": ai is not None}
+    diag = {"headlines": len(news), "error": _last_error["v"] or ((market.news_error["v"] or "no headlines from the news source") if not news else "")}
+    return {"items": items, "built_at": datetime.now(timezone.utc).isoformat(), "ai": ai is not None, "diag": diag}
 
 
 def _stored() -> Optional[dict]:
@@ -190,13 +208,14 @@ def _age(feed: dict) -> float:
 def feed(client: Any = None) -> dict:
     """The shared feed with live prices attached. Rebuilds at most every TTL seconds."""
     cur = _stored()
-    if not cur or _age(cur) > TTL:
+    ttl = TTL if (cur and cur.get("items")) else 120
+    if not cur or _age(cur) > ttl:
         if _lock.acquire(blocking=cur is None):
             try:
                 cur2 = _stored()
-                if not cur2 or _age(cur2) > TTL:
+                if not cur2 or _age(cur2) > ttl:
                     fresh = build(client)
-                    if fresh["items"] or not cur:
+                    if fresh["items"] or not (cur and cur.get("items")):
                         db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
                         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                                    (KEY, json.dumps(fresh), fresh["built_at"]))

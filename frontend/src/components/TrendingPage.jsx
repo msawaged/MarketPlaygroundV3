@@ -83,8 +83,8 @@ export default function TrendingPage() {
                   {t.example && <p className="mt-1 text-sm text-slate-300">{t.example}</p>}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-xl font-extrabold text-blue-400">{t.beliefs}</div>
-                  <div className="text-[11px] text-slate-500">belief{t.beliefs === 1 ? '' : 's'}</div>
+                  <div className="text-xl font-extrabold text-blue-400">{t.people ?? t.beliefs}</div>
+                  <div className="text-[11px] text-slate-500">{(t.people ?? t.beliefs) === 1 ? 'person' : 'people'}</div>
                 </div>
               </div>
 
