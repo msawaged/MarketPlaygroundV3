@@ -257,6 +257,9 @@ ENSEMBLE = int(os.getenv("MP_NN_ENSEMBLE", "3"))
 HIDDEN = tuple(int(x) for x in os.getenv("MP_NN_HIDDEN", "32").split(","))
 ALPHA = float(os.getenv("MP_NN_ALPHA", "0.1"))
 MIN_T = float(os.getenv("MP_NN_MIN_T", "2.0"))
+# Promotion also needs enough DIFFERENT beliefs in the test period. With ~35, a network trained on
+# pure noise got promoted in the offline check (best of 4 blend weights at t>=2 is easy to hit by luck).
+MIN_TEST_BELIEFS = int(os.getenv("MP_NN_MIN_TEST_BELIEFS", "50"))
 KEEP_VERSIONS = int(os.getenv("MP_NN_KEEP_VERSIONS", "8"))
 
 
@@ -326,7 +329,8 @@ def train(force: bool = False, seed: int = 7) -> dict:
     best_w = max(trials, key=lambda w: trials[w]["gain_vs_claude"])
     best = trials[best_w]
 
-    enough = len(train_rows) >= MIN_TRAIN and len(test_rows) >= MIN_TEST
+    enough = (len(train_rows) >= MIN_TRAIN and len(test_rows) >= MIN_TEST
+              and len(groups) >= MIN_TEST_BELIEFS)
     beats = rho > 0.03 and nn_lift > 0 and best["gain_vs_claude"] > 0 and best["t"] >= MIN_T
     status = "active" if (enough and beats) else "shadow" if rho > -0.05 else "rejected"
     if status == "active":
