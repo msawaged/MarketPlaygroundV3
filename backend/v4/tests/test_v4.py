@@ -1014,3 +1014,17 @@ def test_movers_feed_turns_headlines_into_hunches(monkeypatch):
     plain = movers.feed()
     assert plain["ai"] is False and plain["items"][0]["hunch"] == news[0]["headline"]
     assert [c["ticker"] for c in plain["items"][0]["companies"]] == ["DAL", "UAL"]
+
+
+def test_brain_learns_from_real_news_both_sides(monkeypatch):
+    from backend.v4 import movers, seeder
+    feed = {"items": [{"headline": "Airline bookings slow", "hunch": "Holiday travel will be weaker than airlines expect."},
+                      {"headline": "Raw headline only", "hunch": "Raw headline only"}]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: feed)
+    got = seeder.news_beliefs(6)
+    assert got == ["Holiday travel will be weaker than airlines expect",
+                   "I don't think holiday travel will be weaker than airlines expect"]
+    seen = []
+    monkeypatch.setattr(seeder.engine, "process_belief", lambda text, **kw: seen.append((text, kw["source"])) or {"valid": True, "usage": {"cost_usd": 0.001}})
+    r = seeder.run("live", n=len(got), beliefs=got, source="seed_news", max_usd=1)
+    assert r["ok"] == 2 and {s for _, s in seen} == {"seed_news"} and {t for t, _ in seen} == set(got)

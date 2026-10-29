@@ -132,6 +132,10 @@ services:
         value: "8"             # total Claude spend allowed for the warm-up, ever
       - key: MP_WARMUP_BATCH
         value: "80"            # past-dated beliefs per hourly run
+      - key: MP_NEWS_SEED_N
+        value: "6"             # real news hunches (and their opposites) per hourly run
+      - key: MP_NEWS_SEED_MAX_USD
+        value: "0.5"           # daily cap on news-seeding spend
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: ALPACA_API_KEY

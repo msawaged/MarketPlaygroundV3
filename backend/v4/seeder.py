@@ -88,10 +88,34 @@ def _random_past_weekday(min_days_ago: int, max_days_ago: int) -> date:
     return d
 
 
+def news_beliefs(limit: int) -> list[str]:
+    """Today's real headlines as hunches (from the Moving now feed), each paired with its opposite so the
+    network sees both sides of real news. Only ones not seeded before."""
+    from . import movers
+    try:
+        items = movers.feed().get("items", [])
+    except Exception as e:
+        print(f"[seeder] news feed unavailable: {e}")
+        return []
+    used = {r["text"].lower() for r in db.query("SELECT DISTINCT text FROM beliefs WHERE source = 'seed_news'")}
+    out = []
+    for it in items:
+        h = (it.get("hunch") or "").strip().rstrip(".")
+        if not h or h == it.get("headline"):
+            continue  # no AI rewrite: a raw headline isn't a belief
+        for b in (h, f"I don't think {h[0].lower() + h[1:]}"):
+            if b.lower() not in used and b not in out:
+                out.append(b)
+    return out[:limit]
+
+
 def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: int = 4,
-        max_usd: float = 10.0, model: Optional[str] = None, claude_client=None) -> dict:
+        max_usd: float = 10.0, model: Optional[str] = None, claude_client=None,
+        beliefs: Optional[list[str]] = None, source: Optional[str] = None) -> dict:
     model = model or SEED_MODEL
-    pool = starter_beliefs()
+    if beliefs:
+        generate = 0
+    pool = list(beliefs) if beliefs else starter_beliefs()
     used = {r["text"].lower() for r in db.query("SELECT DISTINCT text FROM beliefs WHERE source LIKE 'seed%'")}
     if generate:
         try:
@@ -99,10 +123,10 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
         except Exception as e:  # generation is optional; seeding continues with the starter list
             print(f"[seeder] belief generation failed: {e}")
     random.shuffle(pool)
-    if mode == "live":
+    if mode == "live" and not beliefs:
         fresh = [b for b in pool if b.lower() not in used]
         pool = fresh or pool  # once everything was used, repeat (different day = different data)
-    jobs = [pool[i % len(pool)] for i in range(n)]
+    jobs = pool[:n] if beliefs else [pool[i % len(pool)] for i in range(n)]
 
     spent = 0.0
     lock = threading.Lock()
@@ -113,7 +137,7 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
         as_of = _random_past_weekday(100, max_days) if mode == "backfill" else None
         return engine.process_belief(
             text, user_id="seed", risk_profile=random.choice(RISKS), as_of=as_of,
-            source="seed_backfill" if mode == "backfill" else "seed_live",
+            source=source or ("seed_backfill" if mode == "backfill" else "seed_live"),
             model=model, claude_client=claude_client,
         )
 
@@ -175,6 +199,18 @@ def auto(claude_client=None) -> dict:
         out["live"] = run("live", n=int(os.getenv("MP_SEED_N", "25")), generate=int(os.getenv("MP_SEED_GENERATE", "25")),
                           max_usd=float(os.getenv("MP_SEED_MAX_USD", "1")), claude_client=claude_client)
         _kv_set("live_seed_date", today.isoformat())
+    # Real news, every hour: today's hunches and their opposites (graded at 1 week / 1 month / 3 months).
+    news_n = int(os.getenv("MP_NEWS_SEED_N", "6"))
+    day_key = f"news_seed_usd:{today.isoformat()}"
+    news_spent = float(_kv_get(day_key, "0") or 0)
+    news_cap = float(os.getenv("MP_NEWS_SEED_MAX_USD", "0.5"))
+    if news_n > 0 and news_spent < news_cap:
+        fresh = news_beliefs(news_n)
+        if fresh:
+            r = run("live", n=len(fresh), beliefs=fresh, source="seed_news", max_usd=news_cap - news_spent,
+                    claude_client=claude_client)
+            _kv_set(day_key, str(news_spent + r["cost_usd"]))
+            out["news"] = dict(r, beliefs=fresh)
     g = grader.grade()
     out["grade"] = g
     if out.get("backfill") or g.get("graded"):
