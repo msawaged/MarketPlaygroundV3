@@ -10,7 +10,7 @@ PUBLIC = [
     r"^/$", r"^/health$", r"^/docs", r"^/redoc", r"^/openapi\.json$",
     r"^/v4/",                                   # current app (has its own checks)
     r"^/strategy/process_belief$", r"^/basket/generate_basket$",
-    r"^/api/paper-trading/(execute|cancel_queued|close_position|portfolio/\{user_id\})$",
+    r"^/api/paper-trading/(execute|execute_options|close_option|cancel_queued|close_position|portfolio/\{user_id\})$",
     r"^/ticker/(prices|search)$",
     r"^/toggle/news_ingestion_status$",
     r"^/(force_)?retrain$",                     # checks the admin token itself
