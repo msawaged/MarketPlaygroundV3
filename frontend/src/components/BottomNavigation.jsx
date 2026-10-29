@@ -31,9 +31,9 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
     : [
         { id: 'home',      label: 'Home',      icon: Home,       path: '/select-tool',   color: '#3b82f6' },
         { id: 'chat',      label: 'Believe',   icon: Zap,            path: '/chat',           color: '#3b82f6' },
-        { id: 'trending',  label: 'Trending',  icon: Flame,          path: '/trending',       color: '#f59e0b' },
-        { id: 'my',        label: 'My calls',  icon: Target,         path: '/my',             color: '#60a5fa' },
-        { id: 'portfolio', label: 'Portfolio', icon: TrendingUp,     path: '/portfolio',      color: '#22c55e' },
+        { id: 'trending',  label: 'Trending',  icon: Flame,          path: '/trending',       color: '#3b82f6' },
+        { id: 'my',        label: 'My calls',  icon: Target,         path: '/my',             color: '#3b82f6' },
+        { id: 'portfolio', label: 'Portfolio', icon: TrendingUp,     path: '/portfolio',      color: '#3b82f6' },
       ];
 
   // Prefix-based active detection so nested routes are highlighted

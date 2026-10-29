@@ -230,7 +230,9 @@ def place(token: Optional[str], preview_id: str, confirm: bool) -> dict:
     if row["created_at"] < (_now() - timedelta(seconds=PREVIEW_SECONDS)).isoformat():
         db.execute("UPDATE broker_orders SET status = 'expired' WHERE id = ?", (preview_id,))
         raise BrokerError("That preview expired. Prices move, so please preview again.", 410)
-    db.execute("UPDATE broker_orders SET status = 'sending' WHERE id = ? AND status = 'previewed'", (preview_id,))
+    claimed = db.execute("UPDATE broker_orders SET status = 'sending' WHERE id = ? AND status = 'previewed'", (preview_id,))
+    if claimed != 1:
+        raise BrokerError("That order was already sent.", 409)  # two taps at once: only one goes through
     try:
         res = _alpaca(acc, "POST", "/v2/orders", db.loads(row["request"]))
     except BrokerError as e:

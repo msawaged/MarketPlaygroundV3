@@ -75,7 +75,7 @@ console.log('payoff tests passed');
   const lines = plainEnglish(m, summarize(m), 1, 'FERG', 1000);
   const txt = lines.map((l) => l.text).join(' | ');
   if (!/\$1,163 today/.test(txt)) throw new Error('cost line: ' + txt);
-  if (!/\+\$2,087 if FERG is at or above \$262\.5 on May 21, 2027/.test(txt)) throw new Error('best line: ' + txt);
+  if (!/\+\$2,087 if FERG is at or above \$262\.50 on May 21, 2027/.test(txt)) throw new Error('best line: ' + txt);
   if (!/−\$1,163 if it's at or below \$230/.test(txt)) throw new Error('worst line: ' + txt);
   if (!/break even if FERG is at \$241\.6/.test(txt)) throw new Error('breakeven: ' + txt);
   const s = buildModel({ type: 'Buy Stock', trade_legs: [] }, 100);

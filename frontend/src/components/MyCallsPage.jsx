@@ -124,7 +124,8 @@ export default function MyCallsPage() {
               {b.picks.length > 0 && (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {b.picks.map((p) => {
-                    const v = p.vs_spy;
+                    const fresh = !p.entry_date || (s.data?.as_of && p.entry_date >= s.data.as_of);  // made today: nothing to score yet
+                    const v = fresh ? null : p.vs_spy;
                     const tone = v == null ? 'border-slate-700 bg-slate-800/60' : v >= 0 ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10';
                     return (
                       <div key={p.pick_id} className={`rounded-2xl border p-2.5 ${tone}`}>
@@ -133,7 +134,7 @@ export default function MyCallsPage() {
                         <div className={`mt-1 text-sm font-extrabold ${v == null ? 'text-slate-400' : v >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                           {v == null ? 'new' : pct(v)}
                         </div>
-                        {p.vs_simple != null && (
+                        {!fresh && p.vs_simple != null && (
                           <div className={`text-[10px] ${p.vs_simple >= 0 ? 'text-blue-200' : 'text-slate-400'}`} title={`Compared with simply buying ${p.simple}`}>
                             {pct(p.vs_simple)} vs {p.simple === 'the other picks' ? 'avg' : p.simple}
                           </div>

@@ -369,3 +369,268 @@ Expecting ai stocks undervalued,bull call spread,options
 canary_outcomes_1756438603,ok
 2025-08-29T19:35:46.788143,elite_chat_user,taylor swift is having a big impact on the market,"{'strategy': {'type': 'Call Option', 'trade_legs': [{'action': 'Buy to Open', 'ticker': 'TSLA', 'option_type': 'Call', 'strike_price': '850'}], 'expiration': '2025-09-20', 'target_return': '30%', 'max_loss': 'Premium Paid', 'time_to_target': '3 months', 'explanation': ""This trading strategy is based on the assumption that Taylor Swift's influence is indirectly impacting the market. Given her large fanbase and influence, any endorsement or association with a product or company can potentially drive interest and sales. Considering Tesla's appeal among younger demographic and Elon Musk's admiration for pop culture, a potential collaboration or endorsement could create a positive catalyst for the stock. The strike price of $850 is chosen based on the current price context and technical analysis, providing a balance between risk and potential return. The strategy's risk is limited to the premium paid for the option. The target return is 30% within a 3-month time frame. The strategy will benefit from a positive delta, assuming an increase in the underlying stock price. The exit strategy is to either take profits when the target return is achieved or to exit the position 2 days prior to expiration to minimize time decay."", 'sentiment_validation': {'status': 'PASSED', 'detected_sentiment': 'neutral', 'strategy_alignment': 'CONFIRMED'}}, 'ticker': 'SPY', 'asset_class': 'options', 'tags': ['long call'], 'direction': 'bullish', 'price_info': {'latest': 644.28, 'high': 647.89, 'low': 643.14}, 'high_low': [647.89, 643.14], 'confidence': 0.0, 'goal_type': 'unspecified', 'multiplier': None, 'timeframe': None, 'expiry_date': '2025-09-20', 'risk_profile': 'moderate', 'explanation': ""This trading strategy is based on the assumption that Taylor Swift's influence is indirectly impacting the market. Given her large fanbase and influence, any endorsement or association with a product or company can potentially drive interest and sales. Considering Tesla's appeal among younger demographic and Elon Musk's admiration for pop culture, a potential collaboration or endorsement could create a positive catalyst for the stock. The strike price of $850 is chosen based on the current price context and technical analysis, providing a balance between risk and potential return. The strategy's risk is limited to the premium paid for the option. The target return is 30% within a 3-month time frame. The strategy will benefit from a positive delta, assuming an increase in the underlying stock price. The exit strategy is to either take profits when the target return is achieved or to exit the position 2 days prior to expiration to minimize time decay."", 'user_id': 'elite_chat_user', 'validator': {'would_profit': None, 'estimated_profit_pct': None, 'valid': False, 'notes': '❌ Could not detect % move in belief'}, 'valid': False, 'would_profit': None, 'estimated_profit_pct': None, 'notes': '❌ Could not detect % move in belief', 'strike_price': 'ATM', 'max_profit': '30%', 'max_loss': 'Premium Paid', 'expiration': '2025-09-20', 'option_type': 'Call', 'risk_management': {'max_investment': 500, 'shares_or_contracts': 1, 'contract_type': 'options', 'estimated_premium_per_contract': 500, 'reasoning': 'Limited to 1 contracts to stay within risk limits', 'account_balance': 1000.0, 'max_risk_dollars': 20.0, 'risk_percentage': 2.0, 'warnings': ['This trade represents 50.0% of your account', 'Position size limited to minimum due to risk constraints'], 'approved_for_execution': True}, 'safe_to_execute': True}",N/A,N/A,auto_generated,moderate,N/A,,
 2025-08-29 19:35:46,elite_chat_user,taylor swift is having a big impact on the market,Call Option,SPY,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:55:51,u-e2e,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:55:51,u-e2e,plumbing will boom,Cash-Secured Put,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:57:54,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:57:57,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:57:58,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:02,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:05,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:10,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:15,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:18,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:19,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:24,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:29,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:32,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:36,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:39,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:44,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:48,u-0b0cffda-0ace-4801-9563-882060896766,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:50,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:54,u-0b0cffda-0ace-4801-9563-882060896766,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:58:57,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:00,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:04,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:08,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:10,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:13,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:17,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:18,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:20,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:24,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:27,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:31,u-0b0cffda-0ace-4801-9563-882060896766,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:34,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:38,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:42,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:43,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:45,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:49,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:53,u-0b0cffda-0ace-4801-9563-882060896766,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 06:59:58,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:01,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:04,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:08,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:11,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:16,u-0b0cffda-0ace-4801-9563-882060896766,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:18,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:21,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:24,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:26,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:29,u-0b0cffda-0ace-4801-9563-882060896766,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:32,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:37,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:41,u-0b0cffda-0ace-4801-9563-882060896766,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:43,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:46,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:51,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:55,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:00:57,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:01,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:06,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:09,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:16,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:18,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:23,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:24,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:26,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:32,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:34,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:36,u-0b0cffda-0ace-4801-9563-882060896766,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:39,u-0b0cffda-0ace-4801-9563-882060896766,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:42,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:45,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:48,u-0b0cffda-0ace-4801-9563-882060896766,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:51,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:53,u-0b0cffda-0ace-4801-9563-882060896766,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:01:56,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:00,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:04,u-0b0cffda-0ace-4801-9563-882060896766,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:08,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:11,u-0b0cffda-0ace-4801-9563-882060896766,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:14,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:17,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:21,u-0b0cffda-0ace-4801-9563-882060896766,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:24,u-0b0cffda-0ace-4801-9563-882060896766,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:26,u-0b0cffda-0ace-4801-9563-882060896766,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:30,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:02:55,u-0b0cffda-0ace-4801-9563-882060896766,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:03,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:06,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:10,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:15,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:18,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:25,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:29,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:32,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:36,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:40,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:43,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:47,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:50,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:51,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:53,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:04:57,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:05,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:08,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:12,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:16,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:19,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:23,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:27,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:31,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:34,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:36,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:39,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:43,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:46,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:49,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:50,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:53,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:55,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:05:59,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:05,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:09,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:14,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:19,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:23,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:27,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:29,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:34,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:37,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:39,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:42,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:44,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:49,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:53,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:56,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:06:59,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:06,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:10,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:13,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:18,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:24,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:28,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:32,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:35,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:37,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:42,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:45,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:50,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:55,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:07:58,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:00,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:03,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:04,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:06,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:10,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:15,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:18,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:26,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:29,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:33,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:35,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:38,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:43,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:46,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:49,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:51,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:53,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:55,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:08:59,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:05,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:09,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:13,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:17,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:25,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:29,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:32,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:37,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:38,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:40,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:43,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:45,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:49,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:52,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:55,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:09:59,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:07,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:10,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:13,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:17,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:19,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:23,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:27,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:31,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:34,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:37,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:41,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:45,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:48,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:53,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:56,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:10:58,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:01,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:05,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:09,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:13,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:17,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:20,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:24,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:28,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:31,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:35,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:39,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:42,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:47,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:51,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:54,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:11:57,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:00,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:03,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:08,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:11,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:17,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:25,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:27,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:29,u-05328555-d1a1-4176-b95b-5afcd3074dd1,housing will recover next year,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:32,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:35,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:39,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:41,u-05328555-d1a1-4176-b95b-5afcd3074dd1,🚀🚀 to the moon,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:46,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:51,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:54,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:12:57,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:00,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:02,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:06,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:10,u-05328555-d1a1-4176-b95b-5afcd3074dd1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:14,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:16,u-05328555-d1a1-4176-b95b-5afcd3074dd1,oil prices will drop,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:21,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:24,u-05328555-d1a1-4176-b95b-5afcd3074dd1,people will travel more next summer,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:27,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:31,u-05328555-d1a1-4176-b95b-5afcd3074dd1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:34,u-05328555-d1a1-4176-b95b-5afcd3074dd1,pet food sales will grow,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:37,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:40,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:43,u-05328555-d1a1-4176-b95b-5afcd3074dd1,restaurants will struggle as people stop eating out,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:45,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:13:49,u-05328555-d1a1-4176-b95b-5afcd3074dd1,AI needs way more electricity,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:14:15,u-05328555-d1a1-4176-b95b-5afcd3074dd1,Plumbing demand is about to boom,Bull Call Spread,PIPE,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:15:23,u-shot-device-1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:15:26,u-shot-device-1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:15:36,u-shot-device-1,airlines will crash this winter,Bear Put Spread,AIRL,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback
+2026-10-29 07:15:38,u-shot-device-1,"this FDA decision will make or break them, a big move either way",Long Strangle,VOLA,0.0,pending,unknown,,Strategy generated - awaiting execution/feedback

@@ -82,7 +82,7 @@ export default function PracticePage() {
                 {signed(a.total_pnl)} ({a.total_return_pct >= 0 ? '+' : ''}{a.total_return_pct.toFixed(2)}%) since you started with {usd(start)}
               </div>
             </div>
-            {s.data?.summary?.performance_grade && (
+            {s.data?.summary?.performance_grade && (positions.length > 0 || Math.abs(a.total_pnl) > 0.005) && (
               <div className="text-center">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-xl font-extrabold">{s.data.summary.performance_grade}</div>
                 <div className="text-[10px] text-slate-400 mt-1">grade</div>
@@ -175,7 +175,7 @@ export default function PracticePage() {
         </AnimatePresence>
       </div>
 
-      <p className="mt-5 text-[11px] text-slate-500">Practice account on this device. No real money moves. Prices may be delayed.</p>
+      <p className="mt-5 text-[11px] text-slate-500">Practice account. No real money moves. Prices may be delayed.</p>
 
       <AnimatePresence>
         {toast && (

@@ -70,22 +70,30 @@ def _sql(sql: str, has_params: bool = True) -> str:
     return sql.replace("%", "%%").replace("?", "%s")
 
 
+def _clean(v: Any) -> Any:
+    """Postgres text can't hold NUL bytes (it raises); they're never meaningful here, so drop them."""
+    return v.replace("\x00", "") if isinstance(v, str) else v
+
+
 def _run(cur, sql: str, params: Iterable[Any]) -> None:
-    params = tuple(params)
+    params = tuple(_clean(p) for p in params)
     if params:
         cur.execute(_sql(sql), params)
     else:
         cur.execute(_sql(sql, has_params=False))
 
 
-def execute(sql: str, params: Iterable[Any] = ()) -> None:
+def execute(sql: str, params: Iterable[Any] = ()) -> int:
+    """Run one statement; returns the number of rows it changed."""
     ensure_schema()
     with _lock, connect() as conn:
-        _run(conn.cursor(), sql, params)
+        cur = conn.cursor()
+        _run(cur, sql, params)
+        return int(cur.rowcount or 0) if cur.rowcount is not None and cur.rowcount >= 0 else 0
 
 
 def executemany(sql: str, rows: Iterable[Iterable[Any]]) -> None:
-    rows = [tuple(r) for r in rows]
+    rows = [tuple(_clean(v) for v in r) for r in rows]
     if not rows:
         return
     ensure_schema()

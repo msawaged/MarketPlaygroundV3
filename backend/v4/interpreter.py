@@ -179,30 +179,63 @@ def build_user_message(belief: str, risk_profile: str, as_of: Optional[date], co
     return "\n\n".join(parts)
 
 
+def _num(v, default: float) -> float:
+    try:
+        x = float(v)
+        return x if x == x and abs(x) != float("inf") else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _str_list(v, limit: int) -> list[str]:
+    if isinstance(v, str):
+        v = [v]
+    if not isinstance(v, list):
+        return []
+    return [str(x).strip() for x in v if x is not None and str(x).strip()][:limit]
+
+
 def _sanitize(out: dict) -> dict:
-    out["horizon_days"] = int(max(7, min(int(out.get("horizon_days") or 180), 730)))
-    out["themes"] = [t.strip().lower() for t in (out.get("themes") or []) if t and t.strip()][:5]
+    """Defend against any malformed field: Claude's structured output nearly always matches the
+    schema, but one odd value must never break a belief."""
+    if not isinstance(out, dict):
+        out = {}
+    out["is_market_belief"] = bool(out.get("is_market_belief", True))
+    out["horizon_days"] = int(max(7, min(_num(out.get("horizon_days"), 180) or 180, 730)))
+    d = str(out.get("direction") or "").lower()
+    out["direction"] = d if d in ("bullish", "bearish", "neutral", "volatile") else "bullish"
+    c = str(out.get("conviction") or "").lower()
+    out["conviction"] = c if c in ("low", "medium", "high") else "medium"
+    out["summary"] = str(out.get("summary") or "").strip()[:400]
+    out["causal_chain"] = str(out.get("causal_chain") or "").strip()[:800]
+    out["note"] = str(out.get("note") or "").strip()[:400]
+    out["themes"] = [t.lower() for t in _str_list(out.get("themes"), 5)]
     seen: set[str] = set()
     cands = []
     for c in out.get("candidates") or []:
-        t = (c.get("ticker") or "").upper().strip().replace("-", ".")  # Alpaca uses BRK.B
+        if not isinstance(c, dict):
+            continue
+        t = str(c.get("ticker") or "").upper().strip().replace("-", ".")  # Alpaca uses BRK.B
         if not t or t in seen or not t.replace(".", "").isalpha() or len(t) > 6:
             continue
         seen.add(t)
         c["ticker"] = t
-        c["score"] = float(max(0.0, min(1.0, c.get("score") or 0.5)))
+        cd = str(c.get("direction") or "").lower()
+        c["direction"] = cd if cd in ("bullish", "bearish", "volatile") else (
+            out["direction"] if out["direction"] in ("bullish", "bearish", "volatile") else "bullish")
+        c["score"] = float(max(0.0, min(1.0, _num(c.get("score"), 0.5))))
+        c["exposure"] = str(c.get("exposure") or "related").strip()[:40]
+        c["rationale"] = str(c.get("rationale") or "").strip()[:400]
+        c["name"] = str(c.get("name") or t).strip()[:120]
         c["strategy"] = str(c.get("strategy") or "").strip()
         c["strategy_why"] = str(c.get("strategy_why") or "").strip()[:200]
         cands.append(c)
     out["candidates"] = cands[:12]
-    out["wrong_if"] = [str(w).strip() for w in (out.get("wrong_if") or []) if str(w).strip()][:3]
-    out["exit_rule"] = str(out.get("exit_rule") or "").strip()
-    try:
-        out["target_price"] = max(0.0, float(out.get("target_price") or 0))
-    except (TypeError, ValueError):
-        out["target_price"] = 0.0
-    opts = [str(o).strip()[:40] for o in (out.get("clarify_options") or []) if str(o).strip()][:3]
-    q = str(out.get("clarify_question") or "").strip()
+    out["wrong_if"] = _str_list(out.get("wrong_if"), 3)
+    out["exit_rule"] = str(out.get("exit_rule") or "").strip()[:300]
+    out["target_price"] = max(0.0, _num(out.get("target_price"), 0.0))
+    opts = [o[:40] for o in _str_list(out.get("clarify_options"), 3)]
+    q = str(out.get("clarify_question") or "").strip()[:200]
     out["clarify_question"], out["clarify_options"] = (q, opts) if q and len(opts) >= 2 else ("", [])
     return out
 

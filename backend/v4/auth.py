@@ -126,6 +126,8 @@ def _use_email_token(token: str, kind: str) -> dict:
     if not row or row["used"] or row["expires_at"] < _now().isoformat():
         raise AuthError("That link has expired or was already used. Ask for a new one.", 400)
     db.execute("UPDATE email_tokens SET used = 1 WHERE token_hash = ?", (row["token_hash"],))
+    if kind == "reset":  # once a reset link is used, any other reset links for this account stop working
+        db.execute("UPDATE email_tokens SET used = 1 WHERE account_id = ? AND kind = 'reset'", (row["account_id"],))
     acc = db.query_one("SELECT * FROM accounts WHERE id = ?", (row["account_id"],))
     if not acc:
         raise AuthError("That account no longer exists.", 404)

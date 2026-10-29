@@ -876,3 +876,35 @@ def test_fuzz_engine_with_well_formed_but_weird_beliefs():
             assert p["structure"] and t is not None
             assert all(math.isfinite(float(x)) for x in [p["price"], p["score"]])
     assert engine.my_beliefs("u-fz1")["beliefs"]
+
+
+def test_messy_claude_answers_never_break_a_belief():
+    """Claude's JSON can come back incomplete or odd; the engine must clean it up, not crash."""
+    import copy
+    import random as _r
+    rng = _r.Random(3)
+    base = default_interp("plumbing")
+    mutations = [
+        lambda d: d.pop("horizon_days"), lambda d: d.update(horizon_days="soon"), lambda d: d.update(horizon_days=-5),
+        lambda d: d.update(horizon_days=10 ** 9), lambda d: d.update(direction="sideways"), lambda d: d.pop("themes"),
+        lambda d: d.update(themes="plumbing"), lambda d: d.update(conviction=None), lambda d: d.update(candidates=[]),
+        lambda d: d["candidates"][0].update(score=7), lambda d: d["candidates"][0].update(score="high"),
+        lambda d: d["candidates"][0].pop("direction"), lambda d: d["candidates"][0].update(direction="up"),
+        lambda d: d["candidates"][0].update(ticker="pipe "), lambda d: d["candidates"][0].update(ticker=""),
+        lambda d: d["candidates"][1].update(strategy="Moon Rocket"), lambda d: d["candidates"][1].update(strategy=None),
+        lambda d: d.update(target_price="lots"), lambda d: d.update(target_price=-3), lambda d: d.update(wrong_if="x"),
+        lambda d: d.update(clarify_options="a,b"), lambda d: d["candidates"].append({"ticker": "WINR"}),
+        lambda d: d["candidates"].extend(copy.deepcopy(d["candidates"])),  # duplicates
+    ]
+    for i in range(80):
+        d = copy.deepcopy(base)
+        for m in rng.sample(mutations, rng.randint(1, 4)):
+            try:
+                m(d)
+            except Exception:
+                pass
+        r = engine.process_belief(f"plumbing demand will rise {i}", f"u-m{i}", rng.choice(["conservative", "moderate", "aggressive"]),
+                                  claude_client=FakeClaude(d))
+        assert isinstance(r, dict)
+        tickers = [p["ticker"] for p in r.get("picks", [])]
+        assert len(tickers) == len(set(tickers)), tickers  # no duplicate picks

@@ -161,7 +161,11 @@ export function niceDate(iso) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
 
-const $ = (v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+const $ = (v) => {
+  const n = Number(v);
+  const whole = Math.abs(n - Math.round(n)) < 0.005;
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 })}`;
+};
 
 /**
  * The trade in three or four plain sentences: what you pay, best case, worst case, breakeven.
