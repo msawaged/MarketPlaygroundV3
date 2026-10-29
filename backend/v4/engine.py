@@ -189,6 +189,7 @@ def process_belief(
             pick_id, belief_id, v["ticker"], pick["name"], v["exposure"], v["direction"], v["rationale"],
             v["rank"], v["score"], v["nn_score"], v["final_score"], final_rank, 1 if shown else 0,
             v["entry_date"], v["price"], structure, db.dumps(trade), db.dumps(v["features"]), spy_entry,
+            1 if v["info"].get("is_etf") else 0,
         ))
         rows_themes += [(pick_id, t) for t in interp["themes"]]
 
@@ -203,8 +204,8 @@ def process_belief(
     )
     db.executemany(
         """INSERT INTO picks (id, belief_id, ticker, name, exposure, direction, rationale, claude_rank, claude_score,
-                              nn_score, final_score, final_rank, shown, entry_date, entry_price, structure, legs, features, spy_entry)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                              nn_score, final_score, final_rank, shown, entry_date, entry_price, structure, legs, features, spy_entry, is_etf)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         rows_picks,
     )
     db.executemany("INSERT INTO pick_themes (pick_id, theme) VALUES (?,?)", rows_themes)
@@ -374,6 +375,37 @@ def trending(days: int = 14, limit: int = 8) -> dict:
 
 # ---------------- what users see about learning and their own calls ----------------
 
+def expression_scorecard(checkpoint: int = 30, real_only: bool = False) -> dict:
+    """The two questions, kept apart:
+    calls  — how often the beliefs themselves came true (the user's part)
+    picks  — how the shown picks did vs the simple way to trade the same idea (our part)"""
+    real = " AND b.source = 'user'" if real_only else ""
+    calls = db.query_one(
+        f"""SELECT COUNT(*) AS n, AVG(r) AS rate FROM (
+                SELECT p.belief_id, MAX(o.belief_right) AS r
+                FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+                WHERE o.checkpoint_days = ? AND o.belief_right IS NOT NULL{real}
+                GROUP BY p.belief_id) x""", (checkpoint,)) or {}
+
+    def picks(extra: str = "") -> dict:
+        r = db.query_one(
+            f"""SELECT COUNT(*) AS n, AVG(o.sel_edge) AS edge,
+                       AVG(CASE WHEN o.sel_edge > 0 THEN 1.0 ELSE 0.0 END) AS beat
+                FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+                WHERE o.checkpoint_days = ? AND o.sel_edge IS NOT NULL AND p.shown = 1{real}{extra}""",
+            (checkpoint,)) or {}
+        return {"n": int(r.get("n") or 0), "avg_edge": round(float(r.get("edge") or 0.0), 4),
+                "beat_rate": round(float(r.get("beat") or 0.0), 3)}
+
+    return {
+        "checkpoint_days": checkpoint,
+        "calls": {"n": int(calls.get("n") or 0), "came_true_rate": round(float(calls.get("rate") or 0.0), 3)},
+        "picks": picks(),
+        "picks_when_right": picks(" AND o.belief_right = 1"),
+        "top_pick": picks(" AND p.final_rank = 0"),
+    }
+
+
 def learning_status() -> dict:
     """Plain-English, aggregate-only view of how the shared learning is going (public)."""
     st = stats()
@@ -412,9 +444,13 @@ def learning_status() -> dict:
              "what": ("Nudges picks up or down based on how similar picks actually did." if track_on
                       else "Turns on once enough picks have been graded.")},
             {"name": "MarketPlayground network", "on": net.get("status") == "active", "status": net.get("status", "none"),
-             "what": net_line},
+             "what": net_line + " It's judged on one thing: picking companies and trades that express each belief "
+                                "better than the simple choice (the sector fund). Whether a belief comes true is up to the person."},
         ],
         "versions": versions,
+        "scorecard": expression_scorecard(30),
+        "scorecard_real": expression_scorecard(30, real_only=True),
+        "network_target": nn.TARGET,
     }
 
 
@@ -458,39 +494,82 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
         return {"beliefs": [], "summary": None}
     ids = [r["id"] for r in rows]
     ph = ",".join("?" for _ in ids)
+    # shown picks, plus any sector fund among the ideas (the "simple choice" each pick is compared with)
     picks = db.query(
-        f"SELECT id, belief_id, ticker, name, direction, entry_date, entry_price, structure, final_rank, spy_entry "
-        f"FROM picks WHERE shown = 1 AND belief_id IN ({ph}) ORDER BY final_rank",
+        f"SELECT id, belief_id, ticker, name, direction, entry_date, entry_price, structure, final_rank, spy_entry, shown, is_etf "
+        f"FROM picks WHERE (shown = 1 OR is_etf = 1) AND belief_id IN ({ph}) ORDER BY final_rank",
         ids,
     )
     today_s = market.today().isoformat()
     spy_now = _live_price("SPY") or _close_on("SPY", today_s)
     by_belief: dict = {}
-    wins = total = 0
     for p in picks:
         now = _live_price(p["ticker"]) or _close_on(p["ticker"], today_s)
         spy0 = p.get("spy_entry") or _close_on("SPY", p["entry_date"])
-        item = {"pick_id": p["id"], "ticker": p["ticker"], "name": p["name"], "direction": p["direction"],
-                "structure": p["structure"], "entry_date": p["entry_date"], "entry_price": p["entry_price"],
-                "price_now": now, "return": None, "vs_spy": None}
-        if now and p["entry_price"]:
-            ret = now / float(p["entry_price"]) - 1
-            sign = -1.0 if p["direction"] == "bearish" else 1.0
-            item["return"] = round(ret, 4)
-            if spy_now and spy0:
-                spy_r = spy_now / spy0 - 1
-                item["vs_spy"] = round(abs(ret) - abs(spy_r) if p["direction"] == "volatile" else sign * (ret - spy_r), 4)
-                if p["entry_date"] < today_s:
-                    total += 1
-                    wins += item["vs_spy"] > 0
-        by_belief.setdefault(p["belief_id"], []).append(item)
+        p["ret"] = (now / float(p["entry_price"]) - 1) if now and p["entry_price"] else None
+        p["spy_r"] = (spy_now / spy0 - 1) if spy_now and spy0 else None
+        p["now"] = now
+        by_belief.setdefault(p["belief_id"], []).append(p)
+
+    def _signed(direction: str, x: float) -> float:
+        return -x if direction == "bearish" else x
+
     out = []
+    calls_tracked = calls_right = ahead = tracked = 0
     for r in rows:
         interp = db.loads(r["interpretation"], {}) or {}
+        ps = [p for p in by_belief.get(r["id"], []) if p["ret"] is not None]
+        # the simple choice per direction: the sector fund if there is one, else the average of the shown picks
+        bench: dict = {}
+        for d in {p["direction"] for p in ps}:
+            g = [p for p in ps if p["direction"] == d]
+            funds = [p for p in g if p.get("is_etf")]
+            if funds:
+                bench[d] = (sum(p["ret"] for p in funds) / len(funds), funds[0]["ticker"], {p["id"] for p in funds})
+            elif len([p for p in g if p["shown"]]) > 1:
+                sg = [p for p in g if p["shown"]]
+                bench[d] = (sum(p["ret"] for p in sg) / len(sg), None, set())
+        items = []
+        for p in by_belief.get(r["id"], []):
+            if not p["shown"]:
+                continue
+            item = {"pick_id": p["id"], "ticker": p["ticker"], "name": p["name"], "direction": p["direction"],
+                    "structure": p["structure"], "entry_date": p["entry_date"], "entry_price": p["entry_price"],
+                    "price_now": p["now"], "return": None, "vs_spy": None, "vs_simple": None, "simple": None}
+            if p["ret"] is not None:
+                item["return"] = round(p["ret"], 4)
+                if p["spy_r"] is not None:
+                    v = abs(p["ret"]) - abs(p["spy_r"]) if p["direction"] == "volatile" else _signed(p["direction"], p["ret"] - p["spy_r"])
+                    item["vs_spy"] = round(v, 4)
+                    if p["entry_date"] < today_s:
+                        tracked += 1
+                        ahead += v > 0
+                b = bench.get(p["direction"])
+                if b and p["id"] not in b[2]:
+                    e = abs(p["ret"]) - abs(b[0]) if p["direction"] == "volatile" else _signed(p["direction"], p["ret"] - b[0])
+                    item["vs_simple"] = round(e, 4)
+                    item["simple"] = b[1] or "the other picks"
+            items.append(item)
+        # the user's part: is the call itself playing out? (theme vs the S&P 500, in the direction they called)
+        call = None
+        core = r["direction"]
+        spy_r = next((p["spy_r"] for p in ps if p["spy_r"] is not None), None)
+        theme = bench.get(core)
+        if theme is None:
+            same = [p["ret"] for p in ps if p["direction"] == core and p["shown"]]
+            theme = (sum(same) / len(same), None, set()) if same else None
+        if theme and spy_r is not None and core in ("bullish", "bearish", "volatile") and r["as_of_date"] < today_s:
+            v = abs(theme[0]) - abs(spy_r) if core == "volatile" else _signed(core, theme[0] - spy_r)
+            call = {"playing_out": v > 0, "vs_spy": round(v, 4), "measured_by": theme[1] or "your picks"}
+            calls_tracked += 1
+            calls_right += v > 0
         out.append({"belief_id": r["id"], "text": r["text"], "created_at": r["created_at"],
                     "summary": interp.get("summary"), "direction": r["direction"],
-                    "horizon_days": r["horizon_days"], "picks": by_belief.get(r["id"], [])})
-    return {"beliefs": out, "summary": {"tracked": total, "ahead": wins} if total else None, "as_of": today_s}
+                    "horizon_days": r["horizon_days"], "picks": items, "call": call})
+    summary = None
+    if tracked or calls_tracked:
+        summary = {"tracked": tracked, "ahead": ahead, "calls": calls_tracked, "calls_playing_out": calls_right}
+    return {"beliefs": out, "summary": summary, "as_of": today_s}
 
 
 # ---------------- one-year replay ----------------

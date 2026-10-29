@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Page, { Card } from './ui/Page';
+import Page, { Card, pct } from './ui/Page';
 import { getLearning } from '../lib/api';
 
 function Stat({ value, label }) {
@@ -62,6 +62,31 @@ export default function LearningPage() {
               </motion.div>
             ))}
           </div>
+
+          {d.scorecard && (
+            <Card className="mt-4">
+              <div className="text-sm font-bold">Two separate questions ({d.scorecard.checkpoint_days} days after each belief)</div>
+              <p className="text-xs text-slate-400">Whether a belief comes true is the person's call. Our job is to turn it into the best trade.</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-2xl bg-slate-800/60 border border-slate-700/70 p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Their part</div>
+                  <div className="mt-1 text-2xl font-extrabold">{Math.round(d.scorecard.calls.came_true_rate * 100)}%</div>
+                  <div className="text-xs text-slate-300">of calls came true ({d.scorecard.calls.n} graded)</div>
+                </div>
+                <div className="rounded-2xl bg-blue-500/10 border border-blue-400/30 p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-blue-200 font-semibold">Our part</div>
+                  <div className="mt-1 text-2xl font-extrabold">{Math.round(d.scorecard.picks.beat_rate * 100)}%</div>
+                  <div className="text-xs text-slate-300">of shown picks beat the simple choice, avg {pct(d.scorecard.picks.avg_edge)} ({d.scorecard.picks.n} graded)</div>
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-slate-400 space-y-0.5">
+                <div>When the call came true: picks beat the simple choice {Math.round(d.scorecard.picks_when_right.beat_rate * 100)}% of the time, avg {pct(d.scorecard.picks_when_right.avg_edge)}.</div>
+                <div>Top pick only: {Math.round(d.scorecard.top_pick.beat_rate * 100)}%, avg {pct(d.scorecard.top_pick.avg_edge)}.</div>
+                {d.scorecard_real && <div>Real people only: {d.scorecard_real.calls.n} calls graded, {d.scorecard_real.picks.n} picks graded.</div>}
+                <div>"Simple choice" = the sector fund among the ideas, or the average of the ideas in the same direction.</div>
+              </div>
+            </Card>
+          )}
 
           {d.versions.length > 0 && (
             <Card className="mt-4">

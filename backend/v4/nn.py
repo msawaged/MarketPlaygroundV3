@@ -40,6 +40,7 @@ from . import db
 # 90 days: in the offline check this got promoted only on real signal, while 30-day labels were
 # too noisy to ever clear the bar. (Track record in learning.py stays at 30 days: it reacts faster.)
 LABEL_DAYS = int(os.getenv("MP_NN_LABEL_DAYS", "90"))
+TARGET = os.getenv("MP_NN_TARGET", "selection").lower()  # selection = vs the simple choice; market = vs SPY (old)
 MIN_TRAIN = int(os.getenv("MP_NN_MIN_TRAIN", "300"))
 MIN_TEST = int(os.getenv("MP_NN_MIN_TEST", "80"))
 MAX_WEIGHT = float(os.getenv("MP_NN_MAX_WEIGHT", "0.6"))
@@ -157,7 +158,7 @@ def vectorize(records: list[dict]):
 def _training_rows() -> list[dict]:
     rows = db.query(
         """SELECT p.id, p.belief_id, p.features, p.claude_score, p.entry_date,
-                  o.eval_date, o.dir_excess, b.source
+                  o.eval_date, o.dir_excess, o.sel_edge, b.source
            FROM picks p
            JOIN outcomes o ON o.pick_id = p.id AND o.checkpoint_days = ?
            JOIN beliefs b ON b.id = p.belief_id
@@ -170,7 +171,16 @@ def _training_rows() -> list[dict]:
         if not f:
             continue
         r["features"] = f
-        r["label"] = max(-0.5, min(0.5, float(r["dir_excess"])))
+        # What the network learns: did this pick express the belief better than the simple choice
+        # (sector fund / basket of same-direction ideas)? Whether the belief itself came true is the
+        # user's call and is removed from the label. MP_NN_TARGET=market restores the old vs-SPY label.
+        if TARGET == "market":
+            y = r["dir_excess"]
+        else:
+            y = r.get("sel_edge")
+            if y is None:
+                continue  # a lone idea has nothing to be compared with
+        r["label"] = max(-0.5, min(0.5, float(y)))
         out.append(r)
     return out
 

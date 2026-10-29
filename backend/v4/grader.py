@@ -7,6 +7,13 @@ passed). For each: ticker return, SPY return, and directional excess
 (direction sign × (ticker − SPY)), plus the return of the chosen trade
 structure.
 
+Two separate questions are graded (score_selection):
+  1. Was the user's call right?  belief_right: did the belief's theme beat the market in the
+     direction they called? That part is on the user.
+  2. Did we express it well?     sel_edge: did each pick beat the SIMPLE way to trade the same
+     idea: the sector fund among the ideas if there is one, otherwise the average of all the
+     ideas in the same direction. That part is on us, and it's what the network learns from.
+
 Run as a daily cron:  PYTHONPATH=./ python -m backend.v4.grader --train
 """
 from __future__ import annotations
@@ -77,9 +84,93 @@ def grade(limit: int = 50000) -> dict:
         if len(rows_out) >= 500:
             _flush(rows_out)
     _flush(rows_out)
-    if done:
+    sel = score_selection()
+    if done or sel:
         learning.invalidate()
-    return {"graded": done, "skipped": skipped, "errors": errors}
+    return {"graded": done, "skipped": skipped, "errors": errors, "selection_scored": sel}
+
+
+def _is_etf(row: dict) -> bool:
+    if row.get("is_etf") is not None:
+        return bool(row["is_etf"])
+    f = db.loads(row.get("features"), {}) or {}
+    return bool((f.get("num") or {}).get("is_etf"))
+
+
+def _group_scores(rows: list[dict], core: str) -> list[tuple]:
+    """rows: one belief's picks at one checkpoint. Returns update tuples
+    (bench_ret, sel_edge, belief_right, bench_kind, pick_id, checkpoint_days)."""
+    by_dir: dict[str, list[dict]] = {}
+    for r in rows:
+        by_dir.setdefault(r["direction"] or "bullish", []).append(r)
+    bench: dict[str, tuple[float, str, set]] = {}
+    for d, g in by_dir.items():
+        funds = [r for r in g if r["etf"]]
+        if funds:
+            bench[d] = (sum(r["ret"] for r in funds) / len(funds), "fund", {r["pick_id"] for r in funds})
+        else:
+            bench[d] = (sum(r["ret"] for r in g) / len(g), "basket" if len(g) > 1 else "self", set())
+    spy = rows[0]["spy_ret"]
+    right = None
+    if core in bench:
+        b = bench[core][0]
+        if core == "bullish":
+            right = 1 if b > spy else 0
+        elif core == "bearish":
+            right = 1 if b < spy else 0
+        elif core == "volatile":
+            right = 1 if abs(b) > abs(spy) else 0
+    out = []
+    for r in rows:
+        d = r["direction"] or "bullish"
+        b, kind, fund_ids = bench[d]
+        edge = None
+        if kind != "self" and r["pick_id"] not in fund_ids:
+            if d == "volatile":
+                edge = abs(r["ret"]) - abs(b)
+            else:
+                edge = (1.0 if d == "bullish" else -1.0) * (r["ret"] - b)
+        out.append((b, edge, right, kind, r["pick_id"], r["checkpoint_days"]))
+    return out
+
+
+def score_selection(max_beliefs: int = 5000) -> int:
+    """Fill bench_ret / sel_edge / belief_right for graded outcomes (also catches up old rows).
+    Waits until every pick of a belief has that checkpoint graded, or 5 days have passed."""
+    pending = db.query(
+        """SELECT DISTINCT p.belief_id FROM outcomes o JOIN picks p ON p.id = o.pick_id
+           WHERE o.bench_ret IS NULL LIMIT ?""", (max_beliefs,))
+    if not pending:
+        return 0
+    stale = (market.today() - timedelta(days=5)).isoformat()
+    updates: list[tuple] = []
+    ids = [r["belief_id"] for r in pending]
+    for k in range(0, len(ids), 200):
+        chunk = ids[k:k + 200]
+        ph = ",".join("?" for _ in chunk)
+        rows = db.query(
+            f"""SELECT o.pick_id, o.checkpoint_days, o.ret, o.spy_ret, o.eval_date, o.bench_ret,
+                       p.belief_id, p.direction, p.is_etf, p.features, b.direction AS core
+                FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+                WHERE p.belief_id IN ({ph})""", chunk)
+        counts = {r["belief_id"]: int(r["n"]) for r in db.query(
+            f"SELECT belief_id, COUNT(*) AS n FROM picks WHERE belief_id IN ({ph}) GROUP BY belief_id", chunk)}
+        groups: dict[tuple, list[dict]] = {}
+        for r in rows:
+            r["etf"] = _is_etf(r)
+            r["ret"] = float(r["ret"])
+            r["spy_ret"] = float(r["spy_ret"])
+            groups.setdefault((r["belief_id"], r["checkpoint_days"]), []).append(r)
+        for (bid, _cp), g in groups.items():
+            if all(r["bench_ret"] is not None for r in g):
+                continue
+            if len(g) < counts.get(bid, 0) and max(r["eval_date"] for r in g) >= stale:
+                continue  # wait for the rest of this belief's picks
+            updates += _group_scores(g, g[0]["core"] or "")
+    if updates:
+        db.executemany("""UPDATE outcomes SET bench_ret = ?, sel_edge = ?, belief_right = ?, bench_kind = ?
+                          WHERE pick_id = ? AND checkpoint_days = ?""", updates)
+    return len(updates)
 
 
 def _flush(rows: list) -> None:

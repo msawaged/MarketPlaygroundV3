@@ -720,3 +720,50 @@ def test_bearish_belief_leads_with_bearish_picks():
     dirs = [p["direction"] for p in r["picks"]]
     assert dirs[:2] == ["bearish", "bearish"] and dirs[-1] == "bullish"
     assert r["picks"][0]["ticker"] == "PIPE" and r["picks"][0]["structure"] in ("Bear Put Spread", "Long Put", "Sell / Avoid", "Bear Call Spread")
+
+
+def test_grading_separates_the_call_from_how_well_we_expressed_it():
+    """belief_right = the user's part; sel_edge = ours (each pick vs the simple choice)."""
+    def row(pid, d, ret, etf=False, spy=0.03):
+        return {"pick_id": pid, "checkpoint_days": 30, "direction": d, "ret": ret, "spy_ret": spy, "etf": etf}
+    by = {t[4]: t for t in grader._group_scores(
+        [row("A", "bullish", 0.10), row("B", "bullish", 0.02), row("F", "bullish", 0.05, etf=True)], "bullish")}
+    assert by["A"][0] == pytest.approx(0.05) and by["A"][3] == "fund"          # benchmark = the sector fund
+    assert by["A"][1] == pytest.approx(0.05) and by["B"][1] == pytest.approx(-0.03)
+    assert by["F"][1] is None                                                   # the fund isn't graded vs itself
+    assert {t[2] for t in by.values()} == {1}                                   # theme beat the market: call came true
+
+    by = {t[4]: t for t in grader._group_scores(
+        [row("A", "bearish", -0.10, spy=0.0), row("B", "bearish", -0.02, spy=0.0)], "bearish")}
+    assert by["A"][3] == "basket" and by["A"][1] == pytest.approx(0.04) and by["B"][1] == pytest.approx(-0.04)
+    assert by["A"][2] == 1                                                      # theme fell vs market: bearish call right
+
+    by = {t[4]: t for t in grader._group_scores([row("S", "bullish", 0.10, spy=0.20)], "bullish")}
+    assert by["S"][1] is None and by["S"][3] == "self" and by["S"][2] == 0     # lone idea: nothing to compare; call wrong
+
+    by = {t[4]: t for t in grader._group_scores(
+        [row("V1", "volatile", 0.20), row("V2", "volatile", -0.05)], "volatile")}
+    assert by["V1"][1] == pytest.approx(0.125) and by["V2"][1] == pytest.approx(-0.025)
+
+
+def test_backfill_grades_both_questions_and_network_learns_selection():
+    seeder.run("backfill", n=60, years=1, concurrency=1, claude_client=FakeClaude())
+    grader.grade()  # (the backfill grades as it goes; this catches anything left)
+    rows = db.query("SELECT p.ticker, o.sel_edge, o.belief_right, o.bench_kind FROM outcomes o JOIN picks p ON p.id = o.pick_id")
+    assert rows and all(r["bench_kind"] for r in rows)
+    assert all(r["sel_edge"] is None for r in rows if r["ticker"] == "XLI")     # XLI is the benchmark fund
+    assert any(r["sel_edge"] is not None for r in rows if r["ticker"] != "XLI")
+    assert {r["belief_right"] for r in rows} <= {0, 1}
+    assert grader.score_selection() == 0                                        # nothing left to score
+    w = [r["sel_edge"] for r in rows if r["ticker"] == "WINR" and r["sel_edge"] is not None]
+    l = [r["sel_edge"] for r in rows if r["ticker"] == "LOSR" and r["sel_edge"] is not None]
+    assert sum(w) / len(w) > sum(l) / len(l)                                    # the uptrend beat the fund, the downtrend didn't
+    sc = engine.expression_scorecard(30)
+    assert sc["picks"]["n"] > 0 and 0 <= sc["calls"]["came_true_rate"] <= 1
+
+
+def test_my_calls_compares_picks_with_the_sector_fund():
+    engine.process_belief("plumbing demand is going to be high", "u-fund", "moderate", claude_client=FakeClaude())
+    b = engine.my_beliefs("u-fund")["beliefs"][0]
+    assert any(p["vs_simple"] is not None and p["simple"] == "XLI" for p in b["picks"])
+    assert all(p["ticker"] != "XLI" or p["vs_simple"] is None for p in b["picks"])

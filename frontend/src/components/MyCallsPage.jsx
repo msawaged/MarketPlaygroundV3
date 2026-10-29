@@ -72,15 +72,21 @@ export default function MyCallsPage() {
       {sum && (
         <Card className="mt-6 flex items-center gap-4 bg-gradient-to-br from-blue-600/25 to-slate-900/70 border-blue-400/30">
           <div className="relative">
-            <Ring ahead={sum.ahead} total={sum.tracked} />
-            <div className="absolute inset-0 flex items-center justify-center text-lg font-extrabold">{sum.ahead}/{sum.tracked}</div>
+            <Ring ahead={sum.calls ? sum.calls_playing_out : sum.ahead} total={sum.calls || sum.tracked} />
+            <div className="absolute inset-0 flex items-center justify-center text-lg font-extrabold">
+              {sum.calls ? `${sum.calls_playing_out}/${sum.calls}` : `${sum.ahead}/${sum.tracked}`}
+            </div>
           </div>
           <div className="min-w-0">
             <div className="font-bold text-lg leading-tight">
-              {sum.ahead === 0 ? 'Early days' : sum.ahead / sum.tracked >= 0.5 ? 'Nice instincts so far' : 'Still playing out'}
+              {sum.calls
+                ? (sum.calls_playing_out === 0 ? 'Early days' : sum.calls_playing_out / sum.calls >= 0.5 ? 'Nice instincts so far' : 'Still playing out')
+                : (sum.ahead === 0 ? 'Early days' : sum.ahead / sum.tracked >= 0.5 ? 'Nice instincts so far' : 'Still playing out')}
             </div>
             <p className="text-sm text-slate-300">
-              {sum.ahead} of {sum.tracked} picks are ahead of the S&amp;P 500 in the direction you called.
+              {sum.calls
+                ? <>{sum.calls_playing_out} of {sum.calls} of your calls are playing out so far.</>
+                : <>{sum.ahead} of {sum.tracked} picks are ahead of the S&amp;P 500 in the direction you called.</>}
             </p>
           </div>
         </Card>
@@ -101,6 +107,12 @@ export default function MyCallsPage() {
                 <div className="min-w-0">
                   <div className="font-semibold leading-snug">“{b.text}”</div>
                   <div className="mt-0.5 text-xs text-slate-500">{ago(b.created_at)}{b.horizon_days ? ` · plays out over ~${b.horizon_days >= 60 ? `${Math.round(b.horizon_days / 30)} months` : `${b.horizon_days} days`}` : ''}</div>
+                  {b.call && (
+                    <div className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${b.call.playing_out ? 'bg-green-500/15 text-green-200' : 'bg-slate-800 text-slate-300'}`}>
+                      <span className="whitespace-nowrap">{b.call.playing_out ? '✓ Your call is playing out' : 'Not playing out yet'}</span>
+                      <span className="text-slate-400 font-normal whitespace-nowrap">{pct(b.call.vs_spy)} vs S&amp;P</span>
+                    </div>
+                  )}
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
                   <button onClick={() => navigate(`/chat?b=${encodeURIComponent(b.text)}&go=1`)} className="text-xs font-semibold text-blue-300 hover:text-blue-200">Run again</button>
@@ -121,6 +133,11 @@ export default function MyCallsPage() {
                         <div className={`mt-1 text-sm font-extrabold ${v == null ? 'text-slate-400' : v >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                           {v == null ? 'new' : pct(v)}
                         </div>
+                        {p.vs_simple != null && (
+                          <div className={`text-[10px] ${p.vs_simple >= 0 ? 'text-blue-200' : 'text-slate-400'}`} title={`Compared with simply buying ${p.simple}`}>
+                            {pct(p.vs_simple)} vs {p.simple === 'the other picks' ? 'avg' : p.simple}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -133,7 +150,7 @@ export default function MyCallsPage() {
 
       {beliefs.length > 0 && (
         <p className="mt-5 text-[11px] text-slate-500 leading-relaxed">
-          Numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls. Options would have moved differently. {acc ? 'Saved to your account.' : 'Saved on this device only.'}
+          Big numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls: that's how your call is doing. The small line compares each pick with the simple way to trade the same idea (usually the sector fund): that's how well we picked. Options would have moved differently. {acc ? 'Saved to your account.' : 'Saved on this device only.'}
         </p>
       )}
     </Page>

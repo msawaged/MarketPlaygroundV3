@@ -293,6 +293,13 @@ def _migrations() -> list[str]:
         "ALTER TABLE accounts ADD COLUMN verified INTEGER NOT NULL DEFAULT 1",
         # SPY's price at the same moment as the pick's entry price (fair baseline at any hour)
         "ALTER TABLE picks ADD COLUMN spy_entry REAL",
+        # "did we express the belief well": each pick vs the simple choice (sector fund, else the
+        # basket of ideas in the same direction), and whether the user's call itself came true
+        "ALTER TABLE picks ADD COLUMN is_etf INTEGER",
+        "ALTER TABLE outcomes ADD COLUMN bench_ret REAL",
+        "ALTER TABLE outcomes ADD COLUMN sel_edge REAL",
+        "ALTER TABLE outcomes ADD COLUMN belief_right INTEGER",
+        "ALTER TABLE outcomes ADD COLUMN bench_kind TEXT",
     ]
 
 

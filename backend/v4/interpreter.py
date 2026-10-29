@@ -141,18 +141,27 @@ def _context_block(context: Optional[dict]) -> str:
     lines: list[str] = []
     sims = context.get("similar") or []
     if sims:
-        lines.append("Shared track record — similar past beliefs from all users and how their picks did (directional return vs SPY):")
+        lines.append("Shared track record — similar past beliefs. 'call' = whether the belief itself came true (the user's part). "
+                     "Each pick shows how it did vs the SIMPLE way to trade the same idea (sector fund or the average of "
+                     "the ideas); that's your part: choose companies and trades that express the belief better than the simple choice.")
         for s in sims:
             picks = ", ".join(
-                f"{p['ticker']} {p['result']}" for p in s.get("picks", [])
+                f"{p['ticker']} {p['vs_simple'] if p.get('vs_simple') else p['result'] + ' vs SPY'}" for p in s.get("picks", [])
             ) or "not graded yet"
-            lines.append(f"- \"{s['text']}\" [{', '.join(s.get('themes') or [])}]: {picks}")
+            call = "" if s.get("call_right") is None else (" (call came true)" if s["call_right"] else " (call didn't come true)")
+            lines.append(f"- \"{s['text']}\" [{', '.join(s.get('themes') or [])}]{call}: {picks}")
     stats = context.get("ticker_stats") or []
     if stats:
         lines.append("Tickers with the most history on these themes:")
         for t in stats:
             fb = f", users 👍{t['up']} 👎{t['down']}" if (t.get("up") or t.get("down")) else ""
-            lines.append(f"- {t['ticker']}: {t['n']} graded, avg {t['mean']:+.1%} vs SPY, hit rate {t['hit']:.0%}{fb}")
+            sel = []
+            if t.get("n_sel_bull"):
+                sel.append(f"as a bullish pick {t['sel_bull']:+.1%} vs the simple choice")
+            if t.get("n_sel_bear"):
+                sel.append(f"as a bearish pick {t['sel_bear']:+.1%} vs the simple choice")
+            extra = f" ({'; '.join(sel)})" if sel else ""
+            lines.append(f"- {t['ticker']}: {t['n']} graded, avg {t['mean']:+.1%} vs SPY, hit rate {t['hit']:.0%}{extra}{fb}")
     return "\n".join(lines)
 
 

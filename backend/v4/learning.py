@@ -72,15 +72,22 @@ def similar_beliefs(text: str, k: int = 6, min_sim: float = 0.12) -> list[dict]:
         picks = db.query(
             """SELECT p.ticker, p.direction,
                       (SELECT o.dir_excess FROM outcomes o WHERE o.pick_id = p.id
-                        ORDER BY o.checkpoint_days DESC LIMIT 1) AS result
+                        ORDER BY o.checkpoint_days DESC LIMIT 1) AS result,
+                      (SELECT o.sel_edge FROM outcomes o WHERE o.pick_id = p.id
+                        ORDER BY o.checkpoint_days DESC LIMIT 1) AS edge,
+                      (SELECT o.belief_right FROM outcomes o WHERE o.pick_id = p.id
+                        ORDER BY o.checkpoint_days DESC LIMIT 1) AS right
                FROM picks p WHERE p.belief_id = ? ORDER BY p.final_rank LIMIT 5""",
             (r["id"],),
         )
+        rights = [p["right"] for p in picks if p["right"] is not None]
         out.append({
             "text": r["text"],
             "themes": db.loads(r["themes"], []),
             "similarity": round(float(sims[i]), 3),
-            "picks": [{"ticker": p["ticker"], "result": _fmt(p["result"])} for p in picks],
+            "call_right": (None if not rights else bool(rights[0])),
+            "picks": [{"ticker": p["ticker"], "result": _fmt(p["result"]),
+                       "vs_simple": None if p["edge"] is None else _fmt(p["edge"])} for p in picks],
         })
     return out
 
@@ -104,7 +111,11 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
                    COUNT(DISTINCT p.id) AS n,
                    AVG(o.dir_excess) AS mean,
                    AVG(CASE WHEN p.direction = 'bearish' THEN -o.dir_excess ELSE o.dir_excess END) AS raw_mean,
-                   AVG(CASE WHEN o.dir_excess > 0 THEN 1.0 ELSE 0.0 END) AS hit
+                   AVG(CASE WHEN o.dir_excess > 0 THEN 1.0 ELSE 0.0 END) AS hit,
+                   AVG(CASE WHEN p.direction = 'bullish' THEN o.sel_edge END) AS sel_bull,
+                   COUNT(CASE WHEN p.direction = 'bullish' THEN o.sel_edge END) AS n_sel_bull,
+                   AVG(CASE WHEN p.direction = 'bearish' THEN o.sel_edge END) AS sel_bear,
+                   COUNT(CASE WHEN p.direction = 'bearish' THEN o.sel_edge END) AS n_sel_bear
             FROM picks p
             JOIN outcomes o ON o.pick_id = p.id AND o.checkpoint_days = ?
             WHERE p.id IN (SELECT pick_id FROM pick_themes WHERE theme IN ({ph})){tick_sql}{real_sql}
@@ -119,6 +130,10 @@ def ticker_stats(themes: list[str], tickers: Optional[list[str]] = None, limit: 
         r["raw_mean"] = float(r["raw_mean"] or 0.0)  # how the stock itself did vs SPY
         r["hit"] = float(r["hit"] or 0.0)
         r["n"] = int(r["n"])
+        for k in ("sel_bull", "sel_bear"):  # vs the simple choice, per direction (None until graded)
+            r[k] = None if r[k] is None else float(r[k])
+        r["n_sel_bull"] = int(r["n_sel_bull"] or 0)
+        r["n_sel_bear"] = int(r["n_sel_bear"] or 0)
         r.update(fb.get(r["ticker"], {"up": 0, "down": 0}))
     return rows
 
@@ -150,8 +165,14 @@ def ticker_adjustment(stat: Optional[dict], direction: str = "bullish", prior_n:
     if direction == "volatile":
         return 0.0  # past up/down moves say nothing about the size of the next one here
     sign = -1.0 if direction == "bearish" else 1.0
-    raw = stat.get("raw_mean", stat.get("mean", 0.0))
-    market = (n / (n + prior_n)) * max(-0.15, min(0.15, sign * raw)) * 1.5
+    key = "bear" if direction == "bearish" else "bull"
+    n_sel, sel = stat.get(f"n_sel_{key}", 0), stat.get(f"sel_{key}")
+    if n_sel and sel is not None:
+        # preferred: how well this stock expressed beliefs in this direction vs the simple choice
+        market = (n_sel / (n_sel + prior_n)) * max(-0.15, min(0.15, sel)) * 1.5
+    else:
+        raw = stat.get("raw_mean", stat.get("mean", 0.0))
+        market = (n / (n + prior_n)) * max(-0.15, min(0.15, sign * raw)) * 1.5
     up, down = stat.get("up", 0), stat.get("down", 0)
     votes = (up - down) / (up + down + 10)
     return max(-0.25, min(0.25, market + 0.05 * votes))
