@@ -6,6 +6,7 @@ import { getTrending } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
 import { themeLabel } from '../lib/text';
 import { useMovers, MoverCard, ago } from './MoversFeed';
+import { useAccount } from '../lib/auth';
 
 function pct(v) {
   if (v == null) return null;
@@ -24,6 +25,7 @@ export default function TrendingPage() {
     return () => { alive = false; };
   }, []);
 
+  const account = useAccount();
   const movers = useMovers();
   const items = movers.data?.items || [];
   const themes = state.data?.themes || [];
@@ -32,6 +34,16 @@ export default function TrendingPage() {
   return (
     <div className="min-h-screen mp-bg text-white pb-28">
       <div className="max-w-lg mx-auto px-4 pt-8" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
+        {!account && (
+          <div className="mb-6 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4">
+            <div className="font-bold">Invest in what you believe.</div>
+            <p className="mt-1 text-sm text-slate-300">Tap any story to see the companies to back. Free, with practice money.</p>
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => navigate('/account')} className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold">Create a free account</button>
+              <button onClick={() => navigate('/account?mode=login')} className="rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-bold">Log in</button>
+            </div>
+          </div>
+        )}
         <h1 className="text-3xl font-extrabold">Moving now</h1>
         <p className="mt-1 text-slate-300">Today's market news and the companies it touches.</p>
         {movers.data?.built_at && <p className="mt-1 text-[11px] text-slate-500">Updated {ago(movers.data.built_at)}</p>}
@@ -114,7 +126,7 @@ export default function TrendingPage() {
           "vs S&amp;P" is how a pick did against the S&amp;P 500, in the direction people expected, 30 days after it was suggested. Past results don't predict future ones.
         </p>
       </div>
-      <BottomNavigation />
+      {account && <BottomNavigation />}
     </div>
   );
 }

@@ -18,7 +18,7 @@ function Loading() {
   return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center">Loading…</div>;
 }
 
-// Everything except the welcome, account and email-link screens needs a logged-in account.
+// Everything except the welcome, account, email-link and News screens needs a logged-in account.
 function Gate({ children }) {
   const account = useAccount();
   const loc = useLocation();
@@ -36,7 +36,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/select-tool" replace />} />
           <Route path="/select-tool" element={g(<ToolSelectorPage />)} />
           <Route path="/chat" element={g(<ChatInterface />)} />
-          <Route path="/trending" element={g(<TrendingPage />)} />
+          <Route path="/trending" element={<TrendingPage />} />
           <Route path="/hot-trades" element={<Navigate to="/trending" replace />} />
           <Route path="/my" element={g(<MyCallsPage />)} />
           <Route path="/learning" element={<LearningPage />} />
