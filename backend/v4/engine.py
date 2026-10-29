@@ -79,7 +79,7 @@ def process_belief(
 
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
     prefs = strategy.normalize_prefs(prefs)
-    cache_key = f"{risk_profile}|{prefs['instrument']}|{prefs['goal']}"
+    cache_key = f"p2|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
     cached = None if backfill else _cached_interpretation(norm, cache_key)
     if cached:
         interp, usage = cached
@@ -143,7 +143,14 @@ def process_belief(
         v["nn_score"] = preds[i] if preds else None
         v["final_score"] = (1 - w) * claude_parts[i] + w * nn_parts[i]
         v["track"] = shown_stats.get(v["ticker"])
-    valid.sort(key=lambda v: v["final_score"], reverse=True)
+    # The user's stated direction always leads: on a bearish belief, bets against the companies it hurts
+    # come first, and opposite-direction ideas (e.g. a competitor that benefits) can only follow them.
+    # Scores still order picks within each group. (Without this, a network trained mostly in a rising
+    # market learned "bullish picks score higher" and floated beneficiaries above the user's actual call.)
+    core = interp["direction"]
+    def _leads(v):
+        return 1 if core not in ("bullish", "bearish") or v.get("direction") == core else 0
+    valid.sort(key=lambda v: (_leads(v), v["final_score"]), reverse=True)
 
     # 5. structures
     picks_out = []

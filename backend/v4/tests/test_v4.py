@@ -702,3 +702,20 @@ def test_accounts_made_before_verification_still_log_in(monkeypatch):
     c.post("/v4/auth/signup", json={"email": "old@example.com", "password": "old password ok"})  # email not configured -> verified
     monkeypatch.setenv("MP_MAIL_TEST_SINK", "1")
     assert c.post("/v4/auth/login", json={"email": "old@example.com", "password": "old password ok"}).status_code == 200
+
+
+def test_bearish_belief_leads_with_bearish_picks():
+    """A beneficiary scored higher by Claude/the network must not jump ahead of the user's bearish call."""
+    payload = {
+        "is_market_belief": True, "note": "", "summary": "Pipe makers suffer.", "direction": "bearish",
+        "horizon_days": 120, "conviction": "medium", "themes": ["plumbing"], "causal_chain": "x",
+        "candidates": [
+            {"ticker": "WINR", "name": "x", "exposure": "beneficiary", "direction": "bullish", "rationale": "rival gains", "score": 0.95},
+            {"ticker": "PIPE", "name": "x", "exposure": "direct", "direction": "bearish", "rationale": "hurt", "score": 0.6},
+            {"ticker": "LOSR", "name": "x", "exposure": "supplier", "direction": "bearish", "rationale": "hurt", "score": 0.5},
+        ],
+    }
+    r = engine.process_belief("pipe makers are going to struggle", "ub", "moderate", claude_client=FakeClaude(payload))
+    dirs = [p["direction"] for p in r["picks"]]
+    assert dirs[:2] == ["bearish", "bearish"] and dirs[-1] == "bullish"
+    assert r["picks"][0]["ticker"] == "PIPE" and r["picks"][0]["structure"] in ("Bear Put Spread", "Long Put", "Sell / Avoid", "Bear Call Spread")
