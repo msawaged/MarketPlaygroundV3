@@ -1091,3 +1091,16 @@ def test_called_it_email_once_and_unsubscribe(monkeypatch):
     assert notify.unsubscribe("a-n1", notify.unsubscribe_sig("a-n1"))
     db.execute("DELETE FROM kv_cache WHERE k LIKE 'notify%'")
     assert notify.run()["accounts"] == 0  # unsubscribed and unconfirmed people are skipped
+
+
+def test_passkey_challenges_are_single_use_and_unknown_keys_refused():
+    from backend.v4 import passkeys
+    from backend.v4.auth import AuthError
+    opts = passkeys.login_options("https://marketplayground-web.onrender.com")
+    assert opts["options"]["rpId"] == "marketplayground-web.onrender.com" and opts["challenge_id"]
+    with pytest.raises(AuthError) as e:
+        passkeys.login_verify(opts["challenge_id"], {"id": "nope", "rawId": "nope", "type": "public-key", "response": {}})
+    assert e.value.status == 401
+    with pytest.raises(AuthError):  # the same challenge can't be replayed
+        passkeys.login_verify(opts["challenge_id"], {"id": "nope"})
+    assert passkeys._rp_id("https://evil.example") == "marketplayground-web.onrender.com"

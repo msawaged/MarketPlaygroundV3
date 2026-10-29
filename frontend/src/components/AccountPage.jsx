@@ -7,6 +7,7 @@ import Page, { Card } from './ui/Page';
 import {
   useAccount, signup, login, logout, refreshAccount, updateName, changePassword, deleteAccount, initials,
   resendVerification, forgotPassword,
+  passkeySupported, biometricName, passkeyStatus, addPasskey, loginWithPasskey, removePasskeys, passkeyCancelled,
 } from '../lib/auth';
 import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
 
@@ -77,6 +78,19 @@ function SignedOut() {
     );
   }
 
+  const faceLogin = async () => {
+    setErr(null); setNotice(null); setBusy(true);
+    try {
+      await loginWithPasskey();
+      const next = new URLSearchParams(loc.search).get('next');
+      if (next) navigate(next);
+    } catch (e2) {
+      if (!passkeyCancelled(e2)) setErr(e2.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setErr(null); setNotice(null); setUnverified(false);
@@ -137,6 +151,12 @@ function SignedOut() {
           className="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 py-3.5 font-bold">
           {busy ? 'One moment…' : mode === 'signup' ? 'Create my free account' : 'Log in'}
         </button>
+        {mode === 'login' && passkeySupported() && (
+          <button type="button" disabled={busy} onClick={faceLogin}
+            className="w-full rounded-2xl border border-slate-600 bg-slate-900/80 hover:border-blue-400 py-3.5 font-bold">
+            Log in with {biometricName()}
+          </button>
+        )}
         {mode === 'login' && (
           <p className="text-xs text-slate-400 text-center"><button type="button" onClick={forgot} className="underline text-blue-300 font-semibold">Forgot your password?</button> We'll email you a link.</p>
         )}
@@ -147,6 +167,34 @@ function SignedOut() {
         )}
       </form>
     </>
+  );
+}
+
+export function FaceIdCard({ compact = false, onDone }) {
+  const [on, setOn] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const name = biometricName();
+  useEffect(() => { if (passkeySupported()) passkeyStatus().then((r) => setOn(r.passkeys > 0)).catch(() => setOn(false)); }, []);
+  if (!passkeySupported() || on === null || (compact && on)) return null;
+  const turnOn = async () => {
+    setBusy(true); setErr(null);
+    try { await addPasskey(); setOn(true); onDone?.(); } catch (e) { if (!passkeyCancelled(e)) setErr(e.message); } finally { setBusy(false); }
+  };
+  const turnOff = async () => { setBusy(true); try { await removePasskeys(); setOn(false); } finally { setBusy(false); } };
+  return (
+    <Card className="mt-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-bold">Log in with {name}</div>
+          <div className="text-xs text-slate-400">{on ? 'On for this account. No password needed on this device.' : 'Skip the password next time.'}</div>
+        </div>
+        {on
+          ? <button onClick={turnOff} disabled={busy} className="shrink-0 rounded-2xl border border-slate-700 px-4 py-2 text-sm font-bold hover:border-slate-500">Turn off</button>
+          : <button onClick={turnOn} disabled={busy} className="shrink-0 rounded-2xl bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm font-bold">{busy ? 'One moment…' : 'Turn on'}</button>}
+      </div>
+      {err && <p className="mt-2 text-xs text-red-300">{err}</p>}
+    </Card>
   );
 }
 
@@ -239,6 +287,8 @@ function SignedIn({ acc }) {
           <button onClick={saveName} className="rounded-2xl bg-slate-800 border border-slate-700 px-4 text-sm font-bold hover:border-blue-400">{saved ? '✓ Saved' : 'Save'}</button>
         </div>
       </Card>
+
+      <FaceIdCard />
 
       <Brokerage />
 

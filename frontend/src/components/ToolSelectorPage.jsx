@@ -9,6 +9,7 @@ import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
 import { themeLabel } from '../lib/text';
 import { useMovers } from './MoversFeed';
+import { FaceIdCard } from './AccountPage';
 import { useAccount, initials } from '../lib/auth';
 
 const ROTATE = [
@@ -33,6 +34,8 @@ export default function ToolSelectorPage() {
   const [i, setI] = useState(0);
   const [hot, setHot] = useState([]);
   const moving = useMovers().data?.items || [];
+  const [faceAsk, setFaceAsk] = useState(() => { try { return !localStorage.getItem('mp_faceid_asked'); } catch { return false; } });
+  const faceDone = () => { try { localStorage.setItem('mp_faceid_asked', '1'); } catch { /* private mode */ } setFaceAsk(false); };
   const recent = recentBeliefs();
   const acc = useAccount();
 
@@ -75,6 +78,13 @@ export default function ToolSelectorPage() {
           Your hunch.<br /><span className="mp-gradient-text">Real stocks.</span>
         </h1>
         <p className="mt-3 text-slate-300">Type what you think will happen. We find the companies it affects and show you which shares to buy. Options are there too, if you want them.</p>
+
+        {acc && faceAsk && (
+          <div className="-mb-2">
+            <FaceIdCard compact onDone={faceDone} />
+            <button onClick={faceDone} className="mt-1 w-full text-center text-xs text-slate-500 hover:text-slate-300">Not now</button>
+          </div>
+        )}
 
         {/* The belief box */}
         <form onSubmit={(e) => { e.preventDefault(); go(); }} className="mt-6 rounded-3xl p-[1.5px] bg-gradient-to-br from-blue-400/70 via-blue-600/40 to-slate-700/40 shadow-2xl shadow-blue-900/40">

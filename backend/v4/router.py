@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify
+from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify, passkeys
 
 router = APIRouter()
 
@@ -169,6 +169,47 @@ async def auth_password(body: PasswordIn, authorization: Optional[str] = Header(
 async def auth_delete(body: DeleteIn, authorization: Optional[str] = Header(None)):
     await _auth_call(auth.delete_account, _token(authorization), body.password)
     return {"ok": True}
+
+
+class PasskeyIn(BaseModel):
+    credential: dict
+    label: Optional[str] = ""
+
+
+class PasskeyLoginIn(BaseModel):
+    challenge_id: str
+    credential: dict
+    device_id: Optional[str] = None
+
+
+@router.post("/auth/passkey/register/options")
+async def passkey_reg_options(authorization: Optional[str] = Header(None), origin: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.register_options, _token(authorization), origin)
+
+
+@router.post("/auth/passkey/register/verify")
+async def passkey_reg_verify(body: PasskeyIn, authorization: Optional[str] = Header(None), origin: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.register_verify, _token(authorization), body.credential, origin, body.label or "")
+
+
+@router.post("/auth/passkey/login/options")
+async def passkey_login_options(origin: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.login_options, origin)
+
+
+@router.post("/auth/passkey/login/verify")
+async def passkey_login_verify(body: PasskeyLoginIn, origin: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.login_verify, body.challenge_id, body.credential, body.device_id, origin)
+
+
+@router.get("/auth/passkey/status")
+async def passkey_status(authorization: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.status, _token(authorization))
+
+
+@router.post("/auth/passkey/remove")
+async def passkey_remove(authorization: Optional[str] = Header(None)):
+    return await _auth_call(passkeys.remove_all, _token(authorization))
 
 
 class TokenIn(BaseModel):

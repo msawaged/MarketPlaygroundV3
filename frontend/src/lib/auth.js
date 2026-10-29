@@ -96,3 +96,44 @@ export function initials(acc) {
   const s = (acc?.name || acc?.email || '?').trim();
   return s.charAt(0).toUpperCase();
 }
+
+// ---- Face ID / Touch ID (passkeys) ----
+export function passkeySupported() {
+  try { return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext); } catch { return false; }
+}
+
+/** What to call it on this device. */
+export function biometricName() {
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'Face ID';
+  if (/Macintosh/.test(ua)) return 'Touch ID';
+  if (/Android/.test(ua)) return 'fingerprint or face';
+  return 'Windows Hello or a passkey';
+}
+
+export async function passkeyStatus() {
+  return request('/v4/auth/passkey/status');
+}
+
+export async function addPasskey() {
+  const { startRegistration } = await import('@simplewebauthn/browser');
+  const options = await request('/v4/auth/passkey/register/options', { method: 'POST' });
+  const credential = await startRegistration({ optionsJSON: options });
+  return request('/v4/auth/passkey/register/verify', { method: 'POST', body: { credential, label: biometricName() } });
+}
+
+export async function loginWithPasskey() {
+  const { startAuthentication } = await import('@simplewebauthn/browser');
+  const { challenge_id, options } = await request('/v4/auth/passkey/login/options', { method: 'POST' });
+  const credential = await startAuthentication({ optionsJSON: options });
+  return adopt(await request('/v4/auth/passkey/login/verify', { method: 'POST', body: { challenge_id, credential, device_id: userId() } }));
+}
+
+export function removePasskeys() {
+  return request('/v4/auth/passkey/remove', { method: 'POST' });
+}
+
+/** A cancelled Face ID prompt is not an error worth showing. */
+export function passkeyCancelled(e) {
+  return e && (e.name === 'NotAllowedError' || e.name === 'AbortError');
+}
