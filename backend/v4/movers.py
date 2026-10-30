@@ -117,7 +117,7 @@ def _ask_claude(news: list[dict], client: Any = None) -> Optional[dict[int, dict
         lines = [f"{i}. {n['headline']}" + (f"  [tagged: {', '.join(n['symbols'])}]" if n.get("symbols") else "")
                  for i, n in enumerate(news)]
         resp = client.messages.create(
-            model=MODEL, max_tokens=5000, system=PROMPT,
+            model=MODEL, max_tokens=12000, system=PROMPT,  # 30 headlines of JSON overflowed 5000 (cut-off reply)
             messages=[{"role": "user", "content": "\n".join(lines)}],
             extra_body={"output_config": {"effort": "low", "format": {"type": "json_schema", "schema": SCHEMA}}},
         )
