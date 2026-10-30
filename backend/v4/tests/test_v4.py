@@ -1175,5 +1175,5 @@ def test_backup_feeder_only_feeds_when_the_hourly_job_is_quiet(monkeypatch):
     calls = []
     monkeypatch.setattr(seeder, "auto", lambda **kw: calls.append(kw) or {"news": {"ok": 3, "errors": 0}})
     r = feeder.feed_once()
-    assert r["fed"] and calls[0]["batch_override"] == 20 and calls[0]["concurrency"] == 2
+    assert r["fed"] and calls[0]["batch_override"] == 60 and calls[0]["concurrency"] == 3
     assert feeder.feed_once() == {"skipped": "the hourly job is healthy"}  # the round it just ran counts
