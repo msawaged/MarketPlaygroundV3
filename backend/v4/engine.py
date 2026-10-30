@@ -25,7 +25,7 @@ from typing import Any, Optional
 from . import db, interpreter, learning, market, nn, strategy
 
 SHOW_TOP = 3
-CACHE_HOURS = 6
+CACHE_HOURS = 24  # the same question gets the same companies all day
 
 
 class BeliefError(ValueError):
@@ -111,7 +111,10 @@ def process_belief(
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
     prefs = strategy.normalize_prefs(prefs)
     cache_key = f"p4|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
-    cached = None if backfill else _cached_interpretation(norm, cache_key)
+    # The companies a belief affects don't depend on how you trade it: the same question reuses the same
+    # interpretation across Shares / Options / AI and risk levels; only the strategies are re-chosen below.
+    same_q_key = "p4|any"
+    cached = None if backfill else (_cached_interpretation(norm, cache_key) or _cached_interpretation(norm, same_q_key))
     if cached:
         interp, usage = cached
     else:
@@ -128,6 +131,7 @@ def process_belief(
         )
         if not backfill:
             _store_interpretation(norm, cache_key, interp, usage)
+            _store_interpretation(norm, same_q_key, interp, usage)
 
     belief_id = f"b-{uuid.uuid4().hex[:16]}"
     now = datetime.now(timezone.utc).isoformat()

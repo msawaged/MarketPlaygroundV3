@@ -1179,3 +1179,12 @@ def test_backup_feeder_only_feeds_when_the_hourly_job_is_quiet(monkeypatch):
     assert feeder.feed_once()["fed"]  # its own rounds don't stop it: it waits for the regular job to succeed
     seeder._learning_health("cron", False, "no key")
     assert brain.health(True)["learning"]["ok"] is True  # a cron failure doesn't hide the backup's success
+
+
+def test_same_question_same_companies_across_trade_styles():
+    fake = FakeClaude()
+    a = engine.process_belief("Plumbing demand is going to be high", "u-sq", "moderate", prefs={"instrument": "shares"}, claude_client=fake)
+    b = engine.process_belief("plumbing demand is going to be high", "u-sq", "aggressive", prefs={"instrument": "options"}, claude_client=fake)
+    assert len(fake.calls) == 1  # asked once, reused
+    assert [p["ticker"] for p in a["picks"]] == [p["ticker"] for p in b["picks"]]
+    assert {p["structure"] for p in b["picks"] if p["shown"]} != {"Buy Stock"}  # trades still follow the choice
