@@ -69,6 +69,29 @@ function Stat({ label, value, tone }) {
   );
 }
 
+const PANEL = [['economist', '📈', 'Economist'], ['industry', '🏭', 'Industry analyst'], ['geopolitics', '🌍', 'Geopolitics'], ['skeptic', '🧐', 'Skeptic']];
+
+function Panel({ panel }) {
+  const [open, setOpen] = useState(false);
+  if (!panel || !PANEL.some(([k]) => panel[k])) return null;
+  return (
+    <div className="mt-3 rounded-xl border border-slate-700/80 bg-slate-950/50">
+      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className="w-full flex items-center justify-between px-3 py-2 text-left">
+        <span className="text-xs font-bold text-slate-200">🎓 The expert panel weighed in</span>
+        <span className="text-xs text-blue-300">{open ? 'Hide' : 'See what they said'}</span>
+      </button>
+      {open && (
+        <ul className="px-3 pb-3 space-y-2">
+          {PANEL.filter(([k]) => panel[k]).map(([k, icon, label]) => (
+            <li key={k} className="text-sm leading-snug"><span className="font-semibold text-slate-100">{icon} {label}: </span><span className="text-slate-300">{panel[k]}</span></li>
+          ))}
+          <li className="text-[11px] text-slate-500">How top economists, analysts and strategists reason, applied to your belief by AI. Not quotes from real people.</li>
+        </ul>
+      )}
+    </div>
+  );
+}
+
 const FAMILY_SHARES = new Set(['Buy Stock', 'Sell / Avoid']);
 const kindLabel = (s) => (s === 'Buy Stock' ? 'Shares' : s === 'Sell / Avoid' ? 'Stay out' : 'Options');
 
@@ -199,6 +222,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
         </div>
         {interp.summary && <p className="mt-1 text-white font-semibold leading-snug">{interp.summary}</p>}
         {interp.causal_chain && <p className="mt-1 text-sm text-slate-300 leading-relaxed">{interp.causal_chain}</p>}
+        <Panel panel={interp.panel} />
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(interp.themes || []).map((t) => (
             <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">{t}</span>

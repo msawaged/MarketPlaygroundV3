@@ -110,7 +110,7 @@ def process_belief(
 
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
     prefs = strategy.normalize_prefs(prefs)
-    cache_key = f"p3|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
+    cache_key = f"p4|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
     cached = None if backfill else _cached_interpretation(norm, cache_key)
     if cached:
         interp, usage = cached
@@ -118,6 +118,10 @@ def process_belief(
         if source == "user":
             _spend_guard(user_id)
         context = learning.build_context(belief)
+        try:
+            context["regime"] = market.regime(as_of if backfill else None)
+        except Exception:
+            pass
         interp, usage = interpreter.interpret(
             belief, risk_profile, as_of=as_of if backfill else None,
             context=context, model=model, client=claude_client, prefs=prefs,

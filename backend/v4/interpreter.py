@@ -37,7 +37,7 @@ SCHEMA: dict[str, Any] = {
     "required": [
         "is_market_belief", "note", "summary", "direction", "horizon_days",
         "conviction", "themes", "causal_chain", "candidates",
-        "wrong_if", "exit_rule", "clarify_question", "clarify_options", "target_price",
+        "wrong_if", "exit_rule", "clarify_question", "clarify_options", "target_price", "panel",
     ],
     "properties": {
         "is_market_belief": {"type": "boolean"},
@@ -53,6 +53,17 @@ SCHEMA: dict[str, Any] = {
         "clarify_question": {"type": "string"},
         "target_price": {"type": "number"},
         "clarify_options": {"type": "array", "items": {"type": "string"}},
+        "panel": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["economist", "industry", "geopolitics", "skeptic"],
+            "properties": {
+                "economist": {"type": "string"},
+                "industry": {"type": "string"},
+                "geopolitics": {"type": "string"},
+                "skeptic": {"type": "string"},
+            },
+        },
         "candidates": {
             "type": "array",
             "items": {
@@ -78,7 +89,17 @@ SYSTEM_PROMPT = """You are the belief interpreter for MarketPlayground, an app w
 
 Beliefs can be anything: a specific stock call ("AAPL will hit 250"), a sector view ("plumbing demand will be high"), a consumer trend ("potatoes are in demand"), a macro view ("rates will stay high"), or a cultural observation. Your job is to work out what the belief implies for publicly traded US securities.
 
+Think like a panel of the best minds in each field before you choose anything, and use the market backdrop when given:
+- economist: rates, inflation, the business cycle, the consumer; who pays and who benefits; second-order effects.
+- industry: how the money actually flows in this industry: suppliers, customers, competitors, margins, who captures the gain.
+- geopolitics: policy, regulation, elections, trade, sanctions, conflict, and how they help or block the belief.
+- skeptic: what the market has already priced in, the strongest case against, and what would prove it wrong.
+Use their reasoning to choose better companies, then summarize each view in `panel`. Use well-known frameworks and
+public facts; never attribute opinions to real named people.
+
 Return:
+- panel: economist, industry, geopolitics, skeptic: one plain-English sentence each (under 30 words, no jargon) giving
+  that expert's most useful point about THIS belief. If a lens truly doesn't apply, say so in a few words.
 - is_market_belief: false only if the text has no plausible market implication at all (greetings, nonsense). Then explain briefly in note and leave candidates empty.
 - summary: one sentence restating the belief as a market view.
 - direction: the overall stance on the core theme (bullish = the theme benefits, bearish = it suffers, neutral = range-bound / calm, volatile = a BIG move is coming but the direction is unclear, e.g. "this earnings report will be a shock either way", "the FDA decision will make or break them", "it's going to crash or moon").
@@ -173,6 +194,8 @@ def build_user_message(belief: str, risk_profile: str, as_of: Optional[date], co
                      + (f"; what matters most: {prefs['goal']}" if prefs.get("goal") else ""))
     if as_of:
         parts.append(f"As of: {as_of.isoformat()}")
+    if context and context.get("regime"):
+        parts.append("Market backdrop: " + context["regime"])
     ctx = _context_block(context)
     if ctx:
         parts.append(ctx)
@@ -237,6 +260,8 @@ def _sanitize(out: dict) -> dict:
     opts = [o[:40] for o in _str_list(out.get("clarify_options"), 3)]
     q = str(out.get("clarify_question") or "").strip()[:200]
     out["clarify_question"], out["clarify_options"] = (q, opts) if q and len(opts) >= 2 else ("", [])
+    pan = out.get("panel") if isinstance(out.get("panel"), dict) else {}
+    out["panel"] = {k: str(pan.get(k) or "").strip()[:240] for k in ("economist", "industry", "geopolitics", "skeptic")}
     return out
 
 

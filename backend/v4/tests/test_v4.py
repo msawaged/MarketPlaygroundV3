@@ -1118,3 +1118,16 @@ def test_brain_snapshot_is_public_safe_and_counts():
     texts = " ".join(x["text"] for x in s["learned"])
     assert "secret" not in texts and "cheaper food" in texts  # a user's own words never appear
     assert "secret" not in json.dumps(s)
+
+
+def test_expert_panel_and_market_backdrop(monkeypatch):
+    from backend.v4 import interpreter
+    out = interpreter._sanitize({"panel": {"economist": "Rates are falling.", "skeptic": 5, "junk": "x"}})
+    assert out["panel"] == {"economist": "Rates are falling.", "industry": "", "geopolitics": "", "skeptic": "5"}
+    assert interpreter._sanitize({})["panel"]["geopolitics"] == ""
+    msg = interpreter.build_user_message("oil will rise", "moderate", None, {"regime": "oil +5.0% over 1 month"})
+    assert "Market backdrop: oil +5.0% over 1 month" in msg
+    assert "panel" in interpreter.SCHEMA["required"]
+    market._regime_cache.clear()
+    line = market.regime(TODAY)
+    assert "US stocks" in line and "over 3 months" in line  # built only from prices up to that day

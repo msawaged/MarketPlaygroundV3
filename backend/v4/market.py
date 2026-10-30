@@ -340,3 +340,31 @@ def headlines(limit: int = 6) -> list[dict]:
     with _lock:
         _news_cache.update(at=time.time(), items=items)
     return items[:limit]
+
+
+_REGIME = (("SPY", "US stocks"), ("TLT", "long-term Treasury bonds (falling means rising rates)"),
+           ("UUP", "the US dollar"), ("USO", "oil"), ("GLD", "gold"), ("XLE", "energy stocks"), ("XLK", "tech stocks"))
+_regime_cache: dict = {}
+
+
+def regime(as_of: Optional[date] = None) -> str:
+    """One line on what the market is signalling: 1- and 3-month moves of stocks, bonds, the dollar, oil, gold,
+    using only prices up to as_of. Cached per day; "" if the data isn't available."""
+    d = (as_of or today()).isoformat()
+    if d in _regime_cache:
+        return _regime_cache[d]
+    bits = []
+    for sym, label in _REGIME:
+        try:
+            dates, closes = daily_closes(sym)
+            i = _index_on_or_before(dates, d)
+            if i < 63:
+                continue
+            bits.append(f"{label} {_ret(closes, i, 21):+.1%} over 1 month, {_ret(closes, i, 63):+.1%} over 3 months")
+        except Exception:
+            continue
+    line = "; ".join(bits)
+    if len(_regime_cache) > 400:
+        _regime_cache.clear()
+    _regime_cache[d] = line
+    return line

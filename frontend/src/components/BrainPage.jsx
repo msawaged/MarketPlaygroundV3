@@ -47,7 +47,7 @@ function Network({ themes, firing }) {
     return [ins, Array(7).fill(''), Array(7).fill(''), Array(5).fill(''), ['Playing out', 'Not yet']];
   }, [themes]);
   const pos = layers.map((col, li) => col.map((label, ni) => ({
-    x: 70 + li * ((W - 140) / (layers.length - 1)),
+    x: 92 + li * ((W - 170) / (layers.length - 1)),
     y: (H / (col.length + 1)) * (ni + 1), label,
   })));
   const edges = [];
