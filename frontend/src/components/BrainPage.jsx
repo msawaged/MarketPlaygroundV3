@@ -183,7 +183,7 @@ export default function BrainPage() {
         <div className="mt-2">
           <Feed items={d?.learned || []} render={(x) => (
             <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5">
-              <div className="text-[11px] text-slate-500">{x.from_news ? '📰 From today\'s news' : '🧪 Practice belief'} · {ago(x.at, now)}</div>
+              <div className="text-[11px] text-slate-500">{x.from_news ? 'From today\'s news' : 'Practice belief'} · {ago(x.at, now)}</div>
               <div className="text-sm font-semibold leading-snug">“{x.text}”</div>
               {x.picks?.length > 0 && <div className="mt-1 text-xs text-slate-300">→ {x.picks.map((p) => `${p.ticker} ${p.direction === 'bearish' ? '▼' : '▲'}`).join('  ·  ')}</div>}
             </div>

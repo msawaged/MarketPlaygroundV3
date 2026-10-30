@@ -129,7 +129,7 @@ export default function LearningPage() {
       </Card>
 
       <Card className="mt-4 text-sm text-slate-300">
-        👍 and 👎 on picks count too. Every vote nudges what everyone sees next.
+        Good pick and Not for me votes count too. Every vote nudges what everyone sees next.
         <button onClick={() => navigate('/chat')} className="mt-3 w-full rounded-2xl bg-blue-600 hover:bg-blue-500 py-3 font-bold text-white">Teach it a belief</button>
       </Card>
     </Page>

@@ -3,7 +3,7 @@ import { LogoMark, Wordmark } from './ui/Logo';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ShoppingBasket, TrendingUp, ArrowRight, Target } from 'lucide-react';
+import { Flame, ShoppingBasket, TrendingUp, ArrowRight, Target, Newspaper, Activity } from 'lucide-react';
 import BottomNavigation from './BottomNavigation';
 import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
@@ -22,10 +22,10 @@ const ROTATE = [
 ];
 
 const TOOLS = [
-  { path: '/trending', icon: Flame, title: 'News', body: 'Today’s news and the companies it moves', tint: 'text-amber-300 bg-amber-400/10' },
+  { path: '/trending', icon: Newspaper, title: 'News', body: 'Today’s news and the companies it moves', tint: 'text-blue-300 bg-blue-400/10' },
   { path: '/my', icon: Target, title: 'My beliefs', body: 'Every belief and how it’s doing', tint: 'text-blue-300 bg-blue-400/10' },
-  { path: '/basket-builder', icon: ShoppingBasket, title: 'Baskets', body: 'A goal → a simple fund mix', tint: 'text-sky-300 bg-sky-400/10' },
-  { path: '/portfolio', icon: TrendingUp, title: 'Practice', body: 'Paper trades, no real money', tint: 'text-green-300 bg-green-400/10' },
+  { path: '/basket-builder', icon: ShoppingBasket, title: 'Baskets', body: 'A goal → a simple fund mix', tint: 'text-blue-300 bg-blue-400/10' },
+  { path: '/portfolio', icon: TrendingUp, title: 'Practice', body: 'Paper trades, no real money', tint: 'text-blue-300 bg-blue-400/10' },
 ];
 
 export default function ToolSelectorPage() {
@@ -119,7 +119,7 @@ export default function ToolSelectorPage() {
         {moving.length > 0 && (
           <div className="mt-6">
             <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">📰 Moving now</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold"><Newspaper className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden />Moving now</div>
               <button onClick={() => navigate('/trending')} className="text-xs text-blue-300">See all</button>
             </div>
             <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
@@ -145,7 +145,7 @@ export default function ToolSelectorPage() {
         {hot.length > 0 && (
           <div className="mt-6">
             <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">🔥 Hot right now</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Hot right now</div>
               <button onClick={() => navigate('/trending')} className="text-xs text-blue-300">See all</button>
             </div>
             <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
@@ -162,7 +162,7 @@ export default function ToolSelectorPage() {
         )}
 
         <button onClick={() => navigate('/brain')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-green-400/25 bg-green-500/[0.06] px-4 py-3 text-left hover:border-green-300/50">
-          <span><span className="block text-sm font-bold">🧠 Watch the brain learn, live</span><span className="block text-xs text-slate-400">Every belief makes it smarter. See it happen.</span></span>
+          <span><span className="block text-sm font-bold"><Activity className="inline w-4 h-4 -mt-0.5 mr-1.5 text-green-300" aria-hidden />Watch the brain learn, live</span><span className="block text-xs text-slate-400">Every belief makes it smarter. See it happen.</span></span>
           <span className="text-green-300 text-lg" aria-hidden>→</span>
         </button>
 

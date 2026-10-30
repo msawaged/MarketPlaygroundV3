@@ -1,5 +1,6 @@
 // Landing pages for email links: /verify?token=... (confirm email) and /reset?token=... (new password).
 import React, { useEffect, useRef, useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import { useAccount } from '../lib/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Page, { Card } from './ui/Page';
@@ -22,13 +23,13 @@ export function VerifyPage() {
       <Card className="mt-6 text-center py-8">
         {s.busy && <div className="text-slate-300">Confirming…</div>}
         {s.ok && (<>
-          <div className="text-4xl" aria-hidden>🎉</div>
+          <CheckCircle2 className="mx-auto w-10 h-10 text-blue-400" aria-hidden />
           <div className="mt-2 text-xl font-extrabold">You're in!</div>
           <p className="mt-1 text-sm text-slate-300">Your email is confirmed and you're logged in.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold">Share your first belief</button>
         </>)}
         {s.already && (<>
-          <div className="text-4xl" aria-hidden>✅</div>
+          <CheckCircle2 className="mx-auto w-10 h-10 text-blue-400" aria-hidden />
           <div className="mt-2 text-xl font-extrabold">Your email is confirmed</div>
           <p className="mt-1 text-sm text-slate-300">{account ? "You're all set." : 'Log in with your email and password to continue.'}</p>
           <button onClick={() => navigate(account ? '/chat' : '/account?mode=login')} className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold">{account ? 'Share a belief' : 'Log in'}</button>

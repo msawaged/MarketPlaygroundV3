@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Check } from 'lucide-react';
+import { Eye, EyeOff, Check, Mail } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import {
   useAccount, signup, login, logout, refreshAccount, updateName, changePassword, deleteAccount, initials,
@@ -64,7 +64,7 @@ function SignedOut() {
   if (check) {
     return (
       <Card className="mt-6 text-center py-7">
-        <div className="text-4xl" aria-hidden>📬</div>
+        <Mail className="mx-auto w-10 h-10 text-blue-400" aria-hidden />
         <div className="mt-2 text-xl font-extrabold">Check your email</div>
         <p className="mt-2 text-sm text-slate-300 max-w-xs mx-auto">We sent a link to <b className="text-white">{check}</b>. Tap it to confirm your email and you're in.</p>
         <p className="mt-2 text-xs text-slate-500">Not there after a minute? Check spam or promotions.</p>
@@ -208,7 +208,7 @@ function Brokerage() {
   if (!b.enabled) {
     return (
       <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
-        <div className="text-sm font-bold">💵 Real money: coming after the beta</div>
+        <div className="text-sm font-bold">Real money: coming after the beta</div>
         <p className="mt-1 text-sm text-slate-300">You'll be able to connect your own brokerage account and act on your beliefs with real money, approving every single trade. Practice stays free.</p>
       </Card>
     );
@@ -216,7 +216,7 @@ function Brokerage() {
   return (
     <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-bold">💵 Your brokerage</div>
+        <div className="text-sm font-bold">Your brokerage</div>
         <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-amber-400/15 text-amber-200">{b.env === 'live' ? 'Real money' : 'Alpaca practice side'}</span>
       </div>
       {flag === 'connected' && <p className="mt-2 text-sm text-green-300">✓ Connected.</p>}

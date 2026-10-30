@@ -1,6 +1,7 @@
 // MarketPlayground chat: type (or say) a belief, get trade ideas that express it.
 import { LogoMark } from './ui/Logo';
 import React, { useEffect, useRef, useState } from 'react';
+import { MessageCircle, Search, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -69,9 +70,9 @@ function Builder({ onGo }) {
 const RISK_LABEL = { conservative: 'Careful', moderate: 'Balanced', aggressive: 'Bold' };
 
 const HOW = [
-  ['💭', 'Say what you believe', 'Any hunch about the world. "Pet adoptions keep rising" works.'],
-  ['🔎', 'We find who it affects', 'Companies and funds tied to it, checked against live prices.'],
-  ['📈', 'Pick a way to trade it', 'Shares or options, sized to your budget, with a chart you can drag.'],
+  [MessageCircle, 'Say what you believe', 'Any hunch about the world. "Pet adoptions keep rising" works.'],
+  [Search, 'We find who it affects', 'Companies and funds tied to it, checked against live prices.'],
+  [TrendingUp, 'Pick a way to trade it', 'Shares or options, sized to your budget, with a chart you can drag.'],
 ];
 
 function loadRisk() {
@@ -225,9 +226,9 @@ export default function ChatInterface() {
                   <button onClick={() => { setShowHow(false); markSeen('how'); }} className="text-xs text-slate-400 hover:text-white">Got it</button>
                 </div>
                 <ol className="mt-3 space-y-3">
-                  {HOW.map(([icon, title, body], i) => (
+                  {HOW.map(([Icon, title, body], i) => (
                     <li key={title} className="flex gap-3">
-                      <span className="w-9 h-9 shrink-0 rounded-2xl bg-slate-800 flex items-center justify-center text-lg" aria-hidden>{icon}</span>
+                      <span className="w-9 h-9 shrink-0 rounded-2xl bg-slate-800 flex items-center justify-center" aria-hidden><Icon className="w-4 h-4 text-blue-300" /></span>
                       <span>
                         <span className="block font-semibold text-white text-sm">{i + 1}. {title}</span>
                         <span className="block text-xs text-slate-400 leading-relaxed">{body}</span>
@@ -253,7 +254,7 @@ export default function ChatInterface() {
 
             {moving.length > 0 && (
               <>
-                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">📰 From today's news</div>
+                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">From today's news</div>
                 <div className="mt-2 space-y-2">
                   {moving.slice(0, 4).map((m) => (
                     <button key={m.headline} onClick={() => send(m.hunch)}
@@ -268,7 +269,7 @@ export default function ChatInterface() {
 
             {!moving.length && news.length > 0 && (
               <>
-                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">📰 In the news: what do you believe?</div>
+                <div className="mt-6 text-xs uppercase tracking-wider text-slate-500">In the news: what do you believe?</div>
                 <div className="mt-2 space-y-2">
                   {news.map((n) => (
                     <button key={n.headline} onClick={() => { setInput(`${n.headline}. I think this means `); inputRef.current?.focus(); }}

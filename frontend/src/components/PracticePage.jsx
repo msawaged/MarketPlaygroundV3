@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, LineChart } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import Term from './ui/Term';
 import { getPortfolio, closePosition, cancelQueued, closeOption } from '../lib/api';
@@ -32,7 +32,7 @@ export default function PracticePage() {
         setTimeout(() => setToast(null), 5000);
       } else {
         const pnl = Number(r?.realized_pnl ?? 0);
-        setToast(`Sold ${p.ticker}: ${signed(pnl)} ${pnl >= 0 ? '🎉' : ''}`);
+        setToast(`Sold ${p.ticker}: ${signed(pnl)} `);
         setTimeout(() => setToast(null), 3500);
       }
       load();
@@ -134,7 +134,7 @@ export default function PracticePage() {
 
       {a && positions.length === 0 && queued.length === 0 && opts.length === 0 && (
         <Card className="mt-4 text-center py-7">
-          <div className="text-4xl" aria-hidden>🧪</div>
+          <LineChart className="mx-auto w-9 h-9 text-blue-300" aria-hidden />
           <div className="mt-2 font-bold text-lg">Nothing here yet</div>
           <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">Share a belief, pick a stock idea and tap <Term k="paper trade">Paper trade</Term>. It lands here.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 hover:bg-blue-500 px-5 py-3 font-bold">Find an idea</button>

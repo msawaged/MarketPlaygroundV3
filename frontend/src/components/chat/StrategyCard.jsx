@@ -1,6 +1,7 @@
 // "3 ways to trade it": every pick the v4 engine returns, each with its real
 // trade, numbers, interactive profit/loss chart and investment sizing.
 import React, { useMemo, useState } from 'react';
+import { Landmark, Factory, Globe2, Scale } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PayoffChart from './PayoffChart';
 import { useNavigate } from 'react-router-dom';
@@ -69,7 +70,7 @@ function Stat({ label, value, tone }) {
   );
 }
 
-const PANEL = [['economist', '📈', 'Economist'], ['industry', '🏭', 'Industry analyst'], ['geopolitics', '🌍', 'Geopolitics'], ['skeptic', '🧐', 'Skeptic']];
+const PANEL = [['economist', Landmark, 'Economist'], ['industry', Factory, 'Industry analyst'], ['geopolitics', Globe2, 'Geopolitics'], ['skeptic', Scale, 'Skeptic']];
 
 function Panel({ panel }) {
   const [open, setOpen] = useState(false);
@@ -77,13 +78,13 @@ function Panel({ panel }) {
   return (
     <div className="mt-3 rounded-xl border border-slate-700/80 bg-slate-950/50">
       <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className="w-full flex items-center justify-between px-3 py-2 text-left">
-        <span className="text-xs font-bold text-slate-200">🎓 The expert panel weighed in</span>
+        <span className="text-xs font-bold text-slate-200">The expert panel weighed in</span>
         <span className="text-xs text-blue-300">{open ? 'Hide' : 'See what they said'}</span>
       </button>
       {open && (
         <ul className="px-3 pb-3 space-y-2">
-          {PANEL.filter(([k]) => panel[k]).map(([k, icon, label]) => (
-            <li key={k} className="text-sm leading-snug"><span className="font-semibold text-slate-100">{icon} {label}: </span><span className="text-slate-300">{panel[k]}</span></li>
+          {PANEL.filter(([k]) => panel[k]).map(([k, Icon, label]) => (
+            <li key={k} className="text-sm leading-snug"><span className="font-semibold text-slate-100"><Icon className="inline w-3.5 h-3.5 -mt-0.5 mr-1 text-slate-400" aria-hidden />{label}: </span><span className="text-slate-300">{panel[k]}</span></li>
           ))}
           <li className="text-[11px] text-slate-500">How top economists, analysts and strategists reason, applied to your belief by AI. Not quotes from real people.</li>
         </ul>
@@ -328,7 +329,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                     <button key={v._alt ? 'alt' : 'main'} role="radio" aria-checked={on}
                       onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !!v._alt }))}
                       className={`rounded-lg py-2 text-sm font-bold ${on ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'}`}>
-                      {shares ? '📈 Shares' : '🎯 Options'}
+                      {shares ? 'Shares' : 'Options'}
                       <span className={`block text-[11px] font-medium ${on ? 'text-blue-100' : 'text-slate-500'}`}>{shares ? (v.structure === 'Buy Stock' ? 'Simple: own it' : 'Stay out / sell') : v.structure}</span>
                     </button>
                   );
@@ -362,7 +363,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             )}
             {isOptions && model?.daysToExp > 0 && (
               <p className="text-[11px] text-slate-500 mt-1.5">
-                ⏳ {model.daysToExp} days until it expires. Options lose value as time passes, so we never suggest ones with under 30 days left.
+                {model.daysToExp} days until it expires. Options lose value as time passes, so we never suggest ones with under 30 days left.
               </p>
             )}
             {legs.length > 0 && (
@@ -480,14 +481,14 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               aria-pressed={st === 'up'}
               className={`rounded-lg py-3 text-sm font-bold border ${st === 'up' ? 'bg-green-600 border-green-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}
             >
-              👍 Good pick
+              Good pick
             </button>
             <button
               onClick={() => feedback('down')}
               aria-pressed={st === 'down'}
               className={`rounded-lg py-3 text-sm font-bold border ${st === 'down' ? 'bg-red-600 border-red-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}
             >
-              👎 Not for me
+              Not for me
             </button>
             <button
               onClick={doPaperTrade}
@@ -512,7 +513,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 
           {broker?.enabled && broker?.connected && pick.structure === 'Buy Stock' && pick.direction === 'bullish' && (
             <button onClick={() => setRealOpen(true)} className="w-full rounded-lg py-3 text-sm font-bold border border-amber-300/50 bg-amber-400/10 text-amber-100 hover:border-amber-200">
-              {broker.env === 'live' ? '💵 Invest real money in' : '💵 Buy in my Alpaca account (practice side):'} {pick.ticker}
+              {broker.env === 'live' ? 'Invest real money in' : 'Buy in my Alpaca account (practice side):'} {pick.ticker}
             </button>
           )}
           <RealMoneySheet open={realOpen} onClose={() => setRealOpen(false)} pick={pick} beliefId={data.belief_id} defaultAmount={amount} broker={broker} />
@@ -521,12 +522,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           <div className="grid grid-cols-3 gap-2 pt-1">
             {onRerun && next.safer && (
               <button onClick={() => onRerun(next.safer)} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400">
-                🛡️ Safer
+                Safer
               </button>
             )}
             {onRerun && next.bolder && (
               <button onClick={() => onRerun(next.bolder)} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400">
-                🚀 Bolder
+                Bolder
               </button>
             )}
             <button onClick={share} className="rounded-full px-3.5 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 hover:border-blue-400 col-start-3">
@@ -538,7 +539,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 
       {(interp.wrong_if?.length > 0 || interp.exit_rule) && (
         <div className="mx-4 mb-4 rounded-2xl border border-slate-700 bg-slate-800/40 p-3.5">
-          <div className="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">🧭 What would prove this wrong</div>
+          <div className="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">What would prove this wrong</div>
           {interp.wrong_if?.length > 0 && (
             <ul className="mt-2 space-y-1">
               {interp.wrong_if.map((w) => <li key={w} className="text-sm text-slate-200 flex gap-2"><span className="text-slate-500">•</span>{w}</li>)}

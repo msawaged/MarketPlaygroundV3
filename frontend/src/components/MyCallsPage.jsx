@@ -1,5 +1,6 @@
 // "My calls": every belief you've shared on this device and how its picks are doing vs the S&P 500.
 import React, { useEffect, useState } from 'react';
+import { Sprout } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Page, { Card, pct } from './ui/Page';
@@ -62,7 +63,7 @@ export default function MyCallsPage() {
 
       {!s.loading && !s.error && beliefs.length === 0 && (
         <Card className="mt-6 text-center py-8">
-          <div className="text-4xl" aria-hidden>🌱</div>
+          <Sprout className="mx-auto w-9 h-9 text-blue-300" aria-hidden />
           <div className="mt-2 text-lg font-bold">No calls yet</div>
           <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">Share a belief and its picks show up here, scored against the S&amp;P 500 as time goes by.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 hover:bg-blue-500 px-5 py-3 font-bold">Share a belief</button>
@@ -94,7 +95,7 @@ export default function MyCallsPage() {
 
       {!acc && beliefs.length > 0 && (
         <button onClick={() => navigate('/account?next=/my')} className="mt-4 w-full text-left rounded-3xl border border-blue-400/40 bg-blue-500/10 p-4 hover:border-blue-300">
-          <div className="font-bold">💾 Keep these on every device</div>
+          <div className="font-bold">Keep these on every device</div>
           <div className="text-sm text-slate-300">Create a free account. Takes 20 seconds; everything here comes with you.</div>
         </button>
       )}
