@@ -204,7 +204,7 @@ export default function BrainPage({ viewOnly = false }) {
             <div className="rounded-2xl border border-green-400/25 bg-green-500/[0.07] p-3">
               <div className="text-[11px] uppercase tracking-wider text-green-200 font-semibold">Next market grading</div>
               <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{until(d.next.grading, now)}</div>
-              <div className="text-[11px] text-slate-400">{new Date(d.next.grading).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}, after the close</div>
+              <div className="text-[11px] text-slate-400">{new Date(d.next.grading).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET, after the 4 PM ET close</div>
             </div>
           </div>
         )}
