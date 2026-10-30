@@ -54,8 +54,9 @@ app = FastAPI(title="MarketPlayground API")
 
 @app.on_event("startup")
 def _start_notify() -> None:
-    from backend.v4 import notify
+    from backend.v4 import notify, feeder
     notify.start_background()
+    feeder.start_background()
 
 # === CORS ===
 # Local dev servers, the GitHub Pages landing page, any Render-hosted frontend,

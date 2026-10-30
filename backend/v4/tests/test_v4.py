@@ -1160,3 +1160,20 @@ def test_job_health_is_recorded_and_public_view_hides_errors(monkeypatch):
     seeder.auto_with_health()
     h = brain.health(False)["learning"]
     assert h["ok"] is True and h["summary"]["added"] == 4 and h["summary"]["graded"] == 9
+
+
+def test_backup_feeder_only_feeds_when_the_hourly_job_is_quiet(monkeypatch):
+    from backend.v4 import feeder, seeder
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    assert feeder.should_feed(now)  # nothing recorded yet
+    seeder.record_health("learning", True)
+    assert not feeder.should_feed(now)
+    assert feeder.should_feed(now + timedelta(minutes=80))
+    seeder.record_health("learning", False, "boom")
+    assert feeder.should_feed(now)
+    calls = []
+    monkeypatch.setattr(seeder, "auto", lambda **kw: calls.append(kw) or {"news": {"ok": 3, "errors": 0}})
+    r = feeder.feed_once()
+    assert r["fed"] and calls[0]["batch_override"] == 20 and calls[0]["concurrency"] == 2
+    assert feeder.feed_once() == {"skipped": "the hourly job is healthy"}  # the round it just ran counts

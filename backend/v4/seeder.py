@@ -177,20 +177,20 @@ def _kv_set(k: str, v: str) -> None:
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (k, v, datetime.now(timezone.utc).isoformat()))
 
 
-def auto(claude_client=None) -> dict:
+def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: int = 4, train: bool = True) -> dict:
     """Hourly: warm up with past-dated beliefs until there's enough graded history, seed live once a day,
     grade, retrain. Spending is capped in total (warm-up) and per day (live)."""
     from . import nn
     target = int(os.getenv("MP_WARMUP_GRADED", "4000"))
     budget = float(os.getenv("MP_WARMUP_BUDGET_USD", "8"))
-    batch = int(os.getenv("MP_WARMUP_BATCH", "80"))
+    batch = batch_override or int(os.getenv("MP_WARMUP_BATCH", "80"))
     out: dict = {}
     row = db.query_one("SELECT COUNT(DISTINCT pick_id) AS n FROM outcomes WHERE checkpoint_days = ?", (nn.LABEL_DAYS,))
     graded = int(row["n"] if row else 0)
     spent = float(_kv_get("warmup_spent_usd", "0") or 0)
     out["warmup"] = {"graded_at_label": graded, "target": target, "spent_usd": round(spent, 4), "budget_usd": budget}
     if graded < target and spent < budget:
-        r = run("backfill", n=batch, generate=int(os.getenv("MP_WARMUP_GENERATE", "20")), years=3.0, concurrency=4,
+        r = run("backfill", n=batch, generate=int(os.getenv("MP_WARMUP_GENERATE", "20")), years=3.0, concurrency=concurrency,
                 max_usd=min(1.0, budget - spent), claude_client=claude_client)
         _kv_set("warmup_spent_usd", str(spent + r["cost_usd"]))
         out["backfill"] = r
@@ -213,7 +213,7 @@ def auto(claude_client=None) -> dict:
             out["news"] = dict(r, beliefs=fresh)
     g = grader.grade()
     out["grade"] = g
-    if out.get("backfill") or g.get("graded"):
+    if train and (out.get("backfill") or g.get("graded")):
         res = nn.train()
         out["train"] = {k: res.get(k) for k in ("status", "reason", "n_train", "n_test", "spearman", "blend_weight")}
     return out
@@ -229,11 +229,11 @@ def record_health(job: str, ok: bool, detail: str = "", summary: Optional[dict] 
         print(f"[health] could not record {job}: {e}")
 
 
-def auto_with_health() -> dict:
+def auto_with_health(**kw) -> dict:
     if not os.getenv("ANTHROPIC_API_KEY"):
         record_health("learning", False, "ANTHROPIC_API_KEY is not set on this job")
     try:
-        out = auto()
+        out = auto(**kw)
     except Exception as e:
         record_health("learning", False, f"{type(e).__name__}: {e}")
         raise
