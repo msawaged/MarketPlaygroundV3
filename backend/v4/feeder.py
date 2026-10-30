@@ -1,8 +1,8 @@
 """
 Backup feeder inside the web service: keeps the brain learning even if the separate hourly job (v4-seed-live) is
 broken. Once an hour, if no successful learning round was recorded in the last 75 minutes, it runs a smaller round
-itself (60 practice beliefs, 3 at a time, plus today's news), and retrains at most every 6 hours so user requests stay
-fast. All the usual spending caps in seeder.auto still apply. MP_WEB_FEEDER=0 turns it off.
+itself (20 practice beliefs, one at a time, plus today's news) and never trains, so the web instance stays within
+its memory. All the usual spending caps in seeder.auto still apply. MP_WEB_FEEDER=0 turns it off.
 """
 from __future__ import annotations
 
@@ -44,8 +44,10 @@ def feed_once() -> dict:
     now = datetime.now(timezone.utc)
     if not should_feed(now):
         return {"skipped": "the hourly job is healthy"}
-    out = seeder.auto_with_health(source="web", batch_override=int(os.getenv("MP_WEB_FEED_BATCH", "60")), concurrency=3,
-                                  train=should_train(now))
+    # Training is memory-heavy (the 512 MB web instance restarted once): the web backup never trains; the
+    # regular job and the nightly grade-and-train job run on their own machines and do that.
+    out = seeder.auto_with_health(source="web", batch_override=int(os.getenv("MP_WEB_FEED_BATCH", "20")), concurrency=1,
+                                  train=False)
     return {"fed": True, "news": (out.get("news") or {}).get("ok", 0), "backfill": (out.get("backfill") or {}).get("ok", 0)}
 
 

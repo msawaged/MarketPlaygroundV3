@@ -1175,7 +1175,7 @@ def test_backup_feeder_only_feeds_when_the_hourly_job_is_quiet(monkeypatch):
     calls = []
     monkeypatch.setattr(seeder, "auto", lambda **kw: calls.append(kw) or {"news": {"ok": 3, "errors": 0}})
     r = feeder.feed_once()
-    assert r["fed"] and calls[0]["batch_override"] == 60 and calls[0]["concurrency"] == 3
+    assert r["fed"] and calls[0]["batch_override"] == 20 and calls[0]["concurrency"] == 1 and calls[0]["train"] is False
     assert feeder.feed_once()["fed"]  # its own rounds don't stop it: it waits for the regular job to succeed
     seeder._learning_health("cron", False, "no key")
     assert brain.health(True)["learning"]["ok"] is True  # a cron failure doesn't hide the backup's success
