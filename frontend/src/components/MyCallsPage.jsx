@@ -56,7 +56,7 @@ export default function MyCallsPage() {
   const sum = s.data?.summary;
 
   return (
-    <Page title="My calls" subtitle="Every belief you've shared, and how its picks are doing.">
+    <Page title="My beliefs" subtitle="Every belief you've shared, and how it's playing out.">
       {s.loading && <div className="mt-8 space-y-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 rounded-3xl bg-slate-800/50 animate-pulse" />)}</div>}
       {s.error && <Card className="mt-6 border-red-500/40 text-red-200 text-sm">Couldn't load your calls: {s.error}</Card>}
 

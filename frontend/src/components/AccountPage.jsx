@@ -272,7 +272,7 @@ function SignedIn({ acc }) {
 
       <div className="mt-3 grid grid-cols-2 gap-2.5">
         <button onClick={() => navigate('/my')} className="rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 text-left hover:border-blue-400/60">
-          <div className="font-bold">My calls</div><div className="text-xs text-slate-400">On every device now</div>
+          <div className="font-bold">My beliefs</div><div className="text-xs text-slate-400">On every device now</div>
         </button>
         <button onClick={() => navigate('/portfolio')} className="rounded-3xl border border-slate-700/70 bg-slate-900/70 p-4 text-left hover:border-blue-400/60">
           <div className="font-bold">Practice</div><div className="text-xs text-slate-400">Your paper trades</div>

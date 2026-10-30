@@ -11,7 +11,8 @@ import TickerStrip from './chat/TickerStrip';
 import StrategyCard from './chat/StrategyCard';
 import Term from './ui/Term';
 import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
-import { getPrefs } from '../lib/prefs';
+import { getPrefs, setPrefs } from '../lib/prefs';
+import HowToTrade from './chat/HowToTrade';
 
 const EXAMPLES = [
   'Plumbing demand is about to boom',
@@ -114,16 +115,34 @@ export default function ChatInterface() {
     return () => clearInterval(id);
   }, [loading]);
 
-  const send = async (text, riskOverride, prefsOverride) => {
+  // Ask how they want to trade before every new belief, unless they chose "remember".
+  const answerHow = (msgId, belief, choice) => {
+    const p = { instrument: choice.instrument, goal: choice.goal || '' };
+    if (choice.remember) setPrefs({ ...p, remember: true });
+    else setPrefs(p);
+    setMessages((m) => m.filter((x) => x.id !== msgId));
+    send(belief, undefined, p, { asked: true });
+  };
+
+  const send = async (text, riskOverride, prefsOverride, opts = {}) => {
     const belief = (text ?? input).trim();
     if (!belief || loading) return;
     const useRisk = riskOverride || risk;
-    const usePrefs = prefsOverride || getPrefs();
+    const saved = getPrefs();
+    if (!prefsOverride && !riskOverride && !(saved && saved.remember)) {
+      setInput('');
+      if (showHow) { setShowHow(false); markSeen('how'); }
+      const id = Date.now();
+      setMessages((m) => [...m.filter((x) => x.role !== 'ask'), { id: id - 1, role: 'user', text: belief, risk: null },
+        { id, role: 'ask', belief }]);
+      return;
+    }
+    const usePrefs = prefsOverride || saved;
     setInput('');
     if (showHow) { setShowHow(false); markSeen('how'); }
     rememberBelief(belief);
     setRecent(recentBeliefs());
-    setMessages((m) => [...m, { id: Date.now(), role: 'user', text: belief, risk: riskOverride ? useRisk : null }]);
+    if (!opts.asked) setMessages((m) => [...m, { id: Date.now(), role: 'user', text: belief, risk: riskOverride ? useRisk : null }]);
     setLoading(true);
     try {
       const data = await processBelief(belief, { riskProfile: useRisk, prefs: usePrefs });
@@ -132,7 +151,7 @@ export default function ChatInterface() {
       } else {
         setMessages((m) => [...m, {
           id: Date.now() + 1, role: 'ai', data, belief, risk: useRisk, prefs: usePrefs,
-          text: prefsOverride ? "Here it is with the strategy you picked." : riskOverride ? `Here's a ${RISK_LABEL[useRisk].toLowerCase()} version.` : "Here's how you could trade that.",
+          text: opts.asked ? ({ shares: "Here it is with shares.", options: "Here it is with options.", auto: "Here's the best mix of shares and options." }[usePrefs?.instrument] || "Here's how you could trade that.") : prefsOverride ? "Here it is with the strategy you picked." : riskOverride ? `Here's a ${RISK_LABEL[useRisk].toLowerCase()} version.` : "Here's how you could trade that.",
         }]);
       }
     } catch (e) {
@@ -290,6 +309,8 @@ export default function ChatInterface() {
                       {m.risk && <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-white/20 rounded-full px-2 py-0.5">{RISK_LABEL[m.risk]}</span>}
                     </div>
                   </div>
+                ) : m.role === 'ask' ? (
+                  <HowToTrade belief={m.belief} onPick={(c) => answerHow(m.id, m.belief, c)} />
                 ) : m.role === 'error' ? (
                   <div className="rounded-2xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">
                     {m.text}

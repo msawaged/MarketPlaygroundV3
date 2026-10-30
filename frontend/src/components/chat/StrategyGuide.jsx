@@ -5,7 +5,7 @@ import { INSTRUMENTS, GOALS, getPrefs, setPrefs, prefsLabel } from '../../lib/pr
 
 export default function StrategyGuide({ current, onTune }) {
   const saved = getPrefs();
-  const [open, setOpen] = useState(!saved);
+  const [open, setOpen] = useState(false);
   const [step, setStep] = useState('instrument');
   const choose = (p) => { setPrefs(p); setOpen(false); setStep('instrument'); onTune?.(p); };
 

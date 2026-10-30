@@ -337,6 +337,13 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </div>
           )}
 
+          {pick.structure === 'Sell / Avoid' && basePick.alt && !FAMILY_SHARES.has(useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) && (
+            <button onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !u[basePick.pick_id] }))}
+              className="w-full text-left rounded-xl border border-amber-300/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
+              Shares only make money when a price rises. To bet on {pick.direction === 'volatile' ? 'a big move either way' : 'a fall'}, <span className="font-bold underline">tap Options</span>.
+            </button>
+          )}
+
           {/* Strategy */}
           <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-3">
             <div className="flex items-center justify-between">
@@ -498,7 +505,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           {(st === 'tracking' || st === 'traded') && (
             <p className="text-xs text-blue-300">
               {st === 'tracking' ? "We'll grade this idea against the market at 1 week, 1 month and 3 months. " : ''}
-              <button onClick={() => navigate('/my')} className="underline font-semibold">See it in My calls →</button>
+              <button onClick={() => navigate('/my')} className="underline font-semibold">See it in My beliefs →</button>
             </p>
           )}
           {st?.startsWith?.('error:') && <p className="text-xs text-red-400">{st.slice(6)}</p>}
