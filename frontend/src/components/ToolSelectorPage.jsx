@@ -161,6 +161,11 @@ export default function ToolSelectorPage() {
           </div>
         )}
 
+        <button onClick={() => navigate('/brain')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-green-400/25 bg-green-500/[0.06] px-4 py-3 text-left hover:border-green-300/50">
+          <span><span className="block text-sm font-bold">🧠 Watch the brain learn, live</span><span className="block text-xs text-slate-400">Every belief makes it smarter. See it happen.</span></span>
+          <span className="text-green-300 text-lg" aria-hidden>→</span>
+        </button>
+
         {/* Recent */}
         {recent.length > 0 && (
           <div className="mt-6">

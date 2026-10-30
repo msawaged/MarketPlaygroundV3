@@ -10,6 +10,7 @@ import PracticePage from './components/PracticePage';
 import AccountPage from './components/AccountPage';
 import { VerifyPage, ResetPage } from './components/EmailLinkPage';
 import WelcomePage from './components/WelcomePage';
+import BrainPage from './components/BrainPage';
 import { useAccount } from './lib/auth';
 
 // Heavier, less-used screens load on demand.
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/my" element={g(<MyCallsPage />)} />
           <Route path="/learning" element={<LearningPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/brain" element={<BrainPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/verify" element={<VerifyPage />} />
           <Route path="/reset" element={<ResetPage />} />

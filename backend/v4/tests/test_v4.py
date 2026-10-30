@@ -1104,3 +1104,17 @@ def test_passkey_challenges_are_single_use_and_unknown_keys_refused():
     with pytest.raises(AuthError):  # the same challenge can't be replayed
         passkeys.login_verify(opts["challenge_id"], {"id": "nope"})
     assert passkeys._rp_id("https://evil.example") == "marketplayground-web.onrender.com"
+
+
+def test_brain_snapshot_is_public_safe_and_counts():
+    from backend.v4 import brain
+    fake = FakeClaude()
+    engine.process_belief("my secret plan about plumbing demand", "u-private", "moderate", claude_client=fake)
+    engine.process_belief("people want cheaper food", "seed", "moderate", source="seed_news", claude_client=fake)
+    brain._cache.update(at=0, v=None)
+    s = brain.snapshot()
+    assert s["counts"]["beliefs"] == 2 and s["counts"]["from_news"] == 1 and s["counts"]["people"] == 1
+    assert s["counts"]["companies"] > 0 and len(s["growth"]) == 31
+    texts = " ".join(x["text"] for x in s["learned"])
+    assert "secret" not in texts and "cheaper food" in texts  # a user's own words never appear
+    assert "secret" not in json.dumps(s)
