@@ -113,6 +113,23 @@ function Feed({ items, render, every = 2600 }) {
   );
 }
 
+function until(iso, now) {
+  const t = Date.parse(iso || ''); if (!t) return '';
+  let sec = Math.max(0, Math.round((t - now) / 1000));
+  const h = Math.floor(sec / 3600); sec -= h * 3600;
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function eventText(e) {
+  if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
+  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: 'Both sides of each story' };
+  if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: 'Past dates, graded right away' };
+  if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
+  if (e.kind === 'trained') return { title: 'Trained a new brain', sub: (STATUS[e.status] || STATUS.retired).label };
+  return { title: '', sub: '' };
+}
+
 export default function BrainPage({ viewOnly = false }) {
   const navigate = useNavigate();
   const account = useAccount();
@@ -124,9 +141,17 @@ export default function BrainPage({ viewOnly = false }) {
     let alive = true;
     const load = () => request('/v4/brain').then((x) => alive && (setD(x), setErr(null))).catch((e) => alive && setErr(e.message));
     load();
-    const a = setInterval(load, 30000), b = setInterval(() => setNow(Date.now()), 1000), c = setInterval(() => setFiring((f) => f + 1), 700);
+    const a = setInterval(load, 15000), b = setInterval(() => setNow(Date.now()), 1000), c = setInterval(() => setFiring((f) => f + 1), 700);
     return () => { alive = false; clearInterval(a); clearInterval(b); clearInterval(c); };
   }, []);
+  const seenRef = React.useRef(null);
+  const [fresh, setFresh] = useState(new Set());
+  useEffect(() => {
+    if (!d?.activity) return;
+    const keys = d.activity.map((e) => `${e.kind}|${e.at}`);
+    if (seenRef.current) setFresh(new Set(keys.filter((k) => !seenRef.current.has(k))));
+    seenRef.current = new Set(keys);
+  }, [d]);
   const c = d?.counts || {};
   const rightPct = c.graded ? Math.round((c.graded_right / c.graded) * 100) : null;
   const versions = d?.versions || [];
@@ -154,6 +179,44 @@ export default function BrainPage({ viewOnly = false }) {
         <div className="mt-5 rounded-3xl border border-blue-500/25 bg-slate-950/60 p-3 shadow-2xl shadow-blue-900/30">
           <Network themes={d?.themes || []} firing={firing} />
           <p className="px-2 pb-1 text-[11px] text-slate-500">Left: the topics it knows best. Right: whether a belief is playing out in the market.</p>
+        </div>
+
+        {d?.next && (
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
+            <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">
+              <div className="text-[11px] uppercase tracking-wider text-blue-200 font-semibold">Next learning round</div>
+              <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{until(d.next.learning, now)}</div>
+              <div className="text-[11px] text-slate-400">Every hour: reads the news, practices</div>
+            </div>
+            <div className="rounded-2xl border border-green-400/25 bg-green-500/[0.07] p-3">
+              <div className="text-[11px] uppercase tracking-wider text-green-200 font-semibold">Next market grading</div>
+              <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{until(d.next.grading, now)}</div>
+              <div className="text-[11px] text-slate-400">{new Date(d.next.grading).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}, after the close</div>
+            </div>
+          </div>
+        )}
+
+        <h2 className="mt-8 text-xl font-extrabold">Live activity</h2>
+        <div className="mt-2 space-y-2">
+          {(d?.activity || []).length === 0 && <p className="text-sm text-slate-500">Quiet right now. The next round starts on the clock above.</p>}
+          <AnimatePresence initial={false}>
+            {(d?.activity || []).slice(0, 8).map((e) => {
+              const k = `${e.kind}|${e.at}`; const t = eventText(e);
+              return (
+                <motion.div key={k} layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  className={`rounded-2xl border px-3.5 py-2.5 flex items-center justify-between gap-3 ${fresh.has(k) ? 'border-blue-400/60 bg-blue-500/10' : 'border-slate-700/70 bg-slate-900/70'}`}>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold leading-snug">{t.title}</div>
+                    <div className="text-[11px] text-slate-400">{t.sub}</div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    {fresh.has(k) && <div className="text-[10px] font-extrabold text-blue-300">NEW</div>}
+                    <div className="text-[11px] text-slate-500">{ago(e.at, now)}</div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -237,7 +300,7 @@ export default function BrainPage({ viewOnly = false }) {
         {viewOnly ? (
           <div className="mt-8 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 text-sm text-slate-300">
             <div className="font-bold text-white">This page only watches.</div>
-            Nothing here can be changed by a viewer. It shows exactly what the live server reports and refreshes every 30 seconds.
+            Nothing here can be changed by a viewer. It shows exactly what the live server reports and refreshes every 15 seconds.
             Want to check the numbers yourself? <a href={`${API_BASE}/v4/brain`} target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">See the raw live data</a>.
           </div>
         ) : (

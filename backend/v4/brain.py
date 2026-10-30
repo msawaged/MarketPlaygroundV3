@@ -78,9 +78,40 @@ def _recent_graded(limit: int = 14) -> list[dict]:
             for r in rows]
 
 
+def _next_runs(now: datetime) -> dict:
+    """When the brain next learns (hourly at :13) and next gets graded (22:47 UTC on weekdays). Matches render.yaml."""
+    nxt = now.replace(minute=13, second=0, microsecond=0)
+    if nxt <= now:
+        nxt += timedelta(hours=1)
+    g = now.replace(hour=22, minute=47, second=0, microsecond=0)
+    while g <= now or g.weekday() >= 5:
+        g += timedelta(days=1)
+        g = g.replace(hour=22, minute=47)
+    return {"learning": nxt.isoformat(), "grading": g.isoformat()}
+
+
+def _activity(limit: int = 20) -> list[dict]:
+    """A timeline of what happened, newest first. People appear only as the topic of their belief, never their words."""
+    ev = []
+    for r in db.query("SELECT themes, direction, created_at FROM beliefs WHERE source = 'user' ORDER BY created_at DESC LIMIT 10"):
+        th = db.loads(r["themes"], [])
+        ev.append({"kind": "person", "at": r["created_at"], "topic": th[0] if th else "", "direction": r["direction"]})
+    ph = ",".join("?" for _ in SEED_SOURCES)
+    for r in db.query(f"""SELECT substr(created_at, 1, 13) AS h, source, COUNT(*) AS n, MAX(created_at) AS at FROM beliefs
+                          WHERE source IN ({ph}) GROUP BY substr(created_at, 1, 13), source ORDER BY h DESC LIMIT 10""", SEED_SOURCES):
+        ev.append({"kind": "news" if r["source"] == "seed_news" else "practice", "at": r["at"], "n": int(r["n"])})
+    for r in db.query("""SELECT substr(graded_at, 1, 13) AS h, COUNT(*) AS n, SUM(CASE WHEN dir_excess > 0 THEN 1 ELSE 0 END) AS right_n,
+                         MAX(graded_at) AS at FROM outcomes GROUP BY substr(graded_at, 1, 13) ORDER BY h DESC LIMIT 6"""):
+        ev.append({"kind": "graded", "at": r["at"], "n": int(r["n"]), "right": int(r["right_n"] or 0)})
+    for v in nn.history(4):
+        ev.append({"kind": "trained", "at": v["created_at"], "status": v["status"], "n": v["n_train"]})
+    ev.sort(key=lambda e: e["at"] or "", reverse=True)
+    return ev[:limit]
+
+
 def snapshot() -> dict:
     with _lock:
-        if _cache["v"] and time.time() - _cache["at"] < 60:
+        if _cache["v"] and time.time() - _cache["at"] < 15:
             return _cache["v"]
     today = datetime.now(timezone.utc).date().isoformat()
     one = lambda sql, args=(): int((db.query_one(sql, args) or {}).get("n") or 0)  # noqa: E731
@@ -106,6 +137,8 @@ def snapshot() -> dict:
         "versions": _versions(),
         "current": {"status": cur.get("status", "none"), "weight": round(float(cur.get("weight") or 0), 3)},
         "learned": _recent_learned(),
+        "activity": _activity(),
+        "next": _next_runs(datetime.now(timezone.utc)),
         "graded": _recent_graded(),
     }
     with _lock:

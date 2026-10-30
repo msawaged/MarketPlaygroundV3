@@ -1131,3 +1131,18 @@ def test_expert_panel_and_market_backdrop(monkeypatch):
     market._regime_cache.clear()
     line = market.regime(TODAY)
     assert "US stocks" in line and "over 3 months" in line  # built only from prices up to that day
+
+
+def test_brain_activity_never_shows_peoples_words_and_schedule():
+    from backend.v4 import brain
+    from datetime import datetime, timezone
+    fake = FakeClaude()
+    engine.process_belief("my private hunch about plumbing", "u-p1", "moderate", claude_client=fake)
+    engine.process_belief("people want cheaper food", "seed", "moderate", source="seed_news", claude_client=fake)
+    brain._cache.update(at=0, v=None)
+    s = brain.snapshot()
+    kinds = {e["kind"] for e in s["activity"]}
+    assert {"person", "news"} <= kinds
+    assert "private" not in json.dumps(s["activity"])
+    nr = brain._next_runs(datetime(2026, 10, 30, 22, 50, tzinfo=timezone.utc))  # a Friday, after grading
+    assert nr["learning"].startswith("2026-10-30T23:13") and nr["grading"].startswith("2026-11-02T22:47")  # Monday
