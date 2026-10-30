@@ -34,7 +34,8 @@ export default function WelcomePage() {
           <button onClick={() => go('')} className="h-14 rounded-2xl bg-blue-600 hover:bg-blue-500 font-extrabold">Create a free account</button>
           <button onClick={() => go('login')} className="h-14 rounded-2xl bg-slate-900/80 border border-slate-700 hover:border-slate-500 font-bold">I already have an account</button>
         </div>
-        <p className="mt-5 text-center text-xs text-slate-400">Free beta</p>
+        <button onClick={() => navigate('/trending')} className="mt-4 w-full text-center text-sm font-semibold text-blue-300 hover:text-blue-200">See today's news first →</button>
+        <p className="mt-3 text-center text-xs text-slate-400">Free beta</p>
       </div>
     </div>
   );
