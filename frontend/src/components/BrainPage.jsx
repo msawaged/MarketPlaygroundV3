@@ -40,6 +40,19 @@ function CountUp({ value, dur = 1.4 }) {
 }
 
 // The network: inputs are the themes it has learned most about; signals keep firing through it.
+// Topic names wrap onto two lines instead of being cut off ("Consumer" / "spending").
+function wrapLabel(label, max = 14) {
+  const lines = [''];
+  for (const w of String(label || '').split(/\s+/)) {
+    const cur = lines[lines.length - 1];
+    if (!cur) lines[lines.length - 1] = w;
+    else if ((cur + ' ' + w).length <= max) lines[lines.length - 1] = cur + ' ' + w;
+    else lines.push(w);
+  }
+  if (lines.length > 2) lines.splice(1, lines.length - 1, lines.slice(1).join(' ').slice(0, max - 1) + '…');
+  return lines;
+}
+
 function Network({ themes, firing }) {
   const W = 360, H = 300;
   const layers = useMemo(() => {
@@ -73,7 +86,15 @@ function Network({ themes, firing }) {
           <circle cx={n.x} cy={n.y} r="4.5" fill={n.label === 'Playing out' ? '#4ade80' : n.label === 'Not yet' ? '#f87171' : '#93c5fd'} />
         </g>
       ))}
-      {pos[0].map((n, i) => <text key={`i${i}`} x={n.x - 10} y={n.y + 3.5} textAnchor="end" fontSize="9.5" fill="#cbd5e1">{n.label.length > 13 ? n.label.slice(0, 12) + '…' : n.label}</text>)}
+      {pos[0].map((n, i) => {
+        const lines = wrapLabel(n.label);
+        const fs = Math.max(...lines.map((l) => l.length)) > 13 ? 8.5 : 9.5;
+        return (
+          <text key={`i${i}`} x={n.x - 10} y={n.y + 3.5 - (lines.length - 1) * fs * 0.55} textAnchor="end" fontSize={fs} fill="#cbd5e1">
+            {lines.map((l, j) => <tspan key={j} x={n.x - 10} dy={j ? fs * 1.1 : 0}>{l}</tspan>)}
+          </text>
+        );
+      })}
       {pos[pos.length - 1].map((n, i) => <text key={`o${i}`} x={n.x + 10} y={n.y + 3.5} fontSize="9.5" fill="#cbd5e1">{n.label}</text>)}
     </svg>
   );
