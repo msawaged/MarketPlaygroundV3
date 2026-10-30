@@ -116,12 +116,18 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const interp = data.interpretation || {};
 
   const model = useMemo(() => (pick ? buildModel(pick.trade, pick.price) : null), [pick]);
-  const sizing = useMemo(() => (model ? sizePosition(model, amount) : null), [model, amount]);
+  // Options are bought in whole contracts, so they're sized by a contract count; shares by dollars.
+  const [contractsBy, setContractsBy] = useState({});
+  const ckey = pick ? `${pick.pick_id}:${pick.structure}` : '';
+  const contracts = contractsBy[ckey] || 1;
+  const setContracts = (n) => setContractsBy((c) => ({ ...c, [ckey]: Math.max(1, Math.min(1000, n)) }));
+  const optAmount = model?.kind === 'options' ? contracts * model.capitalPerUnit : amount;
+  const sizing = useMemo(() => (model ? sizePosition(model, optAmount) : null), [model, optAmount]);
   const sum = useMemo(() => (model ? summarize(model) : null), [model]);
-  const scen = useMemo(() => (model ? scenarios(model, amount) : []), [model, amount]);
+  const scen = useMemo(() => (model ? scenarios(model, optAmount) : []), [model, optAmount]);
   const plain = useMemo(
-    () => (model && sum ? plainEnglish(model, sum, sizing?.units || 1, pick?.ticker, amount) : []),
-    [model, sum, sizing, pick, amount]
+    () => (model && sum ? plainEnglish(model, sum, sizing?.units || 1, pick?.ticker, optAmount) : []),
+    [model, sum, sizing, pick, optAmount]
   );
 
   if (!pick) return null;
@@ -170,13 +176,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
       return;
     }
     if (isOptions) {
-      if (sizing?.over) {
-        setStatus((s) => ({ ...s, [skey]: `error:One contract costs about $${Math.round(sizing.per).toLocaleString()}. Raise the amount or switch to shares.` }));
-        return;
-      }
       setBusy(true);
       try {
-        const r = await paperTradeOptions({ ticker: pick.ticker, structure: pick.structure, trade_legs: legs, contracts: Math.min(1000, sizing?.units || 1), belief });
+        const r = await paperTradeOptions({ ticker: pick.ticker, structure: pick.structure, trade_legs: legs, contracts, belief });
         if (r?.status === 'success') {
           sendFeedback(data.belief_id, 'executed', pick.pick_id);
           setStatus((s) => ({ ...s, [skey]: `opt:${r.message}` }));
@@ -403,6 +405,30 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 <p className="text-[11px] text-slate-500 -mt-2">Per contract (100 shares). Max loss per contract: {money(Math.abs(sum.maxLoss))}.</p>
               )}
 
+              {isOptions ? (<>
+              {/* Options: how many contracts */}
+              <div>
+                <div className="text-xs text-slate-400 mb-1.5">How many contracts?</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800">
+                    <button onClick={() => setContracts(contracts - 1)} disabled={contracts <= 1} aria-label="One fewer contract"
+                      className="w-11 h-11 text-xl font-bold text-slate-200 disabled:text-slate-600">−</button>
+                    <span className="w-10 text-center text-lg font-extrabold tabular-nums" aria-live="polite">{contracts}</span>
+                    <button onClick={() => setContracts(contracts + 1)} aria-label="One more contract"
+                      className="w-11 h-11 text-xl font-bold text-slate-200">+</button>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-lg font-extrabold">{money(contracts * model.capitalPerUnit)} <span className="text-xs font-semibold text-slate-400">total</span></div>
+                    <div className="text-[11px] text-slate-400">{money(model.capitalPerUnit)} per contract · worst case {money(Math.abs(sum.maxLoss) * contracts)}</div>
+                  </div>
+                </div>
+                {basePick.alt && (useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) === 'Buy Stock' && (
+                  <button onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !u[basePick.pick_id] }))}
+                    className="mt-2 text-xs font-semibold text-blue-300 hover:text-blue-200">Want to invest a set dollar amount? Use shares instead →</button>
+                )}
+              </div>
+
+              </>) : (<>
               {/* Investment */}
               <div>
                 <div className="text-xs text-slate-400 mb-1.5">If you put in</div>
@@ -434,30 +460,17 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   />
                 </label>
                 {Number(custom) > MAX_AMOUNT && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_AMOUNT.toLocaleString()}, so this uses ${MAX_AMOUNT.toLocaleString()}.</p>}
-                {sizing?.over ? (
-                  <div className="mt-2 rounded-xl border border-amber-300/40 bg-amber-400/10 p-3 text-sm text-amber-100">
-                    One {pick.ticker} contract costs about ${Math.round(sizing.per).toLocaleString()}, more than your ${amount.toLocaleString()}.
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {basePick.alt && FAMILY_SHARES.has(useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure)
-                        && (useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) === 'Buy Stock' && (
-                        <button onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !u[basePick.pick_id] }))}
-                          className="rounded-lg bg-blue-600 hover:bg-blue-500 px-3 py-1.5 text-xs font-bold text-white">Buy ${amount.toLocaleString()} of shares instead</button>
-                      )}
-                      {Math.ceil(sizing.per) <= MAX_AMOUNT && (
-                        <button onClick={() => { const n = Math.ceil(sizing.per / 50) * 50; setAmount(n); setCustom(String(n)); }}
-                          className="rounded-lg border border-amber-200/50 px-3 py-1.5 text-xs font-bold">Put in ${(Math.ceil(sizing.per / 50) * 50).toLocaleString()}</button>
-                      )}
-                    </div>
-                  </div>
-                ) : sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
+                {sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
               </div>
+
+              </>)}
 
               <PayoffChart
                 key={skey}
                 model={model}
                 units={sizing?.units || 1}
                 ticker={pick.ticker}
-                sizeLabel={isOptions ? `${sizing.units} contract${sizing.units > 1 ? 's' : ''}` : `$${amount.toLocaleString()} of shares`}
+                sizeLabel={isOptions ? `${contracts} contract${contracts > 1 ? 's' : ''}` : `$${amount.toLocaleString()} of shares`}
               />
 
               {/* Scenarios */}
