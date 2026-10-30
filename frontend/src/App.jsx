@@ -43,6 +43,7 @@ export default function App() {
           <Route path="/learning" element={<LearningPage />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/brain" element={<BrainPage />} />
+          <Route path="/live" element={<BrainPage viewOnly />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/verify" element={<VerifyPage />} />
           <Route path="/reset" element={<ResetPage />} />

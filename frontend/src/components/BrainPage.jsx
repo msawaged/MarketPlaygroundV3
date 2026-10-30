@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { request } from '../lib/api';
+import { request, API_BASE } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { themeLabel } from '../lib/text';
 import BottomNavigation from './BottomNavigation';
@@ -113,7 +113,7 @@ function Feed({ items, render, every = 2600 }) {
   );
 }
 
-export default function BrainPage() {
+export default function BrainPage({ viewOnly = false }) {
   const navigate = useNavigate();
   const account = useAccount();
   const [d, setD] = useState(null);
@@ -146,6 +146,7 @@ export default function BrainPage() {
           <span className="text-green-300">Live</span>
           {d?.now && <span className="text-slate-500 normal-case font-medium tracking-normal">· updated {ago(d.now, now)}</span>}
         </div>
+        {viewOnly && <div className="mt-3 text-sm font-bold text-slate-300">Market<span className="text-blue-400">Playground</span></div>}
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight">The brain, learning</h1>
         <p className="mt-2 text-slate-300">Every belief teaches it which companies really move. Then the market grades it. Nothing here is staged: these are the real numbers, right now.</p>
         {err && <p className="mt-4 text-sm text-red-300">Couldn't load the live data: {err}</p>}
@@ -233,14 +234,22 @@ export default function BrainPage() {
           })}
         </div>
 
+        {viewOnly ? (
+          <div className="mt-8 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 text-sm text-slate-300">
+            <div className="font-bold text-white">This page only watches.</div>
+            Nothing here can be changed by a viewer. It shows exactly what the live server reports and refreshes every 30 seconds.
+            Want to check the numbers yourself? <a href={`${API_BASE}/v4/brain`} target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">See the raw live data</a>.
+          </div>
+        ) : (
         <div className="mt-8 rounded-3xl border border-blue-400/30 bg-blue-500/10 p-5 text-center">
           <div className="text-lg font-extrabold">Teach it something.</div>
           <p className="mt-1 text-sm text-slate-300">Type a hunch. The market will grade it, and the brain learns from it.</p>
           <button onClick={() => navigate(account ? '/chat' : '/account')} className="mt-3 rounded-2xl bg-blue-600 hover:bg-blue-500 px-5 py-3 font-bold">{account ? 'Type a belief →' : 'Create a free account →'}</button>
         </div>
+        )}
         <p className="mt-4 text-[11px] text-slate-500">Practice money only. Past results don't predict future ones. Not investment advice.</p>
       </div>
-      {account && <BottomNavigation />}
+      {account && !viewOnly && <BottomNavigation />}
     </div>
   );
 }
