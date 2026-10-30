@@ -1163,17 +1163,19 @@ def test_job_health_is_recorded_and_public_view_hides_errors(monkeypatch):
 
 
 def test_backup_feeder_only_feeds_when_the_hourly_job_is_quiet(monkeypatch):
-    from backend.v4 import feeder, seeder
+    from backend.v4 import feeder, seeder, brain
     from datetime import datetime, timedelta, timezone
     now = datetime.now(timezone.utc)
     assert feeder.should_feed(now)  # nothing recorded yet
-    seeder.record_health("learning", True)
+    seeder.record_health("learning_cron", True)
     assert not feeder.should_feed(now)
     assert feeder.should_feed(now + timedelta(minutes=80))
-    seeder.record_health("learning", False, "boom")
+    seeder.record_health("learning_cron", False, "boom")
     assert feeder.should_feed(now)
     calls = []
     monkeypatch.setattr(seeder, "auto", lambda **kw: calls.append(kw) or {"news": {"ok": 3, "errors": 0}})
     r = feeder.feed_once()
     assert r["fed"] and calls[0]["batch_override"] == 60 and calls[0]["concurrency"] == 3
-    assert feeder.feed_once() == {"skipped": "the hourly job is healthy"}  # the round it just ran counts
+    assert feeder.feed_once()["fed"]  # its own rounds don't stop it: it waits for the regular job to succeed
+    seeder._learning_health("cron", False, "no key")
+    assert brain.health(True)["learning"]["ok"] is True  # a cron failure doesn't hide the backup's success

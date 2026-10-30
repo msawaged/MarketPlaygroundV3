@@ -229,19 +229,34 @@ def record_health(job: str, ok: bool, detail: str = "", summary: Optional[dict] 
         print(f"[health] could not record {job}: {e}")
 
 
-def auto_with_health(**kw) -> dict:
+def _learning_health(source: str, ok: bool, detail: str = "", summary: Optional[dict] = None) -> None:
+    """Per-source record (learning_cron / learning_web) for the owner, plus the public "learning" line: a failure
+    only replaces it when no round has succeeded in the last 75 minutes."""
+    from datetime import datetime, timedelta, timezone
+    record_health(f"learning_{source}", ok, detail, summary)
+    if not ok:
+        try:
+            cur = json.loads(_kv_get("health:learning", "") or "{}")
+            if cur.get("ok") and datetime.now(timezone.utc) - datetime.fromisoformat(cur["at"]) < timedelta(minutes=75):
+                return
+        except Exception:
+            pass
+    record_health("learning", ok, detail, summary)
+
+
+def auto_with_health(source: str = "cron", **kw) -> dict:
     if not os.getenv("ANTHROPIC_API_KEY"):
-        record_health("learning", False, "ANTHROPIC_API_KEY is not set on this job")
+        _learning_health(source, False, "ANTHROPIC_API_KEY is not set on this job")
     try:
         out = auto(**kw)
     except Exception as e:
-        record_health("learning", False, f"{type(e).__name__}: {e}")
+        _learning_health(source, False, f"{type(e).__name__}: {e}")
         raise
     added = sum(int((out.get(k) or {}).get("ok", 0)) for k in ("backfill", "live", "news"))
     errors = sum(int((out.get(k) or {}).get("errors", 0)) for k in ("backfill", "live", "news"))
     ok = not (errors and not added)
-    record_health("learning", ok, "" if ok else f"{errors} beliefs failed, none added",
-                  {"added": added, "errors": errors, "graded": (out.get("grade") or {}).get("graded", 0)})
+    _learning_health(source, ok, "" if ok else f"{errors} beliefs failed, none added",
+                     {"added": added, "errors": errors, "graded": (out.get("grade") or {}).get("graded", 0)})
     return out
 
 

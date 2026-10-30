@@ -112,7 +112,7 @@ def _activity(limit: int = 20) -> list[dict]:
 def health(public: bool = True) -> dict:
     """Last run of each background job. Public view: when and whether it worked, no error text."""
     out = {}
-    for job in ("learning", "grading"):
+    for job in (("learning", "grading") if public else ("learning", "learning_cron", "learning_web", "grading")):
         row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (f"health:{job}",))
         h = db.loads(row["v"], None) if row else None
         if h and public:

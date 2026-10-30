@@ -27,7 +27,7 @@ def _last(job: str) -> dict:
 
 
 def should_feed(now: datetime) -> bool:
-    h = _last("learning")
+    h = _last("learning_cron")  # feed unless the regular hourly job itself succeeded recently
     if not h.get("at") or not h.get("ok"):
         return True
     return now - datetime.fromisoformat(h["at"]) > timedelta(minutes=75)
@@ -44,7 +44,7 @@ def feed_once() -> dict:
     now = datetime.now(timezone.utc)
     if not should_feed(now):
         return {"skipped": "the hourly job is healthy"}
-    out = seeder.auto_with_health(batch_override=int(os.getenv("MP_WEB_FEED_BATCH", "60")), concurrency=3,
+    out = seeder.auto_with_health(source="web", batch_override=int(os.getenv("MP_WEB_FEED_BATCH", "60")), concurrency=3,
                                   train=should_train(now))
     return {"fed": True, "news": (out.get("news") or {}).get("ok", 0), "backfill": (out.get("backfill") or {}).get("ok", 0)}
 
