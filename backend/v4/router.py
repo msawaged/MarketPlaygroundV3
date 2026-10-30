@@ -383,7 +383,8 @@ async def get_my_beliefs(user_id: str):
 async def admin_ml(x_admin_token: Optional[str] = Header(None)):
     """Full network report: data counts, every version's walk-forward metrics."""
     _check_admin(x_admin_token)
-    return {"stats": await run_in_threadpool(engine.stats), "versions": await run_in_threadpool(nn.history, 30)}
+    return {"stats": await run_in_threadpool(engine.stats), "versions": await run_in_threadpool(nn.history, 30),
+            "health": await run_in_threadpool(brain.health, False)}
 
 
 @router.post("/admin/grade")

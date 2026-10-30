@@ -109,6 +109,18 @@ def _activity(limit: int = 20) -> list[dict]:
     return ev[:limit]
 
 
+def health(public: bool = True) -> dict:
+    """Last run of each background job. Public view: when and whether it worked, no error text."""
+    out = {}
+    for job in ("learning", "grading"):
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (f"health:{job}",))
+        h = db.loads(row["v"], None) if row else None
+        if h and public:
+            h = {k: h[k] for k in ("at", "ok") if k in h}
+        out[job] = h
+    return out
+
+
 def snapshot() -> dict:
     with _lock:
         if _cache["v"] and time.time() - _cache["at"] < 15:
@@ -138,6 +150,7 @@ def snapshot() -> dict:
         "current": {"status": cur.get("status", "none"), "weight": round(float(cur.get("weight") or 0), 3)},
         "learned": _recent_learned(),
         "activity": _activity(),
+        "health": health(public=True),
         "next": _next_runs(datetime.now(timezone.utc)),
         "graded": _recent_graded(),
     }

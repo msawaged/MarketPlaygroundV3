@@ -219,6 +219,32 @@ def auto(claude_client=None) -> dict:
     return out
 
 
+def record_health(job: str, ok: bool, detail: str = "", summary: Optional[dict] = None) -> None:
+    """What the brain page shows about its own jobs: when each last ran and whether it worked."""
+    from datetime import datetime, timezone
+    try:
+        _kv_set(f"health:{job}", json.dumps({"at": datetime.now(timezone.utc).isoformat(), "ok": ok,
+                                             "detail": (detail or "")[:300], "summary": summary or {}}))
+    except Exception as e:  # never let health reporting break the job
+        print(f"[health] could not record {job}: {e}")
+
+
+def auto_with_health() -> dict:
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        record_health("learning", False, "ANTHROPIC_API_KEY is not set on this job")
+    try:
+        out = auto()
+    except Exception as e:
+        record_health("learning", False, f"{type(e).__name__}: {e}")
+        raise
+    added = sum(int((out.get(k) or {}).get("ok", 0)) for k in ("backfill", "live", "news"))
+    errors = sum(int((out.get(k) or {}).get("errors", 0)) for k in ("backfill", "live", "news"))
+    ok = not (errors and not added)
+    record_health("learning", ok, "" if ok else f"{errors} beliefs failed, none added",
+                  {"added": added, "errors": errors, "graded": (out.get("grade") or {}).get("graded", 0)})
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Seed MarketPlayground with beliefs")
     ap.add_argument("mode", choices=["backfill", "live", "auto"])
@@ -235,7 +261,7 @@ def main() -> None:
         print("seeding disabled (MP_SEED_ENABLED)")
         return
     if args.mode == "auto":
-        print(json.dumps(auto(), indent=2, default=str))
+        print(json.dumps(auto_with_health(), indent=2, default=str))
         return
     print(json.dumps(run(args.mode, args.n, args.generate, args.years, args.concurrency, args.max_usd, args.model), indent=2))
 

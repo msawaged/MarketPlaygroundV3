@@ -181,6 +181,19 @@ export default function BrainPage({ viewOnly = false }) {
           <p className="px-2 pb-1 text-[11px] text-slate-500">Left: the topics it knows best. Right: whether a belief is playing out in the market.</p>
         </div>
 
+        {d?.health && (() => {
+          const h = d.health.learning, g = d.health.grading;
+          const age = h?.at ? (now - Date.parse(h.at)) / 3600000 : null;
+          const good = h && h.ok && age < 2.5;
+          return (
+            <div className={`mt-3 rounded-2xl border px-3.5 py-2.5 text-xs ${good ? 'border-green-500/30 bg-green-500/[0.06] text-green-100' : 'border-amber-300/40 bg-amber-400/10 text-amber-100'}`}>
+              <span className="font-bold">{good ? 'Healthy.' : h ? (h.ok ? 'Learning round overdue.' : 'Last learning round didn’t finish.') : 'No learning round recorded yet.'}</span>{' '}
+              {h?.at && <>Last learning round {ago(h.at, now)}.</>}{' '}
+              {g?.at && <>Last market grading {ago(g.at, now)}{g.ok ? '' : ' (didn’t finish)'}.</>}
+            </div>
+          );
+        })()}
+
         {d?.next && (
           <div className="mt-3 grid grid-cols-2 gap-2.5">
             <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">

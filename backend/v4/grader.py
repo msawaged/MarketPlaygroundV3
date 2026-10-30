@@ -187,9 +187,16 @@ def main() -> None:
     ap.add_argument("--train", action="store_true", help="retrain the neural network after grading")
     ap.add_argument("--force-train", action="store_true", help="train even below the minimum data size (testing)")
     args = ap.parse_args()
-    result = {"grade": grade()}
-    if args.train or args.force_train:
-        result["train"] = nn.train(force=args.force_train)
+    from .seeder import record_health
+    try:
+        result = {"grade": grade()}
+        if args.train or args.force_train:
+            result["train"] = nn.train(force=args.force_train)
+    except Exception as e:
+        record_health("grading", False, f"{type(e).__name__}: {e}")
+        raise
+    record_health("grading", True, "", {"graded": result["grade"].get("graded", 0),
+                                         "trained": (result.get("train") or {}).get("status")})
     print(json.dumps(result, indent=2, default=str))
 
 

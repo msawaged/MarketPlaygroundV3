@@ -1146,3 +1146,17 @@ def test_brain_activity_never_shows_peoples_words_and_schedule():
     assert "private" not in json.dumps(s["activity"])
     nr = brain._next_runs(datetime(2026, 10, 30, 22, 50, tzinfo=timezone.utc))  # a Friday, after grading
     assert nr["learning"].startswith("2026-10-30T23:13") and nr["grading"].startswith("2026-11-02T22:47")  # Monday
+
+
+def test_job_health_is_recorded_and_public_view_hides_errors(monkeypatch):
+    from backend.v4 import seeder, brain
+    monkeypatch.setattr(seeder, "auto", lambda claude_client=None: (_ for _ in ()).throw(RuntimeError("secret detail")))
+    with pytest.raises(RuntimeError):
+        seeder.auto_with_health()
+    pub, full = brain.health(True), brain.health(False)
+    assert pub["learning"]["ok"] is False and "detail" not in pub["learning"]
+    assert "secret detail" in full["learning"]["detail"]
+    monkeypatch.setattr(seeder, "auto", lambda claude_client=None: {"news": {"ok": 4, "errors": 0}, "grade": {"graded": 9}})
+    seeder.auto_with_health()
+    h = brain.health(False)["learning"]
+    assert h["ok"] is True and h["summary"]["added"] == 4 and h["summary"]["graded"] == 9
