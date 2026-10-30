@@ -30,22 +30,41 @@ function authHeader() {
   try { const t = localStorage.getItem("mp_token"); return t ? { Authorization: `Bearer ${t}` } : {}; } catch { return {}; }
 }
 
+// The server is briefly unreachable while a new version deploys (about a minute). Requests wait it out:
+// 502/503/504 come from the hosting proxy before the app sees anything, so any request is safe to resend;
+// a dropped connection is only resent for reads and logins, never for trades.
+const SAFE_TO_RESEND = /^\/v4\/auth\/(login|passkey\/login\/options|me)|^\/v4\/(movers|brain|trending|headlines|learning|my_beliefs|stats)/;
+const WAITS = [1500, 3000, 5000, 8000];
+const OFFLINE = "Can't reach MarketPlayground right now. Check your connection, or try again in a minute.";
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
 export async function request(path, { method = "GET", body, signal, headers = {} } = {}) {
-  const r = await fetch(`${API_BASE}${path}`, {
-    method,
-    signal,
-    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...authHeader(), ...headers },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  let data = null;
-  try { data = await r.json(); } catch { /* empty body */ }
-  if (!r.ok) {
-    const msg = (data && (data.detail || data.message)) || `The server returned ${r.status}`;
-    const err = new Error(typeof msg === "string" ? msg : `The server returned ${r.status}`);
-    err.status = r.status;
-    throw err;
+  const resendOnDrop = method === "GET" || SAFE_TO_RESEND.test(path);
+  for (let attempt = 0; ; attempt++) {
+    let r;
+    try {
+      r = await fetch(`${API_BASE}${path}`, {
+        method,
+        signal,
+        headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...authHeader(), ...headers },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) {
+      if (e?.name === "AbortError") throw e;
+      if (resendOnDrop && attempt < WAITS.length) { await sleep(WAITS[attempt]); continue; }
+      const err = new Error(OFFLINE); err.status = 0; err.offline = true; throw err;
+    }
+    if ([502, 503, 504].includes(r.status) && attempt < WAITS.length) { await sleep(WAITS[attempt]); continue; }
+    let data = null;
+    try { data = await r.json(); } catch { /* empty body */ }
+    if (!r.ok) {
+      const msg = [502, 503, 504].includes(r.status) ? OFFLINE : (data && (data.detail || data.message)) || `The server returned ${r.status}`;
+      const err = new Error(typeof msg === "string" ? msg : `The server returned ${r.status}`);
+      err.status = r.status;
+      throw err;
+    }
+    return data;
   }
-  return data;
 }
 
 /** Belief -> strategy (v4 engine behind the existing endpoint). */
