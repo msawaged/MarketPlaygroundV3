@@ -1,8 +1,11 @@
 // "Moving now": today's news as hunches, with the companies each one moves and how they're trading today.
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getMovers } from '../lib/api';
+
+const StoryViewer = lazy(() => import('./StoryViewer'));
 
 let _cache = null; // one fetch per page load is plenty; the server refreshes every ~30 min
 
@@ -40,8 +43,11 @@ function Pct({ v }) {
 // Leads with the news and the companies it touches (a stock research card), not a statement to vote on.
 export function MoverCard({ item, i = 0 }) {
   const navigate = useNavigate();
+  const [story, setStory] = useState(false);
   const ai = item.hunch && item.hunch !== item.headline;
   return (
+    <>
+    {story && <Suspense fallback={null}><StoryViewer headline={item.headline} onClose={() => setStory(false)} /></Suspense>}
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
       className="rounded-2xl border border-slate-700 bg-slate-900/90 p-4">
       <div className="text-[11px] text-slate-500">{[item.source, ago(item.created_at)].filter(Boolean).join(' · ')}</div>
@@ -64,7 +70,10 @@ export function MoverCard({ item, i = 0 }) {
         ))}
       </ul>
 
-      <button onClick={() => navigate(believeUrl(item.hunch))} className="mt-3 w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold">
+      <button onClick={() => setStory(true)} className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-blue-500/60 bg-blue-500/10 hover:bg-blue-500/20 py-2.5 text-sm font-bold text-blue-100">
+        <Play className="h-4 w-4 fill-current" /> Watch the story in 30 seconds
+      </button>
+      <button onClick={() => navigate(believeUrl(item.hunch))} className="mt-2 w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold">
         See how to invest in this →
       </button>
       {ai && (
@@ -73,5 +82,6 @@ export function MoverCard({ item, i = 0 }) {
         </button>
       )}
     </motion.div>
+    </>
   );
 }

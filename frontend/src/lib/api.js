@@ -148,6 +148,11 @@ export function getMovers() {
   return request("/v4/movers");
 }
 
+/** Story mode: one of today's news stories as full-screen cards. */
+export function getStory(headline) {
+  return request(`/v4/movers/story?h=${encodeURIComponent(headline)}`);
+}
+
 /** Practice options: the server re-prices every leg; we only send which contracts. */
 export function paperTradeOptions({ ticker, structure, trade_legs, contracts, belief }) {
   return request("/api/paper-trading/execute_options", {
