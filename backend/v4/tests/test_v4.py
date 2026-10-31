@@ -1275,3 +1275,27 @@ def test_champion_moves_ranking_but_never_breaks_a_belief(monkeypatch):
     monkeypatch.setattr(lineages, "champion", lambda: (_ for _ in ()).throw(RuntimeError("db down")))
     r2 = engine.process_belief("people will cook at home more", "u1", "moderate", claude_client=FakeClaude())
     assert r2["valid"]
+
+
+def test_research_walk_forward_runs_and_stores(monkeypatch):
+    from backend.v4 import research
+    rng = __import__("random").Random(3)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for i in range(400):
+        bid = f"b-rs{i}"
+        asof = (d0 + __import__("datetime").timedelta(days=i * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            mom = rng.uniform(-0.3, 0.3)
+            pid = f"p-rs{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": {"mom60": mom, "vol60": rng.uniform(0.2, 0.6)}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, mom * 0.3 + rng.gauss(0, 0.05), asof))
+    out = research.run()
+    r = out["results"]
+    assert r["momentum (z_mom60)"]["lift"] > 0.02 and r["momentum (z_mom60)"]["n"] > 100
+    assert r["ridge (learned)"]["lift"] > 0.02  # learns the planted signal out of sample
+    assert abs(r["app (current #1)"]["lift"]) < 0.03
+    assert db.query_one("SELECT v FROM kv_cache WHERE k = ?", (research.KEY,))
