@@ -149,6 +149,12 @@ def snapshot() -> dict:
     rows = db.query("SELECT id, name, style, gen, parent_id, status, fitness, beat_rate, n_scored, born_at FROM strategists ORDER BY gen, born_at")
     if not rows:
         return {"generation": 0, "alive": [], "tree": [], "events": [], "retired": 0}
+    seen: dict[str, int] = {}
+    for r in rows:  # older rows may share a name; show siblings as "Gen 2", "Gen 2b"
+        k = seen.get(r["name"], 0)
+        seen[r["name"]] = k + 1
+        if k:
+            r["name"] = f"{r['name']}{chr(ord('a') + k)}"
     names = {r["id"]: r["name"] for r in rows}
     fmt = lambda r: {"id": r["id"], "name": r["name"], "style": r["style"], "gen": r["gen"], "parent": r["parent_id"],  # noqa: E731
                      "parent_name": names.get(r["parent_id"]), "status": r["status"],
