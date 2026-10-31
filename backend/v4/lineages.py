@@ -237,6 +237,8 @@ def _snapshot() -> dict:
         a["live_app"] = {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["app"].items()}
     ch = champion()
     events = db.query("SELECT at, kind, detail FROM lineage_events ORDER BY at DESC LIMIT 8")
+    for e in events:  # older rows used different wording
+        e["detail"] = (e["detail"] or "").replace(" was born from ", " evolved from ")
     return {"generation": max(r["gen"] for r in rows), "alive": alive, "tree": tree, "events": events,
             "retired": sum(1 for r in rows if r["status"] == "retired"), "checkpoint_days": CHECKPOINT,
             "champion": {"id": ch["id"], "name": ch["name"]} if ch else None, "live_min": LIVE_MIN}
