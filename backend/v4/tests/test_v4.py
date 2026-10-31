@@ -1235,7 +1235,8 @@ def test_lineages_evolve_and_snapshot(monkeypatch):
             db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
                        (pid, bid, f"T{j}", "bullish", "2026-01-01", 10.0, db.dumps(feats)))
             db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
-                       (pid, 30, "2026-02-01", 10.0, 0.0, 0.0, mom * 0.5 + rng.gauss(0, 0.01), "2026-02-01"))
+                       (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, mom * 0.5 + rng.gauss(0, 0.01), "2026-02-01"))
+    monkeypatch.setattr(lineages, "SNAP_TTL", 0)
     r1 = lineages.evolve(seed=1)
     assert r1["evolved"] and r1["generation"] == 2
     snap = lineages.snapshot()
@@ -1246,3 +1247,31 @@ def test_lineages_evolve_and_snapshot(monkeypatch):
     assert any(e["kind"] == "born" for e in snap["events"])
     brain._cache["v"] = None
     assert brain.snapshot()["lineages"]["generation"] == 3
+    assert lineages.champion() is None  # no live record yet: nothing gets a say in real rankings
+
+    # calls created after the strategists were born (never used to select them); the app's own top pick is the
+    # weakest candidate, momentum is right: a momentum strategist earns a say
+    monkeypatch.setattr(lineages, "LIVE_MIN", 20)
+    for i in range(30):
+        bid = f"b-live{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", f"2099-01-{1 + i % 28:02d}T00:00:00", "2026-01-01", "seed_backfill"))
+        for j, mom in enumerate((-0.2, 0.0, 0.2)):
+            pid = f"p-live{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", "2026-01-01", 10.0, db.dumps({"num": {"mom60": mom}}), 1 if j == 0 else j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, mom * 0.5, "2026-02-01"))
+    ch = lineages.pick_champion()
+    assert ch and ch["live"]["fitness"] > ch["app"]["fitness"]
+    assert lineages.champion()["id"] == ch["id"]
+
+
+def test_champion_moves_ranking_but_never_breaks_a_belief(monkeypatch):
+    from backend.v4 import lineages
+    monkeypatch.setattr(lineages, "champion", lambda: {"id": "st-x", "name": "Momentum · Gen 9", "weights": {"mom60": 5.0}})
+    r = engine.process_belief("plumbing demand is going to be high", "u1", "moderate", claude_client=FakeClaude())
+    assert r["valid"] and len(r["picks"]) == 5
+    monkeypatch.setattr(lineages, "champion", lambda: (_ for _ in ()).throw(RuntimeError("db down")))
+    r2 = engine.process_belief("people will cook at home more", "u1", "moderate", claude_client=FakeClaude())
+    assert r2["valid"]

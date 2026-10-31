@@ -9,7 +9,9 @@ Follow-the-AI trusts Claude's ranking, Big-picture prefers broad funds. For ever
 copies with slightly changed preferences. Over generations, what survives is what has worked.
 
 Scores use the most recent graded beliefs, so the scoreboard says exactly that: how each would have done on the
-latest graded calls. Cheap: no Claude calls, just arithmetic on picks the brain already graded.
+latest graded calls. Selection on those same calls flatters a newborn, so a strategist only gets a say in the real
+ranking (the "champion") once its LIVE record, calls graded after it was born that it never saw, beats the app's own
+top pick on the same calls by a clear margin over at least LIVE_MIN calls. Cheap: no Claude calls, just arithmetic on picks the brain already graded.
 """
 from __future__ import annotations
 
@@ -20,11 +22,15 @@ from typing import Optional
 
 from . import db
 
-CHECKPOINT = 30          # days after the call
+CHECKPOINT = 90          # days after the call (beliefs play out over months; 30 days is mostly noise)
 WINDOW = 300             # most recent graded beliefs used for scoring
 MIN_BELIEFS = 40         # don't evolve on less than this
 POP_MAX = 8
 CULL = 2                 # retired and replaced per generation
+LIVE_MIN = 100           # live calls before a strategist can help rank real picks
+LIVE_MARGIN = 0.005      # ...and it must beat the app's own top pick by half a point on average
+CHAMPION_WEIGHT = 0.25   # how much a champion moves the real ranking
+CHAMPION_KEY = "lineage_champion"
 FEATURES = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol60", "claude_score", "claude_rank_frac", "is_etf", "same_dir")
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high"}  # flipped for bearish picks
 
@@ -68,33 +74,51 @@ def ensure_founders() -> None:
         _event("born", sid, f"{style} · Gen 1 joined as a founder")
 
 
-def _graded_beliefs() -> list[list[dict]]:
-    """Candidates of the most recent graded beliefs: [[{feat..., ex}, ...], ...]."""
+def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[list[dict]]:
+    """Candidates of the most recent graded beliefs: [[{feat..., ex, top}, ...], ...]. `since`: only beliefs created
+    after that time (a strategist's live record: calls it never saw)."""
     rows = db.query(
-        """SELECT p.belief_id, p.direction, p.features, p.nn_score, o.dir_excess, b.created_at
+        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
-           WHERE o.checkpoint_days = ?
-           ORDER BY b.created_at DESC""", (CHECKPOINT,))
+           WHERE o.checkpoint_days = ? AND b.created_at > ?
+           ORDER BY b.created_at DESC""", (CHECKPOINT, since or ""))
     by: dict[str, list[dict]] = {}
     order: list[str] = []
     for r in rows:
         if r["belief_id"] not in by:
-            if len(order) >= WINDOW:
+            if len(order) >= limit:
                 continue
             by[r["belief_id"]] = []
             order.append(r["belief_id"])
-        num = (db.loads(r["features"], {}) or {}).get("num", {})
-        sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
-        f = {k: float(num.get(k, 0.0)) * (sign if k in DIRECTIONAL else 1.0) for k in FEATURES}
-        f["ex"] = float(r["dir_excess"])
-        by[r["belief_id"]].append(f)
+        by[r["belief_id"]].append(features_of(r["features"], r["direction"], ex=float(r["dir_excess"]),
+                                              top=r["final_rank"] == 1))
     return [by[b] for b in order if len(by[b]) >= 2]  # a choice needs at least two candidates
+
+
+def features_of(features: object, direction: str, **extra) -> dict:
+    num = (db.loads(features, {}) or {}).get("num", {}) if not isinstance(features, dict) or "num" in features else features
+    sign = -1.0 if str(direction).lower() == "bearish" else 1.0
+    f = {k: float(num.get(k, 0.0)) * (sign if k in DIRECTIONAL else 1.0) for k in FEATURES}
+    f.update(extra)
+    return f
+
+
+def raw_score(weights: dict, f: dict) -> float:
+    return sum(w * f.get(k, 0.0) for k, w in weights.items())
+
+
+def _baseline(beliefs: list[list[dict]]) -> dict:
+    """How the app's own top pick did on the same calls."""
+    xs = [next((c["ex"] for c in cands if c.get("top")), None) for cands in beliefs]
+    xs = [x for x in xs if x is not None]
+    n = len(xs)
+    return {"fitness": sum(xs) / n if n else 0.0, "beat_rate": sum(1 for x in xs if x > 0) / n if n else 0.0, "n": n}
 
 
 def score(weights: dict, beliefs: list[list[dict]]) -> dict:
     results = []
     for cands in beliefs:
-        best = max(cands, key=lambda c: sum(w * c.get(k, 0.0) for k, w in weights.items()))
+        best = max(cands, key=lambda c: raw_score(weights, c))
         results.append(best["ex"])
     n = len(results)
     return {"fitness": sum(results) / n if n else 0.0, "beat_rate": sum(1 for x in results if x > 0) / n if n else 0.0, "n": n}
@@ -141,11 +165,55 @@ def evolve(seed: Optional[int] = None) -> dict:
                    (r["fitness"], r["beat_rate"], r["n"], sid))
         _event("born", sid, f"{_name(sid)} was born from {p['name']}")
         born.append(sid)
-    return {"evolved": True, "generation": gen, "born": len(born), "retired": len(retired), "beliefs": len(beliefs)}
+    champ = pick_champion()
+    _snap["v"] = None
+    return {"evolved": True, "generation": gen, "born": len(born), "retired": len(retired), "beliefs": len(beliefs),
+            "champion": champ.get("name") if champ else None}
+
+
+def live_record(s: dict) -> dict:
+    """A strategist's record on calls created after it was born (never used to select it), next to the app's own
+    top pick on the very same calls."""
+    beliefs = _graded_beliefs(since=s["born_at"], limit=2000)
+    return {"me": score(db.loads(s["weights"], {}), beliefs), "app": _baseline(beliefs)}
+
+
+def pick_champion() -> Optional[dict]:
+    """The alive strategist whose live record clearly beats the app's own top pick, if any. Stored in kv_cache."""
+    best = None
+    for s in db.query("SELECT * FROM strategists WHERE status = 'alive'"):
+        lr = live_record(s)
+        me, app = lr["me"], lr["app"]
+        if me["n"] >= LIVE_MIN and me["fitness"] >= app["fitness"] + LIVE_MARGIN and me["beat_rate"] >= app["beat_rate"]:
+            if not best or me["fitness"] > best["live"]["fitness"]:
+                best = {"id": s["id"], "name": s["name"], "weights": db.loads(s["weights"], {}), "live": me, "app": app}
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (CHAMPION_KEY,))
+    if best:
+        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (CHAMPION_KEY, db.dumps(best), _now()))
+        _event("champion", best["id"], f"{best['name']} earned a say in ranking real picks")
+    return best
+
+
+def champion() -> Optional[dict]:
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (CHAMPION_KEY,))
+    return db.loads(row["v"], None) if row else None
+
+
+_snap = {"at": 0.0, "v": None}
+SNAP_TTL = 600  # live records only change when calls get graded; no need to recompute every page view
 
 
 def snapshot() -> dict:
-    """Public view for the brain page: scoreboard, family tree, recent births and retirements."""
+    """Public view (cached 10 minutes): scoreboard, family tree, live records, recent births and retirements."""
+    import time
+    if _snap["v"] is not None and time.time() - _snap["at"] < SNAP_TTL:
+        return _snap["v"]
+    v = _snapshot()
+    _snap.update(at=time.time(), v=v)
+    return v
+
+
+def _snapshot() -> dict:
     rows = db.query("SELECT id, name, style, gen, parent_id, status, fitness, beat_rate, n_scored, born_at FROM strategists ORDER BY gen, born_at")
     if not rows:
         return {"generation": 0, "alive": [], "tree": [], "events": [], "retired": 0}
@@ -162,9 +230,16 @@ def snapshot() -> dict:
                      "n": int(r["n_scored"] or 0), "born_at": r["born_at"]}
     tree = [fmt(r) for r in rows][-60:]
     alive = sorted([t for t in tree if t["status"] == "alive"], key=lambda t: t["fitness"], reverse=True)
+    full = {r["id"]: r for r in db.query("SELECT id, born_at, weights FROM strategists WHERE status = 'alive'")}
+    for a in alive:
+        lr = live_record(full[a["id"]]) if a["id"] in full else {"me": {"n": 0}, "app": {"n": 0}}
+        a["live"] = {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["me"].items()}
+        a["live_app"] = {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["app"].items()}
+    ch = champion()
     events = db.query("SELECT at, kind, detail FROM lineage_events ORDER BY at DESC LIMIT 8")
     return {"generation": max(r["gen"] for r in rows), "alive": alive, "tree": tree, "events": events,
-            "retired": sum(1 for r in rows if r["status"] == "retired"), "checkpoint_days": CHECKPOINT}
+            "retired": sum(1 for r in rows if r["status"] == "retired"), "checkpoint_days": CHECKPOINT,
+            "champion": {"id": ch["id"], "name": ch["name"]} if ch else None, "live_min": LIVE_MIN}
 
 
 def bootstrap_background() -> None:

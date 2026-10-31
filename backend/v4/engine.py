@@ -22,7 +22,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from . import db, interpreter, learning, market, nn, strategy
+from . import db, interpreter, learning, lineages, market, nn, strategy
 
 SHOW_TOP = 3
 CACHE_HOURS = 24  # the same question gets the same companies all day
@@ -83,6 +83,13 @@ def _store_interpretation(norm: str, risk: str, interp: dict, usage: dict) -> No
     db.execute("DELETE FROM kv_cache WHERE k = ?", (key,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                (key, db.dumps({"interp": interp, "usage": usage}), now))
+
+
+def _champion():
+    try:
+        return lineages.champion()
+    except Exception:  # never let the lineages break a belief
+        return None
 
 
 def process_belief(
@@ -192,6 +199,15 @@ def process_belief(
         v["nn_score"] = preds[i] if preds else None
         v["final_score"] = (1 - w) * claude_parts[i] + w * nn_parts[i]
         v["track"] = shown_stats.get(v["ticker"])
+    # A strategist that proved itself on calls it never saw gets a modest say (see lineages.pick_champion).
+    champ = _champion()
+    if champ and len(valid) > 1:
+        raw = [lineages.raw_score(champ["weights"], lineages.features_of(records[i]["num"], v.get("direction", "bullish")))
+               for i, v in enumerate(valid)]
+        parts = nn.on_claude_scale(raw, [v["final_score"] for v in valid])
+        cw = lineages.CHAMPION_WEIGHT
+        for i, v in enumerate(valid):
+            v["final_score"] = (1 - cw) * v["final_score"] + cw * parts[i]
     # The user's stated direction always leads: on a bearish belief, bets against the companies it hurts
     # come first, and opposite-direction ideas (e.g. a competitor that benefits) can only follow them.
     # Scores still order picks within each group. (Without this, a network trained mostly in a rising

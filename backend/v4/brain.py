@@ -121,6 +121,23 @@ def health(public: bool = True) -> dict:
     return out
 
 
+def _skill() -> dict:
+    """The honest scorecard, at the horizon the brain learns on: does the app's #1 pick beat the S&P 500, and does
+    it beat the app's own other ideas for the same belief (the part that is skill, not market luck)?"""
+    rows = db.query(
+        """SELECT CASE WHEN p.final_rank = 1 THEN 'top' ELSE 'rest' END AS g, COUNT(*) AS n,
+                  SUM(CASE WHEN o.dir_excess > 0 THEN 1 ELSE 0 END) AS beat, AVG(o.dir_excess) AS ex
+           FROM outcomes o JOIN picks p ON p.id = o.pick_id
+           WHERE o.checkpoint_days = ? GROUP BY CASE WHEN p.final_rank = 1 THEN 'top' ELSE 'rest' END""",
+        (learning.LABEL_DAYS,))
+    out = {"days": learning.LABEL_DAYS}
+    for r in rows:
+        n = int(r["n"] or 0)
+        out[r["g"]] = {"n": n, "beat_rate": round(int(r["beat"] or 0) / n, 3) if n else 0.0,
+                       "avg_excess": round(float(r["ex"] or 0), 4)}
+    return out
+
+
 def _safe_lineages() -> dict:
     try:
         return lineages.snapshot()
@@ -161,6 +178,7 @@ def snapshot() -> dict:
         "next": _next_runs(datetime.now(timezone.utc)),
         "graded": _recent_graded(),
         "lineages": _safe_lineages(),
+        "skill": _skill(),
     }
     with _lock:
         _cache.update(at=time.time(), v=v)

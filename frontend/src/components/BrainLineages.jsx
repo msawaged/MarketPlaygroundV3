@@ -59,7 +59,7 @@ export default function BrainLineages({ data, ago, now }) {
     <section>
       <h2 className="mt-8 text-xl font-extrabold">Survival of the smartest</h2>
       <p className="mt-1 text-sm text-slate-400">
-        AI strategists compete on the same calls. Each one picks its favorite company; the market grades it 30 days later.
+        AI strategists compete on the same calls. Each one picks its favorite company; the market grades it 90 days later.
         Every trading day the weakest retire and the strongest have children.
       </p>
 
@@ -77,7 +77,12 @@ export default function BrainLineages({ data, ago, now }) {
         <div className="mt-0.5 text-lg font-extrabold">{top.name}</div>
         <div className="text-xs text-slate-300">
           {STYLE[top.style]?.blurb ? `It ${STYLE[top.style].blurb}. ` : ''}
-          Its picks beat the S&P 500 {Math.round(top.beat_rate * 100)}% of the time ({pct(top.fitness)} pts on average) over the last {top.n} graded calls.
+          On the last {top.n} graded calls its picks beat the S&P 500 {Math.round(top.beat_rate * 100)}% of the time ({pct(top.fitness)} pts on average).
+        </div>
+        <div className="mt-2 text-[11px] text-slate-400">
+          {data.champion
+            ? <><span className="font-bold text-green-300">{data.champion.name}</span> proved itself on calls it never saw and now helps rank real picks.</>
+            : `None has earned a say in real picks yet. A strategist needs ${data.live_min} live calls (graded after it was born) that beat the app's own #1 pick.`}
         </div>
       </div>
 
@@ -98,12 +103,13 @@ export default function BrainLineages({ data, ago, now }) {
             <div className="w-5 text-sm font-extrabold text-slate-500 tabular-nums">{i + 1}</div>
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: col(s.style) }} />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold truncate">{s.name}</div>
+              <div className="text-sm font-semibold truncate">{s.name}{data.champion?.id === s.id && <span className="ml-1.5 rounded bg-green-500/20 px-1.5 py-0.5 text-[10px] font-bold text-green-300">CHAMPION</span>}</div>
               <div className="text-[11px] text-slate-500 truncate">{s.parent_name ? `child of ${s.parent_name}` : 'founder'}</div>
             </div>
             <div className="text-right leading-tight">
               <div className={`text-sm font-bold tabular-nums ${s.fitness >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pct(s.fitness)} pts</div>
               <div className="text-[10px] text-slate-500">beats S&P {Math.round(s.beat_rate * 100)}%</div>
+              <div className="text-[10px] text-slate-500">{s.live?.n ? `live: ${pct(s.live.fitness)} pts on ${s.live.n}` : 'live: none yet'}</div>
             </div>
           </motion.div>
         ))}

@@ -175,7 +175,6 @@ export default function BrainPage({ viewOnly = false }) {
     seenRef.current = new Set(keys);
   }, [d]);
   const c = d?.counts || {};
-  const rightPct = c.graded ? Math.round((c.graded_right / c.graded) * 100) : null;
   const versions = d?.versions || [];
   const latest = versions[versions.length - 1];
 
@@ -267,16 +266,32 @@ export default function BrainPage({ viewOnly = false }) {
           ))}
         </div>
 
-        {rightPct != null && (
-          <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 flex items-center gap-4">
-            <svg viewBox="0 0 36 36" className="w-16 h-16 shrink-0 -rotate-90"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#1e293b" strokeWidth="3.5" />
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#4ade80" strokeWidth="3.5" strokeDasharray={`${rightPct} 100`} strokeLinecap="round" /></svg>
-            <div>
-              <div className="text-2xl font-extrabold">{rightPct}% <span className="text-base font-bold text-slate-300">beat the market</span></div>
-              <div className="text-xs text-slate-400">Of {c.graded?.toLocaleString()} graded picks, in the direction the belief expected. Includes practice beliefs.</div>
+        {d?.skill?.top && (() => {
+          const sk = d.skill, top = sk.top, rest = sk.rest || { beat_rate: 0, avg_excess: 0, n: 0 };
+          const edge = (top.avg_excess - rest.avg_excess) * 100;
+          const pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
+          return (
+            <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">The honest scorecard · {sk.days} days after each call</div>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-2xl font-extrabold tabular-nums">{Math.round(top.beat_rate * 100)}%</div>
+                  <div className="text-xs text-slate-400">of our #1 picks beat the S&P 500 ({pts(top.avg_excess)} pts avg)</div>
+                </div>
+                <div>
+                  <div className={`text-2xl font-extrabold tabular-nums ${edge > 0.5 ? 'text-green-400' : 'text-slate-200'}`}>{edge >= 0 ? '+' : ''}{edge.toFixed(1)} pts</div>
+                  <div className="text-xs text-slate-400">#1 pick vs. our other ideas for the same belief</div>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-slate-400">
+                {edge > 0.5
+                  ? 'The #1 pick is beating the other ideas: that gap is the skill the brain has learned so far.'
+                  : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
+                {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
+              </p>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         <BrainLineages data={d?.lineages} ago={ago} now={now} />
 

@@ -21,7 +21,7 @@ from typing import Optional
 from . import db
 from .strategy import horizon_bucket
 
-LABEL_DAYS = int(os.getenv("MP_LABEL_DAYS", "30"))
+LABEL_DAYS = int(os.getenv("MP_LABEL_DAYS", "90"))  # beliefs play out over months; 30-day results are mostly noise
 _SIM_TTL = 600
 _sim_lock = threading.Lock()
 _sim_cache: dict = {"at": 0.0, "vec": None, "mat": None, "rows": []}
