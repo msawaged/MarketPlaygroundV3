@@ -276,6 +276,27 @@ def _schema() -> list[str]:
             request TEXT,
             response TEXT
         )""",
+        """CREATE TABLE IF NOT EXISTS strategists (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            style TEXT NOT NULL,
+            gen INTEGER NOT NULL,
+            parent_id TEXT,
+            weights TEXT NOT NULL,
+            status TEXT NOT NULL,
+            fitness REAL,
+            beat_rate REAL,
+            n_scored INTEGER,
+            born_at TEXT NOT NULL,
+            retired_at TEXT
+        )""",
+        """CREATE TABLE IF NOT EXISTS lineage_events (
+            id TEXT PRIMARY KEY,
+            at TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            strategist_id TEXT NOT NULL,
+            detail TEXT
+        )""",
         """CREATE TABLE IF NOT EXISTS kv_cache (
             k TEXT PRIMARY KEY,
             v TEXT NOT NULL,

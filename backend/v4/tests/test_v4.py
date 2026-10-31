@@ -1218,3 +1218,31 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     fb = movers._fallback_story(out["item"])
     assert fb["ai"] is False and fb["figures"] == [] and fb["hook_line"]
+
+
+def test_lineages_evolve_and_snapshot(monkeypatch):
+    from backend.v4 import lineages, brain
+    monkeypatch.setattr(lineages, "MIN_BELIEFS", 10)
+    rng = __import__("random").Random(1)
+    for i in range(60):
+        bid = f"b-lin{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", f"2026-01-{1 + i % 28:02d}T00:00:00", "2026-01-01", "seed_backfill"))
+        for j in range(3):
+            mom = rng.uniform(-0.3, 0.3)
+            pid = f"p-lin{i}-{j}"
+            feats = {"num": {"mom60": mom, "vol60": rng.uniform(0.2, 0.6), "claude_score": rng.random()}}
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", "2026-01-01", 10.0, db.dumps(feats)))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 30, "2026-02-01", 10.0, 0.0, 0.0, mom * 0.5 + rng.gauss(0, 0.01), "2026-02-01"))
+    r1 = lineages.evolve(seed=1)
+    assert r1["evolved"] and r1["generation"] == 2
+    snap = lineages.snapshot()
+    assert len(snap["alive"]) == lineages.POP_MAX and snap["alive"][0]["name"].startswith("Momentum")  # momentum wins this market
+    lineages.evolve(seed=2)
+    snap = lineages.snapshot()
+    assert snap["retired"] == 2 and snap["generation"] == 3 and len(snap["alive"]) == lineages.POP_MAX
+    assert any(e["kind"] == "born" for e in snap["events"])
+    brain._cache["v"] = None
+    assert brain.snapshot()["lineages"]["generation"] == 3

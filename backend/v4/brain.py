@@ -10,7 +10,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import db, learning, nn
+from . import db, learning, lineages, nn
 
 _cache = {"at": 0.0, "v": None}
 _lock = threading.Lock()
@@ -121,6 +121,13 @@ def health(public: bool = True) -> dict:
     return out
 
 
+def _safe_lineages() -> dict:
+    try:
+        return lineages.snapshot()
+    except Exception:
+        return {"generation": 0, "alive": [], "tree": [], "events": [], "retired": 0}
+
+
 def snapshot() -> dict:
     with _lock:
         if _cache["v"] and time.time() - _cache["at"] < 15:
@@ -153,6 +160,7 @@ def snapshot() -> dict:
         "health": health(public=True),
         "next": _next_runs(datetime.now(timezone.utc)),
         "graded": _recent_graded(),
+        "lineages": _safe_lineages(),
     }
     with _lock:
         _cache.update(at=time.time(), v=v)

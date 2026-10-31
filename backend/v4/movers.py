@@ -341,7 +341,7 @@ def _write_story(item: dict, client: Any = None) -> dict:
         if isinstance(f, dict) and _grounded(f, source):
             figs.append({k: _clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")})
     return {"hook_big": _clip(d.get("hook_big"), 28) or "Moving now", "hook_line": _clip(d.get("hook_line"), 120),
-            "happened": _clip(d.get("happened"), 240), "figures": figs[:2], "why": _clip(d.get("why"), 240),
+            "happened": _clip(d.get("happened"), 320), "figures": figs[:2], "why": _clip(d.get("why"), 240),
             "twist": _clip(d.get("twist"), 200), "ai": True}
 
 
