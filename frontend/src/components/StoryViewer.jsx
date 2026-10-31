@@ -61,7 +61,7 @@ function Pct({ v }) {
   return <span className={`text-lg font-black tabular-nums ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span>;
 }
 
-function cards(data, navigate) {
+function cards(data, navigate, reel = false) {
   const { story: s, item } = data;
   const big = 'text-[1.7rem] leading-snug font-bold text-white';
   const out = [
@@ -113,6 +113,23 @@ function cards(data, navigate) {
       </div>,
     );
   }
+  if (reel) {
+    out.push(
+      <div key="cta" className="flex h-full flex-col justify-center">
+        <Label>Your call</Label>
+        <p className="mt-5 text-3xl font-black leading-tight text-white">“{item.hunch.replace(/\.$/, '')}.”</p>
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4, type: 'spring', stiffness: 180 }}
+          className="mt-8 text-4xl font-black text-white">Believe it<span className="text-slate-500"> or </span>doubt it?</motion.div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+          className="mt-8 rounded-2xl bg-blue-600 px-5 py-4 text-center">
+          <div className="text-lg font-black">Make your call free</div>
+          <div className="text-sm text-blue-100">MarketPlayground · link in bio</div>
+        </motion.div>
+        <p className="mt-4 text-center text-xs text-slate-500">Practice money only. Not investment advice.</p>
+      </div>,
+    );
+    return out;
+  }
   out.push(
     <div key="call" className="flex h-full flex-col justify-center">
       <Label>Your call</Label>
@@ -128,7 +145,7 @@ function cards(data, navigate) {
   return out;
 }
 
-export default function StoryViewer({ headline, onClose }) {
+export default function StoryViewer({ headline, onClose, reel = false, cardMs = CARD_MS }) {
   const navigate = useNavigate();
   const [data, setData] = useState(() => _stories.get(headline) || null);
   const [err, setErr] = useState('');
@@ -154,7 +171,7 @@ export default function StoryViewer({ headline, onClose }) {
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
-  const list = data ? cards(data, navigate) : [];
+  const list = data ? cards(data, navigate, reel) : [];
   const last = list.length - 1;
   const go = useCallback((d) => {
     setElapsed(0);
@@ -168,13 +185,17 @@ export default function StoryViewer({ headline, onClose }) {
 
   // auto-advance like a story; hold to pause; the last card waits for a choice
   useEffect(() => {
-    if (!data || paused || idx >= last) return undefined;
+    if (!data || paused || (idx >= last && !reel)) return undefined;
     const t = setInterval(() => setElapsed((e) => {
-      if (e + 100 >= CARD_MS) { go(1); return 0; }
+      if (e + 100 >= cardMs) {
+        if (reel && idx >= last) { window.__reelDone = true; return cardMs; } // recording: stop on the last card
+        go(1); return 0;
+      }
       return e + 100;
     }), 100);
     return () => clearInterval(t);
-  }, [data, paused, idx, last, go]);
+  }, [data, paused, idx, last, go, reel, cardMs]);
+  useEffect(() => { if (reel && data) window.__reelStart = performance.now(); }, [reel, data]);
 
   const onDown = () => { downAt.current = Date.now(); setPaused(true); };
   const onUp = (e) => {
@@ -192,15 +213,16 @@ export default function StoryViewer({ headline, onClose }) {
         <div className="flex gap-1.5 pt-2">
           {(list.length ? list : [0]).map((_, i) => (
             <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/20">
-              <div className="h-full bg-white" style={{ width: i < idx ? '100%' : i === idx ? `${idx >= last ? 100 : (elapsed / CARD_MS) * 100}%` : '0%' }} />
+              <div className="h-full bg-white" style={{ width: i < idx ? '100%' : i === idx ? `${idx >= last && !reel ? 100 : Math.min(100, (elapsed / cardMs) * 100)}%` : '0%' }} />
             </div>
           ))}
         </div>
         <div className="mt-3 flex items-center justify-between">
           <div className="text-sm font-bold">Market<span className="text-blue-400">Playground</span></div>
-          <button onClick={onClose} aria-label="Close story" className="rounded-full p-2 hover:bg-white/10"><X className="h-5 w-5" /></button>
+          {reel ? <div className="text-xs font-semibold text-slate-400">Moving now</div>
+            : <button onClick={onClose} aria-label="Close story" className="rounded-full p-2 hover:bg-white/10"><X className="h-5 w-5" /></button>}
         </div>
-        <div className="relative flex-1" onPointerDown={onDown} onPointerUp={onUp} onPointerLeave={() => setPaused(false)}>
+        <div className="relative flex-1" {...(reel ? {} : { onPointerDown: onDown, onPointerUp: onUp, onPointerLeave: () => setPaused(false) })}>
           {!data && !err && (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-400">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
