@@ -177,6 +177,10 @@ def _kv_set(k: str, v: str) -> None:
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (k, v, datetime.now(timezone.utc).isoformat()))
 
 
+# Owner-approved extra backfill budget (USD), by approval date. Total spend never exceeds the sum.
+EXTRA_BACKFILL_GRANTS = {"2026-10-31": 1.00}
+
+
 def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: int = 4, train: bool = True) -> dict:
     """Hourly: warm up with past-dated beliefs until there's enough graded history, seed live once a day,
     grade, retrain. Spending is capped in total (warm-up) and per day (live)."""
@@ -194,6 +198,15 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
                 max_usd=min(1.0, budget - spent), claude_client=claude_client)
         _kv_set("warmup_spent_usd", str(spent + r["cost_usd"]))
         out["backfill"] = r
+    else:
+        # Extra practice on past dates that the owner approved, in dollars (more graded calls = a surer ranker).
+        granted = sum(EXTRA_BACKFILL_GRANTS.values())
+        extra_spent = float(_kv_get("extra_backfill_spent_usd", "0") or 0)
+        if extra_spent < granted - 0.02:
+            r = run("backfill", n=batch, generate=int(os.getenv("MP_WARMUP_GENERATE", "20")), years=3.0, concurrency=concurrency,
+                    max_usd=min(0.5, granted - extra_spent), claude_client=claude_client)
+            _kv_set("extra_backfill_spent_usd", str(extra_spent + r["cost_usd"]))
+            out["backfill"] = dict(r, extra=True, granted_usd=granted)
     today = market.today()
     if today.weekday() < 5 and _kv_get("live_seed_date") != today.isoformat():
         out["live"] = run("live", n=int(os.getenv("MP_SEED_N", "25")), generate=int(os.getenv("MP_SEED_GENERATE", "25")),

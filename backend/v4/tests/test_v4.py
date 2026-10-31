@@ -1324,3 +1324,19 @@ def test_engine_uses_ranker_v2_scores(monkeypatch):
     monkeypatch.setattr(research, "score_candidates", fake)
     r = engine.process_belief("plumbing demand is going to be high", "u1", "moderate", claude_client=FakeClaude())
     assert r["valid"] and seen["n"] == 5
+
+
+def test_extra_backfill_grant_is_capped(monkeypatch):
+    from backend.v4 import seeder
+    monkeypatch.setenv("MP_WARMUP_GRADED", "0")  # warm-up already done
+    monkeypatch.setattr(seeder, "EXTRA_BACKFILL_GRANTS", {"t": 1.0})
+    calls = []
+    def fake_run(mode, n=0, generate=0, years=3.0, concurrency=4, max_usd=10.0, **kw):
+        calls.append((mode, max_usd))
+        return {"ok": 1, "skipped": 0, "errors": 0, "cost_usd": 0.6 if mode == "backfill" else 0.0}
+    monkeypatch.setattr(seeder, "run", fake_run)
+    monkeypatch.setattr(seeder, "news_beliefs", lambda *a, **k: [], raising=False)
+    for _ in range(4):
+        seeder.auto(claude_client=FakeClaude(), train=False)
+    backfills = [c for c in calls if c[0] == "backfill"]
+    assert [round(m, 2) for _, m in backfills] == [0.5, 0.4]  # 0.6 + 0.6 spent >= 1.0 granted: stops
