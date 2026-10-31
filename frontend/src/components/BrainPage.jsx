@@ -6,6 +6,7 @@ import { request, API_BASE } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { themeLabel } from '../lib/text';
 import BottomNavigation from './BottomNavigation';
+import BrainLineages from './BrainLineages';
 
 const STATUS = {
   active: { label: 'Trusted', color: '#4ade80', note: 'Beat the baseline on beliefs it had never seen, so it gets a vote.' },
@@ -276,6 +277,8 @@ export default function BrainPage({ viewOnly = false }) {
             </div>
           </div>
         )}
+
+        <BrainLineages data={d?.lineages} ago={ago} now={now} />
 
         <h2 className="mt-8 text-xl font-extrabold">Just learned</h2>
         <div className="mt-2">

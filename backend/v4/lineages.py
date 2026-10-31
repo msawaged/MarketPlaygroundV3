@@ -48,9 +48,16 @@ def _event(kind: str, sid: str, detail: str) -> None:
 
 def _add(name: str, style: str, gen: int, parent: Optional[str], weights: dict) -> str:
     sid = f"st-{uuid.uuid4().hex[:10]}"
+    twins = db.query_one("SELECT COUNT(*) AS n FROM strategists WHERE name LIKE ?", (name + "%",))["n"]
+    if twins:  # siblings born the same generation: "Gen 5", "Gen 5b", "Gen 5c"
+        name = f"{name}{chr(ord('a') + twins)}"
     db.execute("""INSERT INTO strategists (id, name, style, gen, parent_id, weights, status, born_at)
                   VALUES (?,?,?,?,?,?,?,?)""", (sid, name, style, gen, parent, db.dumps(weights), "alive", _now()))
     return sid
+
+
+def _name(sid: str) -> str:
+    return db.query_one("SELECT name FROM strategists WHERE id = ?", (sid,))["name"]
 
 
 def ensure_founders() -> None:
@@ -132,7 +139,7 @@ def evolve(seed: Optional[int] = None) -> dict:
         sid = _add(f"{p['style']} · Gen {gen}", p["style"], gen, p["id"], child_w)
         db.execute("UPDATE strategists SET fitness = ?, beat_rate = ?, n_scored = ? WHERE id = ?",
                    (r["fitness"], r["beat_rate"], r["n"], sid))
-        _event("born", sid, f"{p['style']} · Gen {gen} was born from {p['name']}")
+        _event("born", sid, f"{_name(sid)} was born from {p['name']}")
         born.append(sid)
     return {"evolved": True, "generation": gen, "born": len(born), "retired": len(retired), "beliefs": len(beliefs)}
 
