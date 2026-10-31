@@ -21,9 +21,35 @@ from . import db
 
 DAYS = 90
 FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log_price", "is_etf", "same_dir",
-         "claude_rank_frac", "log_horizon", "conviction")
-DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high"}
+         "claude_rank_frac", "log_horizon", "conviction",
+         # volume profile: where the price sits versus where the stock actually traded (see market.volume_profile)
+         "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
+DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high",
+               "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value"}
+VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 KEY = "research:ranker"
+
+
+def enrich(limit: int = 300) -> dict:
+    """Add volume-profile features to older graded picks that were made before they existed (computed with data
+    up to each pick's own date only). Runs in small batches from the hourly job."""
+    from . import market
+    rows = db.query(
+        """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
+           WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)""", (DAYS,))
+    missing = [r for r in rows if "vp_poc_dist" not in ((db.loads(r["features"], {}) or {}).get("num") or {})]
+    todo = missing[:limit]
+    done = 0
+    for r in todo:
+        f = db.loads(r["features"], {}) or {}
+        try:
+            vp = market.vp_features(r["ticker"], date.fromisoformat(str(r["as_of_date"])[:10]))
+        except Exception:
+            continue
+        f.setdefault("num", {}).update(vp)
+        db.execute("UPDATE picks SET features = ? WHERE id = ?", (db.dumps(f), r["id"]))
+        done += 1
+    return {"enriched": done, "remaining": max(0, len(missing) - done)}
 
 
 def load() -> list[dict]:
@@ -36,7 +62,7 @@ def load() -> list[dict]:
     for r in rows:
         num = (db.loads(r["features"], {}) or {}).get("num", {})
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
-        f = {k: float(num.get(k, 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
+        f = {k: float(num.get(k, 1.0 if k == "rvol" else 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
         b["cands"].append({"f": f, "ex": float(r["dir_excess"]), "top": r["final_rank"] == 1})
@@ -103,6 +129,9 @@ def run(folds: int = 5) -> dict:
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
         "mom+rs blend": lambda f: f["z_mom60"] + f["z_rs60"] + 0.5 * f["z_mom20"],
+        "accepted above value (vp)": lambda f: f["z_vp_above_value"] + 0.5 * f["z_vp_vah_dist"],
+        "near most-traded price (vp)": lambda f: -abs(f["z_vp_poc_dist"]),
+        "heavy recent volume (rvol)": lambda f: f["z_rvol"],
     }
     zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"]
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)"]}

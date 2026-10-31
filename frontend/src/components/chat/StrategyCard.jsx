@@ -96,6 +96,35 @@ function Panel({ panel }) {
 const FAMILY_SHARES = new Set(['Buy Stock', 'Sell / Avoid']);
 const kindLabel = (s) => (s === 'Buy Stock' ? 'Shares' : s === 'Sell / Avoid' ? 'Stay out' : 'Options');
 
+// Where the stock actually traded over ~6 months (volume profile from daily bars): the most-traded price and the
+// range holding 70% of the volume. Above that range = buyers accepted higher prices; below = sellers in control.
+function KeyLevels({ lv }) {
+  const where = lv.close > lv.vah ? { t: 'Trading above its usual range', c: 'text-green-300' }
+    : lv.close < lv.val ? { t: 'Trading below its usual range', c: 'text-red-300' }
+    : { t: 'Inside its usual range', c: 'text-slate-300' };
+  const lo = Math.min(lv.val, lv.close) * 0.98, hi = Math.max(lv.vah, lv.close) * 1.02;
+  const x = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100))}%`;
+  return (
+    <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-3">
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Key price levels</div>
+        <div className={`text-[11px] font-semibold ${where.c}`}>{where.t}</div>
+      </div>
+      <div className="relative mt-3 h-2 rounded-full bg-slate-800">
+        <div className="absolute h-2 rounded-full bg-blue-500/30" style={{ left: x(lv.val), width: `calc(${x(lv.vah)} - ${x(lv.val)})` }} />
+        <div className="absolute -top-1 h-4 w-0.5 bg-amber-300" style={{ left: x(lv.poc) }} title="Most-traded price" />
+        <div className="absolute -top-1.5 h-5 w-1.5 -ml-[3px] rounded-full bg-white" style={{ left: x(lv.close) }} title="Price now" />
+      </div>
+      <div className="mt-2 grid grid-cols-3 text-[11px] text-slate-400">
+        <span>Range low<br /><b className="text-slate-200">${lv.val.toFixed(2)}</b></span>
+        <span className="text-center">Most traded<br /><b className="text-amber-200">${lv.poc.toFixed(2)}</b></span>
+        <span className="text-right">Range high<br /><b className="text-slate-200">${lv.vah.toFixed(2)}</b></span>
+      </div>
+      <p className="mt-2 text-[11px] text-slate-500">Where most shares changed hands over the last ~6 months. Useful for entries, stops and targets{lv.rvol >= 1.5 ? `; volume lately is ${lv.rvol.toFixed(1)}x normal` : ''}.</p>
+    </div>
+  );
+}
+
 export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine, prefs, onTune }) {
   const navigate = useNavigate();
   const [shared, setShared] = useState(null);
@@ -315,10 +344,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             {track && track.n > 0 && (
               <p className="text-xs text-slate-400">
                 <Term k="track record">Track record</Term> on this theme: beat the S&amp;P 500 in {Math.round(track.hit * 100)}% of {track.n} past picks
-                ({track.mean >= 0 ? '+' : ''}{(track.mean * 100).toFixed(1)}% on average after 30 days).
+                ({track.mean >= 0 ? '+' : ''}{(track.mean * 100).toFixed(1)}% on average after 3 months).
               </p>
             )}
           </div>
+
+          {pick.levels && <KeyLevels lv={pick.levels} />}
 
           {basePick.alt && (
             <div>

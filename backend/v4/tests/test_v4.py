@@ -1342,3 +1342,35 @@ def test_extra_backfill_grant_is_capped(monkeypatch):
         seeder.auto(claude_client=FakeClaude(), train=False)
     backfills = [c for c in calls if c[0] == "backfill"]
     assert [round(m, 2) for _, m in backfills] == [0.5, 0.4]  # 0.6 + 0.6 spent >= 1.0 granted: stops
+
+
+def test_volume_profile_levels_and_features(monkeypatch):
+    from datetime import timedelta as _td
+    d0 = TODAY - _td(days=300)
+    dates = [(d0 + _td(days=i)).isoformat() for i in range(200)]
+    closes = [100.0] * 120 + [100 + i * 0.5 for i in range(80)]          # long base at 100, then a breakout
+    vols = [5_000_000.0] * 120 + [1_000_000.0] * 75 + [4_000_000.0] * 5  # heavy volume in the base, a recent surge
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, closes))
+    monkeypatch.setattr(market, "_vol_cache", {"XYZ": vols})
+    vp = market.volume_profile("XYZ", window=150)
+    assert vp and abs(vp["poc"] - 100) < 2 and vp["close"] > vp["vah"]   # broke out above where it traded
+    f = market.vp_features("XYZ")
+    assert f["vp_above_value"] == 1.0 and f["vp_poc_dist"] > 0.3 and f["rvol"] > 1.5
+    monkeypatch.setattr(market, "_vol_cache", {})
+    assert market.volume_profile("XYZ") is None and market.vp_features("XYZ")["vp_above_value"] == 0.0
+
+
+def test_research_enrich_adds_vp_features(monkeypatch):
+    from backend.v4 import research
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-en", "seed", "x", "x", "2026-01-01T00:00:00", "2026-01-01", "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-en", "b-en", "XYZ", "bullish", "2026-01-01", 10.0, db.dumps({"num": {"mom60": 0.1}})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-en", 90, "2026-04-01", 10.0, 0.0, 0.0, 0.01, "2026-04-01"))
+    monkeypatch.setattr(market, "vp_features", lambda s, d=None: {"vp_poc_dist": 0.2, "vp_vah_dist": 0.1, "vp_val_dist": 0.3,
+                                                                  "vp_above_value": 1.0, "vp_below_value": 0.0, "rvol": 2.0})
+    out = research.enrich(10)
+    assert out["enriched"] == 1 and out["remaining"] == 0
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-en'")["features"])["num"]
+    assert num["vp_above_value"] == 1.0 and num["mom60"] == 0.1

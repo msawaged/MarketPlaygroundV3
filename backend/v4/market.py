@@ -194,6 +194,7 @@ def daily_closes(symbol: str) -> tuple[list[str], list[float]]:
     }
     dates: list[str] = []
     closes: list[float] = []
+    vols: list[float] = []
     page = None
     for _ in range(20):
         if page:
@@ -208,13 +209,78 @@ def daily_closes(symbol: str) -> tuple[list[str], list[float]]:
         for b in data.get("bars") or []:
             dates.append(b["t"][:10])
             closes.append(float(b["c"]))
+            vols.append(float(b.get("v") or 0.0))
         page = data.get("next_page_token")
         if not page:
             break
     with _lock:
         _bars_cache[symbol] = (dates, closes)
+        _vol_cache[symbol] = vols
         _bars_at[symbol] = _t.time()
     return dates, closes
+
+
+_vol_cache: dict[str, list[float]] = {}
+
+
+def daily_volumes(symbol: str) -> list[float]:
+    """Daily share volume aligned with daily_closes(symbol). [] when unknown."""
+    symbol = symbol.upper()
+    dates, _ = daily_closes(symbol)
+    with _lock:
+        v = _vol_cache.get(symbol) or []
+    return v if len(v) == len(dates) else []
+
+
+def volume_profile(symbol: str, as_of: Optional[date] = None, window: int = 120, bins: int = 40) -> Optional[dict]:
+    """Where the stock actually traded over the last `window` sessions, from daily bars (a daily approximation of an
+    intraday volume profile): the most-traded price (POC) and the value area holding 70% of the volume (VAL..VAH).
+    Uses only data up to as_of. None when volume isn't available."""
+    dates, closes = daily_closes(symbol)
+    vols = daily_volumes(symbol)
+    if not vols:
+        return None
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    if i < 40:
+        return None
+    lo_i = max(0, i - window + 1)
+    px, vv = closes[lo_i: i + 1], vols[lo_i: i + 1]
+    tot = sum(vv)
+    lo, hi = min(px), max(px)
+    if tot <= 0 or hi <= lo:
+        return None
+    w = (hi - lo) / bins
+    hist = [0.0] * bins
+    for p_, v_ in zip(px, vv):
+        hist[min(bins - 1, int((p_ - lo) / w))] += v_
+    poc_b = max(range(bins), key=lambda b: hist[b])
+    a = b = poc_b
+    acc = hist[poc_b]
+    while acc < 0.7 * tot and (a > 0 or b < bins - 1):
+        left = hist[a - 1] if a > 0 else -1.0
+        right = hist[b + 1] if b < bins - 1 else -1.0
+        if right >= left:
+            b += 1; acc += hist[b]
+        else:
+            a -= 1; acc += hist[a]
+    recent = vols[max(0, i - 4): i + 1]; base = vols[max(0, i - 59): i + 1]
+    return {"poc": lo + (poc_b + 0.5) * w, "val": lo + a * w, "vah": lo + (b + 1) * w, "close": closes[i],
+            "rvol": (sum(recent) / len(recent)) / (sum(base) / len(base)) if base and sum(base) > 0 else 1.0,
+            "window": window}
+
+
+def vp_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """Volume-profile features (0 when unknown): where today's price sits versus where the stock has traded."""
+    try:
+        vp = volume_profile(symbol, as_of)
+    except Exception:
+        vp = None
+    if not vp:
+        return {"vp_poc_dist": 0.0, "vp_vah_dist": 0.0, "vp_val_dist": 0.0, "vp_above_value": 0.0, "vp_below_value": 0.0, "rvol": 1.0}
+    c = vp["close"]
+    return {"vp_poc_dist": c / vp["poc"] - 1, "vp_vah_dist": c / vp["vah"] - 1, "vp_val_dist": c / vp["val"] - 1,
+            "vp_above_value": 1.0 if c > vp["vah"] else 0.0, "vp_below_value": 1.0 if c < vp["val"] else 0.0,
+            "rvol": max(0.1, min(5.0, vp["rvol"]))}
 
 
 def latest_price(symbol: str) -> float:
@@ -297,6 +363,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "dist_high": closes[i] / hi252 - 1.0 if hi252 > 0 else 0.0,
         "log_price": math.log(max(closes[i], 0.01)),
         "history_days": min(i, 1000),
+        **vp_features(symbol, as_of),
     }
 
 

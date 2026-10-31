@@ -85,6 +85,18 @@ def _store_interpretation(norm: str, risk: str, interp: dict, usage: dict) -> No
                (key, db.dumps({"interp": interp, "usage": usage}), now))
 
 
+def _levels(ticker: str):
+    """Key price levels from where the stock actually traded over ~6 months (volume profile, daily bars)."""
+    try:
+        vp = market.volume_profile(ticker)
+    except Exception:
+        return None
+    if not vp:
+        return None
+    return {"poc": round(vp["poc"], 2), "vah": round(vp["vah"], 2), "val": round(vp["val"], 2),
+            "close": round(vp["close"], 2), "rvol": round(vp["rvol"], 2), "sessions": vp["window"]}
+
+
 def _champion():
     try:
         return lineages.champion()
@@ -260,6 +272,7 @@ def process_belief(
             "score": round(v["final_score"], 4), "claude_score": v["score"],
             "nn_score": None if v["nn_score"] is None else round(v["nn_score"], 4),
             "track_record": v["track"], "shown": shown, "alt": alt,
+            "levels": None if backfill else _levels(v["ticker"]),
         }
         picks_out.append(pick)
         rows_picks.append((

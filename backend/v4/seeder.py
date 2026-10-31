@@ -207,6 +207,11 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
                     max_usd=min(0.5, granted - extra_spent), claude_client=claude_client)
             _kv_set("extra_backfill_spent_usd", str(extra_spent + r["cost_usd"]))
             out["backfill"] = dict(r, extra=True, granted_usd=granted)
+    try:  # add volume-profile features to older graded picks, a batch per hour (no Claude, market data only)
+        from . import research
+        out["enrich"] = research.enrich(int(os.getenv("MP_ENRICH_BATCH", "300")))
+    except Exception as e:
+        out["enrich"] = {"error": f"{type(e).__name__}: {e}"}
     today = market.today()
     if today.weekday() < 5 and _kv_get("live_seed_date") != today.isoformat():
         out["live"] = run("live", n=int(os.getenv("MP_SEED_N", "25")), generate=int(os.getenv("MP_SEED_GENERATE", "25")),
