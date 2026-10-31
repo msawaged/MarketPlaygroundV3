@@ -345,6 +345,15 @@ async def get_movers():
     return await run_in_threadpool(movers.feed)
 
 
+@router.get("/movers/story")
+async def get_movers_story(h: str = ""):
+    """One news story from today's feed, told as full-screen cards (Story mode)."""
+    out = await run_in_threadpool(movers.story, h[:200])
+    if not out:
+        raise HTTPException(status_code=404, detail="That story is no longer in today's news.")
+    return out
+
+
 @router.get("/unsubscribe")
 async def get_unsubscribe(a: str = "", s: str = ""):
     from fastapi.responses import HTMLResponse

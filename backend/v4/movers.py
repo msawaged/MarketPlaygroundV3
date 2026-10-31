@@ -8,6 +8,7 @@ tickers are the companies.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -161,7 +162,7 @@ def _items(news: list[dict], ai: Optional[dict]) -> list[dict]:
         hunch = str((a or {}).get("hunch") or "").strip()[:140] or n["headline"]
         items.append({
             "headline": n["headline"], "source": n.get("source") or "", "url": n.get("url") or "",
-            "created_at": n.get("created_at") or "",
+            "created_at": n.get("created_at") or "", "summary": n.get("summary") or "",
             "hunch": hunch, "why": str((a or {}).get("why") or "").strip()[:200],
             "companies": _clean_companies((a or {}).get("companies"), n.get("symbols") or []),
         })
@@ -235,3 +236,136 @@ def feed(client: Any = None) -> dict:
                     for it in cur["items"]]
     cur["market"] = market.clock()
     return cur
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Story mode: one news item told as 5-6 full-screen cards (hook, what happened, why it matters, the twist, who moves,
+# your call). Written once per headline by Claude and shared by everyone (kv_cache), so it costs one small call per
+# story no matter how many people open it. Numbers on the cards only ever come from the article itself.
+
+STORY_KEY = "story:v1:"
+
+STORY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["hook_big", "hook_line", "happened", "figures", "why", "twist"],
+    "properties": {
+        "hook_big": {"type": "string"},
+        "hook_line": {"type": "string"},
+        "happened": {"type": "string"},
+        "figures": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["label", "before_label", "before", "after_label", "after"],
+                "properties": {
+                    "label": {"type": "string"},
+                    "before_label": {"type": "string"},
+                    "before": {"type": "string"},
+                    "after_label": {"type": "string"},
+                    "after": {"type": "string"},
+                },
+            },
+        },
+        "why": {"type": "string"},
+        "twist": {"type": "string"},
+    },
+}
+
+STORY_PROMPT = """You turn one market news story into a short, punchy story told on full-screen cards, like a great
+finance explainer reel. Plain English, no jargon, no tickers in the text, no hype words like "massive" or "insane".
+
+- hook_big: the attention-grabber, at most 4 words. Use a striking number from the article if there is one
+  ("$51 billion", "Half a trillion", "Up 40%"); otherwise a short punchy phrase ("Shoppers are switching").
+- hook_line: one sentence under 14 words that makes someone want to keep reading.
+- happened: what happened, in at most 30 words.
+- figures: 0 to 2 before/after comparisons, ONLY when both numbers are written in the headline or summary
+  ("Cloud sales": "A year ago" "$15.2B" -> "Now" "$30.7B"; or "What Wall Street expected" vs "Actual").
+  Copy the numbers exactly as written. Never estimate, round or invent a number. If unsure, return [].
+- why: why it matters for companies and investors, as a short chain of cause and effect, at most 30 words.
+- twist: the best honest reason this might NOT play out the way people expect (the skeptic's view), at most 25 words.
+"""
+
+
+def _story_key(headline: str) -> str:
+    return STORY_KEY + hashlib.sha1(headline.strip().lower().encode()).hexdigest()[:20]
+
+
+def _nums(text: str) -> set[str]:
+    return {m.replace(",", "") for m in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+
+
+def _grounded(fig: dict, source: str) -> bool:
+    """A figure is kept only if every number on it is written in the article (no invented numbers)."""
+    have = _nums(source)
+    need = _nums(fig.get("before", "")) | _nums(fig.get("after", ""))
+    return bool(_nums(fig.get("before", ""))) and bool(_nums(fig.get("after", ""))) and need <= have
+
+
+def _clip(s: Any, n: int) -> str:
+    s = re.sub(r"\s+", " ", str(s or "")).strip()
+    return s if len(s) <= n else s[: n - 1].rsplit(" ", 1)[0] + "…"
+
+
+def _fallback_story(item: dict) -> dict:
+    nums = re.findall(r"[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?", item["headline"])
+    return {"hook_big": _clip(nums[0], 20) if nums else "Moving now", "hook_line": _clip(item["headline"], 110),
+            "happened": _clip(item.get("summary") or item["headline"], 220), "figures": [],
+            "why": _clip(item.get("why") or "News like this can shift which companies people want to own.", 220),
+            "twist": "Markets react fast. Some of this may already be priced in, so the next move could surprise.",
+            "ai": False}
+
+
+def _write_story(item: dict, client: Any = None) -> dict:
+    if not client and not os.getenv("ANTHROPIC_API_KEY"):
+        return _fallback_story(item)
+    source = f"{item['headline']}\n{item.get('summary') or ''}"
+    companies = ", ".join(f"{c['ticker']} ({c.get('why') or c.get('direction') or ''})" for c in item.get("companies", []))
+    try:
+        from .interpreter import _client
+        client = client or _client()
+        resp = client.messages.create(
+            model=MODEL, max_tokens=1500, system=STORY_PROMPT,
+            messages=[{"role": "user", "content": f"Headline: {item['headline']}\nSummary: {item.get('summary') or '(none)'}\n"
+                                                  f"What it could mean: {item.get('hunch') or ''}\nCompanies it touches: {companies}"}],
+            extra_body={"output_config": {"effort": "low", "format": {"type": "json_schema", "schema": STORY_SCHEMA}}},
+        )
+        text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), "")
+        d = json.loads(text)
+    except Exception as e:  # a story must never break the page
+        log.warning("movers: story step failed: %s", e)
+        return _fallback_story(item)
+    figs = []
+    for f in d.get("figures") or []:
+        if isinstance(f, dict) and _grounded(f, source):
+            figs.append({k: _clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")})
+    return {"hook_big": _clip(d.get("hook_big"), 28) or "Moving now", "hook_line": _clip(d.get("hook_line"), 120),
+            "happened": _clip(d.get("happened"), 240), "figures": figs[:2], "why": _clip(d.get("why"), 240),
+            "twist": _clip(d.get("twist"), 200), "ai": True}
+
+
+def story(headline: str, client: Any = None) -> Optional[dict]:
+    """The story for one headline in today's feed (None if it isn't in the feed: no arbitrary prompts)."""
+    headline = (headline or "").strip()
+    if not headline:
+        return None
+    cur = feed(client)
+    item = next((it for it in cur.get("items", []) if it["headline"] == headline), None)
+    if not item:
+        return None
+    key = _story_key(headline)
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (key,))
+    st = None
+    if row:
+        try:
+            st = json.loads(row["v"])
+        except Exception:
+            st = None
+    if not st:
+        st = _write_story(item, client)
+        if st.get("ai"):  # only keep real stories; a fallback is retried next time
+            db.execute("DELETE FROM kv_cache WHERE k = ?", (key,))
+            db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
+                       (key, json.dumps(st), datetime.now(timezone.utc).isoformat()))
+    return {"story": st, "item": item, "market": cur.get("market")}

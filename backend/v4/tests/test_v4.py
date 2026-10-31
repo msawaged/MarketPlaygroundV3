@@ -1188,3 +1188,33 @@ def test_same_question_same_companies_across_trade_styles():
     assert len(fake.calls) == 1  # asked once, reused
     assert [p["ticker"] for p in a["picks"]] == [p["ticker"] for p in b["picks"]]
     assert {p["structure"] for p in b["picks"] if p["shown"]} != {"Buy Stock"}  # trades still follow the choice
+
+
+def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
+    from backend.v4 import movers
+    news = [{"headline": "Cloud sales doubled to $30.7B from $15.2B a year ago", "symbols": ["GOOGL"], "source": "x",
+             "url": "u", "created_at": "t", "summary": "Search sales came in at $63.4B versus $65B expected."}]
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 10.0, "change": -0.05} for s in syms})
+    feed_payload = {"items": [{"n": 0, "keep": True, "hunch": "Cloud demand keeps booming", "why": "AI spending.",
+                               "companies": [{"ticker": "GOOGL", "direction": "up", "why": "cloud"}]}]}
+    movers.feed(client=FakeClaude(feed_payload))
+    story_payload = {"hook_big": "$30.7B", "hook_line": "Cloud just doubled.", "happened": "Sales doubled.",
+                     "figures": [{"label": "Cloud sales", "before_label": "A year ago", "before": "$15.2B", "after_label": "Now", "after": "$30.7B"},
+                                 {"label": "Made up", "before_label": "Then", "before": "$1B", "after_label": "Now", "after": "$99B"}],
+                     "why": "AI needs servers.", "twist": "Spending could slow."}
+    fake = FakeClaude(story_payload)
+    out = movers.story(news[0]["headline"], client=fake)
+    st = out["story"]
+    assert st["hook_big"] == "$30.7B" and st["ai"] is True
+    assert [f["label"] for f in st["figures"]] == ["Cloud sales"]  # the invented numbers were dropped
+    assert out["item"]["companies"][0]["change"] == -0.05
+    movers.story(news[0]["headline"], client=fake)
+    assert len(fake.calls) == 1  # one call per story, shared by everyone
+    assert movers.story("Some headline that isn't in the feed", client=fake) is None
+    # no Claude: still a story built from the article itself
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    fb = movers._fallback_story(out["item"])
+    assert fb["ai"] is False and fb["figures"] == [] and fb["hook_line"]

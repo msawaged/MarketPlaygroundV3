@@ -17,6 +17,8 @@ Env:
 """
 from __future__ import annotations
 
+import re
+
 import bisect
 import math
 import os
@@ -336,7 +338,8 @@ def headlines(limit: int = 6) -> list[dict]:
             continue
         seen.add(key)
         items.append({"headline": h, "source": n.get("source") or "", "url": n.get("url") or "",
-                      "symbols": (n.get("symbols") or [])[:4], "created_at": n.get("created_at") or ""})
+                      "symbols": (n.get("symbols") or [])[:4], "created_at": n.get("created_at") or "",
+                      "summary": re.sub(r"<[^>]+>", "", n.get("summary") or "").strip()[:500]})
     with _lock:
         _news_cache.update(at=time.time(), items=items)
     return items[:limit]
