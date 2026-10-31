@@ -289,6 +289,16 @@ export default function BrainPage({ viewOnly = false }) {
                   : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
                 {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
               </p>
+              {sk.ranker?.active && sk.ranker.oos?.n > 0 && (
+                <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · live since {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  <div className="mt-1 text-xs text-slate-200">
+                    Tested on {sk.ranker.oos.n} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
+                    (old way: {Math.round((sk.ranker.old?.beat || 0) * 100)}%) and beat our other ideas by {pts(sk.ranker.oos.lift)} pts (old way: {pts(sk.ranker.old?.lift || 0)}).
+                    The numbers above update as new calls get graded.
+                  </div>
+                </div>
+              )}
             </div>
           );
         })()}

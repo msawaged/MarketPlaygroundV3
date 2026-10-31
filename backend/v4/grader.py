@@ -192,6 +192,12 @@ def main() -> None:
         result = {"grade": grade()}
         if args.train or args.force_train:
             result["train"] = nn.train(force=args.force_train)
+        try:  # refit ranker v2 on today's graded calls (re-tested walk-forward; off if it stops beating the old ranking)
+            from . import research
+            rv = research.fit_production()
+            result["ranker_v2"] = {"active": rv.get("active"), "oos": rv.get("oos")}
+        except Exception as e:
+            result["ranker_v2"] = {"error": f"{type(e).__name__}: {e}"}
         try:  # one generation of the strategist lineages per trading day; never blocks grading
             from . import lineages
             result["lineages"] = lineages.evolve()

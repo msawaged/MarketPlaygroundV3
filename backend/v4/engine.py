@@ -22,7 +22,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from . import db, interpreter, learning, lineages, market, nn, strategy
+from . import db, interpreter, learning, lineages, market, nn, research, strategy
 
 SHOW_TOP = 3
 CACHE_HOURS = 24  # the same question gets the same companies all day
@@ -199,6 +199,15 @@ def process_belief(
         v["nn_score"] = preds[i] if preds else None
         v["final_score"] = (1 - w) * claude_parts[i] + w * nn_parts[i]
         v["track"] = shown_stats.get(v["ticker"])
+    # Ranker v2: a model refit on every graded call, used only while it beats the old ranking on calls it never saw.
+    try:
+        rv2 = research.score_candidates([records[i]["num"] for i in range(len(valid))], [v.get("direction", "bullish") for v in valid])
+    except Exception:
+        rv2 = None
+    if rv2:
+        parts = nn.on_claude_scale(rv2, [v["final_score"] for v in valid])
+        for i, v in enumerate(valid):
+            v["final_score"] = (1 - research.WEIGHT) * v["final_score"] + research.WEIGHT * parts[i]
     # A strategist that proved itself on calls it never saw gets a modest say (see lineages.pick_champion).
     champ = _champion()
     if champ and len(valid) > 1:

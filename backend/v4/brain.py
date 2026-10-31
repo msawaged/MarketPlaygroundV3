@@ -131,6 +131,13 @@ def _skill() -> dict:
            WHERE o.checkpoint_days = ? GROUP BY CASE WHEN p.final_rank = 1 THEN 'top' ELSE 'rest' END""",
         (learning.LABEL_DAYS,))
     out = {"days": learning.LABEL_DAYS}
+    try:
+        from . import research
+        rv = research.ranker()
+        if rv:
+            out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old")}
+    except Exception:
+        pass
     for r in rows:
         n = int(r["n"] or 0)
         out[r["g"]] = {"n": n, "beat_rate": round(int(r["beat"] or 0) / n, 3) if n else 0.0,

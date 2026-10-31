@@ -1299,3 +1299,28 @@ def test_research_walk_forward_runs_and_stores(monkeypatch):
     assert r["ridge (learned)"]["lift"] > 0.02  # learns the planted signal out of sample
     assert abs(r["app (current #1)"]["lift"]) < 0.03
     assert db.query_one("SELECT v FROM kv_cache WHERE k = ?", (research.KEY,))
+
+
+def test_ranker_v2_turns_on_only_with_an_out_of_sample_edge(monkeypatch):
+    from backend.v4 import research
+    test_research_walk_forward_runs_and_stores(monkeypatch)  # planted momentum signal
+    rv = research.fit_production()
+    assert rv["active"] and rv["oos"]["lift"] > 0
+    s = research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}, {"mom60": 0.0}], ["bullish"] * 3)
+    assert s[0] > s[2] > s[1]
+    # no edge -> off
+    monkeypatch.setattr(research, "MIN_T", 99.0)
+    assert research.fit_production()["active"] is False
+    assert research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}], ["bullish"] * 2) is None
+
+
+
+def test_engine_uses_ranker_v2_scores(monkeypatch):
+    from backend.v4 import research
+    seen = {}
+    def fake(nums, dirs):
+        seen["n"] = len(nums)
+        return [float(i) for i in range(len(nums))]
+    monkeypatch.setattr(research, "score_candidates", fake)
+    r = engine.process_belief("plumbing demand is going to be high", "u1", "moderate", claude_client=FakeClaude())
+    assert r["valid"] and seen["n"] == 5

@@ -147,10 +147,70 @@ def run_background() -> None:
     def go():
         time.sleep(150)
         try:
-            run()
+            fit_production(run())
         except Exception as e:
             db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                        (KEY, json.dumps({"error": f"{type(e).__name__}: {e}"}), datetime.now(timezone.utc).isoformat()))
 
     threading.Thread(target=go, name="research", daemon=True).start()
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Production ranker ("ranker v2"): the ridge model above, refit on every graded call, used to help choose the #1 pick
+# ONLY while its walk-forward test (calls it never saw, 90-day embargo) shows a real edge over the app's old ranking.
+
+RANKER_KEY = "ranker:v2"
+ZKEYS = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"]
+MIN_LIFT, MIN_T = 0.005, 1.5
+WEIGHT = 0.5
+
+
+def fit_production(results: dict | None = None) -> dict:
+    data = load()
+    if len(data) < 150:
+        return {"active": False, "reason": "not enough graded calls"}
+    res = (results or run())["results"]
+    oos, app = res.get("ridge (learned)", {}), res.get("app (current #1)", {})
+    x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])
+    y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
+    mu, sd = x.mean(0), x.std(0) + 1e-9
+    xs = (x - mu) / sd
+    w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
+    active = bool(oos.get("lift", 0) >= MIN_LIFT and oos.get("lift_t", 0) >= MIN_T and oos.get("beat", 0) >= app.get("beat", 1))
+    out = {"at": datetime.now(timezone.utc).isoformat(), "keys": ZKEYS, "mu": mu.tolist(), "sd": sd.tolist(), "w": w.tolist(),
+           "oos": oos, "old": app, "active": active, "trained_on": len(data)}
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (RANKER_KEY, json.dumps(out), out["at"]))
+    _cache["v"], _cache["at"] = out, datetime.now(timezone.utc).timestamp()
+    return out
+
+
+_cache = {"v": None, "at": 0.0}
+
+
+def ranker() -> dict | None:
+    import time
+    if _cache["v"] is None or time.time() - _cache["at"] > 600:
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (RANKER_KEY,))
+        _cache["v"], _cache["at"] = (db.loads(row["v"], None) if row else None), time.time()
+    return _cache["v"]
+
+
+def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | None:
+    """Ranker v2 scores for one belief's candidates (None when the ranker isn't active)."""
+    r = ranker()
+    if not r or not r.get("active") or len(nums) < 2:
+        return None
+    rows = []
+    for num, d in zip(nums, directions):
+        sign = -1.0 if str(d).lower() == "bearish" else 1.0
+        f = {k: float(num.get(k, 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
+        f["bearish"] = 1.0 if sign < 0 else 0.0
+        rows.append(f)
+    for k in FEATS:
+        vals = np.array([f[k] for f in rows]); m, s_ = vals.mean(), vals.std()
+        for f, z in zip(rows, (vals - m) / (s_ if s_ > 1e-9 else 1.0)):
+            f["z_" + k] = float(z)
+    mu, sd, w = np.array(r["mu"]), np.array(r["sd"]), np.array(r["w"])
+    return [float(((np.array([f.get(k, 0.0) for k in r["keys"]]) - mu) / sd) @ w) for f in rows]
