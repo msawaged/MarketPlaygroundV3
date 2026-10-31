@@ -5,7 +5,7 @@ import React from 'react';
 export const UPDATED = 'Oct 30';
 export const UPDATES = [
   'Watch any news story in 30 seconds with Story mode',
-  'AI strategists now compete daily: the weakest retire, the best have kids',
+  'AI strategists compete daily: only the strong survive',
   'An honest scorecard on the brain page, real numbers only',
   'The brain now learns from 90-day results, not 30',
   'Log in with Face ID',

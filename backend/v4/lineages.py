@@ -5,7 +5,7 @@ Each strategist is a different way of choosing the best company for a belief fro
 Momentum likes companies already moving the right way, Value likes beaten-down ones, Steady likes calm ones,
 Follow-the-AI trusts Claude's ranking, Big-picture prefers broad funds. For every graded belief, a strategist's
 "call" is the candidate it ranks first, and its result is how that company did against the S&P 500 thirty days later
-(practice only, no money). Once per trading day the weakest strategists are retired and the strongest have children:
+(practice only, no money). Once per trading day the weakest strategists are retired and the strongest evolve:
 copies with slightly changed preferences. Over generations, what survives is what has worked.
 
 Scores use the most recent graded beliefs, so the scoreboard says exactly that: how each would have done on the
@@ -133,7 +133,7 @@ def _mutate(w: dict, rng: random.Random) -> dict:
 
 
 def evolve(seed: Optional[int] = None) -> dict:
-    """One generation: score everyone, retire the weakest, the strongest have children."""
+    """One generation: score everyone, retire the weakest, the strongest evolve."""
     ensure_founders()
     rng = random.Random(seed)
     beliefs = _graded_beliefs()
@@ -163,7 +163,7 @@ def evolve(seed: Optional[int] = None) -> dict:
         sid = _add(f"{p['style']} · Gen {gen}", p["style"], gen, p["id"], child_w)
         db.execute("UPDATE strategists SET fitness = ?, beat_rate = ?, n_scored = ? WHERE id = ?",
                    (r["fitness"], r["beat_rate"], r["n"], sid))
-        _event("born", sid, f"{_name(sid)} was born from {p['name']}")
+        _event("born", sid, f"{_name(sid)} evolved from {p['name']}")
         born.append(sid)
     champ = pick_champion()
     _snap["v"] = None

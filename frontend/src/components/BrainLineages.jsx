@@ -1,5 +1,5 @@
 // "Survival of the smartest": AI strategists compete on the same graded beliefs. The weakest retire, the strongest
-// have children. Scoreboard + family tree + births and retirements, all from the live brain snapshot.
+// evolve into new versions. Scoreboard + family tree + births and retirements, all from the live brain snapshot.
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
@@ -60,7 +60,7 @@ export default function BrainLineages({ data, ago, now }) {
       <h2 className="mt-8 text-xl font-extrabold">Survival of the smartest</h2>
       <p className="mt-1 text-sm text-slate-400">
         AI strategists compete on the same calls. Each one picks its favorite company; the market grades it 90 days later.
-        Every trading day the weakest retire and the strongest have children.
+        Every trading day the weakest retire and the strongest evolve into new versions.
       </p>
 
       <div className="mt-3 grid grid-cols-3 gap-2">
@@ -104,7 +104,7 @@ export default function BrainLineages({ data, ago, now }) {
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: col(s.style) }} />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold truncate">{s.name}{data.champion?.id === s.id && <span className="ml-1.5 rounded bg-green-500/20 px-1.5 py-0.5 text-[10px] font-bold text-green-300">CHAMPION</span>}</div>
-              <div className="text-[11px] text-slate-500 truncate">{s.parent_name ? `child of ${s.parent_name}` : 'founder'}</div>
+              <div className="text-[11px] text-slate-500 truncate">{s.parent_name ? `evolved from ${s.parent_name}` : 'founder'}</div>
             </div>
             <div className="text-right leading-tight">
               <div className={`text-sm font-bold tabular-nums ${s.fitness >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pct(s.fitness)} pts</div>
