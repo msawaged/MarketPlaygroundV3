@@ -664,6 +664,8 @@ def test_strategy_library_and_preferences():
 
 
 def test_auto_warmup_force_feeds_until_target(monkeypatch):
+    from backend.v4 import seeder as _sd
+    monkeypatch.setattr(_sd, "EXTRA_BACKFILL_GRANTS", {})  # extra grants are tested separately
     monkeypatch.setenv("MP_WARMUP_GRADED", "100000"); monkeypatch.setenv("MP_WARMUP_BUDGET_USD", "1")
     monkeypatch.setenv("MP_WARMUP_BATCH", "12"); monkeypatch.setenv("MP_WARMUP_GENERATE", "0")
     monkeypatch.setenv("MP_SEED_N", "3"); monkeypatch.setenv("MP_SEED_GENERATE", "0")
