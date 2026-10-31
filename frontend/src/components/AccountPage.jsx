@@ -10,6 +10,7 @@ import {
   passkeySupported, biometricName, passkeyStatus, addPasskey, loginWithPasskey, removePasskeys, passkeyCancelled,
 } from '../lib/auth';
 import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
+import WhatsNew from './WhatsNew';
 
 function Field({ label, type = 'text', value, onChange, autoComplete, placeholder, reveal }) {
   const [show, setShow] = useState(false);
@@ -160,6 +161,7 @@ function SignedOut() {
         {mode === 'login' && (
           <p className="text-xs text-slate-400 text-center"><button type="button" onClick={forgot} className="underline text-blue-300 font-semibold">Forgot your password?</button> We'll email you a link.</p>
         )}
+        {mode === 'login' && <WhatsNew max={3} className="mt-2" />}
         {mode === 'signup' && (
           <p className="text-[11px] text-slate-500 text-center leading-relaxed">
             Anything you've already done on this device moves into your account. We never sell your data. MarketPlayground is for education, not investment advice.

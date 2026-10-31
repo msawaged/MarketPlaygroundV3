@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogoMark, Wordmark } from './ui/Logo';
+import WhatsNew from './WhatsNew';
 
 export default function WelcomePage() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ export default function WelcomePage() {
           <button onClick={() => navigate('/trending')} className="text-blue-300 hover:text-blue-200">Today's news →</button>
           <button onClick={() => navigate('/brain')} className="text-blue-300 hover:text-blue-200">Watch the brain learn →</button>
         </div>
+        <WhatsNew className="mt-5" />
         <p className="mt-3 text-center text-xs text-slate-400">Free beta</p>
       </div>
     </div>
