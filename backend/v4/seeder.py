@@ -34,6 +34,7 @@ import json
 import os
 import random
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from typing import Optional
@@ -111,7 +112,10 @@ def news_beliefs(limit: int) -> list[str]:
 
 def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: int = 4,
         max_usd: float = 10.0, model: Optional[str] = None, claude_client=None,
-        beliefs: Optional[list[str]] = None, source: Optional[str] = None) -> dict:
+        beliefs: Optional[list[str]] = None, source: Optional[str] = None,
+        deadline: Optional[float] = None) -> dict:
+    """deadline: a time.time() after which no new belief starts (ones already running finish), so the hourly job
+    always ends well before the next one begins."""
     model = model or SEED_MODEL
     if beliefs:
         generate = 0
@@ -130,10 +134,12 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
 
     spent = 0.0
     lock = threading.Lock()
-    results = {"ok": 0, "skipped": 0, "errors": 0, "cost_usd": 0.0}
+    results = {"ok": 0, "skipped": 0, "errors": 0, "cost_usd": 0.0, "stopped_for_time": 0}
     max_days = int(365 * years)
 
     def one(text: str) -> dict:
+        if deadline is not None and time.time() >= deadline:
+            return {"valid": False, "stopped_for_time": True}
         as_of = _random_past_weekday(100, max_days) if mode == "backfill" else None
         return engine.process_belief(
             text, user_id="seed", risk_profile=random.choice(RISKS), as_of=as_of,
@@ -153,7 +159,10 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
                 r = f.result()
                 with lock:
                     spent += float((r.get("usage") or {}).get("cost_usd", 0.0))
-                    results["ok" if r.get("valid") else "skipped"] += 1
+                    if r.get("stopped_for_time"):
+                        results["stopped_for_time"] += 1
+                    else:
+                        results["ok" if r.get("valid") else "skipped"] += 1
             except Exception as e:
                 results["errors"] += 1
                 print(f"[seeder] error: {e}")
@@ -185,6 +194,8 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
     """Hourly: warm up with past-dated beliefs until there's enough graded history, seed live once a day,
     grade, retrain. Spending is capped in total (warm-up) and per day (live)."""
     from . import nn
+    started = time.time()
+    backfill_deadline = started + 60 * float(os.getenv("MP_BACKFILL_MINUTES", "20"))
     target = int(os.getenv("MP_WARMUP_GRADED", "4000"))
     budget = float(os.getenv("MP_WARMUP_BUDGET_USD", "8"))
     batch = batch_override or int(os.getenv("MP_WARMUP_BATCH", "80"))
@@ -195,7 +206,7 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
     out["warmup"] = {"graded_at_label": graded, "target": target, "spent_usd": round(spent, 4), "budget_usd": budget}
     if graded < target and spent < budget:
         r = run("backfill", n=batch, generate=int(os.getenv("MP_WARMUP_GENERATE", "20")), years=3.0, concurrency=concurrency,
-                max_usd=min(1.0, budget - spent), claude_client=claude_client)
+                max_usd=min(1.0, budget - spent), claude_client=claude_client, deadline=backfill_deadline)
         _kv_set("warmup_spent_usd", str(spent + r["cost_usd"]))
         out["backfill"] = r
     else:
@@ -204,7 +215,7 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
         extra_spent = float(_kv_get("extra_backfill_spent_usd", "0") or 0)
         if extra_spent < granted - 0.02:
             r = run("backfill", n=batch, generate=int(os.getenv("MP_WARMUP_GENERATE", "20")), years=3.0, concurrency=concurrency,
-                    max_usd=min(0.5, granted - extra_spent), claude_client=claude_client)
+                    max_usd=min(0.5, granted - extra_spent), claude_client=claude_client, deadline=backfill_deadline)
             _kv_set("extra_backfill_spent_usd", str(extra_spent + r["cost_usd"]))
             out["backfill"] = dict(r, extra=True, granted_usd=granted)
     try:  # add volume-profile features to older graded picks, a batch per hour (no Claude, market data only)
@@ -241,6 +252,7 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
             out["news"] = dict(r, beliefs=fresh)
     g = grader.grade()
     out["grade"] = g
+    out["minutes"] = round((time.time() - started) / 60, 1)
     if train and (out.get("backfill") or g.get("graded")):
         res = nn.train()
         out["train"] = {k: res.get(k) for k in ("status", "reason", "n_train", "n_test", "spearman", "blend_weight")}

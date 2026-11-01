@@ -178,6 +178,21 @@ def snapshot() -> dict:
     return _build()
 
 
+def start_warmer(interval: int = 240) -> None:
+    """Keeps the snapshot fresh even when nobody is looking, so the first visitor after a quiet spell never sees
+    hours-old numbers (one light refresh every 4 minutes)."""
+    def loop():
+        time.sleep(30)
+        while True:
+            try:
+                if time.time() - _cache["at"] >= interval - 5:
+                    _build()
+            except Exception:
+                pass
+            time.sleep(interval)
+    threading.Thread(target=loop, name="brain-warmer", daemon=True).start()
+
+
 def _refresh_bg() -> None:
     try:
         _build()

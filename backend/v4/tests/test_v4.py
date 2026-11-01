@@ -236,6 +236,14 @@ def test_backfill_grade_learn_and_train(monkeypatch):
     assert st["beliefs"]["seed_backfill"]["count"] == 120 and st["graded_picks"] > 0
 
 
+def test_backfill_stops_starting_new_beliefs_at_the_deadline():
+    import time as _t
+    r = seeder.run("backfill", n=5, years=1, concurrency=1, claude_client=FakeClaude(), deadline=_t.time() - 1)
+    assert r["ok"] == 0 and r["stopped_for_time"] == 5 and r["cost_usd"] == 0
+    r2 = seeder.run("backfill", n=3, years=1, concurrency=1, claude_client=FakeClaude(), deadline=_t.time() + 600)
+    assert r2["stopped_for_time"] == 0 and r2["ok"] + r2["skipped"] == 3
+
+
 def test_grader_is_idempotent():
     seeder.run("backfill", n=5, years=1, concurrency=1, claude_client=FakeClaude())
     n1 = db.query_one("SELECT COUNT(*) AS n FROM outcomes")["n"]
