@@ -177,6 +177,8 @@ def _schema() -> list[str]:
             features TEXT
         )""",
         "CREATE INDEX IF NOT EXISTS ix_picks_belief ON picks(belief_id)",
+        "CREATE INDEX IF NOT EXISTS ix_beliefs_created ON beliefs(created_at)",
+        "CREATE INDEX IF NOT EXISTS ix_beliefs_source ON beliefs(source)",
         "CREATE INDEX IF NOT EXISTS ix_picks_ticker ON picks(ticker)",
         """CREATE TABLE IF NOT EXISTS pick_themes (
             pick_id TEXT NOT NULL REFERENCES picks(id),
@@ -196,6 +198,8 @@ def _schema() -> list[str]:
             graded_at TEXT NOT NULL,
             PRIMARY KEY (pick_id, checkpoint_days)
         )""",
+        "CREATE INDEX IF NOT EXISTS ix_outcomes_graded ON outcomes(graded_at)",
+        "CREATE INDEX IF NOT EXISTS ix_outcomes_checkpoint ON outcomes(checkpoint_days)",
         """CREATE TABLE IF NOT EXISTS feedback (
             id TEXT PRIMARY KEY,
             belief_id TEXT NOT NULL,

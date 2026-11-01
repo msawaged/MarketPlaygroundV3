@@ -159,10 +159,35 @@ def _safe_lineages() -> dict:
         return {"generation": 0, "alive": [], "tree": [], "events": [], "retired": 0}
 
 
+REFRESH_SECONDS = 45
+_refreshing = {"on": False}
+
+
 def snapshot() -> dict:
+    """Serve the last snapshot instantly; refresh it in the background at most every REFRESH_SECONDS, so no visitor
+    ever waits on the heavy queries and the small database sees one refresh at a time."""
     with _lock:
-        if _cache["v"] and time.time() - _cache["at"] < 15:
-            return _cache["v"]
+        v, age = _cache["v"], time.time() - _cache["at"]
+        if v is not None and age < REFRESH_SECONDS:
+            return v
+        if v is not None:
+            if not _refreshing["on"]:
+                _refreshing["on"] = True
+                threading.Thread(target=_refresh_bg, daemon=True).start()
+            return v
+    return _build()
+
+
+def _refresh_bg() -> None:
+    try:
+        _build()
+    except Exception:
+        pass
+    finally:
+        _refreshing["on"] = False
+
+
+def _build() -> dict:
     today = datetime.now(timezone.utc).date().isoformat()
     one = lambda sql, args=(): int((db.query_one(sql, args) or {}).get("n") or 0)  # noqa: E731
     counts = {
