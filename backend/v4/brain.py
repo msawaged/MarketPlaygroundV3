@@ -10,7 +10,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import db, learning, lineages, nn
+from . import db, learning, lineages, market, nn
 
 _cache = {"at": 0.0, "v": None}
 _lock = threading.Lock()
@@ -145,6 +145,13 @@ def _skill() -> dict:
     return out
 
 
+def _safe_regime() -> dict:
+    try:
+        return market.regime_state()
+    except Exception:
+        return {"regime": "unknown"}
+
+
 def _safe_lineages() -> dict:
     try:
         return lineages.snapshot()
@@ -186,6 +193,7 @@ def snapshot() -> dict:
         "graded": _recent_graded(),
         "lineages": _safe_lineages(),
         "skill": _skill(),
+        "regime": _safe_regime(),
     }
     with _lock:
         _cache.update(at=time.time(), v=v)

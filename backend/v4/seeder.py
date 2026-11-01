@@ -212,6 +212,16 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
         out["enrich"] = research.enrich(int(os.getenv("MP_ENRICH_BATCH", "300")))
     except Exception as e:
         out["enrich"] = {"error": f"{type(e).__name__}: {e}"}
+    try:  # daily check that real option implied volatility is reachable (practice options use it when it is)
+        if _kv_get("iv_probe_date") != market.today().isoformat():
+            from datetime import timedelta as _td
+            spot = float(market.latest_price("SPY"))
+            iv = market.option_iv("SPY", "call", round(spot), market.today() + _td(days=60))
+            _kv_set("iv_probe", json.dumps({"at": market.today().isoformat(), "spy_atm_60d_iv": iv}))
+            _kv_set("iv_probe_date", market.today().isoformat())
+            out["iv_probe"] = iv
+    except Exception as e:
+        out["iv_probe"] = f"{type(e).__name__}: {e}"
     today = market.today()
     if today.weekday() < 5 and _kv_get("live_seed_date") != today.isoformat():
         out["live"] = run("live", n=int(os.getenv("MP_SEED_N", "25")), generate=int(os.getenv("MP_SEED_GENERATE", "25")),

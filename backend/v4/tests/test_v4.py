@@ -1374,3 +1374,41 @@ def test_research_enrich_adds_vp_features(monkeypatch):
     assert out["enriched"] == 1 and out["remaining"] == 0
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-en'")["features"])["num"]
     assert num["vp_above_value"] == 1.0 and num["mom60"] == 0.1
+
+
+def test_regime_state_and_regime_aware_research(monkeypatch):
+    from datetime import timedelta as _td
+    from backend.v4 import research
+    d0 = TODAY - _td(days=400)
+    dates = [(d0 + _td(days=i)).isoformat() for i in range(300)]
+    steady = [100 * (1.0008 ** i) for i in range(300)]                       # smooth climb
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, steady))
+    market._state_cache.clear()
+    assert market.regime_state()["regime"] == "trending"
+    crash = steady[:280] + [steady[279] * (0.97 ** k) for k in range(1, 21)]  # sharp fall
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, crash))
+    market._state_cache.clear()
+    assert market.regime_state()["regime"] == "crisis" and market.regime_features()["reg_crisis"] == 1.0
+    # research builds regime interactions and scores with them
+    s = research.score_candidates  # production path tolerates the new keys
+    assert callable(s)
+    assert "zx_mom60_reg_trend" in research.ZKEYS
+
+
+def test_option_iv_from_snapshots_and_practice_pricing(monkeypatch):
+    from types import SimpleNamespace as NS
+    from datetime import timedelta as _td
+    exp = TODAY + _td(days=60)
+    occ = lambda k, strike: f"XLI{exp.strftime('%y%m%d')}{k}{int(strike * 1000):08d}"
+    snaps = {occ("C", 100): {"impliedVolatility": 0.31}, occ("C", 110): {"impliedVolatility": 0.27}, "BAD": {"impliedVolatility": 0.5}}
+    calls = []
+    def fake_get(url, headers=None, params=None, timeout=None):
+        calls.append(url)
+        return NS(status_code=200, json=lambda: {"snapshots": snaps})
+    monkeypatch.setattr(market._session, "get", fake_get)
+    market._iv_cache.clear()
+    assert market.option_iv("XLI", "Call", 101, exp) == 0.31
+    assert market.option_iv("XLI", "call", 109, exp) == 0.27 and len(calls) == 1  # cached per underlying/expiry
+    monkeypatch.setattr(market._session, "get", lambda *a, **k: NS(status_code=403, json=lambda: {}))
+    market._iv_cache.clear()
+    assert market.option_iv("XLI", "call", 100, exp) is None  # unavailable -> callers fall back

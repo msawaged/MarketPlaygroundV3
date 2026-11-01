@@ -124,11 +124,23 @@ def quote(ticker: str, legs_in: list) -> dict:
         raise PracticeError("That isn't a stock we can trade.")
     legs = _clean_legs(legs_in, ticker)
     spot = float(market.latest_price(ticker))
-    vol = _vol(ticker)
+    vol, vol_source = _vol(ticker), "estimate"
+    ivs = []
+    for l in legs:  # price with the market's implied volatility when available (captures smile and skew)
+        if l["instrument"] == "option":
+            try:
+                iv = market.option_iv(ticker, l["option_type"], l["strike_price"], date.fromisoformat(l["expiration"]))
+            except Exception:
+                iv = None
+            if iv:
+                ivs.append(iv)
+    if ivs:
+        vol, vol_source = min(1.5, max(0.05, sum(ivs) / len(ivs))), "market"
     entry = unit_value(legs, spot, vol)
     worst = float(library.economics(_priced(legs, spot, vol), spot)["max_loss"])
     set_aside = max(entry, worst, 1.0)
-    return {"ticker": ticker, "legs": legs, "spot": spot, "vol": vol, "unit_value": entry, "unit_set_aside": set_aside}
+    return {"ticker": ticker, "legs": legs, "spot": spot, "vol": vol, "vol_source": vol_source,
+            "unit_value": entry, "unit_set_aside": set_aside}
 
 
 def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contracts: int, belief: str = "") -> dict:
@@ -155,7 +167,8 @@ def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contrac
                           datetime.now().isoformat()))
     return {"status": "success", "position_id": pid, "set_aside": round(need, 2),
             "message": f"Opened {contracts} {q['ticker']} {structure or 'options'} contract{'s' if contracts > 1 else ''} "
-                       f"with practice money (about ${need:,.0f} set aside). Prices are estimates."}
+                       f"with practice money (about ${need:,.0f} set aside). "
+                       + ("Priced with the market's implied volatility." if q.get("vol_source") == "market" else "Prices are estimates.")}
 
 
 def _settle(conn, row, value_now: float, when: Optional[str] = None) -> float:

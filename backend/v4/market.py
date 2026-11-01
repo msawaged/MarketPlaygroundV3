@@ -364,6 +364,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "log_price": math.log(max(closes[i], 0.01)),
         "history_days": min(i, 1000),
         **vp_features(symbol, as_of),
+        **regime_features(as_of),
     }
 
 
@@ -415,6 +416,81 @@ def headlines(limit: int = 6) -> list[dict]:
 _REGIME = (("SPY", "US stocks"), ("TLT", "long-term Treasury bonds (falling means rising rates)"),
            ("UUP", "the US dollar"), ("USO", "oil"), ("GLD", "gold"), ("XLE", "energy stocks"), ("XLK", "tech stocks"))
 _regime_cache: dict = {}
+
+
+_iv_cache: dict = {}
+_OCC = re.compile(r"^([A-Z.]+)(\d{6})([CP])(\d{8})$")
+
+
+def option_iv(underlying: str, kind: str, strike: float, expiration: date) -> Optional[float]:
+    """The market's implied volatility for the listed contract closest to (kind, strike, expiration), from Alpaca's
+    options snapshots (indicative feed). Real option prices bake in the volatility smile and skew that a single flat
+    volatility misses. None when unavailable (callers fall back to historical volatility)."""
+    import time as _t
+    underlying = underlying.upper(); kind = kind.lower()
+    key = (underlying, kind, expiration.isoformat())
+    hit = _iv_cache.get(key)
+    if not hit or _t.time() - hit[0] > 1800:
+        params = {"feed": os.getenv("ALPACA_OPTIONS_FEED", "indicative"), "type": kind, "limit": 1000,
+                  "expiration_date_gte": (expiration - timedelta(days=21)).isoformat(),
+                  "expiration_date_lte": (expiration + timedelta(days=21)).isoformat()}
+        rows = []
+        try:
+            r = _session.get(f"{_data_base()}/v1beta1/options/snapshots/{underlying}", headers=_headers(), params=params, timeout=10)
+            if r.status_code == 200:
+                for sym, snap in ((r.json() or {}).get("snapshots") or {}).items():
+                    m = _OCC.match(sym)
+                    iv = (snap or {}).get("impliedVolatility")
+                    if not m or not iv or not (0.03 < float(iv) < 4.0):
+                        continue
+                    exp = date(2000 + int(m.group(2)[:2]), int(m.group(2)[2:4]), int(m.group(2)[4:6]))
+                    rows.append((exp, int(m.group(4)) / 1000.0, float(iv)))
+        except Exception:
+            rows = []
+        hit = (_t.time(), rows)
+        _iv_cache[key] = hit
+    rows = hit[1]
+    if not rows:
+        return None
+    best = min(rows, key=lambda x: (abs((x[0] - expiration).days) / 30.0) + abs(x[1] - strike) / max(strike, 1.0) * 10)
+    return best[2]
+
+
+_state_cache: dict[str, dict] = {}
+
+
+def regime_state(as_of: Optional[date] = None) -> dict:
+    """Which of three market regimes we're in, from the S&P 500 only (prices up to as_of):
+    crisis   - turbulent: 20-day volatility above 28% a year, or more than 12% below the 1-year high
+    trending - steady climb: up more than 4% over 3 months with volatility under 22%
+    calm     - everything else (sideways or quiet)
+    Different stock-picking styles tend to work in different regimes; the brain tests that."""
+    d = (as_of or today()).isoformat()
+    if d in _state_cache:
+        return _state_cache[d]
+    try:
+        dates, closes = daily_closes("SPY")
+        i = _index_on_or_before(dates, d)
+        if i < 63:
+            raise MarketDataError("short history")
+        vol = realized_vol(closes, i, 20)
+        hi = max(closes[max(0, i - 251): i + 1])
+        dd = closes[i] / hi - 1 if hi > 0 else 0.0
+        r60 = _ret(closes, i, 60)
+        name = "crisis" if (vol > 0.28 or dd < -0.12) else "trending" if (r60 > 0.04 and vol < 0.22) else "calm"
+        out = {"regime": name, "spy_vol20": round(vol, 4), "spy_dd": round(dd, 4), "spy_r60": round(r60, 4)}
+    except Exception:
+        out = {"regime": "unknown", "spy_vol20": 0.0, "spy_dd": 0.0, "spy_r60": 0.0}
+    if len(_state_cache) > 2000:
+        _state_cache.clear()
+    _state_cache[d] = out
+    return out
+
+
+def regime_features(as_of: Optional[date] = None) -> dict:
+    r = regime_state(as_of)["regime"]
+    return {"reg_trend": 1.0 if r == "trending" else 0.0, "reg_crisis": 1.0 if r == "crisis" else 0.0,
+            "reg_calm": 1.0 if r == "calm" else 0.0}
 
 
 def regime(as_of: Optional[date] = None) -> str:

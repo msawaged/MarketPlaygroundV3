@@ -214,6 +214,17 @@ export default function BrainPage({ viewOnly = false }) {
             </div>
           );
         })()}
+        {d?.regime?.regime && d.regime.regime !== 'unknown' && (() => {
+          const r = d.regime;
+          const m = { trending: ['Trending', 'text-green-300 border-green-500/30 bg-green-500/[0.06]', 'The S&P 500 is climbing steadily.'],
+            calm: ['Calm', 'text-blue-200 border-blue-400/30 bg-blue-500/[0.06]', 'Markets are quiet or moving sideways.'],
+            crisis: ['Turbulent', 'text-red-300 border-red-500/30 bg-red-500/[0.06]', 'Big swings: volatility is high or stocks are well off their highs.'] }[r.regime];
+          return m ? (
+            <div className={`mt-2 rounded-2xl border px-3.5 py-2.5 text-xs ${m[1]}`}>
+              <span className="font-bold">Market regime: {m[0]}.</span> <span className="text-slate-300">{m[2]} Different picking styles work in different regimes; the brain tests which.</span>
+            </div>
+          ) : null;
+        })()}
 
         {d?.next && (
           <div className="mt-3 grid grid-cols-2 gap-2.5">

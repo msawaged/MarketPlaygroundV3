@@ -27,6 +27,11 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high",
                "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
+# market regime (same for every idea of a belief, so it only matters through interactions with the styles)
+REG_KEYS = ("reg_trend", "reg_crisis", "reg_calm")
+INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_crisis"), ("dist_high", "reg_crisis"),
+                ("mom60", "reg_calm"), ("vp_above_value", "reg_trend"))
+XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
 
 
@@ -37,13 +42,17 @@ def enrich(limit: int = 300) -> dict:
     rows = db.query(
         """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
            WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)""", (DAYS,))
-    missing = [r for r in rows if "vp_poc_dist" not in ((db.loads(r["features"], {}) or {}).get("num") or {})]
+    def _need(r):
+        num = (db.loads(r["features"], {}) or {}).get("num") or {}
+        return "vp_poc_dist" not in num or "reg_trend" not in num
+    missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
     for r in todo:
         f = db.loads(r["features"], {}) or {}
         try:
-            vp = market.vp_features(r["ticker"], date.fromisoformat(str(r["as_of_date"])[:10]))
+            d0 = date.fromisoformat(str(r["as_of_date"])[:10])
+            vp = {**market.vp_features(r["ticker"], d0), **market.regime_features(d0)}
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -64,6 +73,8 @@ def load() -> list[dict]:
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
         f = {k: float(num.get(k, 1.0 if k == "rvol" else 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
+        for k in REG_KEYS:
+            f[k] = float(num.get(k, 0.0) or 0.0)
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
         b["cands"].append({"f": f, "ex": float(r["dir_excess"]), "top": r["final_rank"] == 1})
     out = [b for b in by.values() if len(b["cands"]) >= 2]
@@ -75,6 +86,9 @@ def load() -> list[dict]:
             for c, z, rk in zip(b["cands"], (vals - mu) / (sd if sd > 1e-9 else 1.0), order):
                 c["f"]["z_" + k] = float(z)
                 c["f"]["r_" + k] = float(rk)
+        for c in b["cands"]:
+            for a, g in INTERACTIONS:
+                c["f"][f"zx_{a}_{g}"] = c["f"]["z_" + a] * c["f"][g]
         mean_ex = float(np.mean([c["ex"] for c in b["cands"]]))
         for c in b["cands"]:
             c["rel"] = c["ex"] - mean_ex
@@ -132,8 +146,10 @@ def run(folds: int = 5) -> dict:
         "accepted above value (vp)": lambda f: f["z_vp_above_value"] + 0.5 * f["z_vp_vah_dist"],
         "near most-traded price (vp)": lambda f: -abs(f["z_vp_poc_dist"]),
         "heavy recent volume (rvol)": lambda f: f["z_rvol"],
+        "regime-aware styles": lambda f: f["z_mom60"] * (f["reg_trend"] + 0.5 * f["reg_calm"]) - f["z_vol60"] * f["reg_crisis"]
+                                         + 0.5 * f["z_mom250"] * f["reg_trend"],
     }
-    zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"]
+    zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)"]}
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
@@ -190,7 +206,7 @@ def run_background() -> None:
 # ONLY while its walk-forward test (calls it never saw, 90-day embargo) shows a real edge over the app's old ranking.
 
 RANKER_KEY = "ranker:v2"
-ZKEYS = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"]
+ZKEYS = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
 MIN_LIFT, MIN_T = 0.005, 1.5
 WEIGHT = 0.5
 
@@ -236,10 +252,15 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
         sign = -1.0 if str(d).lower() == "bearish" else 1.0
         f = {k: float(num.get(k, 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
+        for k in REG_KEYS:
+            f[k] = float(num.get(k, 0.0) or 0.0)
         rows.append(f)
     for k in FEATS:
         vals = np.array([f[k] for f in rows]); m, s_ = vals.mean(), vals.std()
         for f, z in zip(rows, (vals - m) / (s_ if s_ > 1e-9 else 1.0)):
             f["z_" + k] = float(z)
+    for f in rows:
+        for a, g in INTERACTIONS:
+            f[f"zx_{a}_{g}"] = f.get("z_" + a, 0.0) * f.get(g, 0.0)
     mu, sd, w = np.array(r["mu"]), np.array(r["sd"]), np.array(r["w"])
     return [float(((np.array([f.get(k, 0.0) for k in r["keys"]]) - mu) / sd) @ w) for f in rows]
