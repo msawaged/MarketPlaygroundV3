@@ -11,6 +11,7 @@ import {
 } from '../lib/auth';
 import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
 import WhatsNew from './WhatsNew';
+import AlertsCard from './AlertsCard';
 
 function Field({ label, type = 'text', value, onChange, autoComplete, placeholder, reveal }) {
   const [show, setShow] = useState(false);
@@ -291,6 +292,7 @@ function SignedIn({ acc }) {
       </Card>
 
       <FaceIdCard />
+      <div className="mt-3"><AlertsCard /></div>
 
       <Brokerage />
 

@@ -11,6 +11,7 @@ import { themeLabel } from '../lib/text';
 import { useMovers } from './MoversFeed';
 import { FaceIdCard } from './AccountPage';
 import { useAccount, initials } from '../lib/auth';
+import AlertsCard from './AlertsCard';
 
 const ROTATE = [
   'plumbing demand is about to boom',
@@ -35,6 +36,8 @@ export default function ToolSelectorPage() {
   const [hot, setHot] = useState([]);
   const moving = useMovers().data?.items || [];
   const [faceAsk, setFaceAsk] = useState(() => { try { return !localStorage.getItem('mp_faceid_asked'); } catch { return false; } });
+  const [alertAsk, setAlertAsk] = useState(() => { try { return !localStorage.getItem('mp_alerts_asked'); } catch { return false; } });
+  const alertDone = () => { try { localStorage.setItem('mp_alerts_asked', '1'); } catch { /* private mode */ } setAlertAsk(false); };
   const faceDone = () => { try { localStorage.setItem('mp_faceid_asked', '1'); } catch { /* private mode */ } setFaceAsk(false); };
   const recent = recentBeliefs();
   const acc = useAccount();
@@ -114,6 +117,13 @@ export default function ToolSelectorPage() {
             </button>
           </div>
         </form>
+
+        {alertAsk && !(acc && faceAsk) && (
+          <div className="mt-6 relative">
+            <AlertsCard compact onDone={alertDone} />
+            <button onClick={alertDone} aria-label="Not now" className="absolute top-2 right-3 text-xs text-slate-400 hover:text-slate-200">Not now</button>
+          </div>
+        )}
 
         {/* Moving now: today's news as hunches */}
         {moving.length > 0 && (

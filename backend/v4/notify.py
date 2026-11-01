@@ -109,6 +109,14 @@ def run(max_emails: int = 50) -> dict:
                 continue
             subject, text, html_body = _email(acc, b)
             mailer.send(acc["email"], subject, text, html_body)
+            try:  # and a push to their devices, if they turned alerts on
+                from . import push
+                lead = round(b["call"]["vs_spy"] * 100, 1)
+                push.send_to_account(acc["id"], {"title": "You called it 👀",
+                                                 "body": f"“{(b.get('text') or '')[:80]}” is {lead:+.1f} pts ahead of the S&P 500.",
+                                                 "url": "/my"})
+            except Exception as e:
+                log.warning("notify push: %s", e)
         except Exception as e:  # one bad account never stops the rest
             log.warning("notify: %s: %s", acc["id"], e)
             continue

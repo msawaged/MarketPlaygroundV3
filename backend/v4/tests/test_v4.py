@@ -1428,3 +1428,38 @@ def test_ranker_v2_picks_the_stronger_model(monkeypatch):
     # tree model loses -> ridge
     res["results"]["gbm (learned)"] = dict(res["results"]["ridge (learned)"], lift=0.0)
     assert research.fit_production(res)["kind"] == "ridge"
+
+
+def test_push_alerts_market_open_updates_and_cleanup(monkeypatch):
+    from types import SimpleNamespace as NS
+    from datetime import datetime as _dt, timezone as _tz
+    from backend.v4 import push
+    from fastapi.testclient import TestClient
+    from backend.v4.router import router
+    from fastapi import FastAPI
+    app = FastAPI(); app.include_router(router, prefix="/v4"); c = TestClient(app)
+    key = c.get("/v4/push/key").json()["key"]
+    assert len(key) > 80 and key == push.public_key()  # stable across calls
+    sub = {"endpoint": "https://push.example.com/abc", "keys": {"p256dh": "BPk", "auth": "xyz"}}
+    assert c.post("/v4/push/subscribe", json={"subscription": sub, "device_id": "d1"}).json()["ok"]
+    assert c.post("/v4/push/subscribe", json={"subscription": {"endpoint": "http://bad"}}).status_code == 400
+    assert c.post("/v4/push/status", json={"endpoint": sub["endpoint"]}).json()["subscribed"]
+    sent = []
+    ok = lambda **kw: sent.append(kw)  # noqa: E731
+    feed = {"items": [{"headline": "Amazon arranges $80 billion credit line", "companies": [{"ticker": "AMZN"}, {"ticker": "NVDA"}]}]}
+    r = push.send_market_open(sender=ok, feed=feed)
+    assert r["sent"] == 1 and "AMZN, NVDA" in json.loads(sent[-1]["data"])["body"] and "/story?h=" in json.loads(sent[-1]["data"])["url"]
+    # updates: one per day, daytime only, each once
+    noon = _dt(2026, 11, 3, 17, 0, tzinfo=_tz.utc)   # 12:00 ET
+    assert push.send_pending_update(sender=ok, now_utc=noon)["sent"] == 1
+    assert push.send_pending_update(sender=ok, now_utc=noon)["reason"] == "already sent one today"
+    assert push.send_pending_update(sender=ok, now_utc=_dt(2026, 11, 4, 3, 0, tzinfo=_tz.utc))["reason"] == "outside daytime"
+    # gone subscriptions are removed
+    def gone(**kw):
+        raise type("WebPushException", (Exception,), {})("gone") if False else _Gone()
+    class _Gone(Exception):
+        response = NS(status_code=410)
+    def gone_sender(**kw):
+        raise _Gone()
+    assert push.send_market_open(sender=gone_sender, feed=feed)["sent"] == 0
+    assert not push.is_subscribed(sub["endpoint"])

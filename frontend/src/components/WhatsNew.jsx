@@ -2,8 +2,10 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Oct 30';
+export const UPDATED = 'Nov 1';
 export const UPDATES = [
+  "Market's open alerts: the day's top story at 9:35 am ET",
+  'Smarter #1 pick: beat the S&P on 56% of 1,549 unseen calls',
   'Watch any news story in 30 seconds with Story mode',
   'AI strategists compete daily: only the strong survive',
   'An honest scorecard on the brain page, real numbers only',

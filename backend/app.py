@@ -54,8 +54,9 @@ app = FastAPI(title="MarketPlayground API")
 
 @app.on_event("startup")
 def _start_notify() -> None:
-    from backend.v4 import notify, feeder, lineages, research
+    from backend.v4 import notify, feeder, lineages, research, push
     notify.start_background()
+    push.start_background()
     feeder.start_background()
     lineages.bootstrap_background()
     research.run_background()

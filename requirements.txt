@@ -99,3 +99,6 @@ yarl==1.20.1
 yfinance==0.2.65
 cryptography==43.0.3
 webauthn==2.2.0
+pywebpush==2.0.3
+py-vapid==1.9.2
+http-ece==1.2.1

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify, passkeys, brain
+from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify, passkeys, brain, push
 
 router = APIRouter()
 
@@ -352,6 +352,45 @@ async def get_movers_story(h: str = ""):
     if not out:
         raise HTTPException(status_code=404, detail="That story is no longer in today's news.")
     return out
+
+
+@router.get("/push/key")
+async def push_key():
+    """The server's public key the browser needs to turn on alerts."""
+    return {"key": await run_in_threadpool(push.public_key)}
+
+
+@router.post("/push/subscribe")
+async def push_subscribe(body: dict, authorization: Optional[str] = Header(None)):
+    acc_id = None
+    tok = _token(authorization)
+    if tok:
+        try:
+            acc_id = (await run_in_threadpool(auth.require, tok))["id"]
+        except Exception:
+            acc_id = None
+    try:
+        return await run_in_threadpool(push.subscribe, body.get("subscription"), acc_id, body.get("device_id"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/push/unsubscribe")
+async def push_unsubscribe(body: dict):
+    return await run_in_threadpool(push.unsubscribe, str(body.get("endpoint") or ""))
+
+
+@router.post("/push/status")
+async def push_status(body: dict):
+    return {"subscribed": await run_in_threadpool(push.is_subscribed, str(body.get("endpoint") or ""))}
+
+
+@router.post("/push/test")
+async def push_test(body: dict):
+    try:
+        return await run_in_threadpool(push.send_test, str(body.get("endpoint") or ""))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/unsubscribe")
