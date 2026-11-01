@@ -200,6 +200,16 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
     budget = float(os.getenv("MP_WARMUP_BUDGET_USD", "8"))
     batch = batch_override or int(os.getenv("MP_WARMUP_BATCH", "80"))
     out: dict = {}
+    timings: dict = {}
+    mark = [started]
+
+    def lap(name: str) -> None:  # seconds per phase, printed as it happens so a slow phase shows in the logs
+        now = time.time()
+        timings[name] = round(now - mark[0], 1)
+        mark[0] = now
+        print(f"[seeder] {name}: {timings[name]}s", flush=True)
+
+    out["timings"] = timings
     row = db.query_one("SELECT COUNT(DISTINCT pick_id) AS n FROM outcomes WHERE checkpoint_days = ?", (nn.LABEL_DAYS,))
     graded = int(row["n"] if row else 0)
     spent = float(_kv_get("warmup_spent_usd", "0") or 0)
@@ -218,11 +228,13 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
                     max_usd=min(0.5, granted - extra_spent), claude_client=claude_client, deadline=backfill_deadline)
             _kv_set("extra_backfill_spent_usd", str(extra_spent + r["cost_usd"]))
             out["backfill"] = dict(r, extra=True, granted_usd=granted)
+    lap("backfill")
     try:  # add volume-profile features to older graded picks, a batch per hour (no Claude, market data only)
         from . import research
         out["enrich"] = research.enrich(int(os.getenv("MP_ENRICH_BATCH", "300")))
     except Exception as e:
         out["enrich"] = {"error": f"{type(e).__name__}: {e}"}
+    lap("enrich")
     try:  # daily check that real option implied volatility is reachable (practice options use it when it is)
         if _kv_get("iv_probe_date") != market.today().isoformat():
             from datetime import timedelta as _td
@@ -238,6 +250,7 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
         out["live"] = run("live", n=int(os.getenv("MP_SEED_N", "25")), generate=int(os.getenv("MP_SEED_GENERATE", "25")),
                           max_usd=float(os.getenv("MP_SEED_MAX_USD", "1")), claude_client=claude_client)
         _kv_set("live_seed_date", today.isoformat())
+    lap("iv_probe+live")
     # Real news, every hour: today's hunches and their opposites (graded at 1 week / 1 month / 3 months).
     news_n = int(os.getenv("MP_NEWS_SEED_N", "6"))
     day_key = f"news_seed_usd:{today.isoformat()}"
@@ -250,12 +263,15 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
                     claude_client=claude_client)
             _kv_set(day_key, str(news_spent + r["cost_usd"]))
             out["news"] = dict(r, beliefs=fresh)
+    lap("news")
     g = grader.grade()
     out["grade"] = g
-    out["minutes"] = round((time.time() - started) / 60, 1)
+    lap("grade")
     if train and (out.get("backfill") or g.get("graded")):
         res = nn.train()
         out["train"] = {k: res.get(k) for k in ("status", "reason", "n_train", "n_test", "spearman", "blend_weight")}
+        lap("train")
+    out["minutes"] = round((time.time() - started) / 60, 1)
     return out
 
 
