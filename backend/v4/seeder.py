@@ -267,7 +267,12 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
     g = grader.grade()
     out["grade"] = g
     lap("grade")
-    if train and (out.get("backfill") or g.get("graded")):
+    # The network retrain is the slow part (about half an hour on the cron's small CPU) and the daily
+    # grade-and-train job already does it, so the hourly job retrains at most every 12 hours.
+    last_train = float(_kv_get("nn_hourly_train_at", "0") or 0)
+    every = 3600 * float(os.getenv("MP_HOURLY_TRAIN_HOURS", "12"))
+    if train and (out.get("backfill") or g.get("graded")) and time.time() - last_train >= every:
+        _kv_set("nn_hourly_train_at", str(time.time()))
         res = nn.train()
         out["train"] = {k: res.get(k) for k in ("status", "reason", "n_train", "n_test", "spearman", "blend_weight")}
         lap("train")
