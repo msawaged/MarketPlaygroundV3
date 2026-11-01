@@ -178,7 +178,7 @@ def _kv_set(k: str, v: str) -> None:
 
 
 # Owner-approved extra backfill budget (USD), by approval date. Total spend never exceeds the sum.
-EXTRA_BACKFILL_GRANTS = {"2026-10-31": 1.00}
+EXTRA_BACKFILL_GRANTS = {"2026-10-31": 1.00, "2026-10-31b": 2.00}  # owner: "use the credits to prove me right"
 
 
 def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: int = 4, train: bool = True) -> dict:
