@@ -39,9 +39,12 @@ def enrich(limit: int = 300) -> dict:
     """Add volume-profile features to older graded picks that were made before they existed (computed with data
     up to each pick's own date only). Runs in small batches from the hourly job."""
     from . import market
+    # filter in SQL so the database only sends the few rows still missing features (not every graded pick)
     rows = db.query(
         """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
-           WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)""", (DAYS,))
+           WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)
+             AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%')
+           LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
         return "vp_poc_dist" not in num or "reg_trend" not in num

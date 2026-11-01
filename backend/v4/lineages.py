@@ -31,6 +31,7 @@ LIVE_MIN = 100           # live calls before a strategist can help rank real pic
 LIVE_MARGIN = 0.005      # ...and it must beat the app's own top pick by half a point on average
 CHAMPION_WEIGHT = 0.25   # how much a champion moves the real ranking
 CHAMPION_KEY = "lineage_champion"
+LIVE_KEY = "lineage_live_records"  # computed once per trading day (in evolve), read by the page
 FEATURES = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol60", "claude_score", "claude_rank_frac", "is_etf", "same_dir")
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high"}  # flipped for bearish picks
 
@@ -181,12 +182,17 @@ def live_record(s: dict) -> dict:
 def pick_champion() -> Optional[dict]:
     """The alive strategist whose live record clearly beats the app's own top pick, if any. Stored in kv_cache."""
     best = None
+    records = {}
     for s in db.query("SELECT * FROM strategists WHERE status = 'alive'"):
         lr = live_record(s)
+        records[s["id"]] = {"me": {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["me"].items()},
+                            "app": {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["app"].items()}}
         me, app = lr["me"], lr["app"]
         if me["n"] >= LIVE_MIN and me["fitness"] >= app["fitness"] + LIVE_MARGIN and me["beat_rate"] >= app["beat_rate"]:
             if not best or me["fitness"] > best["live"]["fitness"]:
                 best = {"id": s["id"], "name": s["name"], "weights": db.loads(s["weights"], {}), "live": me, "app": app}
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (LIVE_KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (LIVE_KEY, db.dumps(records), _now()))
     db.execute("DELETE FROM kv_cache WHERE k = ?", (CHAMPION_KEY,))
     if best:
         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (CHAMPION_KEY, db.dumps(best), _now()))
@@ -230,11 +236,11 @@ def _snapshot() -> dict:
                      "n": int(r["n_scored"] or 0), "born_at": r["born_at"]}
     tree = [fmt(r) for r in rows][-60:]
     alive = sorted([t for t in tree if t["status"] == "alive"], key=lambda t: t["fitness"], reverse=True)
-    full = {r["id"]: r for r in db.query("SELECT id, born_at, weights FROM strategists WHERE status = 'alive'")}
-    for a in alive:
-        lr = live_record(full[a["id"]]) if a["id"] in full else {"me": {"n": 0}, "app": {"n": 0}}
-        a["live"] = {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["me"].items()}
-        a["live_app"] = {k: round(v, 4) if isinstance(v, float) else v for k, v in lr["app"].items()}
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (LIVE_KEY,))
+    recs = db.loads(row["v"], {}) if row else {}
+    for a in alive:  # never computed on page views: that re-read every graded pick and overloaded the database
+        lr = recs.get(a["id"]) or {"me": {"n": 0}, "app": {"n": 0}}
+        a["live"], a["live_app"] = lr["me"], lr["app"]
     ch = champion()
     events = db.query("SELECT at, kind, detail FROM lineage_events ORDER BY at DESC LIMIT 8")
     for e in events:  # older rows used different wording
