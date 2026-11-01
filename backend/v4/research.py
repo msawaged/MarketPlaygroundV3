@@ -211,24 +211,64 @@ MIN_LIFT, MIN_T = 0.005, 1.5
 WEIGHT = 0.5
 
 
+GBM_KEY = "ranker:v2:gbm"
+
+
+def _passes(m: dict, app: dict) -> bool:
+    return bool(m.get("lift", 0) >= MIN_LIFT and m.get("lift_t", 0) >= MIN_T and m.get("beat", 0) >= app.get("beat", 1))
+
+
 def fit_production(results: dict | None = None) -> dict:
+    """Refit the production ranker on every graded call. Two candidates, both judged on the walk-forward test (calls
+    they never saw): a ridge model and a gradient-boosted tree model. The one with the bigger out-of-sample edge goes
+    live, but only if it clears the gate; otherwise nothing changes the ranking."""
     data = load()
     if len(data) < 150:
         return {"active": False, "reason": "not enough graded calls"}
     res = (results or run())["results"]
-    oos, app = res.get("ridge (learned)", {}), res.get("app (current #1)", {})
+    app = res.get("app (current #1)", {})
+    ridge_oos, gbm_oos = res.get("ridge (learned)", {}), res.get("gbm (learned)", {})
     x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
-    active = bool(oos.get("lift", 0) >= MIN_LIFT and oos.get("lift_t", 0) >= MIN_T and oos.get("beat", 0) >= app.get("beat", 1))
-    out = {"at": datetime.now(timezone.utc).isoformat(), "keys": ZKEYS, "mu": mu.tolist(), "sd": sd.tolist(), "w": w.tolist(),
-           "oos": oos, "old": app, "active": active, "trained_on": len(data)}
+    kind, oos = "ridge", ridge_oos
+    if _passes(gbm_oos, app) and gbm_oos.get("lift", 0) > ridge_oos.get("lift", 0):
+        try:
+            import base64
+            import pickle
+            from sklearn.ensemble import HistGradientBoostingRegressor
+            m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
+                                              l2_regularization=1.0, random_state=7).fit(x, y)
+            blob = base64.b64encode(pickle.dumps(m)).decode()
+            db.execute("DELETE FROM kv_cache WHERE k = ?", (GBM_KEY,))
+            db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (GBM_KEY, blob, datetime.now(timezone.utc).isoformat()))
+            kind, oos = "gbm", gbm_oos
+        except Exception:
+            kind, oos = "ridge", ridge_oos
+    active = _passes(oos, app)
+    out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "keys": ZKEYS, "mu": mu.tolist(), "sd": sd.tolist(),
+           "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data),
+           "candidates": {"ridge": ridge_oos, "gbm": gbm_oos}}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (RANKER_KEY, json.dumps(out), out["at"]))
     _cache["v"], _cache["at"] = out, datetime.now(timezone.utc).timestamp()
+    _gbm["at"] = None
     return out
+
+
+_gbm = {"at": None, "m": None}
+
+
+def _gbm_model(at: str):
+    if _gbm["at"] != at:
+        import base64
+        import pickle
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (GBM_KEY,))
+        _gbm["m"] = pickle.loads(base64.b64decode(row["v"])) if row else None
+        _gbm["at"] = at
+    return _gbm["m"]
 
 
 _cache = {"v": None, "at": 0.0}
@@ -262,5 +302,12 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
     for f in rows:
         for a, g in INTERACTIONS:
             f[f"zx_{a}_{g}"] = f.get("z_" + a, 0.0) * f.get(g, 0.0)
+    if r.get("kind") == "gbm":
+        try:
+            m = _gbm_model(r["at"])
+            if m is not None:
+                return [float(v) for v in m.predict(np.array([[f.get(k, 0.0) for k in r["keys"]] for f in rows]))]
+        except Exception:
+            pass  # fall back to the ridge weights fitted alongside it
     mu, sd, w = np.array(r["mu"]), np.array(r["sd"]), np.array(r["w"])
     return [float(((np.array([f.get(k, 0.0) for k in r["keys"]]) - mu) / sd) @ w) for f in rows]

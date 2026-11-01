@@ -1412,3 +1412,19 @@ def test_option_iv_from_snapshots_and_practice_pricing(monkeypatch):
     monkeypatch.setattr(market._session, "get", lambda *a, **k: NS(status_code=403, json=lambda: {}))
     market._iv_cache.clear()
     assert market.option_iv("XLI", "call", 100, exp) is None  # unavailable -> callers fall back
+
+
+def test_ranker_v2_picks_the_stronger_model(monkeypatch):
+    from backend.v4 import research
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    base = research.run()
+    # pretend the tree model won clearly out of sample
+    res = {"results": dict(base["results"])}
+    res["results"]["gbm (learned)"] = dict(res["results"]["ridge (learned)"], lift=res["results"]["ridge (learned)"]["lift"] + 0.01)
+    rv = research.fit_production(res)
+    assert rv["active"] and rv["kind"] == "gbm"
+    s = research.score_candidates([{"mom60": 0.25}, {"mom60": -0.25}, {"mom60": 0.0}], ["bullish"] * 3)
+    assert s[0] > s[1]
+    # tree model loses -> ridge
+    res["results"]["gbm (learned)"] = dict(res["results"]["ridge (learned)"], lift=0.0)
+    assert research.fit_production(res)["kind"] == "ridge"
