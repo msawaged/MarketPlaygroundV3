@@ -677,6 +677,7 @@ def test_auto_warmup_force_feeds_until_target(monkeypatch):
     monkeypatch.setenv("MP_WARMUP_GRADED", "100000"); monkeypatch.setenv("MP_WARMUP_BUDGET_USD", "1")
     monkeypatch.setenv("MP_WARMUP_BATCH", "12"); monkeypatch.setenv("MP_WARMUP_GENERATE", "0")
     monkeypatch.setenv("MP_SEED_N", "3"); monkeypatch.setenv("MP_SEED_GENERATE", "0")
+    monkeypatch.setenv("MP_HOURLY_TRAIN", "1")
     monkeypatch.setattr(nn, "train", lambda force=False: {"status": "skipped", "reason": "test"})
     fake = FakeClaude()
     out = seeder.auto(claude_client=fake)
@@ -684,7 +685,8 @@ def test_auto_warmup_force_feeds_until_target(monkeypatch):
     assert out["live"]["ok"] == 3  # TODAY is a weekday
     out2 = seeder.auto(claude_client=fake)
     assert "live" not in out2  # live batch only once a day
-    assert "train" not in out2  # the slow retrain runs at most every 12 hours from the hourly job
+    monkeypatch.setenv("MP_HOURLY_TRAIN", "0")
+    assert "train" not in seeder.auto(claude_client=fake)  # by default the hourly job skips the slow retrain
     monkeypatch.setenv("MP_WARMUP_GRADED", "1")
     out3 = seeder.auto(claude_client=fake)
     assert "backfill" not in out3  # warmed up: stop force-feeding
