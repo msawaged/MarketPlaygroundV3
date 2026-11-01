@@ -1463,3 +1463,20 @@ def test_push_alerts_market_open_updates_and_cleanup(monkeypatch):
         raise _Gone()
     assert push.send_market_open(sender=gone_sender, feed=feed)["sent"] == 0
     assert not push.is_subscribed(sub["endpoint"])
+
+
+def test_broadcast_sends_once_to_verified_subscribers(monkeypatch):
+    from backend.v4 import broadcast, mailer
+    monkeypatch.setenv("MP_MAIL_TEST_SINK", "1")
+    monkeypatch.setattr(broadcast.time, "sleep", lambda s: None)
+    mailer._sent_for_tests.clear()
+    now = "2026-11-01T00:00:00"
+    for i, (ver, ok) in enumerate([(1, 1), (1, 0), (0, 1)]):
+        db.execute("INSERT INTO accounts (id, uid, email, name, pw_hash, verified, notify_calls, created_at) VALUES (?,?,?,?,?,?,?,?)",
+                   (f"a-bc{i}", f"u-bc{i}", f"bc{i}@example.com", "Sam Lee", "x", ver, ok, now))
+    out = broadcast.run_pending()
+    assert out and out[0]["sent"] == 1
+    m = [x for x in mailer._sent_for_tests if x["to"] == "bc0@example.com"][0]
+    assert "Hi Sam" in m["text"] and "Unsubscribe" in m["text"] and "/account" in m["text"]
+    again = broadcast.run_pending()
+    assert again[0]["sent"] == 0 and again[0]["already"] == 1  # never twice
