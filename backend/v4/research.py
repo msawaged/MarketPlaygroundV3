@@ -23,8 +23,10 @@ DAYS = 90
 FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log_price", "is_etf", "same_dir",
          "claude_rank_frac", "log_horizon", "conviction",
          # volume profile: where the price sits versus where the stock actually traded (see market.volume_profile)
-         "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
-DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high",
+         "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol",
+         # 12-1 momentum: past year skipping the latest month (Jegadeesh & Titman 1993)
+         "mom_12_1")
+DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1",
                "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -33,6 +35,16 @@ INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_
                 ("mom60", "reg_calm"), ("vp_above_value", "reg_trend"))
 XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
+
+
+def _with_derived(num: dict) -> dict:
+    """Fill features that can be computed exactly from what each pick already stored (as of its own date, so no
+    look-ahead): mom_12_1 = (1 + mom250) / (1 + mom20) - 1 for picks made before it was saved directly."""
+    if "mom_12_1" not in num and num.get("mom250") not in (None, 0, 0.0):
+        m20 = float(num.get("mom20", 0.0) or 0.0)
+        if 1.0 + m20 > 1e-6:
+            num = {**num, "mom_12_1": (1.0 + float(num["mom250"])) / (1.0 + m20) - 1.0}
+    return num
 
 
 def enrich(limit: int = 300) -> dict:
@@ -72,7 +84,7 @@ def load() -> list[dict]:
            WHERE o.checkpoint_days = ?""", (DAYS,))
     by: dict[str, dict] = {}
     for r in rows:
-        num = (db.loads(r["features"], {}) or {}).get("num", {})
+        num = _with_derived((db.loads(r["features"], {}) or {}).get("num", {}))
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
         f = {k: float(num.get(k, 1.0 if k == "rvol" else 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
@@ -142,6 +154,8 @@ def run(folds: int = 5) -> dict:
         "momentum (z_mom60)": lambda f: f["z_mom60"],
         "rel strength (z_rs60)": lambda f: f["z_rs60"],
         "1y trend (z_mom250)": lambda f: f["z_mom250"],
+        # idea log (docs/research_ideas.md), added 2026-11-02: Jegadeesh & Titman 12-1 momentum
+        "12-1 momentum (z_mom_12_1)": lambda f: f["z_mom_12_1"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
@@ -292,6 +306,7 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
         return None
     rows = []
     for num, d in zip(nums, directions):
+        num = _with_derived(num or {})
         sign = -1.0 if str(d).lower() == "bearish" else 1.0
         f = {k: float(num.get(k, 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0

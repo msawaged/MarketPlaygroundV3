@@ -1491,3 +1491,35 @@ def test_broadcast_sends_once_to_verified_subscribers(monkeypatch):
     assert "Hi Sam" in m["text"] and "Unsubscribe" in m["text"] and "/account" in m["text"]
     again = broadcast.run_pending()
     assert again[0]["sent"] == 0 and again[0]["already"] == 1  # never twice
+
+
+def test_mom_12_1_skips_latest_month_and_is_derived_for_old_picks(monkeypatch):
+    from backend.v4 import market, research
+    closes = [100.0] * 230 + [150.0] * 21  # i = 250: up 50% over the year, flat over the last month
+    closes[-1] = 120.0                      # ...then a last-month drop that 12-1 ignores
+    i = len(closes) - 1
+    assert abs(market.mom_12_1(closes, i) - 0.5) < 1e-9
+    assert market.mom_12_1(closes[:100], 99) == 0.0  # not enough history
+    mom250, mom20 = closes[i] / closes[i - 250] - 1, closes[i] / closes[i - 20] - 1
+    assert abs(research._with_derived({"mom250": mom250, "mom20": mom20})["mom_12_1"] - 0.5) < 1e-9
+    assert research._with_derived({"mom_12_1": 0.1, "mom250": 0.9})["mom_12_1"] == 0.1  # stored value wins
+    assert "mom_12_1" not in research._with_derived({"mom20": 0.1})  # no 1y history: leave missing
+    assert "mom_12_1" in research.FEATS and "mom_12_1" in research.DIRECTIONAL
+    # research picks it up from old picks that only stored mom250/mom20 (planted signal on 12-1)
+    rng = __import__("random").Random(5)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(400):
+        bid = f"b-m121-{k}"
+        asof = (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            m121, m20 = rng.uniform(-0.3, 0.3), rng.uniform(-0.1, 0.1)
+            pid = f"p-m121-{k}-{j}"
+            num = {"mom20": m20, "mom250": (1 + m121) * (1 + m20) - 1}
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": num}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, m121 * 0.3 + rng.gauss(0, 0.05), asof))
+    r = research.run()["results"]
+    assert r["12-1 momentum (z_mom_12_1)"]["lift"] > 0.02 and r["12-1 momentum (z_mom_12_1)"]["n"] > 100

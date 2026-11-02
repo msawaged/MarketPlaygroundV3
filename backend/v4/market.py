@@ -332,6 +332,14 @@ def _ret(closes: list[float], i: int, lag: int) -> float:
     return closes[i] / closes[i - lag] - 1.0
 
 
+def mom_12_1(closes: list[float], i: int) -> float:
+    """12-1 momentum (Jegadeesh & Titman 1993): return from ~12 months ago to ~1 month ago, skipping the latest
+    month (which tends to reverse). Equals (1 + mom250) / (1 + mom20) - 1."""
+    if i < 250 or closes[i - 250] <= 0:
+        return 0.0
+    return closes[i - 20] / closes[i - 250] - 1.0
+
+
 def realized_vol(closes: list[float], i: int, window: int = 20) -> float:
     lo = max(1, i - window + 1)
     rets = [math.log(closes[k] / closes[k - 1]) for k in range(lo, i + 1) if closes[k - 1] > 0]
@@ -357,6 +365,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mom20": _ret(closes, i, 20),
         "mom60": _ret(closes, i, 60),
         "mom250": _ret(closes, i, 250),
+        "mom_12_1": mom_12_1(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),
