@@ -5,7 +5,7 @@ import React from 'react';
 export const UPDATED = 'Nov 1';
 export const UPDATES = [
   "Market's open alerts: the day's top story at 9:35 am ET",
-  'Smarter #1 pick: beat the S&P on 56% of 1,549 unseen calls',
+  'Smarter #1 pick: beats the S&P more often than the old way (live scorecard on the Brain page)',
   'Watch any news story in 30 seconds with Story mode',
   'AI strategists compete daily: only the strong survive',
   'An honest scorecard on the brain page, real numbers only',

@@ -200,7 +200,7 @@ def start_background(interval: int = 120) -> None:
 # Add new items at the TOP; the id must be unique and never reused.
 UPDATES = [
     {"id": "2026-11-01-smarter-pick", "title": "The brain got smarter 🧠",
-     "body": "Our new #1 pick beat the S&P 500 on 56% of 1,549 calls it had never seen. See the honest scorecard.",
+     "body": "Our new #1 pick beats the S&P 500 more often than the old way, on 1,700+ calls it had never seen. See the live scorecard.",
      "url": "/live"},
     {"id": "2026-10-31-story-mode", "title": "New: Story mode 🎬",
      "body": "Any market story in 30 seconds: what happened, why it matters, the twist, and the stocks it moves.",
