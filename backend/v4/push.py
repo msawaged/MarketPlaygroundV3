@@ -199,6 +199,9 @@ def start_background(interval: int = 120) -> None:
 # Product updates: each new item is pushed once to everyone, at most one a day, during daytime Eastern.
 # Add new items at the TOP; the id must be unique and never reused.
 UPDATES = [
+    {"id": "2026-11-02-muline", "title": "New: MuLine 📈",
+     "body": "Our own trend line is on every pick now: uptrend or downtrend at a glance, built to spot turns early without crying wolf.",
+     "url": "/chat"},
     {"id": "2026-11-01-smarter-pick", "title": "The brain got smarter 🧠",
      "body": "Our new #1 pick beats the S&P 500 more often than the old way, on 1,700+ calls it had never seen. See the live scorecard.",
      "url": "/live"},

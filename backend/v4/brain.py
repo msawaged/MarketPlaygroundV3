@@ -202,6 +202,15 @@ def _refresh_bg() -> None:
         _refreshing["on"] = False
 
 
+def _safe_trendlab():
+    try:
+        from . import trendlab
+        t = trendlab.latest()
+        return {k: t[k] for k in ("at", "stocks", "results", "verdict_vs_alma", "swing")} if t and t.get("results") else None
+    except Exception:
+        return None
+
+
 def _build() -> dict:
     today = datetime.now(timezone.utc).date().isoformat()
     one = lambda sql, args=(): int((db.query_one(sql, args) or {}).get("n") or 0)  # noqa: E731
@@ -234,6 +243,7 @@ def _build() -> dict:
         "lineages": _safe_lineages(),
         "skill": _skill(),
         "regime": _safe_regime(),
+        "trendlab": _safe_trendlab(),
     }
     with _lock:
         _cache.update(at=time.time(), v=v)

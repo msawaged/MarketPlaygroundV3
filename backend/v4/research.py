@@ -25,9 +25,12 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          # volume profile: where the price sits versus where the stock actually traded (see market.volume_profile)
          "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol",
          # 12-1 momentum: past year skipping the latest month (Jegadeesh & Titman 1993)
-         "mom_12_1")
+         "mom_12_1",
+         # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
+         "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1",
-               "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value"}
+               "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
 REG_KEYS = ("reg_trend", "reg_crisis", "reg_calm")
@@ -48,18 +51,19 @@ def _with_derived(num: dict) -> dict:
 
 
 def enrich(limit: int = 300) -> dict:
-    """Add volume-profile features to older graded picks that were made before they existed (computed with data
-    up to each pick's own date only). Runs in small batches from the hourly job."""
+    """Add newer features (volume profile, regime, trend line) to older graded picks that were made before they
+    existed, computed with data up to each pick's own date only. Runs in batches from the hourly job."""
     from . import market
     # filter in SQL so the database only sends the few rows still missing features (not every graded pick)
     rows = db.query(
         """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
            WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)
-             AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%')
+             AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%'
+                  OR p.features NOT LIKE '%mu_dist%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
-        return "vp_poc_dist" not in num or "reg_trend" not in num
+        return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -67,7 +71,8 @@ def enrich(limit: int = 300) -> dict:
         f = db.loads(r["features"], {}) or {}
         try:
             d0 = date.fromisoformat(str(r["as_of_date"])[:10])
-            vp = {**market.vp_features(r["ticker"], d0), **market.regime_features(d0)}
+            market.daily_closes(r["ticker"])  # a data outage skips the pick (retried next hour), never stores zeros
+            vp = {**market.vp_features(r["ticker"], d0), **market.regime_features(d0), **market.trend_features(r["ticker"], d0)}
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -163,6 +168,8 @@ def run(folds: int = 5) -> dict:
         "accepted above value (vp)": lambda f: f["z_vp_above_value"] + 0.5 * f["z_vp_vah_dist"],
         "near most-traded price (vp)": lambda f: -abs(f["z_vp_poc_dist"]),
         "heavy recent volume (rvol)": lambda f: f["z_rvol"],
+        "MuLine agrees with the call": lambda f: f["z_mu_up"] + 0.5 * f["z_mu_slope"],
+        "fresh MuLine trend, not choppy": lambda f: f["z_mu_up"] * (1 - f["mu_age"]) - 0.5 * f["z_mu_flips"],
         "regime-aware styles": lambda f: f["z_mom60"] * (f["reg_trend"] + 0.5 * f["reg_calm"]) - f["z_vol60"] * f["reg_crisis"]
                                          + 0.5 * f["z_mom250"] * f["reg_trend"],
     }
@@ -214,6 +221,13 @@ def run_background() -> None:
             db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                        (KEY, json.dumps({"error": f"{type(e).__name__}: {e}"}), datetime.now(timezone.utc).isoformat()))
+        try:  # the MuLine vs ALMA vs 20-day average race on real histories, refreshed at most once a day
+            from . import trendlab
+            last = trendlab.latest()
+            if not last or (datetime.now(timezone.utc) - datetime.fromisoformat(last["at"])).total_seconds() > 86400:
+                trendlab.run_and_store()
+        except Exception:
+            pass
 
     threading.Thread(target=go, name="research", daemon=True).start()
 

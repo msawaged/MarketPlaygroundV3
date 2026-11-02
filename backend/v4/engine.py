@@ -97,6 +97,19 @@ def _levels(ticker: str):
             "close": round(vp["close"], 2), "rvol": round(vp["rvol"], 2), "sessions": vp["window"]}
 
 
+def _trend(ticker: str):
+    """MuLine (MuLabs' trend line) for the pick card: which way it points, since when, how choppy, versus a plain
+    20-day average, plus the last ~3 months for the mini chart."""
+    try:
+        t = market.trend_state(ticker, chart=True)
+    except Exception:
+        return None
+    if not t:
+        return None
+    return {k: t[k] for k in ("dir", "age", "flips", "sma_dir", "sma_age", "sma_flips", "params", "chart", "volume_aware")} | {
+        "close": round(t["close"], 2), "line": round(t["line"], 2), "dist": round(t["dist"], 4), "slope5": round(t["slope5"], 4)}
+
+
 def _champion():
     try:
         return lineages.champion()
@@ -273,6 +286,7 @@ def process_belief(
             "nn_score": None if v["nn_score"] is None else round(v["nn_score"], 4),
             "track_record": v["track"], "shown": shown, "alt": alt,
             "levels": None if backfill else _levels(v["ticker"]),
+            "trend": None if backfill or not shown else _trend(v["ticker"]),
         }
         picks_out.append(pick)
         rows_picks.append((

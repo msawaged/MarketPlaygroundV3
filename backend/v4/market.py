@@ -283,6 +283,221 @@ def vp_features(symbol: str, as_of: Optional[date] = None) -> dict:
             "rvol": max(0.1, min(5.0, vp["rvol"]))}
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Trend lines.
+#   SMA 20  - plain 20-day average: every day counts the same, so it turns late.
+#   ALMA    - Arnaud Legoux Moving Average (Legoux & Kouzis-Loukas, 2009): weights on a fixed bell curve placed
+#             near the newest days (offset 0.85, width n/6). Less lag and less noise than a plain average.
+#   MuLine  - MuLabs' trend line. ALMA's bell curve, made adaptive, volume-aware and noise-proof:
+#             1. the bell adapts to how cleanly the stock is moving (Kaufman's efficiency ratio over the window):
+#                a clean trend pulls it onto the newest days and narrows it (turns sooner); a choppy tape widens
+#                it (smoother);
+#             2. each day is weighted by its volume versus the window's average (square root, capped 0.5..2x), so
+#                moves with real money behind them count more than quiet drifts;
+#             3. a noise band: the line's direction only flips once it pulls back from its high (or low) by more
+#                than MU_BAND x the stock's normal daily move, so ordinary wiggles don't count as a turn.
+#             On simulated markets (tuned on one set, checked on two fresh ones) it turned ~0.3-0.4 days sooner
+#             than ALMA with ~15% fewer false turns. trendlab.py races all three on real histories; the Brain page
+#             shows that result, whatever it is.
+#   Each value uses only that day and the days before it.
+TREND_N = 21                                       # days in the window (MuLine and ALMA)
+ALMA_N, ALMA_OFFSET, ALMA_SIGMA = TREND_N, 0.85, 6.0
+MU_OFFSET = (0.90, 0.99)                           # bell position: choppy .. clean trend (0 oldest, 1 newest)
+MU_SIGMA = (6.0, 14.0)                             # bell narrowness (width = n / sigma): choppy .. clean trend
+MU_VOL_CAP = (0.5, 2.0)
+MU_BAND = 0.25                                     # noise band, in units of the stock's typical daily move
+TREND_LOOKBACK = 60                                # days shown on the chart and used to count turns
+
+
+def alma_weights(n: int = 9, offset: float = 0.85, sigma: float = 6.0) -> list[float]:
+    """Normalised bell-curve weights, oldest day first (they sum to 1)."""
+    m, s = offset * (n - 1), n / sigma
+    w = [math.exp(-((k - m) ** 2) / (2 * s * s)) for k in range(n)]
+    tot = sum(w)
+    return [x / tot for x in w]
+
+
+def alma(values: list[float], n: int = 9, offset: float = 0.85, sigma: float = 6.0) -> Optional[float]:
+    """ALMA of the last n values (None if there are fewer than n)."""
+    if len(values) < n:
+        return None
+    return sum(w * v for w, v in zip(alma_weights(n, offset, sigma), values[-n:]))
+
+
+def alma_series(values: list[float], n: int = ALMA_N, offset: float = ALMA_OFFSET, sigma: float = ALMA_SIGMA) -> list[Optional[float]]:
+    """ALMA at every day (None until there are n days)."""
+    w = alma_weights(n, offset, sigma)
+    return [None if t < n - 1 else sum(a * b for a, b in zip(w, values[t - n + 1: t + 1])) for t in range(len(values))]
+
+
+def sma_series(values: list[float], n: int = 20) -> list[Optional[float]]:
+    out, run = [], 0.0
+    for t, v in enumerate(values):
+        run += v
+        if t >= n:
+            run -= values[t - n]
+        out.append(run / n if t >= n - 1 else None)
+    return out
+
+
+def efficiency(window: list[float]) -> float:
+    """Kaufman's efficiency ratio: net move / total distance travelled (1 = straight line, ~0 = going nowhere)."""
+    path = sum(abs(b - a) for a, b in zip(window, window[1:]))
+    return abs(window[-1] - window[0]) / path if path > 0 else 0.0
+
+
+def muline_weights(window: list[float], vols: Optional[list[float]] = None) -> list[float]:
+    """MuLine's weights for one window (oldest day first, sum 1)."""
+    n = len(window)
+    er = efficiency(window)
+    offset = MU_OFFSET[0] + (MU_OFFSET[1] - MU_OFFSET[0]) * er
+    sigma = MU_SIGMA[0] + (MU_SIGMA[1] - MU_SIGMA[0]) * er
+    m, s = offset * (n - 1), n / sigma
+    w = [math.exp(-((k - m) ** 2) / (2 * s * s)) for k in range(n)]
+    if vols and len(vols) == n:
+        avg = sum(vols) / n
+        if avg > 0:
+            w = [x * max(MU_VOL_CAP[0], min(MU_VOL_CAP[1], math.sqrt(max(v, 0.0) / avg))) for x, v in zip(w, vols)]
+    tot = sum(w)
+    return [x / tot for x in w]
+
+
+def muline_series(values: list[float], vols: Optional[list[float]] = None, n: int = TREND_N) -> list[Optional[float]]:
+    """MuLine at every day (None until there are n days). vols: daily volume aligned with values, or None."""
+    use_v = vols if vols and len(vols) == len(values) else None
+    out: list[Optional[float]] = []
+    for t in range(len(values)):
+        if t < n - 1:
+            out.append(None)
+            continue
+        win = values[t - n + 1: t + 1]
+        w = muline_weights(win, use_v[t - n + 1: t + 1] if use_v else None)
+        out.append(sum(a * b for a, b in zip(w, win)))
+    return out
+
+
+def slope_dirs(line: list[Optional[float]]) -> list[int]:
+    """Plain direction of a line each day: +1 up, -1 down (a flat day keeps the last direction), 0 before it starts."""
+    out, prev = [], 0
+    for t, v in enumerate(line):
+        if t and v is not None and line[t - 1] is not None:
+            d = 1 if v > line[t - 1] else -1 if v < line[t - 1] else 0
+            prev = d or prev
+        out.append(prev if v is not None else 0)
+    return out
+
+
+def band_dirs(line: list[Optional[float]], px: list[float], k: float = MU_BAND, win: int = 20) -> list[int]:
+    """MuLine's direction each day: it only flips once the line pulls back from its latest high (low) by more than
+    k x the stock's typical daily move (stdev of the last `win` daily % changes) x the line's level."""
+    out, d, ext = [], 0, None
+    for t, v in enumerate(line):
+        if v is None:
+            out.append(0)
+            continue
+        if ext is None:
+            ext = v
+            out.append(0)
+            continue
+        rets = [px[j] / px[j - 1] - 1 for j in range(max(1, t - win + 1), t + 1) if px[j - 1] > 0]
+        if len(rets) > 2:
+            m = sum(rets) / len(rets)
+            sd = math.sqrt(sum((r - m) ** 2 for r in rets) / len(rets))
+        else:
+            sd = 0.01
+        thr = k * sd * v
+        if d >= 0:
+            if v > ext:
+                ext = v
+                d = d or 1
+            elif v < ext - thr:
+                d, ext = -1, v
+        else:
+            if v < ext:
+                ext = v
+            elif v > ext + thr:
+                d, ext = 1, v
+        out.append(d)
+    return out
+
+
+def dir_turns(dirs: list[int]) -> tuple[int, int, int]:
+    """(direction now, days since it last turned, number of turns) from a daily direction list."""
+    age, flips, prev = 0, 0, 0
+    for d in dirs:
+        if d and prev and d != prev:
+            flips += 1
+            age = 0
+        prev = d or prev
+        age += 1 if prev else 0
+    return prev, age, flips
+
+
+def _turns(line: list[float]) -> tuple[int, int, int]:
+    """(direction now +1/-1/0, days since it last turned, number of turns) for a line with no gaps."""
+    age, flips, prev = 0, 0, 0
+    for a, b in zip(line, line[1:]):
+        d = 1 if b > a else -1 if b < a else 0
+        if d and prev and d != prev:  # a flat day neither continues nor breaks the run
+            flips += 1
+            age = 0
+        prev = d or prev
+        age += 1
+    return prev, age, flips
+
+
+def trend_state(symbol: str, as_of: Optional[date] = None, chart: bool = False) -> Optional[dict]:
+    """The stock's trend from its MuLine, next to a plain 20-day average, using only data up to as_of."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    need = TREND_N + TREND_LOOKBACK
+    if i < need:
+        return None
+    lo_i = max(0, i - need - 20 + 1)
+    px = closes[lo_i: i + 1]
+    vols = daily_volumes(symbol)
+    vv = vols[lo_i: i + 1] if vols else None
+    mu = muline_series(px, vv)
+    sm = sma_series(px, 20)
+    m_tail, s_tail = mu[-(TREND_LOOKBACK + 1):], sm[-(TREND_LOOKBACK + 1):]
+    if any(v is None for v in m_tail) or any(v is None for v in s_tail):
+        return None
+    # the noise band needs a little run-up, so direction is worked out over everything we have, then the last 60 days
+    dirs = band_dirs(mu, px)[-TREND_LOOKBACK:]
+    if not any(dirs):
+        return None
+    m_dir, m_age, m_flips = dir_turns(dirs)
+    s_dir, s_age, s_flips = _turns(s_tail)
+    out = {"dir": m_dir, "age": m_age, "flips": m_flips, "close": px[-1], "line": m_tail[-1],
+           "dist": px[-1] / m_tail[-1] - 1 if m_tail[-1] else 0.0,
+           "slope5": m_tail[-1] / m_tail[-6] - 1 if m_tail[-6] else 0.0,
+           "clean": round(efficiency(px[-TREND_N:]), 3), "volume_aware": bool(vv),
+           "sma_dir": s_dir, "sma_age": s_age, "sma_flips": s_flips,
+           "params": {"n": TREND_N, "sma": 20, "days": TREND_LOOKBACK}}
+    if chart:
+        k = len(px) - TREND_LOOKBACK
+        out["chart"] = {"dates": dates[i - TREND_LOOKBACK + 1: i + 1], "close": [round(v, 2) for v in px[k:]],
+                        "line": [round(v, 2) for v in mu[k:]], "sma": [round(v, 2) for v in sm[k:]], "dir": dirs}
+    return out
+
+
+TREND_KEYS = ("mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
+
+
+def trend_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """MuLine features (0 when unknown). mu_up: +1 rising, -1 falling; mu_age: days since it turned (0..1 = 0..60);
+    mu_flips: how choppy (turns in the last 60 days / 10); mu_dist: price vs the line; mu_slope: its 5-day change."""
+    try:
+        t = trend_state(symbol, as_of)
+    except Exception:
+        t = None
+    if not t:
+        return {k: 0.0 for k in TREND_KEYS}
+    return {"mu_dist": max(-0.5, min(0.5, t["dist"])), "mu_slope": max(-0.3, min(0.3, t["slope5"])),
+            "mu_up": float(t["dir"]), "mu_age": min(t["age"], TREND_LOOKBACK) / TREND_LOOKBACK,
+            "mu_flips": t["flips"] / 10.0}
+
+
 def latest_price(symbol: str) -> float:
     try:
         r = _session.get(
@@ -374,6 +589,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "history_days": min(i, 1000),
         **vp_features(symbol, as_of),
         **regime_features(as_of),
+        **trend_features(symbol, as_of),
     }
 
 

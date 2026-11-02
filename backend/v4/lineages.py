@@ -32,8 +32,10 @@ LIVE_MARGIN = 0.005      # ...and it must beat the app's own top pick by half a 
 CHAMPION_WEIGHT = 0.25   # how much a champion moves the real ranking
 CHAMPION_KEY = "lineage_champion"
 LIVE_KEY = "lineage_live_records"  # computed once per trading day (in evolve), read by the page
-FEATURES = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol60", "claude_score", "claude_rank_frac", "is_etf", "same_dir")
-DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high"}  # flipped for bearish picks
+FEATURES = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol60", "claude_score", "claude_rank_frac", "is_etf", "same_dir",
+            "mu_up", "mu_slope", "mu_dist", "mu_age", "mu_flips")
+DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mu_up", "mu_slope", "mu_dist"}  # flipped for bearish picks
+TREND_READY = 0.8        # share of graded picks that must carry trend-line features before Trend-rider joins
 
 FOUNDERS = [
     ("Momentum", {"mom60": 1.0, "mom20": 0.5, "rs60": 0.8}),
@@ -41,7 +43,10 @@ FOUNDERS = [
     ("Steady", {"vol60": -1.0, "claude_score": 0.3}),
     ("Follow-the-AI", {"claude_score": 1.0, "claude_rank_frac": 0.8}),
     ("Big-picture", {"is_etf": 1.0, "same_dir": 0.6}),
+    # Joined later (Nov 2026): rides MuLine (MuLabs' trend line) when it points the way of the call, avoids choppy names
+    ("Trend-rider", {"mu_up": 1.0, "mu_slope": 0.6, "mu_flips": -0.5}),
 ]
+LATE_FOUNDERS = {"Trend-rider": "mu_dist"}  # style -> feature that must be on most graded picks before it joins
 
 
 def _now() -> str:
@@ -68,11 +73,39 @@ def _name(sid: str) -> str:
 
 
 def ensure_founders() -> None:
-    if db.query_one("SELECT COUNT(*) AS n FROM strategists")["n"]:
+    if not db.query_one("SELECT COUNT(*) AS n FROM strategists")["n"]:
+        for style, w in FOUNDERS:
+            if style in LATE_FOUNDERS and not _features_ready(LATE_FOUNDERS[style]):
+                continue
+            sid = _add(f"{style} · Gen 1", style, 1, None, w)
+            _event("born", sid, f"{style} · Gen 1 joined as a founder")
         return
+    _add_late_founders()
+
+
+def _features_ready(key: str) -> bool:
+    """True once most graded picks carry `key` (older picks get it from research.enrich, hour by hour). A founder
+    judged on picks that don't have its feature yet would be scored on noise."""
+    row = db.query_one(
+        f"""SELECT COUNT(*) AS n, SUM(CASE WHEN p.features LIKE '%{key}%' THEN 1 ELSE 0 END) AS k
+            FROM outcomes o JOIN picks p ON p.id = o.pick_id WHERE o.checkpoint_days = ?""", (CHECKPOINT,))
+    n, k = int(row["n"] or 0), int(row["k"] or 0)
+    return n > 0 and k / n >= TREND_READY
+
+
+def _add_late_founders() -> list[str]:
+    """New founder styles join a running population once (never again after being retired), at the current
+    generation, and then compete like everyone else."""
+    added = []
+    have = {r["style"] for r in db.query("SELECT DISTINCT style FROM strategists")}
+    gen = int(db.query_one("SELECT MAX(gen) AS g FROM strategists")["g"] or 1)
     for style, w in FOUNDERS:
-        sid = _add(f"{style} · Gen 1", style, 1, None, w)
-        _event("born", sid, f"{style} · Gen 1 joined as a founder")
+        if style in have or (style in LATE_FOUNDERS and not _features_ready(LATE_FOUNDERS[style])):
+            continue
+        sid = _add(f"{style} · Gen {gen}", style, gen, None, w)
+        _event("born", sid, f"{_name(sid)} joined as a new founder")
+        added.append(sid)
+    return added
 
 
 def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[list[dict]]:

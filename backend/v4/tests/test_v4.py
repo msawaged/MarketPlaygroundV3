@@ -1381,10 +1381,109 @@ def test_research_enrich_adds_vp_features(monkeypatch):
                ("p-en", 90, "2026-04-01", 10.0, 0.0, 0.0, 0.01, "2026-04-01"))
     monkeypatch.setattr(market, "vp_features", lambda s, d=None: {"vp_poc_dist": 0.2, "vp_vah_dist": 0.1, "vp_val_dist": 0.3,
                                                                   "vp_above_value": 1.0, "vp_below_value": 0.0, "rvol": 2.0})
+    monkeypatch.setattr(market, "trend_features", lambda s, d=None: {"mu_dist": 0.03, "mu_slope": 0.01, "mu_up": 1.0,
+                                                                     "mu_age": 0.1, "mu_flips": 0.2})
+    monkeypatch.setattr(market, "regime_features", lambda d=None: {"reg_trend": 1.0, "reg_crisis": 0.0, "reg_calm": 0.0})
+    monkeypatch.setattr(market, "daily_closes", lambda s: (["2026-01-01"], [10.0]))
     out = research.enrich(10)
     assert out["enriched"] == 1 and out["remaining"] == 0
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-en'")["features"])["num"]
-    assert num["vp_above_value"] == 1.0 and num["mom60"] == 0.1
+    assert num["vp_above_value"] == 1.0 and num["mom60"] == 0.1 and num["mu_up"] == 1.0
+    assert research.enrich(10)["enriched"] == 0                             # nothing left to fill
+
+    def outage(s):
+        raise market.MarketDataError("down")
+    db.execute("UPDATE picks SET features = ? WHERE id = 'p-en'", (db.dumps({"num": {"mom60": 0.1}}),))
+    monkeypatch.setattr(market, "daily_closes", outage)
+    assert research.enrich(10)["enriched"] == 0                             # a data outage never stores zeros
+    assert "mu_up" not in db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-en'")["features"])["num"]
+
+
+def test_alma_matches_the_published_worked_example():
+    w = market.alma_weights(9, 0.85, 6)
+    assert [round(x * 100, 1) for x in w] == [0.0, 0.0, 0.2, 1.2, 5.3, 14.8, 26.3, 30.1, 22.0]
+    assert round(market.alma([100.0] * 8 + [110.0], 9, 0.85, 6), 1) == 102.2  # a plain 9-bar average: 101.1
+    assert market.alma([1.0, 2.0], 9) is None
+    assert market.sma_series([1, 2, 3, 4], 2) == [None, 1.5, 2.5, 3.5]
+
+
+def test_trend_state_turns_before_a_plain_average_and_never_looks_ahead(monkeypatch):
+    import math as _m
+    from datetime import timedelta as _td
+    d0 = TODAY - _td(days=500)
+    dates = [(d0 + _td(days=i)).isoformat() for i in range(400)]
+    closes = [100 + 30 * _m.sin(i / 25) for i in range(400)]              # smooth waves
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, closes))
+    peak = max(range(150, 250), key=lambda i: closes[i])                    # a top inside the data
+    t = market.trend_state("XYZ", date.fromisoformat(dates[peak + 6]), chart=True)
+    assert t["dir"] == -1 and t["sma_dir"] == 1                             # MuLine already turned down, SMA 20 not yet
+    assert len(t["chart"]["close"]) == len(t["chart"]["line"]) == len(t["chart"]["dates"]) == market.TREND_LOOKBACK
+    assert t["chart"]["dates"][-1] == dates[peak + 6]
+    f1 = market.trend_features("XYZ", date.fromisoformat(dates[peak + 6]))
+    future = closes[: peak + 7] + [5.0] * (400 - peak - 7)                  # wreck everything after the date
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, future))
+    assert market.trend_features("XYZ", date.fromisoformat(dates[peak + 6])) == f1  # point-in-time only
+    assert f1["mu_up"] == -1.0 and 0 < f1["mu_age"] < 0.2
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates[:30], closes[:30]))
+    assert market.trend_state("XYZ") is None and market.trend_features("XYZ")["mu_up"] == 0.0
+
+
+def test_muline_band_ignores_wiggles_and_lab_scores_lines(monkeypatch):
+    import math as _m
+    from backend.v4 import trendlab
+    # a clean rise with tiny wiggles: plain slope flips every other day, MuLine's noise band doesn't
+    px = [100 * (1.002 ** i) * (1 + 0.004 * (-1) ** i) for i in range(200)]
+    line = market.muline_series(px)
+    assert market.dir_turns(market.band_dirs(line, px)[40:])[2] == 0
+    assert market.dir_turns(market.slope_dirs(px)[40:])[2] > 50
+    # efficiency: straight line = 1, back-and-forth = ~0
+    assert market.efficiency([1, 2, 3, 4]) == 1.0 and market.efficiency([1, 2, 1, 2, 1]) == 0.0
+    # volume tilt: a heavy-volume day pulls the line toward its price
+    win = [100.0] * 20 + [110.0]
+    quiet = market.muline_weights(win, [1.0] * 21)[-1]
+    loud = market.muline_weights(win, [1.0] * 20 + [4.0])[-1]
+    assert loud > quiet
+    # the lab: real turns found with hindsight, each line judged on lag and false turns
+    waves = [100 + 30 * _m.sin(i / 25) for i in range(600)]
+    piv = trendlab.pivots(waves)
+    assert len(piv) >= 5 and all(a[1] != b[1] for a, b in zip(piv, piv[1:]))  # tops and bottoms alternate
+    dates = [f"2020-{i:04d}" for i in range(600)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, waves))
+    monkeypatch.setattr(market, "daily_volumes", lambda s: [])
+    out = trendlab.run(["A", "B"])
+    r = out["results"]
+    assert out["stocks"] == 2 and r["MuLine"]["avg_lag"] < r["20-day average"]["avg_lag"]
+    assert r["MuLine"]["false_per_year"] < 1 and out["verdict_vs_alma"] in (
+        "quicker and calmer", "quicker but jumpier", "calmer but slower", "not better yet")
+
+
+def test_trend_rider_joins_once_trend_features_are_on_most_graded_picks(monkeypatch):
+    from backend.v4 import lineages
+    for style, w in lineages.FOUNDERS[:5]:
+        lineages._add(f"{style} · Gen 3", style, 3, None, w)
+    def graded(i, with_trend):
+        bid, pid = f"b-tr{i}", f"p-tr{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", "2026-01-01T00:00:00", "2026-01-01", "seed_backfill"))
+        num = {"mom60": 0.1, **({"mu_dist": 0.02, "mu_up": 1.0} if with_trend else {})}
+        db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+                   (pid, bid, "T", "bullish", "2026-01-01", 10.0, db.dumps({"num": num})))
+        db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                   (pid, lineages.CHECKPOINT, "2026-04-01", 10.0, 0.0, 0.0, 0.01, "2026-04-01"))
+    for i in range(10):
+        graded(i, with_trend=i < 5)                                         # only half carry trend features yet
+    lineages.ensure_founders()
+    assert not db.query_one("SELECT 1 AS x FROM strategists WHERE style = 'Trend-rider'")
+    for i in range(10, 40):
+        graded(i, with_trend=True)                                          # enrichment caught up: 35 of 40
+    lineages.ensure_founders()
+    rows = db.query("SELECT name, gen, parent_id FROM strategists WHERE style = 'Trend-rider'")
+    assert len(rows) == 1 and rows[0]["gen"] == 3 and rows[0]["parent_id"] is None and rows[0]["name"].startswith("Trend-rider · Gen 3")
+    db.execute("UPDATE strategists SET status = 'retired' WHERE style = 'Trend-rider'")
+    lineages.ensure_founders()                                              # retired founders never come back
+    assert db.query_one("SELECT COUNT(*) AS n FROM strategists WHERE style = 'Trend-rider'")["n"] == 1
+    f = lineages.features_of({"num": {"mu_up": -1.0, "mu_slope": -0.02, "mu_flips": 0.3}}, "bearish")
+    assert f["mu_up"] == 1.0 and f["mu_slope"] == 0.02 and f["mu_flips"] == 0.3  # a falling trend agrees with a bearish call
 
 
 def test_regime_state_and_regime_aware_research(monkeypatch):

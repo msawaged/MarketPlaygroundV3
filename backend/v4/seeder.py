@@ -229,9 +229,9 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
             _kv_set("extra_backfill_spent_usd", str(extra_spent + r["cost_usd"]))
             out["backfill"] = dict(r, extra=True, granted_usd=granted)
     lap("backfill")
-    try:  # add volume-profile features to older graded picks, a batch per hour (no Claude, market data only)
+    try:  # add newer features to older graded picks, a batch per hour (no Claude, market data only)
         from . import research
-        out["enrich"] = research.enrich(int(os.getenv("MP_ENRICH_BATCH", "300")))
+        out["enrich"] = research.enrich(int(os.getenv("MP_ENRICH_BATCH", "1500")))
     except Exception as e:
         out["enrich"] = {"error": f"{type(e).__name__}: {e}"}
     lap("enrich")

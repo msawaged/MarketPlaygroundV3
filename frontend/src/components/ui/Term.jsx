@@ -34,6 +34,7 @@ export const GLOSSARY = {
   'long put': ['Long put', 'The right to sell 100 shares at a set price. It pays if the stock falls; you can lose what you paid.'],
   'buy stock': ['Buying shares', 'Owning a piece of the company (or a fund). Simple: you make or lose what the price does.'],
   'iron condor': ['Iron condor', 'Four options that pay you if the stock stays inside a range. You collect money up front; you lose if it breaks out.'],
+  'muline': ['MuLine', "MuLabs' trend line. It leans on the newest prices when a stock is moving cleanly, smooths out when it's choppy, gives more say to heavy-volume days, and ignores ordinary wiggles. Built to call a turn early without crying wolf. Context, not a buy or sell signal on its own."],
 };
 
 export default function Term({ k, children }) {

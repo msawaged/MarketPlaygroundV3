@@ -2,8 +2,9 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 1';
+export const UPDATED = 'Nov 2';
 export const UPDATES = [
+  'New: MuLine, our own trend line, on every pick: uptrend or downtrend at a glance',
   "Market's open alerts: the day's top story at 9:35 am ET",
   'Smarter #1 pick: beats the S&P more often than the old way (live scorecard on the Brain page)',
   'Watch any news story in 30 seconds with Story mode',

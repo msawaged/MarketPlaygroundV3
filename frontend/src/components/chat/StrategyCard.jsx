@@ -125,6 +125,52 @@ function KeyLevels({ lv }) {
   );
 }
 
+// MuLine: MuLabs' trend line, drawn against the price. One label, one chart, one plain sentence.
+function MuLine({ t, direction }) {
+  const c = t.chart || {};
+  const all = [...(c.close || []), ...(c.line || [])].filter((v) => v != null);
+  if (all.length < 10) return null;
+  const W = 300, H = 72, lo = Math.min(...all), hi = Math.max(...all), n = c.close.length;
+  const path = (arr, from = 0) => arr.map((v, i) => `${i ? 'L' : 'M'}${(((i + from) / (n - 1)) * W).toFixed(1)},${(H - 4 - ((v - lo) / (hi - lo || 1)) * (H - 8)).toFixed(1)}`).join('');
+  // the line coloured by its own direction each day: green while rising, red while falling
+  const segments = ({ line, dir }) => {
+    const out = [];
+    line.forEach((v, i) => {
+      const d = dir ? dir[i] : t.dir;
+      const last = out[out.length - 1];
+      if (last && last.d === d) last.pts.push(v);
+      else out.push({ d, from: last ? i - 1 : i, pts: last ? [line[i - 1], v] : [v] });
+    });
+    return out;
+  };
+  const up = t.dir > 0;
+  const days = t.age >= 60 ? '60+ days' : t.age === 1 ? 'since today' : `${t.age} days`;
+  const call = direction === 'bullish' ? 1 : direction === 'bearish' ? -1 : 0;
+  let say = call ? (call === t.dir ? `Trending ${up ? 'up' : 'down'}, the same way as this call.`
+    : `Heads-up: trending ${up ? 'up' : 'down'}, against this call.`) : `Trending ${up ? 'up' : 'down'}.`;
+  if (t.flips >= 6) say += ' It has been choppy lately, so give it less weight.';
+  else if (t.sma_dir !== t.dir) say += ' A plain 20-day average hasn\'t caught the turn yet.';
+  return (
+    <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-3">
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold"><Term k="muline">MuLine</Term></div>
+        <div className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${up ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-300'}`}>
+          {up ? '▲ Uptrend' : '▼ Downtrend'} · {days}
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full h-[72px]" preserveAspectRatio="none" role="img"
+        aria-label={`Price and MuLine over the last ${n} trading days`}>
+        <path d={path(c.close)} fill="none" stroke="#64748b" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        {segments(c).map((sg, i) => (
+          <path key={i} d={path(sg.pts, sg.from)} fill="none" stroke={sg.d > 0 ? '#4ade80' : sg.d < 0 ? '#f87171' : '#94a3b8'}
+            strokeWidth="2.4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        ))}
+      </svg>
+      <p className="mt-1.5 text-[12px] text-slate-300">{say}</p>
+    </div>
+  );
+}
+
 export default function StrategyCard({ data, belief, riskProfile = 'moderate', onRerun, onRefine, prefs, onTune }) {
   const navigate = useNavigate();
   const [shared, setShared] = useState(null);
@@ -350,6 +396,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           </div>
 
           {pick.levels && <KeyLevels lv={pick.levels} />}
+          {pick.trend?.chart && <MuLine t={pick.trend} direction={pick.direction} />}
 
           {basePick.alt && (
             <div>

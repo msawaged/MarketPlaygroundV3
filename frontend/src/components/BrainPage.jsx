@@ -316,6 +316,42 @@ export default function BrainPage({ viewOnly = false }) {
 
         <BrainLineages data={d?.lineages} ago={ago} now={now} />
 
+        {d?.trendlab?.results?.MuLine && (() => {
+          const t = d.trendlab, rows = ['MuLine', 'ALMA', '20-day average'].filter((k) => t.results[k]);
+          const best = (key) => Math.min(...rows.map((k) => t.results[k][key]));
+          const verdict = {
+            'quicker and calmer': 'MuLine caught real turns sooner and cried wolf less often than ALMA.',
+            'quicker but jumpier': 'MuLine caught real turns sooner, but cried wolf more often than ALMA. Still tuning.',
+            'calmer but slower': 'MuLine cried wolf less often than ALMA, but caught real turns later. Still tuning.',
+            'not better yet': 'MuLine isn\'t beating ALMA yet. Still tuning, and this box will say so until it does.',
+          }[t.verdict_vs_alma] || '';
+          return (
+            <>
+              <h2 className="mt-8 text-xl font-extrabold">MuLine vs the classics</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                MuLine is our own trend line. We raced it against two well-known ones on {t.stocks} real stock histories:
+                how many days after a real top or bottom (a {Math.round(t.swing * 100)}%+ reversal) each one turned, and how often it turned for nothing.
+              </p>
+              <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 overflow-hidden">
+                <div className="grid grid-cols-3 px-3.5 py-2 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800">
+                  <span>Line</span><span className="text-center">Days late</span><span className="text-right">False turns / yr</span>
+                </div>
+                {rows.map((k) => {
+                  const r = t.results[k];
+                  return (
+                    <div key={k} className={`grid grid-cols-3 px-3.5 py-2 text-sm ${k === 'MuLine' ? 'bg-blue-500/10 font-bold' : ''}`}>
+                      <span>{k}</span>
+                      <span className={`text-center ${r.avg_lag === best('avg_lag') ? 'text-green-300' : ''}`}>{r.avg_lag.toFixed(1)}</span>
+                      <span className={`text-right ${r.false_per_year === best('false_per_year') ? 'text-green-300' : ''}`}>{r.false_per_year.toFixed(1)}</span>
+                    </div>
+                  );
+                })}
+                <div className="px-3.5 py-2 text-xs text-slate-300 border-t border-slate-800">{verdict} Lower is better on both.</div>
+              </div>
+            </>
+          );
+        })()}
+
         <h2 className="mt-8 text-xl font-extrabold">Just learned</h2>
         <div className="mt-2">
           <Feed items={d?.learned || []} render={(x) => (

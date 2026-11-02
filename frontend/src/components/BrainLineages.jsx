@@ -9,6 +9,7 @@ export const STYLE = {
   Steady: { color: '#4ade80', blurb: 'buys the calmest companies' },
   'Follow-the-AI': { color: '#a78bfa', blurb: "trusts the AI's first choice" },
   'Big-picture': { color: '#f472b6', blurb: 'prefers broad funds' },
+  'Trend-rider': { color: '#22d3ee', blurb: 'rides the trend line when it points your way and skips choppy names' },
 };
 const col = (s) => STYLE[s]?.color || '#94a3b8';
 const pct = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;

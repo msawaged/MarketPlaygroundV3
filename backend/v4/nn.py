@@ -109,7 +109,9 @@ def make_features(
         # volume profile (stored for research and ranker v2; not part of MODEL_NUMERIC)
         **{k: float(market.get(k, d)) for k, d in (("vp_poc_dist", 0.0), ("vp_vah_dist", 0.0), ("vp_val_dist", 0.0),
                                                     ("vp_above_value", 0.0), ("vp_below_value", 0.0), ("rvol", 1.0),
-                                                    ("reg_trend", 0.0), ("reg_crisis", 0.0), ("reg_calm", 0.0))},
+                                                    ("reg_trend", 0.0), ("reg_crisis", 0.0), ("reg_calm", 0.0),
+                                                    ("mu_dist", 0.0), ("mu_slope", 0.0), ("mu_up", 0.0),
+                                                    ("mu_age", 0.0), ("mu_flips", 0.0))},
     }
     ticker = cand["ticker"]
     cats = [f"tk={ticker}", f"exp={cand.get('exposure', '')}", f"cdir={cand.get('direction', '')}",
