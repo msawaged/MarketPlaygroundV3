@@ -12,6 +12,7 @@ import random
 from datetime import date, timedelta
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from backend.v4 import db, engine, grader, learning, market, nn, seeder, strategy
@@ -440,6 +441,17 @@ def test_network_blend_can_reorder_picks():
     out = nn.on_claude_scale([0.001, 0.003, -0.002], [0.8, 0.7, 0.6])
     assert out.index(max(out)) == 1
     assert abs(sum(out) / 3 - 0.7) < 1e-9
+
+
+def test_network_learns_within_belief_label():
+    # the belief-level part of the label is removed; lone-idea beliefs are dropped from training
+    y, keep = nn.within_belief(["a", "a", "a", "b", "c", "c"], np.array([0.30, 0.10, 0.20, 0.50, -0.4, -0.2]))
+    assert np.allclose(y[:3], [0.10, -0.10, 0.0], atol=1e-6)
+    assert np.allclose(y[4:], [-0.10, 0.10], atol=1e-6)
+    assert keep.tolist() == [True, True, True, False, True, True]
+    # order inside a belief is unchanged, so the top-pick lift the gates use is unchanged
+    raw = np.array([0.30, 0.10, 0.20])
+    assert y[:3].argsort().tolist() == raw.argsort().tolist()
 
 
 def test_balanced_results_mix_shares_and_options():

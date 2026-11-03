@@ -43,6 +43,10 @@ LABEL_DAYS = int(os.getenv("MP_NN_LABEL_DAYS", "90"))
 TARGET = os.getenv("MP_NN_TARGET", "selection").lower()  # selection = vs the simple choice; market = vs SPY (old)
 MIN_TRAIN = int(os.getenv("MP_NN_MIN_TRAIN", "300"))
 MIN_TEST = int(os.getenv("MP_NN_MIN_TEST", "80"))
+# within = learn each pick's label minus its belief's average (what ranking needs; research.py's ranker v2
+# does the same). raw = the old label. In production ~35% of the 90-day sel_edge variance was between
+# beliefs (whole belief beat or lagged its fund), which the network could only fit by memorizing belief text.
+LABEL_MODE = os.getenv("MP_NN_LABEL_MODE", "within").lower()
 MAX_WEIGHT = float(os.getenv("MP_NN_MAX_WEIGHT", "0.6"))
 TEXT_DIM = 2 ** 12
 CAT_DIM = 2 ** 11
@@ -193,6 +197,23 @@ def _training_rows() -> list[dict]:
     return out
 
 
+def within_belief(belief_ids: list[str], labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """(labels minus their belief's mean, mask of rows whose belief has 2+ rows).
+
+    Only the order of ideas inside one belief matters for picking, so the belief-level part of the
+    label is noise to the network. A belief with a single row has nothing to compare against."""
+    groups: dict[str, list[int]] = {}
+    for i, b in enumerate(belief_ids):
+        groups.setdefault(b, []).append(i)
+    out = np.array(labels, dtype=np.float32).copy()
+    keep = np.zeros(len(out), dtype=bool)
+    for idx in groups.values():
+        a = np.array(idx)
+        out[a] -= out[a].mean()
+        keep[a] = len(a) >= 2
+    return out, keep
+
+
 def _spearman(a: np.ndarray, b: np.ndarray) -> float:
     if len(a) < 3:
         return 0.0
@@ -288,8 +309,14 @@ def train(force: bool = False, seed: int = 7) -> dict:
     if len(train_rows) < 10 or len(test_rows) < 5:
         return {"status": "skipped", "reason": "not enough rows on both sides of the walk-forward split"}
 
-    xtr = vectorize([r["features"] for r in train_rows])
     ytr = np.array([r["label"] for r in train_rows], dtype=np.float32)
+    if LABEL_MODE == "within":
+        ytr, keep = within_belief([r["belief_id"] for r in train_rows], ytr)
+        train_rows = [r for r, k in zip(train_rows, keep) if k]
+        ytr = ytr[keep]
+        if len(train_rows) < 10:
+            return {"status": "skipped", "reason": "not enough beliefs with 2+ graded picks before the test period"}
+    xtr = vectorize([r["features"] for r in train_rows])
     xte = vectorize([r["features"] for r in test_rows])
     yte = np.array([r["label"] for r in test_rows], dtype=np.float32)
 
@@ -352,7 +379,7 @@ def train(force: bool = False, seed: int = 7) -> dict:
     else:
         reason = "did not beat the baselines yet"
     metrics = {
-        "label_days": LABEL_DAYS, "cutoff": cutoff, "ensemble": ENSEMBLE,
+        "label_days": LABEL_DAYS, "label_mode": LABEL_MODE, "cutoff": cutoff, "ensemble": ENSEMBLE,
         "mse": mse, "baseline_mse": base_mse, "spearman": rho,
         "top_pick_lift": nn_lift, "top_pick_lift_t": nn_t,
         "linear_top_pick_lift": lin_lift, "linear_spearman": _spearman(lin_pred, yte),
@@ -367,8 +394,13 @@ def train(force: bool = False, seed: int = 7) -> dict:
     }
 
     # Refit on all rows for the stored version (the evaluation above decides status).
-    final = _fit_ensemble(vectorize([r["features"] for r in rows]),
-                          np.array([r["label"] for r in rows], dtype=np.float32), ENSEMBLE, seed)
+    yall = np.array([r["label"] for r in rows], dtype=np.float32)
+    fit_rows = rows
+    if LABEL_MODE == "within":
+        yall, keep = within_belief([r["belief_id"] for r in rows], yall)
+        fit_rows = [r for r, k in zip(rows, keep) if k]
+        yall = yall[keep]
+    final = _fit_ensemble(vectorize([r["features"] for r in fit_rows]), yall, ENSEMBLE, seed)
 
     buf = io.BytesIO()
     pickle.dump(final, buf)
