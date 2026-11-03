@@ -182,7 +182,22 @@ def _flush(rows: list) -> None:
     rows.clear()
 
 
+def _fit_ranker_in_child() -> dict:
+    """Refit ranker v2 in its own process: it loads every graded call into memory, and on the 512Mi cron that peak on
+    top of the retrain was getting the whole run OOM-killed. A child keeps grading/training/lineages safe if it dies."""
+    import os
+    import subprocess
+    import sys
+    code = ("import json; from backend.v4 import research; rv = research.fit_production(); "
+            "print(json.dumps({'active': rv.get('active'), 'oos': rv.get('oos')}, default=str))")
+    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600, env=os.environ.copy())
+    if p.returncode != 0:
+        return {"error": f"ranker refit exited {p.returncode}: {(p.stderr or '').strip()[-300:]}"}
+    return json.loads((p.stdout or "").strip().splitlines()[-1])
+
+
 def main() -> None:
+    import gc
     ap = argparse.ArgumentParser(description="Grade picks and retrain the network")
     ap.add_argument("--train", action="store_true", help="retrain the neural network after grading")
     ap.add_argument("--force-train", action="store_true", help="train even below the minimum data size (testing)")
@@ -192,22 +207,23 @@ def main() -> None:
         result = {"grade": grade()}
         if args.train or args.force_train:
             result["train"] = nn.train(force=args.force_train)
-        try:  # refit ranker v2 on today's graded calls (re-tested walk-forward; off if it stops beating the old ranking)
-            from . import research
-            rv = research.fit_production()
-            result["ranker_v2"] = {"active": rv.get("active"), "oos": rv.get("oos")}
-        except Exception as e:
-            result["ranker_v2"] = {"error": f"{type(e).__name__}: {e}"}
-        try:  # one generation of the strategist lineages per trading day; never blocks grading
-            from . import lineages
-            result["lineages"] = lineages.evolve()
-        except Exception as e:
-            result["lineages"] = {"error": f"{type(e).__name__}: {e}"}
     except Exception as e:
         record_health("grading", False, f"{type(e).__name__}: {e}")
         raise
+    # the core job is done: record it before the optional, memory-heavy extras
     record_health("grading", True, "", {"graded": result["grade"].get("graded", 0),
                                          "trained": (result.get("train") or {}).get("status")})
+    gc.collect()
+    try:  # one generation of the strategist lineages per trading day; never blocks grading
+        from . import lineages
+        result["lineages"] = lineages.evolve()
+    except Exception as e:
+        result["lineages"] = {"error": f"{type(e).__name__}: {e}"}
+    gc.collect()
+    try:  # refit ranker v2 on today's graded calls (re-tested walk-forward; off if it stops beating the old ranking)
+        result["ranker_v2"] = _fit_ranker_in_child()
+    except Exception as e:
+        result["ranker_v2"] = {"error": f"{type(e).__name__}: {e}"}
     print(json.dumps(result, indent=2, default=str))
 
 
