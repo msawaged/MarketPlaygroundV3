@@ -26,6 +26,8 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol",
          # 12-1 momentum: past year skipping the latest month (Jegadeesh & Titman 1993)
          "mom_12_1",
+         # frog in the pan (Da, Gurun & Warachka 2014): was the 12-1 move steady (-1) or a few jumps (+1)? not directional
+         "fip_id",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1",
@@ -59,11 +61,11 @@ def enrich(limit: int = 300) -> dict:
         """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
            WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)
              AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%'
-                  OR p.features NOT LIKE '%mu_dist%')
+                  OR p.features NOT LIKE '%mu_dist%' OR p.features NOT LIKE '%fip_id%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
-        return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num
+        return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -72,7 +74,13 @@ def enrich(limit: int = 300) -> dict:
         try:
             d0 = date.fromisoformat(str(r["as_of_date"])[:10])
             market.daily_closes(r["ticker"])  # a data outage skips the pick (retried next hour), never stores zeros
-            vp = {**market.vp_features(r["ticker"], d0), **market.regime_features(d0), **market.trend_features(r["ticker"], d0)}
+            have = f.get("num") or {}
+            vp = {}
+            if "vp_poc_dist" not in have or "reg_trend" not in have or "mu_dist" not in have:
+                vp.update({**market.vp_features(r["ticker"], d0), **market.regime_features(d0),
+                           **market.trend_features(r["ticker"], d0)})
+            if "fip_id" not in have:
+                vp.update(market.fip_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -161,6 +169,8 @@ def run(folds: int = 5) -> dict:
         "1y trend (z_mom250)": lambda f: f["z_mom250"],
         # idea log (docs/research_ideas.md), added 2026-11-02: Jegadeesh & Titman 12-1 momentum
         "12-1 momentum (z_mom_12_1)": lambda f: f["z_mom_12_1"],
+        # idea log, added 2026-11-03: frog in the pan — 12-1 momentum that arrived steadily, not in jumps
+        "smooth 12-1 momentum (frog in the pan)": lambda f: f["z_mom_12_1"] - f["z_fip_id"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],

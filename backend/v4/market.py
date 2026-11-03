@@ -555,6 +555,35 @@ def mom_12_1(closes: list[float], i: int) -> float:
     return closes[i - 20] / closes[i - 250] - 1.0
 
 
+def fip_id(closes: list[float], i: int) -> float:
+    """Information discreteness ("frog in the pan", Da, Gurun & Warachka 2014) over the 12-1 window:
+    sign(12-1 return) * (% down days - % up days). Near -1 = the move came as many small steady steps
+    (continuous, tends to persist); near +1 = it came from a few big jumps (discrete, tends to fade).
+    0.0 when there is not a year of history."""
+    if i < 250 or closes[i - 250] <= 0:
+        return 0.0
+    pret = closes[i - 20] / closes[i - 250] - 1.0
+    ups = downs = n = 0
+    for k in range(i - 249, i - 19):
+        if closes[k - 1] <= 0:
+            continue
+        n += 1
+        if closes[k] > closes[k - 1]:
+            ups += 1
+        elif closes[k] < closes[k - 1]:
+            downs += 1
+    if n == 0 or pret == 0:
+        return 0.0
+    return (1.0 if pret > 0 else -1.0) * (downs - ups) / n
+
+
+def fip_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"fip_id": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"fip_id": fip_id(closes, i) if i >= 0 else 0.0}
+
+
 def realized_vol(closes: list[float], i: int, window: int = 20) -> float:
     lo = max(1, i - window + 1)
     rets = [math.log(closes[k] / closes[k - 1]) for k in range(lo, i + 1) if closes[k - 1] > 0]
@@ -581,6 +610,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mom60": _ret(closes, i, 60),
         "mom250": _ret(closes, i, 250),
         "mom_12_1": mom_12_1(closes, i),
+        "fip_id": fip_id(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

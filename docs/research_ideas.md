@@ -35,4 +35,27 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   via `market.features`; derived for older picks from their own stored mom250/mom20 (as of each pick's date, no
   look-ahead). Directional (flipped for bearish beliefs). Research rule: `12-1 momentum (z_mom_12_1)`; also
   available to the learned ridge/gbm.
-- **Result:** pending (next research run after deploy).
+- **Result (run 2026-11-03 10:58 UTC, 4,396 beliefs, test from 2024-12-03, n=2,707):** lift **+0.79%**, beat
+  **50.1%**, t **2.21**. Better than plain 1y trend (+0.59%, t 1.67), so skipping the latest month helps the lift, but
+  its beat rate is below the app's 52.3% and below random (51.6%), so on its own it would not pass the ranker v2 gate.
+  Same run: app +0.02% / 52.3% / t 0.08; high vol +1.55% / 53.6% / t 3.52; ridge +1.01% / 52.4% / t 2.74;
+  gbm +1.99% / 53.6% / t 5.41.
+
+### 2. Frog in the pan: smooth 12-1 momentum (Da, Gurun & Warachka)
+- **Added:** 2026-11-03
+- **Source:** Da, Gurun & Warachka (2014), "Frog in the Pan: Continuous Information and Momentum", Review of
+  Financial Studies 27(11); practitioner summary:
+  https://alphaarchitect.com/frog-in-the-pan-identifying-the-highest-quality-momentum-stocks/
+- **Why:** investors under-react to news that arrives in many small steps, so momentum built from steady small gains
+  keeps going for months, while momentum built from a few big jumps tends to fade. Fits the ~90-day hold. Builds on
+  idea 1, which had positive lift but a weak beat rate.
+- **Computed as:** information discreteness over the same 12-1 window (closes t-250 to t-20):
+  `fip_id = sign(12-1 return) * (% down days - % up days)`, from -1 (steady, continuous) to +1 (a few jumps).
+  `market.fip_id` / `market.fip_features`; stored for new picks via `market.features` and `nn.make_features`;
+  backfilled for older picks by `research.enrich` using closes up to each pick's own date only (the other enrich
+  features are not recomputed). Not directional (low = steady in whichever direction the stock moved). Research
+  rule: `smooth 12-1 momentum (frog in the pan)` = `z_mom_12_1 - z_fip_id`; `z_fip_id` is also available to the
+  learned ridge/gbm.
+- **Note:** until the hourly enrich finishes backfilling older picks, those picks read `fip_id = 0`, so the first
+  run or two after deploy will understate the rule; trust the result once enrich reports nothing remaining.
+- **Result:** pending.

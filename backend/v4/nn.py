@@ -99,6 +99,8 @@ def make_features(
         "mom250": market.get("mom250", 0.0),
         # 12-1 momentum (research + ranker v2 only; not part of MODEL_NUMERIC)
         "mom_12_1": market.get("mom_12_1", 0.0),
+        # frog-in-the-pan information discreteness (research + ranker v2 only; not part of MODEL_NUMERIC)
+        "fip_id": market.get("fip_id", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

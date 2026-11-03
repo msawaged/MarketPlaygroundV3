@@ -1658,3 +1658,37 @@ def test_mom_12_1_skips_latest_month_and_is_derived_for_old_picks(monkeypatch):
                        (pid, 90, asof, 10.0, 0.0, 0.0, m121 * 0.3 + rng.gauss(0, 0.05), asof))
     r = research.run()["results"]
     assert r["12-1 momentum (z_mom_12_1)"]["lift"] > 0.02 and r["12-1 momentum (z_mom_12_1)"]["n"] > 100
+
+
+def test_frog_in_the_pan_id_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    steady = [100.0 * (1.001 ** k) for k in range(260)]           # up every day: continuous
+    i = len(steady) - 1
+    assert abs(market.fip_id(steady, i) - (-1.0)) < 1e-9
+    jumpy = [100.0] * 260                                          # mostly small down days, one big jump up
+    for k in range(1, 260):
+        jumpy[k] = jumpy[k - 1] * (0.999 if k != 100 else 1.6)
+    assert market.fip_id(jumpy, i) > 0.9                           # same sign of move, but discrete
+    falling = [100.0 * (0.999 ** k) for k in range(260)]           # steady decline is continuous too
+    assert abs(market.fip_id(falling, i) - (-1.0)) < 1e-9
+    assert market.fip_id(steady[:100], 99) == 0.0                   # not a year of history
+    # the latest month is skipped (as-of 12-1 window): changing it never changes the value
+    late = steady[:-20] + [steady[-21] * (0.97 ** (k + 1)) for k in range(20)]
+    assert market.fip_id(late, i) == market.fip_id(steady, i)
+    assert "fip_id" in research.FEATS and "fip_id" not in research.DIRECTIONAL
+    # enrich backfills fip_id as of each pick's own date only, without redoing the other features
+    dates = [(__import__("datetime").date(2024, 1, 1) + __import__("datetime").timedelta(days=k)).isoformat() for k in range(400)]
+    closes = [100.0 * (1.001 ** k) for k in range(300)] + [200.0 * (1.0 + (0.05 if k % 2 else -0.05)) for k in range(100)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, closes))
+    monkeypatch.setattr(market, "vp_features", lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0}
+    asof = dates[270]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-fip", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-fip", "b-fip", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-fip", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    assert research.enrich(10000)["enriched"] >= 1
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-fip'")["features"])["num"]
+    assert abs(num["fip_id"] - (-1.0)) < 1e-9 and num["vp_poc_dist"] == 0.2   # later choppy prices not seen
