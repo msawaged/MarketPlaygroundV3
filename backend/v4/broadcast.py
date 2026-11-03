@@ -43,7 +43,10 @@ def _kv_set(k, v):
 def send(b: dict) -> dict:
     site, api = notify._site(), notify._api()
     sent = skipped = 0
+    from . import auth
     for acc in db.query("SELECT id, email, name FROM accounts WHERE verified = 1 AND COALESCE(notify_calls, 1) = 1"):
+        if auth.is_blocked(acc["email"]):
+            continue
         mark = f"broadcast:{b['key']}:{acc['id']}"
         if _kv(mark):
             skipped += 1

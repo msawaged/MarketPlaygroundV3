@@ -75,7 +75,39 @@ def _public(acc: dict) -> dict:
             "created_at": acc["created_at"]}
 
 
+def blocked_emails() -> set[str]:
+    """Accounts removed by the owner (MP_BLOCKED_EMAILS, comma-separated). They can't log in, sign up again with
+    that email, keep a session, or receive emails and alerts. Their past data stays, so it's reversible."""
+    return {e.strip().lower() for e in os.getenv("MP_BLOCKED_EMAILS", "").split(",") if e.strip()}
+
+
+def is_blocked(email: Optional[str]) -> bool:
+    return bool(email) and email.strip().lower() in blocked_emails()
+
+
+REMOVED = "This account no longer has access to MarketPlayground."
+
+
+def purge_blocked() -> int:
+    """Sign blocked accounts out everywhere and drop their alert subscriptions (run at startup)."""
+    n = 0
+    for e in blocked_emails():
+        acc = db.query_one("SELECT id FROM accounts WHERE email = ?", (e,))
+        if not acc:
+            continue
+        db.execute("DELETE FROM sessions WHERE account_id = ?", (acc["id"],))
+        try:
+            db.execute("DELETE FROM push_subs WHERE account_id = ?", (acc["id"],))
+        except Exception:
+            pass  # alerts table not created yet
+        n += 1
+    return n
+
+
 def _new_session(account_id: str) -> str:
+    acc = db.query_one("SELECT email FROM accounts WHERE id = ?", (account_id,))
+    if acc and is_blocked(acc["email"]):
+        raise AuthError(REMOVED, 403)
     token = secrets.token_urlsafe(32)
     db.execute("INSERT INTO sessions (token_hash, account_id, created_at, expires_at) VALUES (?,?,?,?)",
                (hashlib.sha256(token.encode()).hexdigest(), account_id, _now().isoformat(),
@@ -152,6 +184,8 @@ def _send_verify(acc: dict) -> bool:
 def signup(email: str, password: str, name: str = "", device_id: Optional[str] = None) -> dict:
     e = _clean_email(email)
     _check_new_password(password)
+    if is_blocked(e):
+        raise AuthError(REMOVED, 403)
     if db.query_one("SELECT id FROM accounts WHERE email = ?", (e,)):
         raise AuthError("There's already an account with that email. Try logging in.", 409)
     dev = _clean_device(device_id)
@@ -188,6 +222,8 @@ def account_for_token(token: Optional[str]) -> Optional[dict]:
     if not s or s["expires_at"] < _now().isoformat():
         return None
     acc = db.query_one("SELECT * FROM accounts WHERE id = ?", (s["account_id"],))
+    if acc and is_blocked(acc["email"]):
+        return None  # removed accounts are signed out on their next request
     return acc
 
 
@@ -255,13 +291,13 @@ def verify_email(token: str, device_id: Optional[str] = None) -> dict:
 def resend_verification(email: str) -> None:
     """Always answers the same way, so nobody can test which emails have accounts."""
     acc = db.query_one("SELECT * FROM accounts WHERE email = ?", ((email or "").strip().lower(),))
-    if acc and not acc.get("verified", 1):
+    if acc and not acc.get("verified", 1) and not is_blocked(acc["email"]):
         _send_verify(acc)
 
 
 def forgot_password(email: str) -> None:
     acc = db.query_one("SELECT * FROM accounts WHERE email = ?", ((email or "").strip().lower(),))
-    if not acc:
+    if not acc or is_blocked(acc["email"]):
         return
     url = f"{_site()}/reset?token={_new_email_token(acc['id'], 'reset', 1)}"
     try:

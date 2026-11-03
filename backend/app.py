@@ -54,7 +54,11 @@ app = FastAPI(title="MarketPlayground API")
 
 @app.on_event("startup")
 def _start_notify() -> None:
-    from backend.v4 import notify, feeder, lineages, research, push, broadcast, brain
+    from backend.v4 import notify, feeder, lineages, research, push, broadcast, brain, auth
+    try:
+        auth.purge_blocked()
+    except Exception as e:
+        print(f"[auth] purge_blocked failed: {e}")
     notify.start_background()
     brain.start_warmer()
     push.start_background()

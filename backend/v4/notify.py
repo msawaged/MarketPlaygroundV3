@@ -95,7 +95,9 @@ def _email(acc: dict, b: dict) -> tuple[str, str, str]:
 def run(max_emails: int = 50) -> dict:
     if not (mailer.configured() or os.getenv("MP_MAIL_TEST_SINK")):
         return {"sent": 0, "skipped": "email not configured"}
-    accounts = db.query("SELECT id, uid, email, name FROM accounts WHERE verified = 1 AND COALESCE(notify_calls, 1) = 1")
+    from . import auth
+    accounts = [a for a in db.query("SELECT id, uid, email, name FROM accounts WHERE verified = 1 AND COALESCE(notify_calls, 1) = 1")
+                if not auth.is_blocked(a["email"])]
     sent, now = 0, datetime.now(timezone.utc)
     for acc in accounts:
         if sent >= max_emails:

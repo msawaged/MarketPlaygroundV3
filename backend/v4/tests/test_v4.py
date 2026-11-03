@@ -464,6 +464,30 @@ def _client():
     return TestClient(app)
 
 
+def test_owner_can_remove_an_account(monkeypatch):
+    from backend.v4 import auth
+    c = _client()
+    r = c.post("/v4/auth/signup", json={"email": "gone@example.com", "password": "correct horse", "name": "G"})
+    assert r.status_code == 200, r.text
+    tok = r.json()["token"]
+    hdr = {"Authorization": f"Bearer {tok}"}
+    assert c.get("/v4/auth/me", headers=hdr).status_code == 200
+    monkeypatch.setenv("MP_BLOCKED_EMAILS", " Gone@Example.com , other@example.com")
+    assert c.get("/v4/auth/me", headers=hdr).status_code == 401                 # signed out right away
+    r = c.post("/v4/auth/login", json={"email": "gone@example.com", "password": "correct horse"})
+    assert r.status_code == 403 and "no longer has access" in r.text            # can't log back in
+    assert c.post("/v4/auth/signup", json={"email": "GONE@example.com", "password": "another one"}).status_code == 403
+    assert auth.purge_blocked() == 1
+    assert not db.query_one("SELECT 1 AS x FROM sessions s JOIN accounts a ON a.id = s.account_id WHERE a.email = 'gone@example.com'")
+    sent = []
+    monkeypatch.setattr(auth.mailer, "send", lambda *a, **k: sent.append(a))
+    auth.forgot_password("gone@example.com")
+    assert sent == []                                                            # no emails to a removed account
+    assert db.query_one("SELECT 1 AS x FROM accounts WHERE email = 'gone@example.com'")  # data kept: reversible
+    monkeypatch.setenv("MP_BLOCKED_EMAILS", "")
+    assert c.post("/v4/auth/login", json={"email": "gone@example.com", "password": "correct horse"}).status_code == 200
+
+
 def test_accounts_signup_login_merge_and_delete(monkeypatch):
     from backend.v4 import auth
     c = _client()
