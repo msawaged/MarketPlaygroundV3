@@ -182,49 +182,89 @@ def _flush(rows: list) -> None:
     rows.clear()
 
 
-def _fit_ranker_in_child() -> dict:
-    """Refit ranker v2 in its own process: it loads every graded call into memory, and on the 512Mi cron that peak on
-    top of the retrain was getting the whole run OOM-killed. A child keeps grading/training/lineages safe if it dies."""
+# The daily job runs each phase in its own fresh process, one after another. On the 512Mi cron, doing them all in
+# one process stacked their peaks (Python keeps memory it has touched), and the run was OOM-killed after grading had
+# already finished. Now the peak is the biggest single phase, a dying phase can't take the others down, and each
+# phase prints its timing so a slow or failing step is visible in the Render logs.
+PHASE_TIMEOUT = {"grade": 3600, "train": 5400, "lineages": 1800, "ranker": 3600}
+
+
+def _phase(name: str, force_train: bool = False) -> dict:
+    """Run one phase in this process and return its JSON-able result."""
+    if name == "grade":
+        return grade()
+    if name == "train":
+        return nn.train(force=force_train)
+    if name == "lineages":
+        from . import lineages
+        return lineages.evolve()
+    if name == "ranker":
+        from . import research
+        rv = research.fit_production()
+        return {"active": rv.get("active"), "oos": rv.get("oos")}
+    raise ValueError(f"unknown phase {name}")
+
+
+def _run_phase(name: str, force_train: bool = False) -> tuple[bool, dict]:
+    """Run a phase in a child process. Its stderr (tracebacks, warnings) goes straight to the job log; its last stdout
+    line is the JSON result. Returns (ok, result)."""
     import os
     import subprocess
     import sys
-    code = ("import json; from backend.v4 import research; rv = research.fit_production(); "
-            "print(json.dumps({'active': rv.get('active'), 'oos': rv.get('oos')}, default=str))")
-    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600, env=os.environ.copy())
+    import time
+    t0 = time.time()
+    print(f"[grade-and-train] {name}: start", flush=True)
+    cmd = [sys.executable, "-m", "backend.v4.grader", "--phase", name] + (["--force-train"] if force_train else [])
+    try:
+        p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=None, text=True,
+                           timeout=PHASE_TIMEOUT.get(name, 3600), env=os.environ.copy())
+    except subprocess.TimeoutExpired:
+        print(f"[grade-and-train] {name}: TIMED OUT after {time.time() - t0:.0f}s", flush=True)
+        return False, {"error": f"{name} timed out"}
+    secs = time.time() - t0
+    lines = (p.stdout or "").strip().splitlines()
+    for ln in lines[:-1]:  # anything else the phase printed
+        print(ln, flush=True)
     if p.returncode != 0:
-        return {"error": f"ranker refit exited {p.returncode}: {(p.stderr or '').strip()[-300:]}"}
-    return json.loads((p.stdout or "").strip().splitlines()[-1])
+        why = "killed (out of memory?)" if p.returncode in (-9, 137) else f"exited {p.returncode}"
+        print(f"[grade-and-train] {name}: FAILED, {why} after {secs:.0f}s", flush=True)
+        return False, {"error": f"{name} {why}"}
+    try:
+        out = json.loads(lines[-1]) if lines else {}
+    except ValueError:
+        out = {"raw": lines[-1][-300:]}
+    print(f"[grade-and-train] {name}: ok in {secs:.0f}s", flush=True)
+    return True, out
 
 
 def main() -> None:
-    import gc
     ap = argparse.ArgumentParser(description="Grade picks and retrain the network")
     ap.add_argument("--train", action="store_true", help="retrain the neural network after grading")
     ap.add_argument("--force-train", action="store_true", help="train even below the minimum data size (testing)")
+    ap.add_argument("--phase", choices=sorted(PHASE_TIMEOUT), help="run one phase in this process (used internally)")
     args = ap.parse_args()
+    if args.phase:
+        print(json.dumps(_phase(args.phase, args.force_train), default=str), flush=True)
+        return
     from .seeder import record_health
-    try:
-        result = {"grade": grade()}
-        if args.train or args.force_train:
-            result["train"] = nn.train(force=args.force_train)
-    except Exception as e:
-        record_health("grading", False, f"{type(e).__name__}: {e}")
-        raise
-    # the core job is done: record it before the optional, memory-heavy extras
-    record_health("grading", True, "", {"graded": result["grade"].get("graded", 0),
-                                         "trained": (result.get("train") or {}).get("status")})
-    gc.collect()
-    try:  # one generation of the strategist lineages per trading day; never blocks grading
-        from . import lineages
-        result["lineages"] = lineages.evolve()
-    except Exception as e:
-        result["lineages"] = {"error": f"{type(e).__name__}: {e}"}
-    gc.collect()
-    try:  # refit ranker v2 on today's graded calls (re-tested walk-forward; off if it stops beating the old ranking)
-        result["ranker_v2"] = _fit_ranker_in_child()
-    except Exception as e:
-        result["ranker_v2"] = {"error": f"{type(e).__name__}: {e}"}
-    print(json.dumps(result, indent=2, default=str))
+    result: dict = {}
+    ok, result["grade"] = _run_phase("grade")
+    if not ok:
+        record_health("grading", False, result["grade"].get("error", "grading failed"))
+        print(json.dumps(result, indent=2, default=str))
+        raise SystemExit(1)
+    train_ok = True
+    if args.train or args.force_train:
+        train_ok, result["train"] = _run_phase("train", args.force_train)
+    # grading is the core job: record it now, with how the retrain went, before the optional extras
+    record_health("grading", True, "" if train_ok else result["train"].get("error", ""),
+                  {"graded": result["grade"].get("graded", 0),
+                   "trained": (result.get("train") or {}).get("status") or (result.get("train") or {}).get("error")})
+    _, result["lineages"] = _run_phase("lineages")  # one strategist generation per trading day; never blocks grading
+    _, result["ranker_v2"] = _run_phase("ranker")    # refit ranker v2 (re-tested walk-forward; off if it stops beating)
+    print(json.dumps(result, indent=2, default=str), flush=True)
+    if not train_ok:
+        raise SystemExit(1)  # so Render flags a broken retrain instead of it failing silently
 
 
 if __name__ == "__main__":

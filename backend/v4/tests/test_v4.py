@@ -1692,3 +1692,34 @@ def test_frog_in_the_pan_id_and_enrich_backfill(monkeypatch):
     assert research.enrich(10000)["enriched"] >= 1
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-fip'")["features"])["num"]
     assert abs(num["fip_id"] - (-1.0)) < 1e-9 and num["vp_poc_dist"] == 0.2   # later choppy prices not seen
+
+
+def test_daily_job_runs_each_phase_in_its_own_process():
+    """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
+    (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""
+    ok, out = grader._run_phase("grade")
+    assert ok and out["graded"] == 0
+
+
+def test_daily_job_records_grading_and_keeps_going_when_a_phase_dies(monkeypatch):
+    ran = []
+
+    def fake(name, force_train=False):
+        ran.append(name)
+        if name == "ranker":
+            return False, {"error": "ranker killed (out of memory?)"}
+        return True, {"graded": 5} if name == "grade" else {"status": "shadow"}
+    monkeypatch.setattr(grader, "_run_phase", fake)
+    monkeypatch.setattr("sys.argv", ["grader", "--train"])
+    grader.main()  # a dead optional phase doesn't fail the job
+    assert ran == ["grade", "train", "lineages", "ranker"]
+    h = json.loads(seeder._kv_get("health:grading"))
+    assert h["ok"] and h["summary"] == {"graded": 5, "trained": "shadow"}
+
+
+def test_daily_job_fails_loudly_when_grading_dies(monkeypatch):
+    monkeypatch.setattr(grader, "_run_phase", lambda name, force_train=False: (False, {"error": "grade exited 1"}))
+    monkeypatch.setattr("sys.argv", ["grader", "--train"])
+    with pytest.raises(SystemExit):
+        grader.main()
+    assert json.loads(seeder._kv_get("health:grading"))["ok"] is False
