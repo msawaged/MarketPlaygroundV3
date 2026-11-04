@@ -89,6 +89,33 @@ def enrich(limit: int = 300) -> dict:
     return {"enriched": done, "remaining": max(0, len(missing) - done)}
 
 
+class FeatRow:
+    """One candidate's numbers in a single float array behind a shared name->slot map. Reads like a dict
+    (row["z_mom60"]); takes a fraction of the memory of a dict of Python floats, which matters with tens of
+    thousands of graded calls on a 512 MB job."""
+    __slots__ = ("v",)
+    KEYS: tuple = ()
+    IDX: dict = {}
+
+    def __init__(self, d: dict):
+        self.v = np.fromiter((d.get(k, 0.0) for k in FeatRow.KEYS), dtype=np.float64, count=len(FeatRow.KEYS))
+
+    def __getitem__(self, k: str) -> float:
+        return float(self.v[FeatRow.IDX[k]])
+
+    def get(self, k: str, default: float = 0.0) -> float:
+        i = FeatRow.IDX.get(k)
+        return default if i is None else float(self.v[i])
+
+    def __contains__(self, k: str) -> bool:
+        return k in FeatRow.IDX
+
+
+def _set_keys() -> None:
+    keys = tuple(FEATS) + ("bearish",) + tuple(REG_KEYS) + tuple("z_" + k for k in FEATS) + tuple(XKEYS)
+    FeatRow.KEYS, FeatRow.IDX = keys, {k: i for i, k in enumerate(keys)}
+
+
 def load() -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}."""
     rows = db.query(
@@ -105,21 +132,22 @@ def load() -> list[dict]:
             f[k] = float(num.get(k, 0.0) or 0.0)
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
         b["cands"].append({"f": f, "ex": float(r["dir_excess"]), "top": r["final_rank"] == 1})
+    _set_keys()
+    del rows  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
     for b in out:  # within-belief versions: selection is a choice among this belief's ideas
         for k in FEATS:
             vals = np.array([c["f"][k] for c in b["cands"]])
             mu, sd = vals.mean(), vals.std()
-            order = vals.argsort().argsort() / max(1, len(vals) - 1)
-            for c, z, rk in zip(b["cands"], (vals - mu) / (sd if sd > 1e-9 else 1.0), order):
+            for c, z in zip(b["cands"], (vals - mu) / (sd if sd > 1e-9 else 1.0)):
                 c["f"]["z_" + k] = float(z)
-                c["f"]["r_" + k] = float(rk)
         for c in b["cands"]:
             for a, g in INTERACTIONS:
                 c["f"][f"zx_{a}_{g}"] = c["f"]["z_" + a] * c["f"][g]
         mean_ex = float(np.mean([c["ex"] for c in b["cands"]]))
         for c in b["cands"]:
             c["rel"] = c["ex"] - mean_ex
+            c["f"] = FeatRow(c["f"])  # compact from here on
     out.sort(key=lambda b: b["date"])
     return out
 
@@ -157,8 +185,8 @@ def _fit_gbm(train: list[dict], keys: list[str]):
     return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
 
 
-def run(folds: int = 5) -> dict:
-    data = load()
+def run(folds: int = 5, data: list[dict] | None = None) -> dict:
+    data = load() if data is None else data
     dates = sorted({b["date"] for b in data})
     if len(data) < 150:
         return {"error": f"only {len(data)} graded beliefs"}
@@ -266,7 +294,7 @@ def fit_production(results: dict | None = None) -> dict:
     data = load()
     if len(data) < 150:
         return {"active": False, "reason": "not enough graded calls"}
-    res = (results or run())["results"]
+    res = (results or run(data=data))["results"]  # reuse the same data: loading it twice ran the nightly job out of memory
     app = res.get("app (current #1)", {})
     ridge_oos, gbm_oos = res.get("ridge (learned)", {}), res.get("gbm (learned)", {})
     x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])

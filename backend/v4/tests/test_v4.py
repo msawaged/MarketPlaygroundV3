@@ -1522,6 +1522,28 @@ def test_trend_rider_joins_once_trend_features_are_on_most_graded_picks(monkeypa
     assert f["mu_up"] == 1.0 and f["mu_slope"] == 0.02 and f["mu_flips"] == 0.3  # a falling trend agrees with a bearish call
 
 
+def test_nightly_refit_loads_graded_calls_once_and_compactly(monkeypatch):
+    from backend.v4 import research
+    rng = random.Random(4)
+    for i in range(170):
+        bid = f"b-mem{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", "2025-01-01T00:00:00", f"2025-{1 + i % 12:02d}-{1 + i % 27:02d}", "seed_backfill"))
+        for j in range(3):
+            pid = f"p-mem{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, "T", "bullish", "2025-01-01", 10.0, db.dumps({"num": {"mom60": rng.uniform(-1, 1)}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, "2025-06-01", 10.0, 0.0, 0.0, rng.gauss(0, 0.1), "2025-06-01"))
+    calls = []
+    real = research.load
+    monkeypatch.setattr(research, "load", lambda: calls.append(1) or real())
+    out = research.fit_production()
+    assert len(calls) == 1 and out["trained_on"] == 170                    # never two copies in memory at once
+    row = real()[0]["cands"][0]["f"]
+    assert isinstance(row, research.FeatRow) and abs(row["z_mom60"]) < 5 and row.get("nope", 7.0) == 7.0
+
+
 def test_regime_state_and_regime_aware_research(monkeypatch):
     from datetime import timedelta as _td
     from backend.v4 import research
