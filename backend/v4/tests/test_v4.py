@@ -1798,3 +1798,17 @@ def test_daily_job_fails_loudly_when_grading_dies(monkeypatch):
     with pytest.raises(SystemExit):
         grader.main()
     assert json.loads(seeder._kv_get("health:grading"))["ok"] is False
+
+
+def test_network_uses_numeric_inputs_and_scores_old_versions_with_theirs():
+    # default: only the numbers ranker v2 uses; hashed text/ticker inputs memorized history that did not carry over
+    rec = nn.make_features(belief_text="plumbing demand is going to be high", themes=["plumbing"], core_direction="bullish",
+                           horizon_days=120, conviction="medium", cand={"ticker": "WINR", "direction": "bullish", "score": 0.6},
+                           market={"mom60": 0.1}, rank=0, n_cands=5, is_etf=False, backfill=False)
+    assert nn.INPUTS == "numeric"
+    assert nn.vectorize([rec]).shape == (1, len(nn.MODEL_NUMERIC))
+    assert nn.vectorize([rec], "all").shape == (1, nn.TEXT_DIM + nn.CAT_DIM + len(nn.MODEL_NUMERIC))
+    # versions saved before the setting existed were trained on everything and must be scored that way
+    assert nn.model_inputs({"metrics": {}}) == "all"
+    assert nn.model_inputs({"metrics": {"inputs": "numeric"}}) == "numeric"
+    assert nn.model_inputs(None) == "all"

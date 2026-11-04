@@ -198,7 +198,7 @@ def run_world(signal: bool, n_beliefs: int, seed: int = 1) -> dict:
     rho_truth = None
     model_row, model = nn._current()
     if model is not None and rows:
-        preds = model.predict(nn.vectorize([r["features"] for r in rows]))
+        preds = model.predict(nn.vectorize([r["features"] for r in rows], nn.model_inputs(model_row)))
         tv = [truth[next(c[3:] for c in r["features"]["cats"] if c.startswith("tk="))] * r["features"]["num"]["cand_dir"]
               for r in rows]
         rho_truth = nn._spearman(np.array(preds), np.array(tv))

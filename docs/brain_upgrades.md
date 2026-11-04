@@ -37,3 +37,42 @@ effect; the real data (84% fund-benched rows) is where it should matter.
 Spearman ≥ 0, and top-pick lift turning positive (≥ 0 with t > 0). A real win is the first version promoted to
 *active* through the unchanged gates. If lift stays ≤ -1% for a week, the next suspect is the 6k hashed
 text/ticker inputs themselves (try numeric-only inputs, as ranker v2 does).
+
+## 2026-11-04 — Network trains on the numbers only (drop hashed text/ticker inputs)
+
+**Problem.** Last week's within-belief label helped but did not fix the network. First retrain on it
+(2026-11-03 23:53 UTC, 11,408 train / 3,299 test, 845 test beliefs, cutoff 2026-01-15): top-pick lift **-0.70%
+(t = -1.47)**, Spearman **-0.052** (now *rejected*, below the -0.05 shadow floor), test MSE 0.0317 vs 0.0287 for a
+constant. Ridge on the same inputs: lift -0.31%, Spearman -0.045. Ranker v2 (trees on numbers only) is active at
++2.00% lift, t = 4.93.
+
+Ablation on production data (all 16,402 graded 90-day picks with a sel_edge label, pulled read-only; same
+walk-forward split, within-belief label, same 3-net ensemble, seeds 7/8/9):
+
+| inputs | lift | t | Spearman | test MSE |
+|---|---|---|---|---|
+| numbers only (`MODEL_NUMERIC`) | +0.39% / +0.54% / +0.69% | 0.8 – 1.4 | +0.006 – +0.014 | 0.0289 |
+| numbers + hashed ticker only | -0.69% / -0.77% / -0.85% | -1.5 – -1.9 | -0.062 – -0.064 | 0.0308 |
+| production (numbers + ticker + themes + text) | -0.70% | -1.47 | -0.052 | 0.0317 |
+
+The hashed ticker column alone accounts for the whole negative result: the network memorizes which tickers did well
+before the cutoff and that reverses afterwards (last week: per-ticker mean label before vs after correlates at 0.02).
+Belief text is constant inside a belief, so under the within-belief label it can only add noise.
+
+**Change.** `nn.vectorize` now feeds only `MODEL_NUMERIC` by default (`MP_NN_INPUTS=numeric`; `all` restores the old
+inputs). Each version records `inputs` in its metrics, and `nn.predict` scores a stored version with the inputs it was
+trained on (versions saved before this field existed are treated as `all`), so the current shadow model keeps working
+until a new version replaces it. Evaluation, the walk-forward split, the embargo and every promotion gate
+(`MIN_T`, `MIN_TEST_BELIEFS`, rho > 0.03, beats Claude) are unchanged. Memory goes down (15 dense columns instead of
+6,159 sparse ones). Not a user-facing change: the network still has blend weight 0 unless it passes the gates.
+
+**Checks.** Backend tests: 96 passed (new: `test_network_uses_numeric_inputs_and_scores_old_versions_with_theirs`).
+
+**Commit.** See `git log --grep "numeric inputs"` on v4-polish (this entry ships in the same commit).
+
+**What counts as a win.** Next nightly retrains: status back to *shadow* (Spearman > -0.05), Spearman ≥ 0, top-pick
+lift > 0, and test MSE within ~1% of the constant baseline. The offline ablation says that much is likely; it does
+*not* say the network will clear the active gate (t ≈ 1, rho ≈ 0.01 < 0.03). If it plateaus there, the next suspect is
+that the network sees fewer numbers than ranker v2 (no 12-1/residual momentum, volume profile, MuLine or regime
+features, and no direction-signing of momentum) — but adding those is a feature change, so check with the idea scout's
+work first.

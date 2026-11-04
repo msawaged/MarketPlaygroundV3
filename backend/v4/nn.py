@@ -48,6 +48,11 @@ MIN_TEST = int(os.getenv("MP_NN_MIN_TEST", "80"))
 # beliefs (whole belief beat or lagged its fund), which the network could only fit by memorizing belief text.
 LABEL_MODE = os.getenv("MP_NN_LABEL_MODE", "within").lower()
 MAX_WEIGHT = float(os.getenv("MP_NN_MAX_WEIGHT", "0.6"))
+# numeric = only the MODEL_NUMERIC numbers (what ranker v2's trees use). all = also the hashed belief text and
+# ticker/theme categories (the old inputs). On production data (2026-11-04, same walk-forward split) the hashed
+# ticker column alone flipped top-pick lift from about +0.5% to -0.8% and Spearman from +0.01 to -0.06: ticker
+# history memorized before the cutoff does not carry over, and belief text is constant inside a belief.
+INPUTS = os.getenv("MP_NN_INPUTS", "numeric").lower()
 TEXT_DIM = 2 ** 12
 CAT_DIM = 2 ** 11
 
@@ -159,14 +164,23 @@ def _clip(v: float) -> float:
     return max(-3.0, min(3.0, float(v)))
 
 
-def vectorize(records: list[dict]):
+def vectorize(records: list[dict], inputs: Optional[str] = None):
+    """Model inputs. A stored version must be scored with the inputs it was trained on (see model_inputs)."""
     from scipy.sparse import csr_matrix, hstack
 
+    xn = csr_matrix(np.array([[_clip(r["num"].get(k, 0.0)) for k in MODEL_NUMERIC] for r in records], dtype=np.float32)
+                    .reshape(len(records), len(MODEL_NUMERIC)))
+    if (inputs or INPUTS) == "numeric":
+        return xn
     tv, ch = _vectorizers()
     xt = tv.transform([r["text"] for r in records])
     xc = ch.transform([r["cats"] for r in records])
-    xn = csr_matrix(np.array([[_clip(r["num"].get(k, 0.0)) for k in MODEL_NUMERIC] for r in records], dtype=np.float32))
     return hstack([xt, xc, xn]).tocsr()
+
+
+def model_inputs(row: Optional[dict]) -> str:
+    """Which inputs a stored version was trained on. Versions saved before this setting existed used 'all'."""
+    return ((row or {}).get("metrics") or {}).get("inputs", "all")
 
 
 # ---------------- training ----------------
@@ -383,7 +397,7 @@ def train(force: bool = False, seed: int = 7) -> dict:
     else:
         reason = "did not beat the baselines yet"
     metrics = {
-        "label_days": LABEL_DAYS, "label_mode": LABEL_MODE, "cutoff": cutoff, "ensemble": ENSEMBLE,
+        "label_days": LABEL_DAYS, "label_mode": LABEL_MODE, "inputs": INPUTS, "cutoff": cutoff, "ensemble": ENSEMBLE,
         "mse": mse, "baseline_mse": base_mse, "spearman": rho,
         "top_pick_lift": nn_lift, "top_pick_lift_t": nn_t,
         "linear_top_pick_lift": lin_lift, "linear_spearman": _spearman(lin_pred, yte),
@@ -485,5 +499,5 @@ def predict(records: list[dict]) -> tuple[Optional[list[float]], float, Optional
     row, model = _current()
     if model is None or not records:
         return None, 0.0, None
-    preds = model.predict(vectorize(records))
+    preds = model.predict(vectorize(records, model_inputs(row)))
     return [float(p) for p in preds], blend_weight(row), row["id"]
