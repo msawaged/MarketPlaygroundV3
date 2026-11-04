@@ -182,7 +182,7 @@ def start_warmer(interval: int = 240) -> None:
     """Keeps the snapshot fresh even when nobody is looking, so the first visitor after a quiet spell never sees
     hours-old numbers (one light refresh every 4 minutes)."""
     def loop():
-        time.sleep(30)
+        time.sleep(2)  # build right after startup, so the first visitor after a deploy doesn't wait for it
         while True:
             try:
                 if time.time() - _cache["at"] >= interval - 5:

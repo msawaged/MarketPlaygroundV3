@@ -195,6 +195,23 @@ export default function BrainPage({ viewOnly = false }) {
   const versions = d?.versions || [];
   const latest = versions[versions.length - 1];
 
+  // Until the first answer arrives (or while the server restarts), say so instead of showing zeros.
+  if (!d) {
+    return (
+      <div className="min-h-screen mp-bg text-white pb-28">
+        <div className="max-w-lg mx-auto px-4" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
+          {viewOnly && <div className="text-sm font-bold text-slate-300">Market<span className="text-blue-400">Playground</span></div>}
+          <h1 className="mt-2 text-4xl font-extrabold tracking-tight">The brain, learning</h1>
+          <div className="mt-6 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-5 text-center">
+            <div className="mx-auto h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" aria-hidden />
+            <div className="mt-3 font-bold">{err ? 'Reconnecting to the live brain…' : 'Connecting to the live brain…'}</div>
+            <p className="mt-1 text-sm text-slate-400">{err ? 'The server is restarting or busy. This page retries on its own every 15 seconds.' : 'Loading the real numbers.'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen mp-bg text-white pb-28">
       <style>{`
@@ -212,7 +229,7 @@ export default function BrainPage({ viewOnly = false }) {
         {viewOnly && <div className="mt-3 text-sm font-bold text-slate-300">Market<span className="text-blue-400">Playground</span></div>}
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight">The brain, learning</h1>
         <p className="mt-2 text-slate-300">Every belief teaches it which companies really move. Then the market grades it. Nothing here is staged: these are the real numbers, right now.</p>
-        {err && <p className="mt-4 text-sm text-red-300">Couldn't load the live data: {err}</p>}
+        {err && <p className="mt-4 text-sm text-amber-300">Reconnecting to the live server… showing the last numbers it sent.</p>}
 
         <div className="mt-5 rounded-3xl border border-blue-500/25 bg-slate-950/60 p-3 shadow-2xl shadow-blue-900/30">
           <Network themes={d?.themes || []} firing={firing} />
