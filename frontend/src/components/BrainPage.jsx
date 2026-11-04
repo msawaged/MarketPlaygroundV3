@@ -126,7 +126,7 @@ function Feed({ items, render, every = 2600 }) {
     <div className="space-y-2">
       <AnimatePresence initial={false} mode="popLayout">
         {shown.map((it, i) => (
-          <motion.div key={`${k + i}`} layout initial={{ opacity: 0, y: -12 }} animate={{ opacity: i === 0 ? 1 : 0.75 - i * 0.12, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ duration: 0.35 }}>
+          <motion.div key={`${k + i}`} layout initial={{ opacity: 0, y: -12 }} animate={{ opacity: i === 0 ? 1 : 0.75 - i * 0.12, y: 0 }} exit={{ opacity: 0, y: -14, transition: { duration: 0.16 } }} transition={{ duration: 0.35 }}>
             {render(it)}
           </motion.div>
         ))}
@@ -143,10 +143,26 @@ function until(iso, now) {
   return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from today's news · 8 rounds").
+function groupActivity(list) {
+  const out = [];
+  for (const e of list || []) {
+    const last = out[out.length - 1];
+    if (last && ['news', 'practice', 'graded'].includes(e.kind) && last.kind === e.kind) {
+      last.n = (last.n || 0) + (e.n || 0);
+      last.right = (last.right || 0) + (e.right || 0);
+      last.rounds += 1;
+      last.since = e.at;
+    } else out.push({ ...e, rounds: 1, since: e.at });
+  }
+  return out;
+}
+
 function eventText(e) {
   if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
-  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: 'Both sides of each story' };
-  if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: 'Past dates, graded right away' };
+  const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds` : '';
+  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: `Both sides of each story${rounds}` };
+  if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
   if (e.kind === 'trained') return { title: 'Trained a new brain', sub: (STATUS[e.status] || STATUS.retired).label };
   return { title: '', sub: '' };
@@ -159,6 +175,7 @@ export default function BrainPage({ viewOnly = false }) {
   const [err, setErr] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [firing, setFiring] = useState(0);
+  const [allVersions, setAllVersions] = useState(false);
   useEffect(() => {
     let alive = true;
     const load = () => request('/v4/brain').then((x) => alive && (setD(x), setErr(null))).catch((e) => alive && setErr(e.message));
@@ -245,7 +262,7 @@ export default function BrainPage({ viewOnly = false }) {
         <div className="mt-2 space-y-2">
           {(d?.activity || []).length === 0 && <p className="text-sm text-slate-500">Quiet right now. The next round starts on the clock above.</p>}
           <AnimatePresence initial={false}>
-            {(d?.activity || []).slice(0, 8).map((e) => {
+            {groupActivity(d?.activity).slice(0, 6).map((e) => {
               const k = `${e.kind}|${e.at}`; const t = eventText(e);
               return (
                 <motion.div key={k} layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -389,7 +406,12 @@ export default function BrainPage({ viewOnly = false }) {
         <p className="mt-1 text-sm text-slate-300">Each new brain is tested on beliefs it has never seen. If it can't beat the simple baseline, it gets no vote. Here's every version:</p>
         <div className="mt-3 space-y-2">
           {versions.length === 0 && <p className="text-sm text-slate-500">The first brain trains once enough picks are graded.</p>}
-          {[...versions].reverse().slice(0, 8).map((v, i) => {
+          {versions.length > 0 && (() => {
+            const kept = versions.filter((v) => v.status === 'active').length;
+            const total = Math.max(versions.length, d?.counts?.versions || 0);
+            return <p className="text-xs text-slate-400">{total} brains trained so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>;
+          })()}
+          {[...versions].reverse().slice(0, allVersions ? 50 : 3).map((v, i) => {
             const st = STATUS[v.status] || STATUS.retired;
             return (
               <div key={i} className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5">
@@ -405,6 +427,12 @@ export default function BrainPage({ viewOnly = false }) {
             );
           })}
         </div>
+
+        {versions.length > 3 && (
+          <button onClick={() => setAllVersions((x) => !x)} className="mt-2 w-full rounded-xl border border-slate-700 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800">
+            {allVersions ? 'Show fewer' : `Show the latest ${versions.length}`}
+          </button>
+        )}
 
         {viewOnly ? (
           <div className="mt-8 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 text-sm text-slate-300">

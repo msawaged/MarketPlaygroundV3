@@ -100,12 +100,12 @@ function cards(data, navigate, reel = false) {
               className="flex items-center gap-4 rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3">
               <div className="min-w-0 flex-1">
                 <div className="text-2xl font-black text-white">{c.ticker}</div>
-                {c.why && <div className="text-sm text-slate-400 truncate">{c.why}</div>}
+                {c.why && <div className="text-sm text-slate-400 line-clamp-2">{c.why}</div>}
               </div>
               <div className="text-right leading-tight">
-                {c.direction && <div className={`text-xs font-semibold ${c.direction === 'up' ? 'text-green-300' : 'text-red-300'}`}>{c.direction === 'up' ? 'could gain' : 'could lose'}</div>}
+                {c.direction && <div className={`text-xs font-bold ${c.direction === 'up' ? 'text-green-300' : 'text-red-300'}`}>{c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}</div>}
+                {c.change != null && <div className="text-[10px] text-slate-500">stock today</div>}
                 <Pct v={c.change} />
-                {c.change != null && <div className="text-[10px] text-slate-500">today</div>}
               </div>
             </motion.li>
           ))}

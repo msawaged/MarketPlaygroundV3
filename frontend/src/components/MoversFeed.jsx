@@ -37,7 +37,11 @@ export const doubtUrl = (hunch) => `/chat?b=${encodeURIComponent(`I don't think 
 
 function Pct({ v }) {
   if (v == null) return null;
-  return <span className={`text-xs font-semibold tabular-nums ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}% today</span>;
+  return (
+    <span className="block text-[11px] text-slate-500 tabular-nums">
+      stock <span className={`font-semibold ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span> today
+    </span>
+  );
 }
 
 // Leads with the news and the companies it touches (a stock research card), not a statement to vote on.
@@ -61,9 +65,13 @@ export function MoverCard({ item, i = 0 }) {
         {item.companies.map((c) => (
           <li key={c.ticker} className="flex items-center gap-3 px-3 py-2">
             <span className="font-bold w-14 shrink-0">{c.ticker}</span>
-            <span className="min-w-0 flex-1 text-xs text-slate-400 truncate">{c.why}</span>
+            <span className="min-w-0 flex-1 text-xs text-slate-400 line-clamp-2">{c.why}</span>
             <span className="shrink-0 text-right leading-tight">
-              {c.direction && <span className={`block text-[11px] ${c.direction === 'up' ? 'text-green-300' : 'text-red-300'}`}>{c.direction === 'up' ? 'could gain' : 'could lose'}</span>}
+              {c.direction && (
+                <span className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold ${c.direction === 'up' ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-300'}`}>
+                  {c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}
+                </span>
+              )}
               <Pct v={c.change} />
             </span>
           </li>

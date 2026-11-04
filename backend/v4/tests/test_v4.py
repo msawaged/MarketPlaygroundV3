@@ -476,6 +476,16 @@ def _client():
     return TestClient(app)
 
 
+def test_movers_today_change_only_trusts_the_previous_session():
+    from backend.v4 import movers
+    snap = lambda a, b: {"dailyBar": {"t": a + "T04:00:00Z"}, "prevDailyBar": {"t": b + "T04:00:00Z"}}
+    assert movers._today_change(105.0, 100.0, snap("2026-11-04", "2026-11-03")) == 0.05
+    assert movers._today_change(105.0, 100.0, snap("2026-11-02", "2026-10-30")) == 0.05   # over a weekend
+    assert movers._today_change(105.0, 100.0, snap("2026-11-04", "2026-10-20")) is None   # stale "previous" bar
+    assert movers._today_change(160.0, 100.0, snap("2026-11-04", "2026-11-03")) is None   # +60%: a data error
+    assert movers._today_change(105.0, 0.0, {}) is None
+
+
 def test_owner_can_remove_an_account(monkeypatch):
     from backend.v4 import auth
     c = _client()

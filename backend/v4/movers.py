@@ -15,7 +15,7 @@ import os
 import re
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Optional
 
 from . import db, market
@@ -81,6 +81,25 @@ For each numbered headline:
 Return every headline once, by its number."""
 
 
+def _today_change(price: float, prev: float, snap: dict) -> Optional[float]:
+    """Today's move, or None when it can't be trusted: the comparison close must be the session right before
+    today's bar (a stale "previous" bar on the free feed would turn a week's move into "today"), and a move past
+    40% is treated as a data error rather than shown."""
+    if not (prev > 0):
+        return None
+    try:
+        d_today = str((snap.get("dailyBar") or {}).get("t") or "")[:10]
+        d_prev = str((snap.get("prevDailyBar") or {}).get("t") or "")[:10]
+        if d_today and d_prev:
+            gap = (date.fromisoformat(d_today) - date.fromisoformat(d_prev)).days
+            if gap <= 0 or gap > 4:  # weekends and one-day holidays are fine; anything longer is stale
+                return None
+    except ValueError:
+        return None
+    ch = price / prev - 1
+    return round(ch, 4) if abs(ch) <= 0.40 else None
+
+
 def _snapshots(symbols: list[str]) -> dict[str, dict]:
     """{sym: {"price", "change"}} where change is today's move vs the last close (fraction)."""
     if not symbols:
@@ -99,7 +118,7 @@ def _snapshots(symbols: list[str]) -> dict[str, dict]:
             price = float((s.get("latestTrade") or {}).get("p") or (s.get("dailyBar") or {}).get("c") or 0)
             prev = float((s.get("prevDailyBar") or {}).get("c") or 0)
             if price > 0:
-                out[sym] = {"price": round(price, 2), "change": round(price / prev - 1, 4) if prev > 0 else None}
+                out[sym] = {"price": round(price, 2), "change": _today_change(price, prev, s)}
         except (TypeError, ValueError):
             continue
     return out
