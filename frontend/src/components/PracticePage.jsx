@@ -138,6 +138,8 @@ export default function PracticePage() {
           <div className="mt-2 font-bold text-lg">Nothing here yet</div>
           <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">Share a belief, pick a stock idea and tap <Term k="paper trade">Paper trade</Term>. It lands here.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 hover:bg-blue-500 px-5 py-3 font-bold">Find an idea</button>
+          <p className="mt-4 text-xs text-slate-500">Calls you made without practice money are in{' '}
+            <button onClick={() => navigate('/my')} className="underline text-slate-300">My beliefs</button>.</p>
         </Card>
       )}
 

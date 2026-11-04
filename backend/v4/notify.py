@@ -82,11 +82,14 @@ def _email(acc: dict, b: dict) -> tuple[str, str, str]:
     lead_line = (f"{'Hi ' + first + ', y' if first else 'Y'}ou said “{text_belief}” {when}. "
                  f"So far it's playing out: the companies behind it are {lead:+.1f} points ahead of the S&P 500 "
                  "in the direction you expected.")
-    body = (f"{lead_line}\n\nSee how each pick is doing: {_site()}/my\n\n"
+    where = ("It's in My beliefs. Your Portfolio only shows calls you put practice money on, "
+             "so next time tap Paper trade on a pick to make a call count there too.")
+    body = (f"{lead_line}\n\n{where}\n\nSee how each pick is doing: {_site()}/my\n\n"
             "Practice money only. Past results don't predict future ones.\n"
             f"Don't want these? Unsubscribe: {unsub}\n")
     html_body = mailer.button_html(
-        "You called it.", html.escape(lead_line), f"{_site()}/my", "See your calls",
+        "You called it.", html.escape(lead_line) + f"<br><br><span style=\"color:#64748b\">{html.escape(where)}</span>",
+        f"{_site()}/my", "See your calls",
         f"Practice money only. Past results don't predict future ones. "
         f"<a href=\"{html.escape(unsub)}\" style=\"color:#64748b\">Unsubscribe</a>")
     return subject, body, html_body
