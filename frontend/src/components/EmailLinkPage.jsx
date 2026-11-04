@@ -57,7 +57,13 @@ export function ResetPage() {
   return (
     <Page title="New password">
       <Card className="mt-6">
-        {s.ok ? (
+        {!token ? (
+          <div className="text-center py-4">
+            <div className="text-lg font-bold">That didn't work</div>
+            <p className="mt-1 text-sm text-slate-400">This link is missing its code. Ask for a new reset email from the log-in screen.</p>
+            <button onClick={() => navigate('/account')} className="mt-4 rounded-2xl border border-slate-600 px-5 py-3 font-bold">Go to log in</button>
+          </div>
+        ) : s.ok ? (
           <div className="text-center py-4">
             <div className="text-lg font-bold">Password changed. You're logged in.</div>
             <button onClick={() => navigate('/select-tool')} className="mt-4 rounded-2xl bg-blue-600 px-5 py-3 font-bold">Continue</button>
