@@ -50,7 +50,7 @@ def test_orders_placed_while_closed_fill_at_the_next_open(tmp_path, monkeypatch)
     p = eng.get_portfolio("u2")
     assert p["queued_orders"] == [] and len(p["positions"]) == 1
     assert abs(p["positions"][0]["avg_price"] - 105.0) < 1e-6 and p["positions"][0]["quantity"] == 10
-    assert abs((start["cash_balance"] - p["account"]["cash_balance"]) - 1050.0) < 10.0   # plus the practice commission
+    assert abs((start["cash_balance"] - p["account"]["cash_balance"]) - 1050.0) < 1e-6   # commission-free, like real US brokers
 
     # selling after hours queues too, and fills at the following open
     state.update(open=False, fill=None)

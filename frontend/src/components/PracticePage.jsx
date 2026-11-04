@@ -10,6 +10,13 @@ import { getPortfolio, closePosition, cancelQueued, closeOption } from '../lib/a
 const usd = (v, d = 0) => `${v < 0 ? '−' : ''}$${Math.abs(Number(v || 0)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const signed = (v, d = 2) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 
+// "+1.23%"; tiny moves read "<0.01%" instead of a misleading "-0.00%".
+function fmtPct(v) {
+  const x = Number(v) || 0;
+  if (x !== 0 && Math.abs(x) < 0.005) return `${x > 0 ? '+' : '−'}<0.01%`;
+  return `${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(2)}%`;
+}
+
 export default function PracticePage() {
   const navigate = useNavigate();
   const [s, setS] = useState({ loading: true });
@@ -89,15 +96,9 @@ export default function PracticePage() {
               <div className="text-xs uppercase tracking-wider text-blue-200 font-semibold">Account value</div>
               <div className="mt-1 text-4xl font-extrabold tabular-nums">{usd(a.total_value)}</div>
               <div className={`mt-1 text-sm font-bold ${a.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                {signed(a.total_pnl)} ({a.total_return_pct >= 0 ? '+' : ''}{a.total_return_pct.toFixed(2)}%) since you started with {usd(start)}
+                {signed(a.total_pnl)} ({fmtPct(a.total_return_pct)}) since you started with {usd(start)}
               </div>
             </div>
-            {s.data?.summary?.performance_grade && (positions.length > 0 || Math.abs(a.total_pnl) > 0.005) && (
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-xl font-extrabold">{s.data.summary.performance_grade}</div>
-                <div className="text-[10px] text-slate-400 mt-1">grade</div>
-              </div>
-            )}
           </div>
           <div className="mt-4 h-2.5 rounded-full bg-slate-800 overflow-hidden flex">
             <motion.div className="h-full bg-blue-400" initial={{ width: 0 }} animate={{ width: `${investedPct}%` }} transition={{ duration: 0.8 }} />
@@ -161,7 +162,7 @@ export default function PracticePage() {
                     </div>
                     <div className="text-right shrink-0">
                       <div className={`text-lg font-extrabold ${up ? 'text-green-300' : 'text-red-300'}`}>{signed(p.unrealized_pnl)}</div>
-                      <div className={`text-xs ${up ? 'text-green-400/80' : 'text-red-400/80'}`}>{p.unrealized_pnl_pct >= 0 ? '+' : ''}{p.unrealized_pnl_pct.toFixed(2)}%</div>
+                      <div className={`text-xs ${up ? 'text-green-400/80' : 'text-red-400/80'}`}>{fmtPct(p.unrealized_pnl_pct)}</div>
                     </div>
                   </div>
                   {p.belief && <p className="mt-2 text-sm text-slate-300 italic truncate">“{p.belief}”</p>}

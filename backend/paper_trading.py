@@ -90,8 +90,9 @@ class PaperTradingEngine:
             os.makedirs(data_dir, exist_ok=True)
             db_path = os.path.join(data_dir, "paper_trading.db")
         self.db_path = db_path
-        self.commission_rate = Decimal('0.005')  # 0.5% commission
-        self.min_commission = Decimal('1.00')    # $1 minimum
+        # Commission-free, like today's US brokerages for stocks and ETFs (practice should feel like the real thing)
+        self.commission_rate = Decimal('0.00')
+        self.min_commission = Decimal('0.00')
         self.starting_balance = Decimal('100000.00')  # $100k starting
         self.max_position_size = Decimal('0.20')  # 20% max per position
         self.margin_requirement = Decimal('0.25')  # 25% margin for shorts
