@@ -584,6 +584,46 @@ def fip_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"fip_id": fip_id(closes, i) if i >= 0 else 0.0}
 
 
+def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
+    """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
+    daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
+    window, alpha kept), and score the summed residual return per unit of residual risk:
+    sum(e) / (std(e) * sqrt(n)). High = the stock outran what its market exposure explains, steadily.
+    Uses only closes up to index i (as of the pick's date). 0.0 without ~a year of matched history."""
+    if i < 250 or not sdates:
+        return 0.0
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    rs: list[float] = []
+    ms: list[float] = []
+    for k in range(i - 249, i - 19):
+        a, b = closes[k - 1], closes[k]
+        sa, sb = spx.get(dates[k - 1]), spx.get(dates[k])
+        if a <= 0 or not sa or not sb or sa <= 0:
+            continue
+        rs.append(b / a - 1.0)
+        ms.append(sb / sa - 1.0)
+    n = len(rs)
+    if n < 150:
+        return 0.0
+    mr, mm = sum(rs) / n, sum(ms) / n
+    var_m = sum((x - mm) ** 2 for x in ms) / n
+    beta = sum((x - mr) * (y - mm) for x, y in zip(rs, ms)) / n / var_m if var_m > 1e-12 else 0.0
+    e = [x - beta * y for x, y in zip(rs, ms)]
+    me = sum(e) / n
+    sd = math.sqrt(sum((x - me) ** 2 for x in e) / (n - 1))
+    if sd <= 1e-12:
+        return 0.0
+    return max(-10.0, min(10.0, sum(e) / (sd * math.sqrt(n))))
+
+
+def resid_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"resid_mom": ...} using closes (stock and SPY) up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    sdates, scloses = daily_closes("SPY")
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"resid_mom": resid_mom(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
+
+
 def realized_vol(closes: list[float], i: int, window: int = 20) -> float:
     lo = max(1, i - window + 1)
     rets = [math.log(closes[k] / closes[k - 1]) for k in range(lo, i + 1) if closes[k - 1] > 0]
@@ -611,6 +651,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mom250": _ret(closes, i, 250),
         "mom_12_1": mom_12_1(closes, i),
         "fip_id": fip_id(closes, i),
+        "resid_mom": resid_mom(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

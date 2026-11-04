@@ -28,9 +28,11 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "mom_12_1",
          # frog in the pan (Da, Gurun & Warachka 2014): was the 12-1 move steady (-1) or a few jumps (+1)? not directional
          "fip_id",
+         # residual momentum (Blitz, Huij & Martens 2011): 12-1 return SPY-beta can't explain, per unit of residual risk
+         "resid_mom",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
-DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1",
+DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom",
                "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
@@ -61,11 +63,13 @@ def enrich(limit: int = 300) -> dict:
         """SELECT p.id, p.ticker, p.features, b.as_of_date FROM picks p JOIN beliefs b ON b.id = p.belief_id
            WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)
              AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%'
-                  OR p.features NOT LIKE '%mu_dist%' OR p.features NOT LIKE '%fip_id%')
+                  OR p.features NOT LIKE '%mu_dist%' OR p.features NOT LIKE '%fip_id%'
+                  OR p.features NOT LIKE '%resid_mom%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
-        return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num
+        return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num \
+            or "resid_mom" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -81,6 +85,8 @@ def enrich(limit: int = 300) -> dict:
                            **market.trend_features(r["ticker"], d0)})
             if "fip_id" not in have:
                 vp.update(market.fip_features(r["ticker"], d0))
+            if "resid_mom" not in have:
+                vp.update(market.resid_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -199,6 +205,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         "12-1 momentum (z_mom_12_1)": lambda f: f["z_mom_12_1"],
         # idea log, added 2026-11-03: frog in the pan — 12-1 momentum that arrived steadily, not in jumps
         "smooth 12-1 momentum (frog in the pan)": lambda f: f["z_mom_12_1"] - f["z_fip_id"],
+        # idea log, added 2026-11-04: residual momentum — 12-1 move beyond what the stock's SPY beta explains
+        "residual 12-1 momentum (z_resid_mom)": lambda f: f["z_resid_mom"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],

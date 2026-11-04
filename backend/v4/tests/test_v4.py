@@ -1690,6 +1690,7 @@ def test_mom_12_1_skips_latest_month_and_is_derived_for_old_picks(monkeypatch):
                        (pid, 90, asof, 10.0, 0.0, 0.0, m121 * 0.3 + rng.gauss(0, 0.05), asof))
     r = research.run()["results"]
     assert r["12-1 momentum (z_mom_12_1)"]["lift"] > 0.02 and r["12-1 momentum (z_mom_12_1)"]["n"] > 100
+    assert r["residual 12-1 momentum (z_resid_mom)"]["n"] > 100  # old picks without resid_mom still run (as 0)
 
 
 def test_frog_in_the_pan_id_and_enrich_backfill(monkeypatch):
@@ -1724,6 +1725,48 @@ def test_frog_in_the_pan_id_and_enrich_backfill(monkeypatch):
     assert research.enrich(10000)["enriched"] >= 1
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-fip'")["features"])["num"]
     assert abs(num["fip_id"] - (-1.0)) < 1e-9 and num["vp_poc_dist"] == 0.2   # later choppy prices not seen
+
+
+def test_residual_momentum_removes_market_beta_and_enrich_backfills_it(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(11)
+    dates = [(_dt.date(2023, 1, 1) + _dt.timedelta(days=k)).isoformat() for k in range(400)]
+    mkt = [rng.gauss(0.001, 0.01) for _ in range(400)]
+    spy = [100.0]
+    for x in mkt[1:]:
+        spy.append(spy[-1] * (1 + x))
+    def path(beta, alpha, noise=0.005):
+        c = [50.0]
+        for x in mkt[1:]:
+            c.append(c[-1] * (1 + alpha + beta * x + rng.gauss(0, noise)))
+        return c
+    i = 300
+    beta_only = path(2.0, 0.0)          # big raw momentum, all from leverage to SPY
+    alpha = path(0.5, 0.002)            # steady stock-specific outperformance
+    assert abs(market.resid_mom(dates, beta_only, dates, spy, i)) < 2.5
+    assert market.resid_mom(dates, alpha, dates, spy, i) > 4.0
+    assert market.resid_mom(dates, path(0.5, -0.002), dates, spy, i) < -4.0
+    assert market.resid_mom(dates, alpha, dates, spy, 100) == 0.0                  # not a year of history
+    late = alpha[:i - 19] + [alpha[i - 20] * 0.5] * 19 + alpha[i:]                   # latest month is skipped
+    assert market.resid_mom(dates, late, dates, spy, i) == market.resid_mom(dates, alpha, dates, spy, i)
+    assert "resid_mom" in research.FEATS and "resid_mom" in research.DIRECTIONAL
+    # enrich backfills resid_mom as of each pick's own date only, leaving the other features alone
+    after = alpha[:i + 1] + [alpha[i] * (0.9 if k % 2 else 1.1) for k in range(len(dates) - i - 1)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, spy) if s == "SPY" else (dates, after))
+    monkeypatch.setattr(market, "vp_features", lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3}
+    asof = dates[i]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-rm", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-rm", "b-rm", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-rm", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    assert research.enrich(10000)["enriched"] >= 1
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-rm'")["features"])["num"]
+    assert abs(num["resid_mom"] - market.resid_mom(dates, alpha, dates, spy, i)) < 1e-9   # later prices not seen
+    assert num["fip_id"] == -0.3 and num["vp_poc_dist"] == 0.2
 
 
 def test_daily_job_runs_each_phase_in_its_own_process():

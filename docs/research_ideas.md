@@ -58,4 +58,29 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   learned ridge/gbm.
 - **Note:** until the hourly enrich finishes backfilling older picks, those picks read `fip_id = 0`, so the first
   run or two after deploy will understate the rule; trust the result once enrich reports nothing remaining.
+- **Result (run 2026-11-04 18:15 UTC, 4,396 beliefs, test from 2024-12-03, n=2,707; enrich backfill complete, all
+  23,279 graded picks carry fip_id):** lift **+0.62%**, beat **50.3%**, t **1.88**. Slightly worse than plain 12-1
+  momentum in the same run (+0.79% / 50.1% / t 2.21), so tilting toward smooth momentum does not add anything here;
+  the learned ridge gives z_fip_id a small negative weight (-0.004, i.e. it mildly prefers smooth). Not a candidate
+  for the ranker v2 gate (beat below the app's 52.3% and random 51.6%). Same run: app +0.02% / 52.3% / t 0.08;
+  high vol +1.55% / 53.6% / t 3.52; ridge +0.92% / 52.1% / t 2.46; gbm +2.00% / 53.3% / t 4.93.
+
+### 3. Residual momentum (Blitz, Huij & Martens)
+- **Added:** 2026-11-04
+- **Source:** Blitz, Huij & Martens (2011), "Residual Momentum", Journal of Empirical Finance 18(3), 506-521:
+  https://econpapers.repec.org/RePEc:eee:empfin:v:18:y:2011:i:3:p:506-521 ; working paper: https://repub.eur.nl/pub/22252
+- **Why:** plain momentum partly just rides market exposure: in a rising market the high-beta stocks top the 12-1
+  ranking, and they crash when the market turns. Ranking on the part of the return the market does not explain,
+  scaled by its own volatility, earned about twice the risk-adjusted return of total-return momentum in the paper,
+  with much smaller drawdowns. Builds on idea 1 (positive lift, weak beat rate), and is a direct test of whether our
+  "high vol" winner is really just beta.
+- **Computed as:** market-model version over the 12-1 window (daily returns from t-250 to t-20): fit the stock's SPY
+  beta on that window, residuals `e = r - beta * r_SPY` (alpha kept in), `resid_mom = sum(e) / (std(e) * sqrt(n))`,
+  clipped to ±10; 0 with under 150 matched days. (The paper uses a 3-factor model on 36 months of monthly returns;
+  we only have SPY and ~a few years of daily bars, so this is the closest faithful version.) `market.resid_mom` /
+  `market.resid_features`; stored for new picks via `market.features` and `nn.make_features`; backfilled for older
+  picks by `research.enrich` using stock and SPY closes up to each pick's own date only. Directional. Research rule:
+  `residual 12-1 momentum (z_resid_mom)`; `z_resid_mom` is also available to the learned ridge/gbm.
+- **Note:** until the hourly enrich finishes backfilling (~23k picks), older picks read `resid_mom = 0`, so the first
+  runs after deploy understate the rule; trust the result once every graded pick has `resid_mom`.
 - **Result:** pending.
