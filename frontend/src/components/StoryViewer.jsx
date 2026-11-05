@@ -182,6 +182,7 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs = 
     return () => clearInterval(t);
   }, [data, paused, idx, last, go, reel, cardMs]);
   useEffect(() => { if (reel && data) window.__reelStart = performance.now(); }, [reel, data]);
+  useEffect(() => { if (reel && err) window.__reelError = err; }, [reel, err]);
 
   const onDown = () => { downAt.current = Date.now(); setPaused(true); };
   const onUp = (e) => {

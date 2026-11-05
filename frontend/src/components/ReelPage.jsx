@@ -17,6 +17,7 @@ export default function ReelPage() {
       if (it) setHeadline(it.headline); else setErr('No story right now.');
     }).catch(() => setErr('No story right now.'));
   }, [headline, i]);
+  useEffect(() => { if (err) window.__reelError = err; }, [err]);
   if (err) return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center">{err}</div>;
   if (!headline) return <div className="min-h-screen bg-slate-950" />;
   return <StoryViewer headline={headline} reel cardMs={ms} onClose={() => {}} />;
