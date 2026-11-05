@@ -12,15 +12,39 @@ const CHOICES = [
     bits: ['Good if you’re not sure', 'You can switch on each idea'] },
 ];
 
+const BUDGETS = [100, 500, 1000, 5000];
+const TIMES = [{ d: 0, l: 'AI decides' }, { d: 30, l: '1 month' }, { d: 90, l: '3 months' }, { d: 180, l: '6 months' }, { d: 365, l: '1 year' }];
+
+function Chips({ label, items, value, onChange }) {
+  return (
+    <div className="mt-2.5">
+      <div className="text-xs text-slate-300">{label}</div>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {items.map((it) => (
+          <button key={it.v} onClick={() => onChange(it.v)} aria-pressed={value === it.v}
+            className={`text-xs font-semibold rounded-full px-3 py-1.5 border ${value === it.v ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-900/80 border-slate-700 text-slate-200 hover:border-slate-500'}`}>
+            {it.l}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HowToTrade({ belief, onPick }) {
   const [remember, setRemember] = useState(false);
   const [goalStep, setGoalStep] = useState(false);
-  const pick = (instrument, goal = '') => onPick({ instrument, goal, remember });
+  const [budget, setBudget] = useState(0);
+  const [days, setDays] = useState(0);
+  const pick = (instrument, goal = '') => onPick({ instrument, goal, remember, budget_usd: budget, horizon_days: days });
   return (
     <div className="rounded-2xl border border-blue-400/40 bg-blue-500/[0.08] p-3.5">
       <div className="text-sm font-bold">How do you want to trade “{belief.length > 60 ? belief.slice(0, 57) + '…' : belief}”?</div>
+      <Chips label="How much do you want to put on this hunch?" value={budget} onChange={setBudget}
+        items={[...BUDGETS.map((b) => ({ v: b, l: `$${b.toLocaleString()}` })), { v: 0, l: 'Not sure' }]} />
+      <Chips label="For how long?" value={days} onChange={setDays} items={TIMES.map((t) => ({ v: t.d, l: t.l }))} />
       {!goalStep ? (
-        <div className="mt-2.5 grid gap-2">
+        <div className="mt-3 grid gap-2">
           {CHOICES.map((c) => (
             <button key={c.id} onClick={() => (c.id === 'options' ? setGoalStep(true) : pick(c.id))}
               className="text-left rounded-xl bg-slate-900/80 border border-slate-700 hover:border-blue-400 px-3 py-2.5">

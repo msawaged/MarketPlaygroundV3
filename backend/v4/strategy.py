@@ -297,8 +297,72 @@ def normalize_prefs(prefs: Optional[dict]) -> dict:
     p = prefs or {}
     inst = str(p.get("instrument") or "auto").lower()
     goal = str(p.get("goal") or "").lower()
-    return {"instrument": inst if inst in ("auto", "shares", "options") else "auto",
-            "goal": goal if goal in library.GOALS else ""}
+    out = {"instrument": inst if inst in ("auto", "shares", "options") else "auto",
+           "goal": goal if goal in library.GOALS else ""}
+    # What they're willing to put on this hunch, and for how long (0 = not said: no cap / the AI picks the time frame)
+    try:
+        b = float(p.get("budget_usd") or 0)
+    except (TypeError, ValueError):
+        b = 0.0
+    try:
+        h = int(float(p.get("horizon_days") or 0))
+    except (TypeError, ValueError):
+        h = 0
+    out["budget_usd"] = round(min(max(b, 10.0), 1_000_000.0), 2) if b > 0 else 0.0
+    out["horizon_days"] = min(max(h, 7), 730) if h > 0 else 0
+    return out
+
+
+def per_unit_cost(trade: dict, price: float) -> float:
+    """Money one unit ties up: one contract's capital for options, one share for shares, 0 for 'avoid'."""
+    t = trade.get("type")
+    if t == "Sell / Avoid":
+        return 0.0
+    if t == "Buy Stock":
+        return float(price)
+    return float(trade.get("capital") or 0.0)
+
+
+def size_for_budget(trade: dict, price: float, budget: float) -> dict:
+    """How this trade fits a budget: whole contracts for options, fractional shares for shares."""
+    unit = per_unit_cost(trade, price)
+    if budget <= 0 or unit <= 0:
+        return {"budget": budget, "fits": True, "units": 0, "unit": "none", "cost": 0.0}
+    if trade.get("type") == "Buy Stock":
+        n = round(budget / unit, 4)
+        return {"budget": budget, "fits": True, "units": n, "unit": "shares", "cost": round(n * unit, 2)}
+    n = int(budget // unit)
+    return {"budget": budget, "fits": n >= 1, "units": n, "unit": "contracts", "cost": round(n * unit, 2),
+            "per_unit": round(unit, 2)}
+
+
+def fit_budget(structure: str, trade: dict, *, direction: str, risk: str, prefs: dict, build, price: float) -> tuple[str, dict, str]:
+    """Keep the chosen structure if one unit fits the budget; otherwise the closest structure that does.
+
+    `build(structure) -> trade`. Order: other options of the same kind that fit (cheapest first), then shares
+    (any amount). Returns (structure, trade, reason or '')."""
+    budget = float(prefs.get("budget_usd") or 0)
+    if budget <= 0 or size_for_budget(trade, price, budget)["fits"]:
+        return structure, trade, ""
+    over = per_unit_cost(trade, price)
+    tried = []
+    for name in library.allowed(direction, risk, prefs.get("instrument", "auto"), prefs.get("goal", "")):
+        if name == structure or (library.LIB.get(name) or {}).get("family") != "options":
+            continue
+        try:
+            t = build(name)
+        except Exception:
+            continue
+        c = per_unit_cost(t, price)
+        if 0 < c <= budget:
+            tried.append((c, name, t))
+    note = f"One {structure} contract ties up about ${over:,.0f}, more than the ${budget:,.0f} you set"
+    if tried:
+        c, name, t = min(tried, key=lambda x: x[0])
+        return name, t, f"{note}, so this uses a {name} (about ${c:,.0f} each)."
+    if direction == "bullish" and prefs.get("instrument") != "options":
+        return "Buy Stock", build("Buy Stock"), f"{note}, so this uses shares: any amount works."
+    return structure, trade, f"{note}. No version of this idea fits that amount."
 
 
 def select(direction: str, horizon_days: int, conviction: str, risk: str, prefs: dict, *, claude_pick: str = "",

@@ -132,7 +132,7 @@ export default function ChatInterface() {
 
   // Ask how they want to trade before every new belief, unless they chose "remember".
   const answerHow = (msgId, belief, choice) => {
-    const p = { instrument: choice.instrument, goal: choice.goal || '' };
+    const p = { instrument: choice.instrument, goal: choice.goal || '', budget_usd: choice.budget_usd || 0, horizon_days: choice.horizon_days || 0 };
     if (choice.remember) setPrefs({ ...p, remember: true });
     else setPrefs(p);
     setMessages((m) => m.filter((x) => x.id !== msgId));

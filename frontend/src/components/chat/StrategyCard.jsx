@@ -179,7 +179,8 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const [realOpen, setRealOpen] = useState(false);
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
-  const [amount, setAmount] = useState(1000);
+  const budget = Number(data.prefs?.budget_usd || prefs?.budget_usd || 0);
+  const [amount, setAmount] = useState(budget || 1000);
   const [custom, setCustom] = useState('');
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
@@ -194,7 +195,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   // Options are bought in whole contracts, so they're sized by a contract count; shares by dollars.
   const [contractsBy, setContractsBy] = useState({});
   const ckey = pick ? `${pick.pick_id}:${pick.structure}` : '';
-  const contracts = contractsBy[ckey] || 1;
+  // with a budget, start at as many whole contracts as it buys (at least 1)
+  const fitN = budget && model?.capitalPerUnit ? Math.max(1, Math.floor(budget / model.capitalPerUnit)) : 1;
+  const contracts = contractsBy[ckey] || fitN;
   const setContracts = (n) => setContractsBy((c) => ({ ...c, [ckey]: Math.max(1, Math.min(1000, n)) }));
   const optAmount = model?.kind === 'options' ? contracts * model.capitalPerUnit : amount;
   const sizing = useMemo(() => (model ? sizePosition(model, optAmount) : null), [model, optAmount]);

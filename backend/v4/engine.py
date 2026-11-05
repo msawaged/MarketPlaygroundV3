@@ -165,6 +165,8 @@ def process_belief(
             _store_interpretation(norm, cache_key, interp, usage)
             _store_interpretation(norm, same_q_key, interp, usage)
 
+    if prefs.get("horizon_days") and not backfill:  # their timeline wins over the AI's guess
+        interp = {**interp, "ai_horizon_days": interp.get("horizon_days"), "horizon_days": prefs["horizon_days"]}
     belief_id = f"b-{uuid.uuid4().hex[:16]}"
     now = datetime.now(timezone.utc).isoformat()
     base = {
@@ -265,6 +267,13 @@ def process_belief(
         )
         trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
                                      interp["horizon_days"], target_price=tp if structure == "Long Call Butterfly" else 0.0)
+        if prefs.get("budget_usd") and not backfill:
+            structure, trade, bwhy = strategy.fit_budget(
+                structure, trade, direction=v["direction"], risk=risk_profile, prefs=prefs, price=float(v["price"]),
+                build=lambda s_, v=v: strategy.build_trade(s_, v["ticker"], v["price"], v["mkt"]["vol60"],
+                                                           date.fromisoformat(v["entry_date"]), interp["horizon_days"]))
+            if bwhy:
+                why = bwhy
         alt = None
         alt_name = strategy.alternative(structure, v["direction"], interp["horizon_days"], interp["conviction"],
                                         risk_profile, float(v["price"]))
@@ -285,6 +294,7 @@ def process_belief(
             "score": round(v["final_score"], 4), "claude_score": v["score"],
             "nn_score": None if v["nn_score"] is None else round(v["nn_score"], 4),
             "track_record": v["track"], "shown": shown, "alt": alt,
+            "budget": strategy.size_for_budget(trade, float(v["price"]), prefs["budget_usd"]) if prefs.get("budget_usd") else None,
             "levels": None if backfill else _levels(v["ticker"]),
             "trend": None if backfill or not shown else _trend(v["ticker"]),
         }

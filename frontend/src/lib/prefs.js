@@ -22,9 +22,18 @@ export const GOALS = [
   { id: 'protect', label: 'Protect what I own', hint: 'Insurance for shares I have' },
 ];
 
-export function prefsLabel(p) {
+function baseLabel(p) {
   if (!p || p.instrument === 'auto' || !p.instrument) return 'Shares first, AI picks';
   if (p.instrument === 'shares') return 'Shares & funds';
   const g = GOALS.find((x) => x.id === p.goal);
   return `Options${g ? ` · ${g.label}` : ''}`;
+}
+
+const SPAN = { 30: '1 month', 90: '3 months', 180: '6 months', 365: '1 year' };
+
+export function prefsLabel(p) {
+  const bits = [baseLabel(p)];
+  if (p?.budget_usd) bits.push(`$${Number(p.budget_usd).toLocaleString()}`);
+  if (p?.horizon_days) bits.push(SPAN[p.horizon_days] || `${p.horizon_days} days`);
+  return bits.join(' · ');
 }

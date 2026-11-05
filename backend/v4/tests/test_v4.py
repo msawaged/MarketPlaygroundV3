@@ -710,7 +710,7 @@ def test_strategy_library_and_preferences():
     r = engine.process_belief("plumbing demand rises a lot", "u-p", "moderate", claude_client=FakeClaude(payload),
                               prefs={"instrument": "options", "goal": "income"})
     shown = [p for p in r["picks"] if p["shown"]]
-    assert r["prefs"] == {"instrument": "options", "goal": "income"}
+    assert r["prefs"] == {"instrument": "options", "goal": "income", "budget_usd": 0.0, "horizon_days": 0}
     assert all(p["structure"] == "Cash-Secured Put" and p["structure_reason"] == "Get paid to wait." for p in shown)
     r2 = engine.process_belief("plumbing demand rises a lot", "u-p", "moderate", claude_client=FakeClaude(payload),
                                prefs={"instrument": "shares"})
@@ -1892,3 +1892,28 @@ def test_ranker_v2_leaves_out_volatile_ideas(monkeypatch):
     s = research.score_candidates([{"mom60": 0.2}, {"mom60": 0.9}, {"mom60": -0.2}], ["bullish", "volatile", "bullish"])
     assert s[0] > s[2] and abs(s[1] - (s[0] + s[2]) / 2) < 1e-9
     assert research.score_candidates([{"mom60": 0.2}, {"mom60": 0.9}], ["bullish", "volatile"]) is None
+
+
+def test_budget_and_timeline_shape_the_strategies():
+    p = strategy.normalize_prefs({"instrument": "options", "budget_usd": "150", "horizon_days": 5000})
+    assert p["budget_usd"] == 150.0 and p["horizon_days"] == 730
+    assert strategy.normalize_prefs({})["budget_usd"] == 0.0 and strategy.normalize_prefs({"horizon_days": "x"})["horizon_days"] == 0
+    # shares fit any amount (fractional); options need one whole contract
+    t = strategy.build_trade("Buy Stock", "WINR", 40.0, 0.3, TODAY, 90)
+    assert strategy.size_for_budget(t, 40.0, 100.0) == {"budget": 100.0, "fits": True, "units": 2.5, "unit": "shares", "cost": 100.0}
+    call = strategy.build_trade("Long Call", "WINR", 400.0, 0.4, TODAY, 180)
+    assert not strategy.size_for_budget(call, 400.0, 200.0)["fits"]
+    build = lambda s_: strategy.build_trade(s_, "WINR", 400.0, 0.4, TODAY, 180)
+    s2, t2, why = strategy.fit_budget("Long Call", call, direction="bullish", risk="aggressive",
+                                      prefs={"budget_usd": 200.0, "instrument": "auto", "goal": ""}, build=build, price=400.0)
+    assert s2 != "Long Call" and why and strategy.size_for_budget(t2, 400.0, 200.0)["fits"]
+    # within budget: untouched
+    assert strategy.fit_budget("Long Call", call, direction="bullish", risk="aggressive",
+                               prefs={"budget_usd": 1e6, "instrument": "auto", "goal": ""}, build=build, price=400.0)[0] == "Long Call"
+    # end to end: their timeline replaces the AI's, every card says how it fits the budget
+    r = engine.process_belief("plumbing demand is going to be high", "u-bud", "aggressive", claude_client=FakeClaude(),
+                              prefs={"instrument": "auto", "budget_usd": 300, "horizon_days": 30})
+    assert r["interpretation"]["horizon_days"] == 30
+    for pk in r["picks"]:
+        assert pk["budget"]["budget"] == 300.0
+        assert pk["budget"]["fits"] or "No version" in pk["structure_reason"]
