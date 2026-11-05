@@ -591,7 +591,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           </div>
           {st === 'up' && <p className="text-xs text-green-400">Thanks. Your vote helps everyone get better picks.</p>}
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
-          {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Practice.</p>}
+          {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Portfolio.</p>}
           {st?.startsWith?.('opt:') && <p className="text-xs text-blue-300">{st.slice(4)} <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
           {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money.</p>}
           {(st === 'tracking' || st === 'traded') && (

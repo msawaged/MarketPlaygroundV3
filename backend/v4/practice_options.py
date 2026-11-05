@@ -103,7 +103,9 @@ def unit_value(legs: list[dict], spot: float, vol: float, on: Optional[date] = N
             total += sign * spot * l["quantity"]
             continue
         t = max(0, (date.fromisoformat(l["expiration"]) - on).days) / 365.0
-        total += sign * bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()) * 100 * l["quantity"]
+        # Option prices are quoted in whole cents, the same way the idea card shows them, so a spread the card
+        # prices at $3.44 - $0.99 = $245 costs $245 here too (not $246 from unrounded model prices).
+        total += sign * round(bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()), 2) * 100 * l["quantity"]
     return total
 
 
@@ -113,7 +115,7 @@ def _priced(legs: list[dict], spot: float, vol: float) -> list[dict]:
     for l in legs:
         if l["instrument"] == "option":
             t = max(1, (date.fromisoformat(l["expiration"]) - on).days) / 365.0
-            l = dict(l, est_premium=round(bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()), 4))
+            l = dict(l, est_premium=round(bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()), 2))
         out.append(l)
     return out
 

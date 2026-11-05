@@ -7,6 +7,7 @@ import Page, { Card } from './ui/Page';
 import Term from './ui/Term';
 import { getPortfolio, closePosition, cancelQueued, closeOption } from '../lib/api';
 
+const shares = (q) => { const n = Number(q || 0); return `${n.toLocaleString('en-US', { maximumFractionDigits: 4 })} share${n === 1 ? '' : 's'}`; };
 const usd = (v, d = 0) => `${v < 0 ? '−' : ''}$${Math.abs(Number(v || 0)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const signed = (v, d = 2) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 
@@ -124,7 +125,7 @@ export default function PracticePage() {
               <Card key={o.order_id} className="flex items-center justify-between gap-3 py-3">
                 <div>
                   <div className="font-bold">{o.side === 'sell' ? 'Sell' : 'Buy'} {o.ticker}</div>
-                  <div className="text-xs text-slate-400">{o.quantity} shares · fills at the opening price{o.side !== 'sell' ? ` · about ${usd(o.quantity * o.est_price)} now` : ''}</div>
+                  <div className="text-xs text-slate-400">{shares(o.quantity)} · fills at the opening price{o.side !== 'sell' ? ` · about ${usd(o.quantity * o.est_price)} now` : ''}</div>
                 </div>
                 <button onClick={() => cancel(o)} className="rounded-xl border border-slate-600 px-3 py-2 text-sm font-semibold hover:border-slate-400">Cancel</button>
               </Card>
@@ -158,7 +159,7 @@ export default function PracticePage() {
                         <span className="text-xl font-extrabold">{p.ticker}</span>
                         <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-slate-800 text-slate-300">{p.position_type}</span>
                       </div>
-                      <div className="text-xs text-slate-400">{Number(p.quantity).toLocaleString()} shares @ {usd(p.avg_price, 2)} · now {usd(p.current_price, 2)}</div>
+                      <div className="text-xs text-slate-400">{shares(p.quantity)} @ {usd(p.avg_price, 2)} · now {usd(p.current_price, 2)}</div>
                     </div>
                     <div className="text-right shrink-0">
                       <div className={`text-lg font-extrabold ${up ? 'text-green-300' : 'text-red-300'}`}>{signed(p.unrealized_pnl)}</div>

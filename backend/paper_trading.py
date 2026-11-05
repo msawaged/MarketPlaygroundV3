@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN
 from dataclasses import dataclass, asdict
 from enum import Enum
 import threading
@@ -56,6 +56,9 @@ class Order:
     filled_quantity: int = 0
     commission: Decimal = Decimal('0.00')
     
+SHARE_STEP = Decimal('0.0001')  # practice shares are fractional to 4 decimals
+
+
 def _clock() -> dict:
     """Market open/closed from the shared v4 market clock (Alpaca, holiday-aware)."""
     try:
@@ -124,7 +127,7 @@ class PaperTradingEngine:
                     ticker TEXT NOT NULL,
                     order_type TEXT NOT NULL,
                     position_type TEXT NOT NULL,
-                    quantity INTEGER NOT NULL,
+                    quantity REAL NOT NULL,
                     price DECIMAL(10,4),
                     stop_price DECIMAL(10,4),
                     status TEXT NOT NULL,
@@ -133,7 +136,7 @@ class PaperTradingEngine:
                     created_at TIMESTAMP NOT NULL,
                     filled_at TIMESTAMP,
                     filled_price DECIMAL(10,4),
-                    filled_quantity INTEGER DEFAULT 0,
+                    filled_quantity REAL DEFAULT 0,
                     commission DECIMAL(8,2) DEFAULT 0.00,
                     FOREIGN KEY (user_id) REFERENCES users (user_id)
                 )
@@ -145,7 +148,7 @@ class PaperTradingEngine:
                     user_id TEXT NOT NULL,
                     ticker TEXT NOT NULL,
                     position_type TEXT NOT NULL,
-                    quantity INTEGER NOT NULL,
+                    quantity REAL NOT NULL,
                     avg_price DECIMAL(10,4) NOT NULL,
                     current_price DECIMAL(10,4) NOT NULL,
                     market_value DECIMAL(15,2) NOT NULL,
@@ -167,7 +170,7 @@ class PaperTradingEngine:
                     order_id TEXT NOT NULL,
                     ticker TEXT NOT NULL,
                     transaction_type TEXT NOT NULL,  -- BUY, SELL, DIVIDEND, FEE
-                    quantity INTEGER NOT NULL,
+                    quantity REAL NOT NULL,
                     price DECIMAL(10,4) NOT NULL,
                     amount DECIMAL(15,2) NOT NULL,
                     commission DECIMAL(8,2) NOT NULL,
@@ -212,7 +215,15 @@ class PaperTradingEngine:
             conn.close()
             
     def _get_real_market_price(self, ticker: str) -> Decimal:
-        """Fetch real market price using yfinance"""
+        """Latest price from the same feed the idea cards use (Alpaca via backend.v4.market), then Yahoo, then
+        the last price we cached. Never a made-up number: if nothing is available the trade is refused."""
+        try:
+            from backend.v4 import market as _m
+            p = float(_m.latest_price(ticker))
+            if p > 0:
+                return Decimal(str(round(p, 4)))
+        except Exception as e:
+            logger.warning(f"Primary price feed failed for {ticker}: {e}")
         try:
             stock = yf.Ticker(ticker)
             data = stock.history(period="1d", interval="1m")
@@ -221,11 +232,12 @@ class PaperTradingEngine:
                 return Decimal(str(round(latest_price, 4)))
         except Exception as e:
             logger.warning(f"Failed to fetch price for {ticker}: {e}")
-        
-        # Fallback to cached price or default
-        return self._get_cached_price(ticker)
-    
-    def _get_cached_price(self, ticker: str) -> Decimal:
+        cached = self._get_cached_price(ticker)
+        if cached is None:
+            raise ValueError(f"Couldn't get a live price for {ticker} right now. Please try again in a minute.")
+        return cached
+
+    def _get_cached_price(self, ticker: str) -> Optional[Decimal]:
         """Get last cached price from database"""
         with self._get_db_connection() as conn:
             result = conn.execute("""
@@ -238,18 +250,11 @@ class PaperTradingEngine:
             if result:
                 return Decimal(str(result['price']))
             
-            # Default fallback prices
-            defaults = {
-                'TSLA': Decimal('250.00'),
-                'AAPL': Decimal('150.00'),
-                'SPY': Decimal('400.00'),
-                'QQQ': Decimal('350.00')
-            }
-            return defaults.get(ticker, Decimal('100.00'))
+            return None  # no invented fallback prices: a practice fill must be a real price
     
     def _calculate_commission(self, quantity: int, price: Decimal) -> Decimal:
         """Calculate commission based on trade value"""
-        trade_value = quantity * price
+        trade_value = Decimal(str(quantity)) * Decimal(str(price))
         commission = trade_value * self.commission_rate
         return max(commission, self.min_commission)
     
@@ -296,10 +301,13 @@ class PaperTradingEngine:
                             estimated_premium = current_price * 0.05  # Rough premium estimate
                             quantity = max(1, int(target_investment / (estimated_premium * 100)))  # Options are per 100 shares
                         else:
-                            # For stocks: direct calculation
-                            quantity = max(1, int(target_investment / current_price))
+                            # For stocks: fractional shares, like real brokers, so $1,000 buys $1,000 of the stock
+                            # (whole shares meant $1,000 of a $5,000 stock bought $5,000, and $1,000 of a $185 one bought $925).
+                            quantity = (Decimal(str(target_investment)) / current_price).quantize(SHARE_STEP, rounding=ROUND_DOWN)
+                            if quantity <= 0:
+                                return {"status": "error", "message": f"That amount is too small to buy any {ticker}. Try at least $1."}
                     else:
-                        quantity = int(leg.get('quantity', 1))  # Keep original for sell orders
+                        quantity = Decimal(str(leg.get('quantity', 1)))  # Keep original for sell orders
                     
                     # Determine position type
                     if 'buy' in action:
@@ -450,10 +458,10 @@ class PaperTradingEngine:
         
         if existing:
             # Update existing position (average price). sqlite hands back floats; keep the math in Decimal.
-            fq = int(order.filled_quantity)
+            fq = Decimal(str(order.filled_quantity))
             fp = Decimal(str(order.filled_price))
             cp = Decimal(str(current_price))
-            old_q = int(existing['quantity'])
+            old_q = Decimal(str(existing['quantity']))
             old_avg = Decimal(str(existing['avg_price']))
             total_quantity = old_q + fq
             new_avg_price = ((old_q * old_avg) + (fq * fp)) / total_quantity
@@ -534,7 +542,7 @@ class PaperTradingEngine:
                                  ('filled' if pos else 'cancelled', when, float(px), o['quantity'] if pos else 0, o['order_id']))
                     filled += 1
                     continue
-                qty = int(o['quantity'])
+                qty = Decimal(str(o['quantity']))
                 est_px = Decimal(str(o['price']))
                 est_comm = Decimal(str(o['commission'] or 0))
                 is_long = o['position_type'] == PositionType.LONG.value
@@ -582,7 +590,7 @@ class PaperTradingEngine:
                 return {"status": "error", "message": "That order already filled or was cancelled."}
             if o['order_type'] != 'close':
                 mult = Decimal('1') if o['position_type'] == PositionType.LONG.value else Decimal(str(self.margin_requirement))
-                held = int(o['quantity']) * Decimal(str(o['price'])) * mult + Decimal(str(o['commission'] or 0))
+                held = Decimal(str(o['quantity'])) * Decimal(str(o['price'])) * mult + Decimal(str(o['commission'] or 0))
                 conn.execute("UPDATE users SET buying_power = buying_power + ? WHERE user_id = ?", (float(held), user_id))
             conn.execute("UPDATE orders SET status = 'cancelled' WHERE order_id = ?", (order_id,))
         return {"status": "cancelled", "message": f"Cancelled the queued {o['ticker']} order."}
@@ -612,7 +620,10 @@ class PaperTradingEngine:
             total_unrealized_pnl = Decimal('0.00')
             
             for pos in positions:
-                current_price = self._get_real_market_price(pos['ticker'])
+                try:
+                    current_price = self._get_real_market_price(pos['ticker'])
+                except ValueError:  # feed down: keep the last mark rather than break the whole portfolio
+                    current_price = Decimal(str(pos['current_price'] or pos['avg_price']))
                 market_value = Decimal(str(pos['quantity'])) * current_price
                 unrealized_pnl = market_value - (Decimal(str(pos['quantity'])) * Decimal(str(pos['avg_price'])))
 
@@ -831,7 +842,10 @@ class PaperTradingEngine:
             
             for pos in positions:
                 # Get current market price
-                current_price = self._get_real_market_price(pos['ticker'])
+                try:
+                    current_price = self._get_real_market_price(pos['ticker'])
+                except ValueError:
+                    continue
                 
                 # Calculate P&L percentage
                 entry_price = Decimal(str(pos['avg_price']))

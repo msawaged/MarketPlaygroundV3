@@ -30,7 +30,7 @@ export default function PayoffChart({ model, units = 1, ticker, sizeLabel }) {
 
   const summary = useMemo(() => summarize(model), [model]);
 
-  const { curveNow, curveExp, yMin, yMax } = useMemo(() => {
+  const { curveNow, curveExp, yMin, yMax, yLo, yHi } = useMemo(() => {
     const n = 90;
     const exp = [], now = [];
     for (let i = 0; i <= n; i++) {
@@ -41,7 +41,7 @@ export default function PayoffChart({ model, units = 1, ticker, sizeLabel }) {
     const ys = [...exp, ...now].map((p) => p[1]).concat(0);
     let mn = Math.min(...ys), mx = Math.max(...ys);
     const pad = (mx - mn) * 0.12 || Math.abs(mx) * 0.2 || 1;
-    return { curveExp: exp, curveNow: now, yMin: mn - pad, yMax: mx + pad };
+    return { curveExp: exp, curveNow: now, yMin: mn - pad, yMax: mx + pad, yLo: mn, yHi: mx };
   }, [model, units, day, atExpiry, lo, hi]);
 
   const x = (S) => PL + ((S - lo) / (hi - lo)) * (W - PL - PR);
@@ -64,7 +64,8 @@ export default function PayoffChart({ model, units = 1, ticker, sizeLabel }) {
   };
 
   const ticks = [lo, model.entry, hi];
-  const yTicks = [yMax - (yMax - yMin) * 0.06, 0, yMin + (yMax - yMin) * 0.06];
+  // Label the real best and worst P/L on the chart (not the padded axis edge, which no price can reach).
+  const yTicks = [yHi, 0, yLo];
   const when = atExpiry ? (isOptions ? `on ${fmtDate(model.expiration)}` : 'when you sell') : `on ${addDays(day)}`;
 
   return (
@@ -88,7 +89,7 @@ export default function PayoffChart({ model, units = 1, ticker, sizeLabel }) {
           <clipPath id={`${clipId}-dn`}><rect x="0" y={zeroY} width={W} height={Math.max(0, H - zeroY)} /></clipPath>
         </defs>
 
-        {yTicks.map((v, i) => (
+        {yTicks.map((v, i) => (i !== 1 && Math.abs(v) < (yMax - yMin) * 0.08) ? null : (
           <g key={i}>
             <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} stroke="#334155" strokeWidth={i === 1 ? 1 : 0.5} strokeDasharray={i === 1 ? '' : '2 3'} />
             <text x={PL - 6} y={y(v) + 3.5} textAnchor="end" fontSize="9.5" fill="#94a3b8">{money(v, { sign: true })}</text>
@@ -150,7 +151,7 @@ export default function PayoffChart({ model, units = 1, ticker, sizeLabel }) {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400">
-        <span className="inline-flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-400 inline-block" />{atExpiry ? 'At expiration' : 'On chosen date'}</span>
+        <span className="inline-flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-400 inline-block" />{!isOptions ? 'When you sell' : atExpiry ? 'At expiration' : 'On chosen date'}</span>
         {!atExpiry && <span className="inline-flex items-center gap-1"><span className="w-3 h-0 border-t border-dashed border-slate-500 inline-block" />At expiration</span>}
         {summary?.breakevens?.length > 0 && <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Breakeven</span>}
         {isOptions && <span>Option prices are estimates</span>}

@@ -193,3 +193,51 @@ def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
         po.open_trade("u9", "XYZ", "x", [{"action": "Buy", "option_type": "Call", "strike_price": -5, "expiration": exp}], 1)
     with pytest.raises(po.PracticeError):
         po.open_trade("u9", "XYZ", "x", legs, 100000)
+
+
+def test_shares_are_fractional_so_the_amount_matches_the_card(tmp_path, monkeypatch):
+    """$1,000 of a $5,000 stock buys 0.2 shares ($1,000), not 1 share ($5,000); $1,000 of a $185 stock is ~$1,000, not $925."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    monkeypatch.setattr(pt, "_clock", lambda: {"is_open": True})
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "fr.db"))
+    prices = {"BIG": Decimal("5000"), "MID": Decimal("185")}
+    monkeypatch.setattr(eng, "_get_real_market_price", lambda t: prices[t])
+    cash0 = eng.get_portfolio("u5")["account"]["cash_balance"]
+    for t in prices:
+        r = eng.execute_paper_trade("u5", {"ticker": t, "type": "Buy Stock", "asset_class": "equity",
+                                           "trade_legs": [{"action": "Buy", "ticker": t}], "investment_amount": 1000}, "x")
+        assert r["status"] == "success", r
+    pos = {p["ticker"]: p for p in eng.get_portfolio("u5")["positions"]}
+    assert abs(pos["BIG"]["quantity"] - 0.2) < 1e-9
+    assert abs(pos["MID"]["quantity"] - 5.4054) < 1e-9
+    spent = cash0 - eng.get_portfolio("u5")["account"]["cash_balance"]
+    assert 1999 < spent <= 2000
+    prices["BIG"] = Decimal("5500")
+    c = eng.close_position("u5", pos["BIG"]["position_id"])
+    assert c["status"] == "success" and abs(c["realized_pnl"] - 100.0) < 1e-6   # 0.2 x $500
+    r = eng.execute_paper_trade("u5", {"ticker": "BIG", "type": "Buy Stock", "asset_class": "equity",
+                                       "trade_legs": [{"action": "Buy", "ticker": "BIG"}], "investment_amount": 0.1}, "x")
+    assert r["status"] == "error" and "too small" in r["message"]  # 10 cents of a $5,000 stock rounds to 0 shares
+
+
+def test_no_made_up_price_when_every_feed_is_down(tmp_path, monkeypatch):
+    """It used to fill at an invented $100 when the price feed failed. Now the trade is refused instead."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.v4 import market
+    monkeypatch.setattr(pt, "_clock", lambda: {"is_open": True})
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "np.db"))
+    def down(*a, **k):
+        raise RuntimeError("feed down")
+    monkeypatch.setattr(market, "latest_price", down)
+    monkeypatch.setattr(pt.yf, "Ticker", down)
+    r = eng.execute_paper_trade("u6", {"ticker": "ZZZ", "type": "Buy Stock", "asset_class": "equity",
+                                       "trade_legs": [{"action": "Buy", "ticker": "ZZZ"}], "investment_amount": 1000}, "x")
+    assert r["status"] == "error" and "live price" in r["message"]
+    assert eng.get_portfolio("u6")["positions"] == []
+    # with the card's feed up, the fill uses that same price
+    monkeypatch.setattr(market, "latest_price", lambda t: 40.0)
+    r = eng.execute_paper_trade("u6", {"ticker": "ZZZ", "type": "Buy Stock", "asset_class": "equity",
+                                       "trade_legs": [{"action": "Buy", "ticker": "ZZZ"}], "investment_amount": 1000}, "x")
+    assert r["status"] == "success" and abs(eng.get_portfolio("u6")["positions"][0]["avg_price"] - 40.0) < 1e-9

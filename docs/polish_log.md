@@ -36,3 +36,24 @@ Changed:
 - Hook text size steps down for long words; bottom padding keeps descenders.
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 98 passed. Verified with mocked stories in mobile screenshots and a live test recording.
+
+## 2026-11-05 (second pass: signed-in screens)
+
+New: `scripts/dev_offline_server.py` runs the API with a fake Claude and synthetic prices for real tickers, so chat picks, option cards and the practice portfolio can be walked locally without keys (refuses to start if DATABASE_URL is set).
+
+Found:
+- Practice shares were whole shares only, with a minimum of 1. The card said "You buy about $1,000 of NVDA (5.41 shares)" but the trade bought 5 shares ($925). $1,000 of a $5,000 stock like BKNG bought 1 share ($5,000), contradicting "Any amount, even $10".
+- When the practice price lookup (Yahoo) failed, a trade filled at a made-up $100 (hard-coded fallback). It also used a different feed from the card (Alpaca).
+- Option spread cost $245 on the card but $246 in Portfolio: the card rounds each leg to cents, practice used unrounded model prices.
+- Payoff chart axis labels showed padded values no price can reach (+$487 / −$277 for a spread whose max is +$455 / −$245).
+- Shares chart legend said "At expiration"; shares don't expire.
+- After a queued trade: "Find it under Practice", but the tab is called Portfolio (the Account page tile also said Practice).
+
+Changed:
+- Practice stock trades are fractional (4 decimals), so the amount bought matches the card; amounts too small for any share are refused clearly. Portfolio shows "5.4054 shares".
+- Practice prices come from the card's feed first, then Yahoo, then the last real cached price; never an invented one (the trade is refused instead).
+- Option legs are priced in whole cents in practice, like the card.
+- Chart labels the real best/worst P/L; the shares legend reads "When you sell"; Portfolio naming is consistent.
+- Tests: fractional shares (incl. $5,000 stock) and "no made-up price".
+
+Checks: vite build passes, backend tests 100 passed; verified locally (card $254 = Portfolio $254; NVDA $1,000 → 5.4054 shares).
