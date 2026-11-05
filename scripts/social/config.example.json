@@ -1,0 +1,20 @@
+{
+  "live": false,
+  "max_per_day": 2,
+  "instagram": {
+    "enabled": false,
+    "host": "graph.instagram.com",
+    "api_version": "v21.0",
+    "user_id": "YOUR_IG_USER_ID",
+    "access_token": "YOUR_LONG_LIVED_IG_TOKEN",
+    "refreshed_at": "2026-11-05T00:00:00Z"
+  },
+  "tiktok": {
+    "enabled": false,
+    "client_key": "YOUR_TIKTOK_CLIENT_KEY",
+    "client_secret": "YOUR_TIKTOK_CLIENT_SECRET",
+    "access_token": "",
+    "refresh_token": "YOUR_TIKTOK_REFRESH_TOKEN",
+    "privacy_level": "PUBLIC_TO_EVERYONE"
+  }
+}
