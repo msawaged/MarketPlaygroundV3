@@ -127,6 +127,14 @@ def _set_keys() -> None:
     FeatRow.KEYS, FeatRow.IDX = keys, {k: i for i, k in enumerate(keys)}
 
 
+def directional(direction) -> bool:
+    """Ranker v2 compares ideas on directional excess vs the S&P. 'volatile' ideas are graded on |move| - |S&P move|,
+    which is positive ~75% of the time for any single stock, so mixing them into the same comparison made 'pick the
+    volatile idea' look like skill (on 2026-11-05 data: about 45% of gbm's raw lift and its whole beat-rate edge over
+    the app). They are left out of training and evaluation, and the ranker never reorders them."""
+    return str(direction).lower() in ("bullish", "bearish")
+
+
 def load() -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}."""
     rows = db.query(
@@ -135,6 +143,8 @@ def load() -> list[dict]:
            WHERE o.checkpoint_days = ?""", (DAYS,))
     by: dict[str, dict] = {}
     for r in rows:
+        if not directional(r["direction"]):
+            continue  # graded on |move| (see grader), not comparable with the others' directional excess
         num = _with_derived((db.loads(r["features"], {}) or {}).get("num", {}))
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
         f = {k: float(num.get(k, NEUTRAL.get(k, 0.0)) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
@@ -410,6 +420,17 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
     r = ranker()
     if not r or not r.get("active") or len(nums) < 2:
         return None
+    keep = [i for i, d in enumerate(directions) if directional(d)]
+    if len(keep) < 2:
+        return None
+    if len(keep) < len(nums):  # score the directional ideas among themselves; others get their average (no reorder)
+        sub = score_candidates([nums[i] for i in keep], [directions[i] for i in keep])
+        if sub is None:
+            return None
+        out = [float(np.mean(sub))] * len(nums)
+        for i, v in zip(keep, sub):
+            out[i] = v
+        return out
     rows = []
     for num, d in zip(nums, directions):
         num = _with_derived(num or {})

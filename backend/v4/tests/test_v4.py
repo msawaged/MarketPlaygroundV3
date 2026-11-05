@@ -1869,3 +1869,26 @@ def test_network_uses_numeric_inputs_and_scores_old_versions_with_theirs():
     assert nn.model_inputs({"metrics": {}}) == "all"
     assert nn.model_inputs({"metrics": {"inputs": "numeric"}}) == "numeric"
     assert nn.model_inputs(None) == "all"
+
+
+def test_ranker_v2_leaves_out_volatile_ideas(monkeypatch):
+    # 'volatile' ideas are graded on |move|, which beats the S&P most of the time; mixed into the directional
+    # comparison they made 'pick the volatile idea' look like skill
+    from backend.v4 import research
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-volx", "seed", "x", "x", "2025-01-01T00:00:00", "2025-01-01", "seed_backfill"))
+    for j, (d, ex) in enumerate((("bullish", 0.01), ("bearish", -0.02), ("volatile", 0.30))):
+        pid = f"p-volx-{j}"
+        db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                   (pid, "b-volx", f"T{j}", d, "2025-01-01", 10.0, db.dumps({"num": {"mom60": 0.1 * j}}), j + 1))
+        db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                   (pid, 90, "2025-04-01", 10.0, 0.0, 0.0, ex, "2025-04-01"))
+    b = research.load()[0]
+    assert len(b["cands"]) == 2 and abs(b["cands"][0]["rel"] - 0.015) < 1e-9
+    assert not research.directional("volatile") and research.directional("Bearish")
+    # serving: directional ideas are scored among themselves, the volatile one gets their average (never reordered)
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    assert research.fit_production()["active"]
+    s = research.score_candidates([{"mom60": 0.2}, {"mom60": 0.9}, {"mom60": -0.2}], ["bullish", "volatile", "bullish"])
+    assert s[0] > s[2] and abs(s[1] - (s[0] + s[2]) / 2) < 1e-9
+    assert research.score_candidates([{"mom60": 0.2}, {"mom60": 0.9}], ["bullish", "volatile"]) is None

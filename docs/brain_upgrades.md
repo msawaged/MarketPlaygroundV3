@@ -98,3 +98,40 @@ large part of the edge may be beta, not skill. A finance reviewer would call tha
 **What counts as a win.** After the backfill (~a day), a candidate with `lift_adj_t >= 1.0`. If the gbm's edge
 collapses on a risk-matched basis, that's an honest finding: the next upgrade should hunt for edge beyond beta
 (the risk-adjusted learner is that hunt), not more volatility exposure.
+
+## 2026-11-05 — Ranker v2 stops counting 'volatile' ideas as skill (it turns off until it earns it back)
+
+**Problem.** A 'volatile' idea is graded on `|stock move| - |S&P move|` (grader.py), which a single stock beats about
+75% of the time no matter what (90-day beat rate 73.9% vs 46.8% bullish / 59.0% bearish, avg +15.0% vs +0.6% / +1.7%).
+`research.load()` put these 620 graded ideas (2.7%) in the same within-belief comparison as directional ideas, in
+576 of 4,398 beliefs. Choosing the volatile idea there looked like a big win, and high-volatility features point to it.
+
+Replaying `research.run()` + `fit_production()` on production data (all 23,279 graded 90-day picks, read-only):
+
+| ranker | with volatile ideas: lift / t / beat | directional only: lift / t / beat |
+|---|---|---|
+| app (old #1) | +0.02% / 0.08 / 52.3% | +0.37% / 1.34 / 52.3% |
+| high vol | +1.55% / 3.52 / 53.6% | +0.87% / 2.04 / 51.9% |
+| gbm (live ranker) | +1.83% / 4.55 / 52.9% | +1.01% / 3.01 / 51.5% |
+| gbm (risk-adjusted) | +0.66% / 1.95 / 52.2% | +0.94% / 2.81 / 51.7% (risk-matched lift +0.99%, t 3.10) |
+
+About 45% of the live ranker's raw lift, and its whole beat-rate edge over the app, came from this mix.
+
+**Change.** `research.directional()`; `load()` drops non-directional ideas from ranker v2's training and evaluation;
+`score_candidates()` scores directional ideas among themselves and gives a volatile idea their average, so the ranker
+never moves it (and returns None with fewer than 2 directional ideas). No gate changed (`MIN_LIFT`, `MIN_T`,
+`MIN_T_ADJ`, `_passes`, beat ≥ app, 90-day embargo).
+
+**Effect, on purpose.** On the clean data no candidate clears `beat ≥ app` (best: gbm risk-adjusted 51.7% vs 52.3%),
+so the next nightly refit will switch ranker v2 **off** and users' #1 pick goes back to the old ranking. Its lift is
+real and survives risk matching (+0.9%, t ≈ 3), but it picks the S&P-beating idea slightly less often than the app,
+and the gate says that isn't enough. It was only "on" because of the grading mix-up.
+
+**Checks.** Backend tests: 99 passed (new: `test_ranker_v2_leaves_out_volatile_ideas`).
+
+**Commit.** See `git log --grep "volatile ideas"` on v4-polish (this entry ships in the same commit).
+
+**What counts as a win.** The Brain page's ranker numbers drop to the honest level (lift ≈ +1%, beat ≈ 51.5%) and
+`active` goes false. The real win is ranker v2 turning back on through the unchanged gate on directional ideas only.
+The obvious next lever is the beat rate, not the lift: the risk-adjusted gbm is 0.6 points short. Not yet fixed: the
+network and lineages still see volatile ideas in their labels (much smaller share, and the network is at weight 0).
