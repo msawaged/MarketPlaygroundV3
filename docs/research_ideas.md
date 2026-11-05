@@ -91,6 +91,11 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   including the new risk-matched (beta-adjusted) lift/beat. Same run: app +0.02% / 52.3% / t 0.08; high vol
   +1.55% / 53.6% / t 3.52; ridge +0.95% / 52.1% / t 2.56; gbm +1.84% / 53.1% / t 4.62. Risk-matched columns were
   not meaningful yet (beta_coverage 0.0).
+- **Result (fully backfilled, run 2026-11-05 18:48 UTC, 4,396 beliefs, test from 2024-12-03, n=2,707, beta_coverage
+  1.0):** lift **+0.39%**, beat **51.4%**, t **1.16**; risk-matched lift **+0.50%**, beat_adj **52.8%**, t **1.59**.
+  With real values for every pick the raw edge shrinks (the preliminary number was flattered by zeros), but it is
+  one of the few rules whose edge holds up once risk is matched (12-1 momentum: +0.39% adj, t 1.15; high vol: +0.15%
+  adj, t 0.35). Not significant on its own; worth keeping as a learner input.
 
 ### 4. Betting against beta (Frazzini & Pedersen)
 - **Added:** 2026-11-05
@@ -114,4 +119,13 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   `z_beta` is also available to the learned ridge/gbm.
 - **What to look at:** raw lift will likely be negative (high vol, and probably high beta, wins raw lift in this
   sample's rising market). The test is `lift_adj` / `beat_adj` and whether "high vol"'s edge survives risk matching.
-- **Result:** pending.
+- **Result (run 2026-11-05 18:48 UTC, 4,396 beliefs, test from 2024-12-03, n=2,707, beta_coverage 1.0):** raw lift
+  **-1.61%**, beat **50.5%**, t **-4.66**; risk-matched lift **+0.02%**, beat_adj **54.0%**, t **0.06**. As expected,
+  it loses badly on raw returns in this rising-market sample. Against a beta-matched S&P its #1 picks beat the
+  benchmark most often of any rule (54.0% vs app 52.7%), but its lift over the belief's average idea is zero, so
+  there's no alpha from choosing low beta within a belief: no BAB edge here. The bigger finding is the mirror image:
+  "high vol"'s +1.55% raw lift (t 3.52) falls to +0.15% (t 0.35) once risk is matched, so most of that winner was
+  market beta, not skill. The learned ridge gives z_beta a small positive weight (+0.005, mildly prefers higher beta
+  in the call's direction). Not a ranker v2 candidate. Same run: app +0.02% / 52.3% / t 0.08 (adj +0.35% / 52.7% /
+  t 1.28); ridge +1.32% / 52.4% / t 3.31 (adj -0.10%, t -0.26); gbm +2.01% / 53.3% / t 4.91 (adj +0.47%, t 1.19);
+  gbm (risk-adjusted) +0.33% / 52.1% / t 0.96 (adj +0.36% / 53.1% / t 1.13); random beat 51.6%.
