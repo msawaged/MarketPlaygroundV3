@@ -1532,6 +1532,31 @@ def test_trend_rider_joins_once_trend_features_are_on_most_graded_picks(monkeypa
     assert f["mu_up"] == 1.0 and f["mu_slope"] == 0.02 and f["mu_flips"] == 0.3  # a falling trend agrees with a bearish call
 
 
+def test_beta_and_risk_matched_scoring_catch_a_pure_risk_tilt():
+    from backend.v4 import research
+    rng = random.Random(9)
+    sdates = [f"2025-{1 + i // 28:02d}-{1 + i % 28:02d}" for i in range(300)]
+    spy, stk = [100.0], [50.0]
+    for _ in range(299):
+        m = rng.gauss(0.0005, 0.01)
+        spy.append(spy[-1] * (1 + m)); stk.append(stk[-1] * (1 + 2 * m + rng.gauss(0, 0.002)))
+    assert abs(market.beta_value(sdates, stk, sdates, spy, 299) - 2.0) < 0.1     # moves ~2x the market
+    assert market.beta_value(sdates, stk, sdates, spy, 50) == 1.0               # too little history -> neutral
+    # a rule that just grabs the higher-beta stock in a rising market: beats the S&P, but not a risk-matched S&P
+    picks = []
+    for k in range(200):
+        spy_ret = 0.04 + rng.gauss(0, 0.01)
+        hi = 2.0 * spy_ret + rng.gauss(0, 0.02); lo = 0.5 * spy_ret + rng.gauss(0, 0.02)
+        ex_hi, ex_lo = hi - spy_ret, lo - spy_ret
+        exa_hi, exa_lo = hi - 2.0 * spy_ret, lo - 0.5 * spy_ret
+        picks.append((ex_hi, (ex_hi + ex_lo) / 2, exa_hi, (exa_hi + exa_lo) / 2))
+    m = research._metrics(picks)
+    assert m["lift"] > 0.01 and m["lift_t"] > 3                                  # looks like skill...
+    assert abs(m["lift_adj"]) < 0.01 and m["lift_adj_t"] < 1.0                   # ...but it's only risk
+    app = {"beat": 0.5}
+    assert research._passes(m, app) and not research._passes(m, app, risk=True)  # the risk check stops it
+
+
 def test_nightly_refit_loads_graded_calls_once_and_compactly(monkeypatch):
     from backend.v4 import research
     rng = random.Random(4)

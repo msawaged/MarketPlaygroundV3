@@ -341,7 +341,10 @@ export default function BrainPage({ viewOnly = false }) {
                   <div className="mt-1 text-xs text-slate-200">
                     Tested on {sk.ranker.oos.n} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
                     (old way: {Math.round((sk.ranker.old?.beat || 0) * 100)}%) and beat our other ideas by {pts(sk.ranker.oos.lift)} pts (old way: {pts(sk.ranker.old?.lift || 0)}).
-                    The numbers above update as new calls get graded.
+                    {sk.ranker.risk_check && sk.ranker.oos.beat_adj != null && (
+                      <> Adjusted for risk (each stock's beta), it beat a risk-matched S&P {Math.round(sk.ranker.oos.beat_adj * 100)}% of the time, {pts(sk.ranker.oos.lift_adj)} pts ahead of our other ideas.</>
+                    )}
+                    {' '}The numbers above update as new calls get graded.
                   </div>
                 </div>
               )}

@@ -108,6 +108,7 @@ def make_features(
         "fip_id": market.get("fip_id", 0.0),
         # residual (beta-adjusted) 12-1 momentum (research + ranker v2 only; not part of MODEL_NUMERIC)
         "resid_mom": market.get("resid_mom", 0.0),
+        "beta": market.get("beta", 1.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

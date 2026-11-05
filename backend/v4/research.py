@@ -64,12 +64,12 @@ def enrich(limit: int = 300) -> dict:
            WHERE EXISTS (SELECT 1 FROM outcomes o WHERE o.pick_id = p.id AND o.checkpoint_days = ?)
              AND (p.features NOT LIKE '%reg_trend%' OR p.features NOT LIKE '%vp_poc_dist%'
                   OR p.features NOT LIKE '%mu_dist%' OR p.features NOT LIKE '%fip_id%'
-                  OR p.features NOT LIKE '%resid_mom%')
+                  OR p.features NOT LIKE '%resid_mom%' OR p.features NOT LIKE '%"beta"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
         return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num \
-            or "resid_mom" not in num
+            or "resid_mom" not in num or "beta" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -85,7 +85,7 @@ def enrich(limit: int = 300) -> dict:
                            **market.trend_features(r["ticker"], d0)})
             if "fip_id" not in have:
                 vp.update(market.fip_features(r["ticker"], d0))
-            if "resid_mom" not in have:
+            if "resid_mom" not in have or "beta" not in have:
                 vp.update(market.resid_features(r["ticker"], d0))
         except Exception:
             continue
@@ -125,7 +125,7 @@ def _set_keys() -> None:
 def load() -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}."""
     rows = db.query(
-        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.as_of_date
+        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, o.ret, o.spy_ret, b.as_of_date
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ?""", (DAYS,))
     by: dict[str, dict] = {}
@@ -137,7 +137,13 @@ def load() -> list[dict]:
         for k in REG_KEYS:
             f[k] = float(num.get(k, 0.0) or 0.0)
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
-        b["cands"].append({"f": f, "ex": float(r["dir_excess"]), "top": r["final_rank"] == 1})
+        ex = float(r["dir_excess"])
+        # risk-matched outcome: beat what the S&P would have done at this stock's own beta (as of the pick's date).
+        # Without a stored beta (older picks not yet backfilled) it equals the plain outcome.
+        beta = num.get("beta")
+        exa = ex if beta is None or r["ret"] is None or r["spy_ret"] is None else \
+            sign * (float(r["ret"]) - float(beta) * float(r["spy_ret"]))
+        b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": r["final_rank"] == 1})
     _set_keys()
     del rows  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
@@ -151,26 +157,42 @@ def load() -> list[dict]:
             for a, g in INTERACTIONS:
                 c["f"][f"zx_{a}_{g}"] = c["f"]["z_" + a] * c["f"][g]
         mean_ex = float(np.mean([c["ex"] for c in b["cands"]]))
+        mean_exa = float(np.mean([c["exa"] for c in b["cands"]]))
         for c in b["cands"]:
             c["rel"] = c["ex"] - mean_ex
+            c["rela"] = c["exa"] - mean_exa
             c["f"] = FeatRow(c["f"])  # compact from here on
     out.sort(key=lambda b: b["date"])
     return out
 
 
-def _metrics(picks: list[tuple[float, float]]) -> dict:
-    """picks: [(ex of chosen, belief mean ex)]"""
+def _metrics(picks: list[tuple]) -> dict:
+    """picks: [(ex of chosen, belief mean ex, risk-matched ex of chosen, belief mean risk-matched ex)].
+    beat/lift: against the S&P 500. beat_adj/lift_adj: against the S&P scaled to each stock's beta, so leaning on
+    riskier stocks in a rising market doesn't count as skill."""
     if not picks:
         return {"n": 0}
+    def tstat(x):
+        se = x.std(ddof=1) / math.sqrt(len(x)) if len(x) > 1 else 0.0
+        return round(float(x.mean() / se), 2) if se > 0 else 0.0
     ex = np.array([p[0] for p in picks]); lift = np.array([p[0] - p[1] for p in picks])
-    se = lift.std(ddof=1) / math.sqrt(len(lift)) if len(lift) > 1 else 0.0
-    return {"n": len(picks), "beat": round(float((ex > 0).mean()), 4), "avg": round(float(ex.mean()), 4),
-            "lift": round(float(lift.mean()), 4), "lift_t": round(float(lift.mean() / se), 2) if se > 0 else 0.0}
+    out = {"n": len(picks), "beat": round(float((ex > 0).mean()), 4), "avg": round(float(ex.mean()), 4),
+           "lift": round(float(lift.mean()), 4), "lift_t": tstat(lift)}
+    if len(picks[0]) >= 4:
+        exa = np.array([p[2] for p in picks]); lifta = np.array([p[2] - p[3] for p in picks])
+        out.update({"beat_adj": round(float((exa > 0).mean()), 4), "avg_adj": round(float(exa.mean()), 4),
+                    "lift_adj": round(float(lifta.mean()), 4), "lift_adj_t": tstat(lifta)})
+    return out
 
 
-def _choose(b: dict, score: Callable[[dict], float]) -> tuple[float, float]:
+def _choose(b: dict, score: Callable[[dict], float]) -> tuple[float, float, float, float]:
     best = max(b["cands"], key=lambda c: score(c["f"]))
-    return best["ex"], float(np.mean([c["ex"] for c in b["cands"]]))
+    return _pick(b, best)
+
+
+def _pick(b: dict, c: dict) -> tuple[float, float, float, float]:
+    return (c["ex"], float(np.mean([x["ex"] for x in b["cands"]])),
+            c["exa"], float(np.mean([x["exa"] for x in b["cands"]])))
 
 
 def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
@@ -182,10 +204,10 @@ def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
     return lambda f: float(((np.array([f[k] for k in keys]) - mu) / sd) @ w), dict(zip(keys, np.round(w, 4).tolist()))
 
 
-def _fit_gbm(train: list[dict], keys: list[str]):
+def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
     from sklearn.ensemble import HistGradientBoostingRegressor
     x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
-    y = np.array([max(-0.5, min(0.5, c["rel"])) for b in train for c in b["cands"]])
+    y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
     m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
                                       l2_regularization=1.0, random_state=7).fit(x, y)
     return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
@@ -220,7 +242,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
                                          + 0.5 * f["z_mom250"] * f["reg_trend"],
     }
     zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
-    res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)"]}
+    res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)"]}
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
@@ -234,8 +256,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             continue
         for name, fn in fixed.items():
             if fn is None:
-                res[name] += [(next((c["ex"] for c in b["cands"] if c["top"]), b["cands"][0]["ex"]),
-                               float(np.mean([c["ex"] for c in b["cands"]]))) for b in test]
+                res[name] += [_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][0])) for b in test]
             else:
                 res[name] += [_choose(b, fn) for b in test]
         ridge, weights = _fit_ridge(train, zkeys)
@@ -243,11 +264,14 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         try:
             gbm = _fit_gbm(train, zkeys)
             res["gbm (learned)"] += [_choose(b, gbm) for b in test]
+            gbma = _fit_gbm(train, zkeys, label="rela")  # learns from risk-matched outcomes, not raw ones
+            res["gbm (risk-adjusted)"] += [_choose(b, gbma) for b in test]
         except Exception:
             pass
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS,
            "test_from": dates[start], "results": {k: _metrics(v) for k, v in res.items()},
            "ridge_weights_last": weights,
+           "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (KEY, json.dumps(out), out["at"]))
@@ -291,8 +315,15 @@ WEIGHT = 0.5
 GBM_KEY = "ranker:v2:gbm"
 
 
-def _passes(m: dict, app: dict) -> bool:
-    return bool(m.get("lift", 0) >= MIN_LIFT and m.get("lift_t", 0) >= MIN_T and m.get("beat", 0) >= app.get("beat", 1))
+MIN_T_ADJ = 1.0       # once betas are in: the edge must also survive scoring against a risk-matched S&P
+RISK_COVERAGE = 0.8   # share of graded picks that need a stored beta before that extra check applies
+
+
+def _passes(m: dict, app: dict, risk: bool = False) -> bool:
+    ok = m.get("lift", 0) >= MIN_LIFT and m.get("lift_t", 0) >= MIN_T and m.get("beat", 0) >= app.get("beat", 1)
+    if risk:  # stricter, never looser: leaning on riskier stocks in a rising market isn't an edge
+        ok = ok and m.get("lift_adj", 0) > 0 and m.get("lift_adj_t", 0) >= MIN_T_ADJ
+    return bool(ok)
 
 
 def fit_production(results: dict | None = None) -> dict:
@@ -302,32 +333,40 @@ def fit_production(results: dict | None = None) -> dict:
     data = load()
     if len(data) < 150:
         return {"active": False, "reason": "not enough graded calls"}
-    res = (results or run(data=data))["results"]  # reuse the same data: loading it twice ran the nightly job out of memory
+    full = results or run(data=data)  # reuse the same data: loading it twice ran the nightly job out of memory
+    res = full["results"]
+    risk = float(full.get("beta_coverage", 0) or 0) >= RISK_COVERAGE
     app = res.get("app (current #1)", {})
-    ridge_oos, gbm_oos = res.get("ridge (learned)", {}), res.get("gbm (learned)", {})
+    cands = {"ridge": (res.get("ridge (learned)", {}), "rel"), "gbm": (res.get("gbm (learned)", {}), "rel"),
+             "gbm_adj": (res.get("gbm (risk-adjusted)", {}), "rela")}
     x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
-    kind, oos = "ridge", ridge_oos
-    if _passes(gbm_oos, app) and gbm_oos.get("lift", 0) > ridge_oos.get("lift", 0):
+    # the candidate with the biggest out-of-sample edge (risk-matched once betas are in) among those clearing the gate
+    edge = "lift_adj" if risk else "lift"
+    passing = [k for k, (m, _) in cands.items() if _passes(m, app, risk)]
+    best = max(passing, key=lambda k: cands[k][0].get(edge, 0)) if passing else "ridge"
+    kind, (oos, label) = ("ridge" if best == "ridge" else "gbm"), cands[best]
+    if kind == "gbm":
         try:
             import base64
             import pickle
             from sklearn.ensemble import HistGradientBoostingRegressor
+            yy = np.array([max(-0.5, min(0.5, c[label])) for b in data for c in b["cands"]])
             m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
-                                              l2_regularization=1.0, random_state=7).fit(x, y)
+                                              l2_regularization=1.0, random_state=7).fit(x, yy)
             blob = base64.b64encode(pickle.dumps(m)).decode()
             db.execute("DELETE FROM kv_cache WHERE k = ?", (GBM_KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (GBM_KEY, blob, datetime.now(timezone.utc).isoformat()))
-            kind, oos = "gbm", gbm_oos
         except Exception:
-            kind, oos = "ridge", ridge_oos
-    active = _passes(oos, app)
-    out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "keys": ZKEYS, "mu": mu.tolist(), "sd": sd.tolist(),
-           "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data),
-           "candidates": {"ridge": ridge_oos, "gbm": gbm_oos}}
+            best, kind, (oos, label) = "ridge", "ridge", cands["ridge"]
+    active = _passes(oos, app, risk)
+    out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
+           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data),
+           "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
+           "candidates": {k: m for k, (m, _) in cands.items()}}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (RANKER_KEY, json.dumps(out), out["at"]))
     _cache["v"], _cache["at"] = out, datetime.now(timezone.utc).timestamp()

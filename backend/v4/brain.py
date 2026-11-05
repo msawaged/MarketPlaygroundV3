@@ -135,7 +135,8 @@ def _skill() -> dict:
         from . import research
         rv = research.ranker()
         if rv:
-            out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old")}
+            out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old"),
+                             "risk_check": bool(rv.get("risk_check")), "model": rv.get("model")}
     except Exception:
         pass
     for r in rows:

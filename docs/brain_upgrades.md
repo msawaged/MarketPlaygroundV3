@@ -76,3 +76,25 @@ lift > 0, and test MSE within ~1% of the constant baseline. The offline ablation
 that the network sees fewer numbers than ranker v2 (no 12-1/residual momentum, volume profile, MuLine or regime
 features, and no direction-signing of momentum) — but adding those is a feature change, so check with the idea scout's
 work first.
+
+## 2026-11-05 — Score the #1 pick against a risk-matched S&P, not just the S&P
+
+**Problem (real numbers, research:ranker, 2,707 unseen calls).** Ranker v2 (gbm) beat the S&P 53.5% with +2.16 pts
+lift (t 5.39). But the plain rule "pick the most volatile candidate" scored 53.6% (+1.55 pts, t 3.52) and "pick the
+calmest" lost (-1.02 pts, t -4.63). In a rising 2024-26 market, riskier stocks outrun the S&P by construction, so a
+large part of the edge may be beta, not skill. A finance reviewer would call that out immediately.
+
+**What changed.**
+- `market.beta_value`: each pick's 252-day beta vs SPY, as of the pick's own date (point-in-time). Stored on new picks
+  (`nn.make_features` num) and backfilled on graded picks by `research.enrich`.
+- `research.load`: risk-matched outcome `exa = dir * (ret - beta * spy_ret)` next to the plain one.
+- `research._metrics`: every idea now reports `beat_adj`, `lift_adj`, `lift_adj_t` too. New learner in the race:
+  `gbm (risk-adjusted)`, trained on risk-matched outcomes. Output adds `beta_coverage`.
+- Gate (stricter only): once >=80% of graded picks carry a beta, the production ranker must also show
+  `lift_adj > 0` and `lift_adj_t >= 1.0`. Among passing candidates (ridge, gbm, gbm risk-adjusted), the one with the
+  biggest risk-matched edge goes live. If none passes, the ranking falls back to the old way and the page says so.
+- Brain page shows the risk-adjusted result once the check is on.
+
+**What counts as a win.** After the backfill (~a day), a candidate with `lift_adj_t >= 1.0`. If the gbm's edge
+collapses on a risk-matched basis, that's an honest finding: the next upgrade should hunt for edge beyond beta
+(the risk-adjusted learner is that hunt), not more volatility exposure.

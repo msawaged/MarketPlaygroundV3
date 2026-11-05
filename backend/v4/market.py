@@ -616,12 +616,42 @@ def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses:
     return max(-10.0, min(10.0, sum(e) / (sd * math.sqrt(n))))
 
 
+def beta_value(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int,
+               window: int = 252) -> float:
+    """The stock's market beta: how much it typically moves when the S&P 500 (SPY) moves 1%, from daily returns
+    over the last `window` sessions up to index i only. 1.0 when there isn't ~6 months of matched history.
+    Used to score picks against a risk-matched benchmark, so taking more risk in a rising market isn't mistaken
+    for skill."""
+    if i < 2 or not sdates:
+        return 1.0
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    rs: list[float] = []
+    ms: list[float] = []
+    for k in range(max(1, i - window + 1), i + 1):
+        a, b = closes[k - 1], closes[k]
+        sa, sb = spx.get(dates[k - 1]), spx.get(dates[k])
+        if a <= 0 or not sa or not sb or sa <= 0:
+            continue
+        rs.append(b / a - 1.0)
+        ms.append(sb / sa - 1.0)
+    n = len(rs)
+    if n < 120:
+        return 1.0
+    mr, mm = sum(rs) / n, sum(ms) / n
+    var_m = sum((y - mm) ** 2 for y in ms) / n
+    if var_m <= 1e-12:
+        return 1.0
+    b = sum((x - mr) * (y - mm) for x, y in zip(rs, ms)) / n / var_m
+    return max(-1.0, min(4.0, b))
+
+
 def resid_features(symbol: str, as_of: Optional[date] = None) -> dict:
     """{"resid_mom": ...} using closes (stock and SPY) up to as_of only."""
     dates, closes = daily_closes(symbol)
     sdates, scloses = daily_closes("SPY")
     i = _index_on_or_before(dates, (as_of or today()).isoformat())
-    return {"resid_mom": resid_mom(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
+    return {"resid_mom": resid_mom(dates, closes, sdates, scloses, i) if i >= 0 else 0.0,
+            "beta": beta_value(dates, closes, sdates, scloses, i) if i >= 0 else 1.0}
 
 
 def realized_vol(closes: list[float], i: int, window: int = 20) -> float:
@@ -652,6 +682,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mom_12_1": mom_12_1(closes, i),
         "fip_id": fip_id(closes, i),
         "resid_mom": resid_mom(dates, closes, sdates, scloses, i),
+        "beta": beta_value(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),
