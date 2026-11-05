@@ -6,23 +6,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { getStory } from '../lib/api';
 import { ago, believeUrl, doubtUrl } from './MoversFeed';
+import { amount, change, barWidths } from '../lib/figures';
 
 const CARD_MS = 7000;
 const _stories = new Map(); // headline -> story response, for this page load
-
-const MULT = { k: 1e3, thousand: 1e3, m: 1e6, million: 1e6, b: 1e9, bn: 1e9, billion: 1e9, t: 1e12, trillion: 1e12 };
-function amount(s) {
-  const m = String(s || '').replace(/,/g, '').match(/(-?\d+(?:\.\d+)?)\s*(k|thousand|m|million|bn|b|billion|t|trillion)?/i);
-  if (!m) return null;
-  return parseFloat(m[1]) * (MULT[(m[2] || '').toLowerCase()] || 1);
-}
-function change(a, b) {
-  if (!a || b == null) return null;
-  const r = b / a;
-  if (r >= 1.95) return `${r.toFixed(r >= 10 ? 0 : 1)}x`;
-  const p = (r - 1) * 100;
-  return `${p >= 0 ? '+' : ''}${p.toFixed(Math.abs(p) < 10 ? 1 : 0)}%`;
-}
 
 function Label({ children, tone = 'text-blue-400' }) {
   return <div className={`text-xs font-bold uppercase tracking-[0.2em] ${tone}`}>{children}</div>;
@@ -30,25 +17,24 @@ function Label({ children, tone = 'text-blue-400' }) {
 
 function Figure({ f, i }) {
   const a = amount(f.before), b = amount(f.after);
-  const max = Math.max(a || 0, b || 0) || 1;
   const chg = change(a, b);
-  const up = a != null && b != null && b >= a;
+  const widths = barWidths(a, b);
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 + i * 0.2 }}
       className="rounded-2xl bg-white text-slate-900 p-4 shadow-xl">
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm font-black uppercase tracking-wider">{f.label}</div>
-        {chg && <div className={`rounded-lg px-2 py-0.5 text-lg font-black text-white ${up ? 'bg-green-600' : 'bg-red-600'}`}>{chg}</div>}
+        {chg && <div className={`rounded-lg px-2 py-0.5 text-lg font-black text-white ${chg.up ? 'bg-green-600' : 'bg-red-600'}`}>{chg.text}</div>}
       </div>
-      {[[f.before_label, f.before, a, 'bg-slate-300'], [f.after_label, f.after, b, 'bg-blue-600']].map(([lab, txt, v, color], j) => (
+      {[[f.before_label, f.before, widths[0], 'bg-slate-300'], [f.after_label, f.after, widths[1], 'bg-blue-600']].map(([lab, txt, w, color], j) => (
         <div key={j} className="mt-3">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{lab}</div>
           <div className="mt-1 flex items-center gap-3">
             <div className="h-5 flex-1 rounded-full bg-slate-100 overflow-hidden">
               <motion.div className={`h-full rounded-full ${color}`} initial={{ width: 0 }}
-                animate={{ width: `${Math.max(6, ((v || 0) / max) * 100)}%` }} transition={{ delay: 0.4 + i * 0.2 + j * 0.25, duration: 0.7 }} />
+                animate={{ width: `${w}%` }} transition={{ delay: 0.4 + i * 0.2 + j * 0.25, duration: 0.7 }} />
             </div>
-            <div className={`w-20 text-right text-lg font-black tabular-nums ${j ? 'text-blue-700' : ''}`}>{txt}</div>
+            <div className={`w-28 shrink-0 text-right text-lg font-black leading-tight tabular-nums ${j ? 'text-blue-700' : ''}`}>{String(txt || '').replace(/-/g, '\u2011').replace(/ (?=\S+$)/, '\u00a0')}</div>
           </div>
         </div>
       ))}
