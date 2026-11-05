@@ -11,6 +11,12 @@ import { amount, change, barWidths } from '../lib/figures';
 const CARD_MS = 7000;
 const _stories = new Map(); // headline -> story response, for this page load
 
+// The hook is huge; a long word ("Semiconductors") must still fit a 365px-wide card.
+function hookSize(t) {
+  const longest = Math.max(0, ...String(t || '').split(/\s+/).map((w) => w.length));
+  return longest > 12 ? 'text-4xl' : longest > 9 ? 'text-5xl' : 'text-6xl';
+}
+
 function Label({ children, tone = 'text-blue-400' }) {
   return <div className={`text-xs font-bold uppercase tracking-[0.2em] ${tone}`}>{children}</div>;
 }
@@ -54,7 +60,7 @@ function cards(data, navigate, reel = false) {
     <div key="hook" className="flex h-full flex-col justify-center">
       <Label>Moving now</Label>
       <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 160 }}
-        className="mt-4 text-6xl font-black leading-[0.95] tracking-tight bg-gradient-to-br from-white to-blue-400 bg-clip-text text-transparent">
+        className={`mt-4 ${hookSize(s.hook_big)} font-black leading-[0.95] tracking-tight break-words pb-[0.12em] bg-gradient-to-br from-white to-blue-400 bg-clip-text text-transparent`}>
         {s.hook_big}
       </motion.div>
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-5 text-xl text-slate-200">{s.hook_line}</motion.p>

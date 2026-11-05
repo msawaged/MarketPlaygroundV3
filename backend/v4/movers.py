@@ -327,6 +327,13 @@ def _clip(s: Any, n: int) -> str:
     return s if len(s) <= n else s[: n - 1].rsplit(" ", 1)[0] + "…"
 
 
+def _hook(s: Any) -> str:
+    """The big hook phrase, whole or not at all: clipping it can flip its meaning
+    ("Credit stress looks contained" -> "Credit stress looks…")."""
+    s = re.sub(r"\s+", " ", str(s or "")).strip()
+    return s if s and len(s) <= 40 and len(s.split()) <= 5 else ""
+
+
 def _fallback_story(item: dict) -> dict:
     nums = re.findall(r"[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?", item["headline"])
     return {"hook_big": _clip(nums[0], 20) if nums else "Moving now", "hook_line": _clip(item["headline"], 110),
@@ -359,7 +366,7 @@ def _write_story(item: dict, client: Any = None) -> dict:
     for f in d.get("figures") or []:
         if isinstance(f, dict) and _grounded(f, source):
             figs.append({k: _clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")})
-    return {"hook_big": _clip(d.get("hook_big"), 28) or "Moving now", "hook_line": _clip(d.get("hook_line"), 120),
+    return {"hook_big": _hook(d.get("hook_big")) or _fallback_story(item)["hook_big"], "hook_line": _clip(d.get("hook_line"), 120),
             "happened": _clip(d.get("happened"), 320), "figures": figs[:2], "why": _clip(d.get("why"), 240),
             "twist": _clip(d.get("twist"), 200), "ai": True}
 

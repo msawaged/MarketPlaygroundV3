@@ -1276,6 +1276,9 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     # no Claude: still a story built from the article itself
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     fb = movers._fallback_story(out["item"])
+    # the hook is shown whole or replaced, never clipped mid-phrase
+    assert movers._hook("Credit stress looks contained") == "Credit stress looks contained"
+    assert movers._hook("This hook phrase is far too long to show on one card") == ""
     assert fb["ai"] is False and fb["figures"] == [] and fb["hook_line"]
 
 
