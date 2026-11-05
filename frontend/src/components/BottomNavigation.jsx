@@ -13,7 +13,7 @@ FILE: BottomNavigation.jsx (SAFE COPY)
 
 import React, { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, Flame, Target, Zap, Newspaper } from 'lucide-react';
+import { Home, TrendingUp, Flame, Target, Zap, Newspaper, Brain } from 'lucide-react';
 
 /**
  * Props
@@ -32,6 +32,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
         { id: 'home',      label: 'Home',      icon: Home,       path: '/select-tool',   color: '#3b82f6' },
         { id: 'chat',      label: 'Believe',   icon: Zap,            path: '/chat',           color: '#3b82f6' },
         { id: 'trending',  label: 'News',      icon: Newspaper,          path: '/trending',       color: '#3b82f6' },
+        { id: 'brain',     label: 'Brain',     icon: Brain,          path: '/brain',          color: '#22c55e' },
         { id: 'my',        label: 'My beliefs', icon: Target,         path: '/my',             color: '#3b82f6' },
         { id: 'portfolio', label: 'Portfolio', icon: TrendingUp,     path: '/portfolio',      color: '#3b82f6' },
       ];
@@ -59,7 +60,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
 
       {/* Navigation content */}
       <ul
-        className="relative flex justify-around items-stretch gap-1 px-2 py-2 select-none"
+        className="relative flex justify-around items-stretch gap-0.5 px-1 py-2 select-none"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
       >
         {navItems.map((item) => {
@@ -87,7 +88,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
                 }}
                 aria-label={item.label}
                 aria-current={active ? 'page' : undefined}
-                className="group relative w-full h-full flex flex-col items-center justify-center gap-1 rounded-xl p-2 outline-none focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-blue-500 transition-all duration-200"
+                className="group relative w-full h-full flex flex-col items-center justify-center gap-1 rounded-xl px-0.5 py-2 outline-none focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-blue-500 transition-all duration-200"
               >
                 {/* Active background glow */}
                 {active && (
@@ -114,7 +115,7 @@ export default function BottomNavigation({ onPortfolioClick, hideOnDesktop = fal
 
                 {/* Label */}
                 <span
-                  className={`text-[11px] font-medium leading-none transition-opacity duration-200 ${
+                  className={`text-[10.5px] font-medium leading-none whitespace-nowrap transition-opacity duration-200 ${
                     active ? 'opacity-100' : 'opacity-70 group-hover:opacity-90'
                   }`}
                   style={{ color: active ? (item.color || '#60a5fa') : '#94a3b8' }}

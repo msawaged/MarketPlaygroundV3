@@ -208,6 +208,7 @@ export default function BrainPage({ viewOnly = false }) {
             <p className="mt-1 text-sm text-slate-400">{err ? 'The server is restarting or busy. This page retries on its own every 15 seconds.' : 'Loading the real numbers.'}</p>
           </div>
         </div>
+        {account && !viewOnly && <BottomNavigation />}
       </div>
     );
   }
