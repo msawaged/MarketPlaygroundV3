@@ -110,7 +110,7 @@ export default function BrainLineages({ data, ago, now }) {
             <div className="text-right leading-tight">
               <div className={`text-sm font-bold tabular-nums ${s.fitness >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pct(s.fitness)} pts</div>
               <div className="text-[10px] text-slate-500">beats S&P {Math.round(s.beat_rate * 100)}%</div>
-              <div className="text-[10px] text-slate-500">{s.live?.n ? `live: ${pct(s.live.fitness)} pts on ${s.live.n}` : 'live: none yet'}</div>
+              <div className="text-[10px] text-slate-500 whitespace-nowrap">{s.live?.n ? <>live: {pct(s.live.fitness)} pts<br />over {s.live.n.toLocaleString()} calls</> : 'live: none yet'}</div>
             </div>
           </motion.div>
         ))}

@@ -241,11 +241,14 @@ export default function BrainPage({ viewOnly = false }) {
           const h = d.health.learning, g = d.health.grading;
           const age = h?.at ? (now - Date.parse(h.at)) / 3600000 : null;
           const good = h && h.ok && age < 2.5;
+          // Picks are graded by the daily job and by the hourly catch-up; show the latest of either so this line matches the activity feed.
+          const gradedTimes = [g?.at, ...((d.activity || []).filter((e) => e.kind === 'graded').map((e) => e.at))].filter(Boolean);
+          const lastGrade = gradedTimes.length ? gradedTimes.reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a)) : null;
           return (
             <div className={`mt-3 rounded-2xl border px-3.5 py-2.5 text-xs ${good ? 'border-green-500/30 bg-green-500/[0.06] text-green-100' : 'border-amber-300/40 bg-amber-400/10 text-amber-100'}`}>
               <span className="font-bold">{good ? 'Healthy.' : h ? (h.ok ? 'Learning round overdue.' : 'Last learning round didn’t finish.') : 'No learning round recorded yet.'}</span>{' '}
               {h?.at && <>Last learning round {ago(h.at, now)}.</>}{' '}
-              {g?.at && <>Last market grading {ago(g.at, now)}{g.ok ? '' : ' (didn’t finish)'}.</>}
+              {lastGrade && <>Last market grading {ago(lastGrade, now)}{g && !g.ok ? ' (the last daily run didn’t finish)' : ''}.</>}
             </div>
           );
         })()}
@@ -339,7 +342,7 @@ export default function BrainPage({ viewOnly = false }) {
                 <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · live since {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                   <div className="mt-1 text-xs text-slate-200">
-                    Tested on {sk.ranker.oos.n} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
+                    Tested on {Number(sk.ranker.oos.n).toLocaleString()} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
                     (old way: {Math.round((sk.ranker.old?.beat || 0) * 100)}%) and beat our other ideas by {pts(sk.ranker.oos.lift)} pts (old way: {pts(sk.ranker.old?.lift || 0)}).
                     {sk.ranker.risk_check && sk.ranker.oos.beat_adj != null && (
                       <> Adjusted for risk (each stock's beta), it beat a risk-matched S&P {Math.round(sk.ranker.oos.beat_adj * 100)}% of the time, {pts(sk.ranker.oos.lift_adj)} pts ahead of our other ideas.</>
@@ -437,8 +440,8 @@ export default function BrainPage({ viewOnly = false }) {
             return (
               <div key={i} className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold rounded-full px-2 py-0.5" style={{ color: st.color, background: `${st.color}22` }}>{st.label}</span>
-                  <span className="text-[11px] text-slate-500">{ago(v.at, now)} · trained on {v.n_train.toLocaleString()}, tested on {v.n_test.toLocaleString()}</span>
+                  <span className="shrink-0 whitespace-nowrap text-xs font-bold rounded-full px-2 py-0.5" style={{ color: st.color, background: `${st.color}22` }}>{st.label}</span>
+                  <span className="text-right text-[11px] text-slate-500">{ago(v.at, now)} · trained on {v.n_train.toLocaleString()}, tested on {v.n_test.toLocaleString()}</span>
                 </div>
                 <div className="mt-1.5 h-1.5 rounded-full bg-slate-800 overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${Math.max(3, Math.min(100, 50 + v.score * 250))}%`, background: st.color }} />

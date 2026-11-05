@@ -58,7 +58,7 @@ export function MoverCard({ item, i = 0 }) {
       <div className="mt-1 text-base font-bold leading-snug">
         {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200">{item.headline}</a> : item.headline}
       </div>
-      {ai && <p className="mt-1 text-sm text-slate-400"><span className="text-slate-500">What it could mean: </span>{item.hunch}.</p>}
+      {ai && <p className="mt-1 text-sm text-slate-400"><span className="text-slate-500">What it could mean: </span>{String(item.hunch).trim().replace(/[.!?…\s]+$/, '')}.</p>}
 
       <div className="mt-3 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Companies it touches</div>
       <ul className="mt-1.5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950/50">
