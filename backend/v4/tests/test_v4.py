@@ -1557,6 +1557,35 @@ def test_beta_and_risk_matched_scoring_catch_a_pure_risk_tilt():
     assert research._passes(m, app) and not research._passes(m, app, risk=True)  # the risk check stops it
 
 
+def test_betting_against_beta_rule_prefers_low_beta_longs_and_high_beta_shorts():
+    from backend.v4 import research
+    assert "beta" in research.FEATS and "beta" in research.DIRECTIONAL
+    rng = random.Random(11)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(400):
+        bid = f"b-bab-{k}"
+        asof = (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        bear = k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            beta = rng.uniform(0.3, 2.5)
+            # planted: in the call's direction, low-beta longs and high-beta shorts do better
+            ex = (beta - 1.0) * 0.05 if bear else (1.0 - beta) * 0.05
+            num = {"beta": beta} if j else {}            # one idea per belief predates stored betas
+            pid = f"p-bab-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": num}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.01), asof))
+    data = research.load()
+    f = {c["f"]["beta"] for b in data for c in b["cands"] if c["f"]["bearish"] == 0 and not c["has_beta"]}
+    assert f == {1.0}                                    # a pick without a stored beta reads as market-like, not 0
+    r = research.run(data=data)["results"]
+    assert r["betting against beta (-z_beta)"]["lift"] > 0.02 and r["betting against beta (-z_beta)"]["n"] > 100
+    assert r["betting against beta (-z_beta)"]["lift_t"] > 3
+
+
 def test_nightly_refit_loads_graded_calls_once_and_compactly(monkeypatch):
     from backend.v4 import research
     rng = random.Random(4)

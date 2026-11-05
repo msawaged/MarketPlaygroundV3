@@ -30,9 +30,13 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "fip_id",
          # residual momentum (Blitz, Huij & Martens 2011): 12-1 return SPY-beta can't explain, per unit of residual risk
          "resid_mom",
+         # market beta vs SPY over the past year (as of the pick's date); betting against beta (Frazzini & Pedersen 2014)
+         "beta",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
-DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom",
+# beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
+# "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction
+DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta",
                "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
@@ -42,6 +46,7 @@ INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_
                 ("mom60", "reg_calm"), ("vp_above_value", "reg_trend"))
 XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
+NEUTRAL = {"rvol": 1.0, "beta": 1.0}  # value for a feature a pick never stored (anything else: 0)
 
 
 def _with_derived(num: dict) -> dict:
@@ -132,7 +137,7 @@ def load() -> list[dict]:
     for r in rows:
         num = _with_derived((db.loads(r["features"], {}) or {}).get("num", {}))
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
-        f = {k: float(num.get(k, 1.0 if k == "rvol" else 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
+        f = {k: float(num.get(k, NEUTRAL.get(k, 0.0)) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
         for k in REG_KEYS:
             f[k] = float(num.get(k, 0.0) or 0.0)
@@ -229,6 +234,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         "smooth 12-1 momentum (frog in the pan)": lambda f: f["z_mom_12_1"] - f["z_fip_id"],
         # idea log, added 2026-11-04: residual momentum — 12-1 move beyond what the stock's SPY beta explains
         "residual 12-1 momentum (z_resid_mom)": lambda f: f["z_resid_mom"],
+        # idea log, added 2026-11-05: betting against beta — low-beta stock for a long, high-beta for a short
+        "betting against beta (-z_beta)": lambda f: -f["z_beta"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
@@ -407,7 +414,8 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
     for num, d in zip(nums, directions):
         num = _with_derived(num or {})
         sign = -1.0 if str(d).lower() == "bearish" else 1.0
-        f = {k: float(num.get(k, 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
+        f = {k: float(num.get(k, 1.0 if k == "beta" else 0.0) or 0.0) * (sign if k in DIRECTIONAL else 1.0)
+             for k in FEATS}
         f["bearish"] = 1.0 if sign < 0 else 0.0
         for k in REG_KEYS:
             f[k] = float(num.get(k, 0.0) or 0.0)

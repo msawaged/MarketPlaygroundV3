@@ -83,4 +83,35 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   `residual 12-1 momentum (z_resid_mom)`; `z_resid_mom` is also available to the learned ridge/gbm.
 - **Note:** until the hourly enrich finishes backfilling (~23k picks), older picks read `resid_mom = 0`, so the first
   runs after deploy understate the rule; trust the result once every graded pick has `resid_mom`.
+- **Result (preliminary, run 2026-11-05 02:34 UTC, 4,396 beliefs, test from 2024-12-03, n=2,707):** lift **+0.69%**,
+  beat **52.4%**, t **2.17**. The first momentum variant whose beat rate matches the app's (52.3%) and beats random
+  (51.6%), with lift close to plain 12-1 (+0.79% / 50.1% / t 2.21). Caveat: this run came ~8 hours after deploy, so
+  only part of the ~23k older picks had `resid_mom` yet (the rest read 0); by 2026-11-05 all 23,279 graded picks
+  carry it (and `beta`), and the research rerun triggered by the idea-4 deploy is the first fully backfilled one,
+  including the new risk-matched (beta-adjusted) lift/beat. Same run: app +0.02% / 52.3% / t 0.08; high vol
+  +1.55% / 53.6% / t 3.52; ridge +0.95% / 52.1% / t 2.56; gbm +1.84% / 53.1% / t 4.62. Risk-matched columns were
+  not meaningful yet (beta_coverage 0.0).
+
+### 4. Betting against beta (Frazzini & Pedersen)
+- **Added:** 2026-11-05
+- **Source:** Frazzini & Pedersen (2014), "Betting Against Beta", Journal of Financial Economics 111(1), 1-25:
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:111:y:2014:i:1:p:1-25 ; publisher's version:
+  https://research-api.cbs.dk/ws/portalfiles/portal/60082899/lasse_heje_pedersen_et_al_betting_against_beta_publishersversion.pdf ;
+  critique (BAB partly overlaps low volatility and depends on how beta is built): Novy-Marx & Velikov,
+  https://mysimon.rochester.edu/novy-marx/research/BABAB.pdf
+- **Why:** many investors can't or won't use leverage, so they reach for high-beta stocks to get more return; that
+  bids high-beta stocks up and leaves them with lower risk-adjusted returns (a flatter security market line than
+  CAPM predicts). Low-beta longs and high-beta shorts earn positive alpha across US and international stocks. This
+  differs from the "low vol" rule already tried (total volatility, which lost) because beta is only the market part of
+  risk. With the new risk-matched scoring (`beat_adj` / `lift_adj`, vs an S&P scaled to each stock's beta) we can
+  finally test the claim the way the paper states it: does the low-beta side win once risk is matched?
+- **Computed as:** the pick's stored `beta` (`market.beta_value`: OLS beta of daily returns vs SPY over the last 252
+  sessions up to the pick's own date, clipped to [-1, 4], 1.0 with under 120 matched days), already stored for new
+  picks and backfilled for all 23,279 graded picks by `research.enrich`. The paper uses a shrunk beta
+  (0.6 * time-series beta + 0.4); shrinking toward 1 is linear, so the within-belief z-score and the ranking are the
+  same. Added to `research.FEATS` and `DIRECTIONAL` (bearish calls flip it, so the rule picks the high-beta stock to
+  short); a pick without a stored beta reads 1.0 (market-like). Research rule: `betting against beta (-z_beta)`;
+  `z_beta` is also available to the learned ridge/gbm.
+- **What to look at:** raw lift will likely be negative (high vol, and probably high beta, wins raw lift in this
+  sample's rising market). The test is `lift_adj` / `beat_adj` and whether "high vol"'s edge survives risk matching.
 - **Result:** pending.
