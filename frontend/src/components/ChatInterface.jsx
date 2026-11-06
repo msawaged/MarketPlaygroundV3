@@ -133,8 +133,8 @@ export default function ChatInterface() {
   // Ask how they want to trade before every new belief, unless they chose "remember".
   const answerHow = (msgId, belief, choice) => {
     const p = { instrument: choice.instrument, goal: choice.goal || '', budget_usd: choice.budget_usd || 0, horizon_days: choice.horizon_days || 0 };
-    if (choice.remember) setPrefs({ ...p, remember: true });
-    else setPrefs(p);
+    if (choice.remember) setPrefs({ instrument: p.instrument, goal: p.goal, remember: true });
+    else setPrefs({ instrument: p.instrument, goal: p.goal });
     setMessages((m) => m.filter((x) => x.id !== msgId));
     send(belief, undefined, p, { asked: true });
   };
@@ -144,7 +144,8 @@ export default function ChatInterface() {
     if (!belief || loading) return;
     const useRisk = riskOverride || risk;
     const saved = getPrefs();
-    if (!prefsOverride && !riskOverride && !(saved && saved.remember)) {
+    // Amount and time are asked for every new idea; a remembered trading style only skips the shares/options step.
+    if (!prefsOverride && !riskOverride) {
       setInput('');
       if (showHow) { setShowHow(false); markSeen('how'); }
       const id = Date.now();
@@ -325,7 +326,7 @@ export default function ChatInterface() {
                     </div>
                   </div>
                 ) : m.role === 'ask' ? (
-                  <HowToTrade belief={m.belief} onPick={(c) => answerHow(m.id, m.belief, c)} />
+                  <HowToTrade belief={m.belief} saved={getPrefs()} onPick={(c) => answerHow(m.id, m.belief, c)} />
                 ) : m.role === 'error' ? (
                   <div className="rounded-2xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">
                     {m.text}
@@ -345,7 +346,7 @@ export default function ChatInterface() {
                     )}
                     {m.data && (
                       <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} onRefine={(o) => send(`${m.belief} (${o})`, m.risk || undefined)}
-                        prefs={m.prefs} onTune={(p) => send(m.belief, m.risk || undefined, p)} />
+                        prefs={m.prefs} onTune={(p) => send(m.belief, m.risk || undefined, { ...p, budget_usd: m.prefs?.budget_usd || 0, horizon_days: m.prefs?.horizon_days || 0 })} />
                     )}
                   </div>
                 )}

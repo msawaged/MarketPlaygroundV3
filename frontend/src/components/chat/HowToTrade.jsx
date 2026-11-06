@@ -32,8 +32,9 @@ function Chips({ label, items, value, onChange }) {
   );
 }
 
-export default function HowToTrade({ belief, onPick }) {
+export default function HowToTrade({ belief, onPick, saved }) {
   const [remember, setRemember] = useState(false);
+  const [pickStyle, setPickStyle] = useState(!(saved && saved.remember));
   const [goalStep, setGoalStep] = useState(false);
   const [budget, setBudget] = useState(0);
   const [typed, setTyped] = useState('');
@@ -59,7 +60,13 @@ export default function HowToTrade({ belief, onPick }) {
       {typed && Math.round(Number(typed)) < 10 && <p className="text-[11px] text-amber-200 mt-1">The smallest amount is $10.</p>}
       {Number(typed) > MAX_BUDGET && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_BUDGET.toLocaleString()}, so this uses ${MAX_BUDGET.toLocaleString()}.</p>}
       <Chips label="For how long?" value={days} onChange={setDays} items={TIMES.map((t) => ({ v: t.d, l: t.l }))} />
-      {!goalStep ? (
+      {!pickStyle ? (
+        <div className="mt-3">
+          <button onClick={() => onPick({ instrument: saved.instrument || 'auto', goal: saved.goal || '', remember: true, budget_usd: budget, horizon_days: days })}
+            className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-bold">Show me ways to play it</button>
+          <button onClick={() => setPickStyle(true)} className="mt-2 text-xs text-slate-400">Change how I trade (now: {saved.instrument === 'options' ? 'options' : saved.instrument === 'shares' ? 'shares' : 'AI picks'})</button>
+        </div>
+      ) : !goalStep ? (
         <div className="mt-3 grid gap-2">
           {CHOICES.map((c) => (
             <button key={c.id} onClick={() => (c.id === 'options' ? setGoalStep(true) : pick(c.id))}
@@ -90,10 +97,10 @@ export default function HowToTrade({ belief, onPick }) {
           </div>
         </div>
       )}
-      <label className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+      {pickStyle && <label className="mt-3 flex items-center gap-2 text-xs text-slate-400">
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-blue-500" />
-        Remember my choice (change it anytime on an idea card)
-      </label>
+        Remember how I trade (I’ll still ask amount and time)
+      </label>}
     </div>
   );
 }
