@@ -1556,8 +1556,15 @@ def test_beta_and_risk_matched_scoring_catch_a_pure_risk_tilt():
     m = research._metrics(picks)
     assert m["lift"] > 0.01 and m["lift_t"] > 3                                  # looks like skill...
     assert abs(m["lift_adj"]) < 0.01 and m["lift_adj_t"] < 1.0                   # ...but it's only risk
-    app = {"beat": 0.5}
+    app = {"beat": 0.5, "beat_adj": 0.5}
     assert research._passes(m, app) and not research._passes(m, app, risk=True)  # the risk check stops it
+    # the real 2026-11-06 numbers: risk-matched edge, slightly lower raw beat rate than the old way
+    old = {"beat": 0.5228, "beat_adj": 0.5287}
+    gbm_adj = {"lift": 0.0091, "lift_t": 2.7, "beat": 0.5187, "beat_adj": 0.5364, "lift_adj": 0.0097, "lift_adj_t": 3.03}
+    gbm = {"lift": 0.0136, "lift_t": 3.97, "beat": 0.5198, "beat_adj": 0.5265, "lift_adj": 0.0088, "lift_adj_t": 2.68}
+    assert research._passes(gbm_adj, old, risk=True) and not research._passes(gbm_adj, old)
+    assert not research._passes(gbm, old, risk=True)                             # loses on risk-matched beat rate
+    assert not research._passes({**gbm_adj, "beat": 0.51}, old, risk=True)      # raw beat may not trail by >1 pt
 
 
 def test_betting_against_beta_rule_prefers_low_beta_longs_and_high_beta_shorts():

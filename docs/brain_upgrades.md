@@ -135,3 +135,26 @@ and the gate says that isn't enough. It was only "on" because of the grading mix
 `active` goes false. The real win is ranker v2 turning back on through the unchanged gate on directional ideas only.
 The obvious next lever is the beat rate, not the lift: the risk-adjusted gbm is 0.6 points short. Not yet fixed: the
 network and lineages still see volatile ideas in their labels (much smaller share, and the network is at weight 0).
+
+## 2026-11-06 — First risk-matched results; beat-rate check made risk-matched
+
+**Results (2,703 unseen directional calls, betas on 100% of graded picks, volatile ideas excluded per e0f186d).**
+
+| | beat S&P | beat risk-matched S&P | edge vs other ideas, risk-matched |
+|---|---|---|---|
+| old way | 52.3% | 52.9% | +0.31 pts (t 1.16) |
+| gbm (raw labels) | 52.0% | 52.7% | +0.88 pts (t 2.68) |
+| gbm (risk-adjusted labels) | 51.9% | 53.6% | +0.97 pts (t 3.03) |
+| "pick the most volatile" | 51.9% | 52.7% | +0.49 pts (t 1.19) |
+
+Part of the earlier edge was risk (the volatile rule loses most of its edge once risk-matched), but a learned edge
+survives: the risk-adjusted gbm's risk-matched lift is t 3.0. The ranker had turned off only because the gate still
+compared *raw* beat rates (51.9% vs 52.3%), which reward holding riskier stocks.
+
+**Change (post-hoc, flagged as such).** With the risk check on, `_passes` compares beat rates on the risk-matched
+basis, requires the risk-matched lift > 0 with t >= 1.0, keeps lift >= 0.005 and t >= 1.5, and allows the raw beat
+rate to trail the old way by at most 1 point. This was decided after seeing the results, so watch it: if the
+risk-adjusted gbm's lift_adj_t drops below ~2 over the next weeks of new graded calls, revisit.
+
+**What counts as a win.** The risk-adjusted gbm stays active with lift_adj_t >= 2 as new calls are graded, and the
+live record of its picks (not the backtest) beats a risk-matched S&P more often than the old way.

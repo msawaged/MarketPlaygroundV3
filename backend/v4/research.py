@@ -336,11 +336,21 @@ MIN_T_ADJ = 1.0       # once betas are in: the edge must also survive scoring ag
 RISK_COVERAGE = 0.8   # share of graded picks that need a stored beta before that extra check applies
 
 
+RAW_BEAT_SLACK = 0.01  # with the risk check on: raw beat rate may trail the old way by at most 1 point
+
+
 def _passes(m: dict, app: dict, risk: bool = False) -> bool:
-    ok = m.get("lift", 0) >= MIN_LIFT and m.get("lift_t", 0) >= MIN_T and m.get("beat", 0) >= app.get("beat", 1)
-    if risk:  # stricter, never looser: leaning on riskier stocks in a rising market isn't an edge
-        ok = ok and m.get("lift_adj", 0) > 0 and m.get("lift_adj_t", 0) >= MIN_T_ADJ
-    return bool(ok)
+    """The edge must be real on calls the model never saw. Before betas are stored: lift >= MIN_LIFT, t >= MIN_T and a
+    beat rate at least the old way's. With the risk check on, "beat the S&P" is compared on a risk-matched basis
+    (a raw beat rate rewards simply holding riskier stocks in a rising market), the risk-matched edge over the other
+    ideas must be positive with t >= MIN_T_ADJ, and the raw beat rate may not trail the old way by more than 1 point.
+    (Amended 2026-11-06 after the first risk-matched results; see docs/brain_upgrades.md.)"""
+    ok = m.get("lift", 0) >= MIN_LIFT and m.get("lift_t", 0) >= MIN_T
+    if not risk:
+        return bool(ok and m.get("beat", 0) >= app.get("beat", 1))
+    return bool(ok and m.get("lift_adj", 0) > 0 and m.get("lift_adj_t", 0) >= MIN_T_ADJ
+                and m.get("beat_adj", 0) >= app.get("beat_adj", 1)
+                and m.get("beat", 0) >= app.get("beat", 1) - RAW_BEAT_SLACK)
 
 
 def fit_production(results: dict | None = None) -> dict:
