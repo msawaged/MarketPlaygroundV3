@@ -129,3 +129,46 @@ regime-aware styles were all within ±0.5% lift (|t| < 1.3).
   in the call's direction). Not a ranker v2 candidate. Same run: app +0.02% / 52.3% / t 0.08 (adj +0.35% / 52.7% /
   t 1.28); ridge +1.32% / 52.4% / t 3.31 (adj -0.10%, t -0.26); gbm +2.01% / 53.3% / t 4.91 (adj +0.47%, t 1.19);
   gbm (risk-adjusted) +0.33% / 52.1% / t 0.96 (adj +0.36% / 53.1% / t 1.13); random beat 51.6%.
+
+### Re-run after "volatile ideas left out" (run 2026-11-06 16:15 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703)
+Since commit e0f186d, 'volatile' calls (graded on |move|) are excluded from research and ranker v2, so every number
+moved a little. Raw lift / beat / t, then risk-matched lift / beat_adj / t:
+
+| Method | Lift | Beat | t | Lift adj | Beat adj | t adj |
+|---|---|---|---|---|---|---|
+| app (current #1) | +0.39% | 52.3% | 1.41 | +0.33% | 52.9% | 1.24 |
+| 12-1 momentum (idea 1) | +0.69% | 49.5% | 1.97 | +0.43% | 51.3% | 1.29 |
+| frog in the pan (idea 2) | +0.81% | 49.7% | 2.49 | +0.69% | 52.1% | 2.24 |
+| residual momentum (idea 3) | +0.49% | 50.9% | 1.49 | +0.57% | 53.2% | 1.81 |
+| betting against beta (idea 4) | -1.27% | 50.4% | -3.75 | +0.04% | 54.0% | 0.12 |
+| high vol (z_vol60) | +0.87% | 51.9% | 2.04 | +0.49% | 52.7% | 1.19 |
+| ridge (learned) | +0.81% | 51.1% | 2.37 | +0.27% | 51.9% | 0.82 |
+| gbm (learned) | +1.41% | 51.9% | 4.16 | +0.96% | 52.8% | 2.94 |
+| gbm (risk-adjusted) | +0.72% | 51.4% | 2.17 | +0.76% | 53.5% | 2.39 |
+
+Random beat 51.0%. Frog in the pan now has the best risk-matched lift of the fixed rules (t 2.24), a change from its
+earlier middling result; its raw beat rate is still below the app's. Residual momentum's beat_adj (53.2%) is above
+the app's (52.9%).
+
+### 5. MAX effect: avoid lottery stocks (Bali, Cakici & Whitelaw)
+- **Added:** 2026-11-06
+- **Source:** Bali, Cakici & Whitelaw (2011), "Maxing Out: Stocks as Lotteries and the Cross-Section of Expected
+  Returns", Journal of Financial Economics 99(2), 427-446:
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:99:y:2011:i:2:p:427-446 ; NBER working paper:
+  https://econpapers.repec.org/RePEc:nbr:nberwo:14804 ; practitioner summary:
+  https://alphaarchitect.com/hot-off-the-jfe-press-maxing-out-your-returns/
+- **Why:** investors overpay for stocks with lottery-like payoffs (a few huge up-days recently), so those stocks earn
+  lower returns afterwards; in the paper, the high-MAX decile lagged the low-MAX decile by over 1% a month, and MAX
+  also explains the "idiosyncratic volatility puzzle". It's a sharper question than "high vol vs low vol" (already
+  tried, high vol won raw but mostly on beta): is it the *upside spikes* that hurt? Caveat: the paper's holding period
+  is one month; our test is 90 days, so the effect may be diluted.
+- **Computed as:** `max5` = average of the 5 largest daily returns over the last 21 sessions up to the pick's own
+  date (the MAX5 variant from Bali, Brown, Murray & Tang 2017, more robust than the single biggest day), clipped to
+  [-0.5, 1]; 0 with under a month of history. `market.max5` / `market.max_features`; stored for new picks via
+  `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by `research.enrich`
+  using closes up to each pick's own date only (other features untouched). Directional (bearish calls flip it, so
+  the rule shorts the lottery stock). Research rule: `avoid lottery stocks (-z_max5)`; `z_max5` is also available to
+  the learned ridge/gbm.
+- **Note:** until enrich finishes backfilling older picks they read `max5 = 0` (looks like "no lottery"), so the first
+  runs after deploy understate or distort the rule; trust the result once every graded pick has `max5`.
+- **Result:** pending.

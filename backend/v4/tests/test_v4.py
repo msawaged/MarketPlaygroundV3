@@ -1833,6 +1833,54 @@ def test_residual_momentum_removes_market_beta_and_enrich_backfills_it(monkeypat
     assert num["fip_id"] == -0.3 and num["vp_poc_dist"] == 0.2
 
 
+def test_max_effect_lottery_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    flat = [100.0] * 60
+    assert market.max5(flat, 59) == 0.0
+    spiky = [100.0] * 60
+    for k in range(40, 60):                                        # 5 big up-days (+10%) among small down-days
+        spiky[k] = spiky[k - 1] * (1.10 if k in (42, 46, 50, 54, 58) else 0.99)
+    assert abs(market.max5(spiky, 59) - 0.10) < 1e-9
+    assert market.max5(spiky, 10) == 0.0                           # not a month of history
+    assert market.max5(spiky + [spiky[-1] * 3.0], 59) == market.max5(spiky, 59)   # later prices never seen
+    assert "max5" in research.FEATS and "max5" in research.DIRECTIONAL
+    # planted: high-MAX longs lag and high-MAX shorts pay; the rule (-z_max5, flipped for bearish) should find it
+    rng = _r.Random(5)
+    d0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-max-{k}", (d0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            m = rng.uniform(0.0, 0.08)
+            ex = (m - 0.04) * 1.0 if bear else (0.04 - m) * 1.0
+            pid = f"p-max-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"max5": m}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["avoid lottery stocks (-z_max5)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills max5 as of each pick's own date only, leaving the other features alone
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(len(spiky) + 30)]
+    after = spiky + [spiky[-1] * (2.0 if k % 2 else 0.5) for k in range(30)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, after))
+    monkeypatch.setattr(market, "vp_features", lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    monkeypatch.setattr(market, "resid_features", lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0, "beta": 1.2}
+    asof = dates[59]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-mx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-mx", "b-mx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-mx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-mx'")["features"])["num"]
+    assert abs(num["max5"] - 0.10) < 1e-9 and num["beta"] == 1.2 and num["vp_poc_dist"] == 0.2
+
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""

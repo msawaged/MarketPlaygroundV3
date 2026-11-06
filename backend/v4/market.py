@@ -584,6 +584,28 @@ def fip_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"fip_id": fip_id(closes, i) if i >= 0 else 0.0}
 
 
+def max5(closes: list[float], i: int, window: int = 21) -> float:
+    """Lottery-ness ("MAX", Bali, Cakici & Whitelaw 2011; MAX5 as in Bali, Brown, Murray & Tang 2017): the average
+    of the 5 biggest daily returns over the last `window` sessions up to index i only. Stocks with big recent
+    up-days attract lottery-seeking buyers, get overpriced and tend to lag afterwards. 0.0 without a month of
+    history."""
+    if i < window:
+        return 0.0
+    rets = sorted((closes[k] / closes[k - 1] - 1.0 for k in range(i - window + 1, i + 1) if closes[k - 1] > 0),
+                  reverse=True)
+    if len(rets) < 10:
+        return 0.0
+    top = rets[:5]
+    return max(-0.5, min(1.0, sum(top) / len(top)))
+
+
+def max_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"max5": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"max5": max5(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -683,6 +705,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "fip_id": fip_id(closes, i),
         "resid_mom": resid_mom(dates, closes, sdates, scloses, i),
         "beta": beta_value(dates, closes, sdates, scloses, i),
+        "max5": max5(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),
