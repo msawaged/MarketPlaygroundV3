@@ -308,6 +308,19 @@ def process_belief(
         ))
         rows_themes += [(pick_id, t) for t in interp["themes"]]
 
+    # With a budget, show ideas that fit it first: an expensive stock whose cheapest version still costs more than
+    # the budget moves behind the ones that fit (kept, graded and still visible further down). Order is otherwise kept.
+    if prefs.get("budget_usd") and not backfill and any(not (p_["budget"] or {}).get("fits", True) for p_ in picks_out):
+        order = sorted(range(len(picks_out)), key=lambda i: 0 if picks_out[i]["budget"]["fits"] else 1)
+        picks_out = [picks_out[i] for i in order]
+        rows_picks = [rows_picks[i] for i in order]
+        for r_, (p_, row) in enumerate(zip(picks_out, rows_picks)):
+            sh = r_ < SHOW_TOP
+            if sh and not p_["shown"]:
+                p_["trend"] = _trend(p_["ticker"])
+            p_["shown"] = sh
+            rows_picks[r_] = row[:11] + (r_, 1 if sh else 0) + row[13:]
+
     # 6. persist
     db.execute(
         """INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, risk_profile,

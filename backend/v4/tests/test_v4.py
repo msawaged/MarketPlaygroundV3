@@ -1935,3 +1935,22 @@ def test_ai_is_told_the_budget_and_timeline():
     assert "budget" not in plain and "timeline" not in plain
     # a typed amount below the floor is raised to $10, never zero or negative
     assert strategy.normalize_prefs({"budget_usd": 3})["budget_usd"] == 10.0
+
+
+def test_ideas_that_fit_the_budget_are_shown_first(monkeypatch):
+    # make exactly one idea (the last one without a budget) "fit"; with a budget it moves to the front, and the
+    # stored ranks and shown flags are renumbered to match what the person sees
+    base = engine.process_belief("plumbing demand is going to be high", "u-fit", "aggressive", claude_client=FakeClaude(),
+                                 prefs={"instrument": "options"})["picks"]
+    last = base[-1]
+    real = strategy.size_for_budget
+    monkeypatch.setattr(strategy, "size_for_budget", lambda trade, price, budget: {**real(trade, price, budget),
+                        "fits": abs(price - last["price"]) < 0.006})
+    r = engine.process_belief("plumbing demand is going to be high", "u-fit", "aggressive", claude_client=FakeClaude(),
+                              prefs={"instrument": "options", "budget_usd": 10})
+    picks = r["picks"]
+    assert len(base) >= 2 and picks[0]["ticker"] == last["ticker"] and picks[0]["shown"]
+    assert [p["ticker"] for p in picks[1:]] == [p["ticker"] for p in base if p["ticker"] != last["ticker"]]
+    rows = db.query("SELECT ticker, final_rank, shown FROM picks WHERE belief_id = ? ORDER BY final_rank", (r["belief_id"],))
+    assert [x["ticker"] for x in rows] == [p["ticker"] for p in picks]
+    assert [x["shown"] for x in rows] == [1 if p["shown"] else 0 for p in picks]
