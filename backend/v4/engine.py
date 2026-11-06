@@ -238,9 +238,11 @@ def process_belief(
             v["final_score"] = (1 - research.WEIGHT) * v["final_score"] + research.WEIGHT * parts[i]
     # A strategist that proved itself on calls it never saw gets a modest say (see lineages.pick_champion).
     champ = _champion()
+    raw = None
     if champ and len(valid) > 1:
-        raw = [lineages.raw_score(champ["weights"], lineages.features_of(records[i]["num"], v.get("direction", "bullish")))
-               for i, v in enumerate(valid)]
+        raw = lineages.score_candidates(champ["weights"], [records[i]["num"] for i in range(len(valid))],
+                                        [v.get("direction", "bullish") for v in valid])
+    if raw:
         parts = nn.on_claude_scale(raw, [v["final_score"] for v in valid])
         cw = lineages.CHAMPION_WEIGHT
         for i, v in enumerate(valid):

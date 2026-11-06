@@ -108,9 +108,30 @@ def _add_late_founders() -> list[str]:
     return added
 
 
+def directional(direction) -> bool:
+    """Strategists compete on bullish/bearish ideas only (same rule as ranker v2, research.directional). A 'volatile'
+    idea is graded on |stock move| - |S&P move| (grader.py), which a single stock beats ~75% of the time anyway. On
+    2026-11-06 data (300-belief window) 10% of beliefs had one, averaging +10.7% vs -0.9% for their directional ideas,
+    so a strategist that happened to choose it looked skilled: Follow-the-AI Gen 5's fitness fell from 2.41% to 1.68%
+    without them, and Follow-the-AI Gen 2's live record from 2.63% to 1.22% (below the app's top pick)."""
+    return str(direction).lower() in ("bullish", "bearish")
+
+
+def score_candidates(weights: dict, nums: list[dict], directions: list[str]) -> Optional[list[float]]:
+    """A strategist's raw scores for one belief's candidates, for the real ranking. Directional ideas are scored
+    among themselves; others get their average, so a champion never moves a volatile idea (it never learned to
+    judge one). None with fewer than 2 directional ideas (nothing to choose between)."""
+    keep = [i for i, d in enumerate(directions) if directional(d)]
+    if len(keep) < 2:
+        return None
+    sub = {i: raw_score(weights, features_of(nums[i], directions[i])) for i in keep}
+    avg = sum(sub.values()) / len(sub)
+    return [sub.get(i, avg) for i in range(len(nums))]
+
+
 def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[list[dict]]:
     """Candidates of the most recent graded beliefs: [[{feat..., ex, top}, ...], ...]. `since`: only beliefs created
-    after that time (a strategist's live record: calls it never saw)."""
+    after that time (a strategist's live record: calls it never saw). Directional ideas only (see directional)."""
     rows = db.query(
         """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
@@ -119,6 +140,8 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
     by: dict[str, list[dict]] = {}
     order: list[str] = []
     for r in rows:
+        if not directional(r["direction"]):
+            continue  # graded on |move|, not comparable with the others' directional excess
         if r["belief_id"] not in by:
             if len(order) >= limit:
                 continue

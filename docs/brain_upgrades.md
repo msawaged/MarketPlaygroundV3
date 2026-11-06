@@ -158,3 +158,39 @@ risk-adjusted gbm's lift_adj_t drops below ~2 over the next weeks of new graded 
 
 **What counts as a win.** The risk-adjusted gbm stays active with lift_adj_t >= 2 as new calls are graded, and the
 live record of its picks (not the backtest) beats a risk-matched S&P more often than the old way.
+
+## 2026-11-06 (weekly) — Lineages compete on directional ideas only (the 'volatile' grading mix-up, part 2)
+
+**Problem.** The 2026-11-05 fix took 'volatile' ideas out of ranker v2 but noted the lineages still saw them. They
+still do, and it matters there: a volatile idea is graded on `|stock move| - |S&P move|`, so it "wins" most of the
+time regardless of skill. Replaying each alive strategist's choices on production data (read-only SQL, 90-day
+checkpoint; the replay reproduces the stored fitness exactly for 6 of 8 strategists):
+
+- In the 300-belief scoring window, 30 beliefs (10%) had a volatile idea, averaging **+10.7%** vs **-0.9%** for the
+  same beliefs' directional ideas.
+- Follow-the-AI strategists chose the volatile idea in 25 of 300 beliefs (their Claude-score features are 0 on
+  backfill, so they pick by tie order). Follow-the-AI Gen 5: fitness **2.41% → 1.68%** without volatile ideas.
+  Momentum Gen 1: 2.17% → 1.89%. Trend-riders barely move (3–5 volatile choices; 2.64% → 2.61%).
+- Live records (calls created after birth, the champion gate's input): Follow-the-AI Gen 2 **2.63% → 1.22%**
+  (366 of 3,618 choices were volatile ideas), Momentum Gen 1 2.10% → 1.44%. The app's own #1 on directional ideas
+  scored 2.51%. Follow-the-AI Gen 2 is the strategist closest to earning a champion's 25% say in real rankings
+  (page: live 2.44% vs app 2.40%), and on the honest basis it is far behind.
+
+So evolution was partly selecting for "happens to pick the volatile idea", and the champion gate could have been
+passed the same way.
+
+**Change.** `lineages.directional()`; `_graded_beliefs()` drops non-directional ideas, so fitness, evolution, live
+records and the app baseline all compare bullish/bearish ideas only. New `lineages.score_candidates()`: a champion
+scores directional ideas among themselves and gives a volatile idea their average (never reorders it; None with
+fewer than 2 directional ideas); `engine.process_belief` uses it. No gate changed (`LIVE_MIN`, `LIVE_MARGIN`,
+beat ≥ app, `CHAMPION_WEIGHT`); ranker v2 and the network are untouched (the network's training rows have only 22
+volatile ideas with a `sel_edge`, so it was not affected). No extra memory.
+
+**Checks.** Backend tests: 106 passed (new: `test_lineages_leave_out_volatile_ideas`).
+
+**Commit.** See `git log --grep "Lineages compete on directional"` on v4-polish (this entry ships in the same commit).
+
+**What counts as a win.** After the next nightly evolve: Follow-the-AI fitness drops on the page and the Trend-rider
+line leads; no champion appears on the old artifact. The real win is a strategist later earning champion through the
+unchanged gate on directional ideas only. Known leftover (not fixed, separate issue): on backfill beliefs Claude's
+score is hidden, so Follow-the-AI picks by database tie order; its record there is noise, not skill.

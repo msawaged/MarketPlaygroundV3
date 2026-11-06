@@ -1329,6 +1329,32 @@ def test_lineages_evolve_and_snapshot(monkeypatch):
     assert lineages.champion()["id"] == ch["id"]
 
 
+def test_lineages_leave_out_volatile_ideas():
+    """A 'volatile' idea is graded on |move| - |S&P move| (beats the S&P ~75% of the time for any stock), so a
+    strategist that picks it must not look skilled; and a champion never reorders one in the real ranking."""
+    from backend.v4 import lineages
+    for i in range(12):
+        bid = f"b-linvol{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", f"2098-03-{1 + i:02d}T00:00:00", "2026-01-01", "seed_backfill"))
+        # two directional ideas (high vol60 one loses) and a volatile one with the highest vol60 and a big |move| grade
+        for j, (d, vol, ex) in enumerate((("bullish", 0.2, 0.02), ("bullish", 0.5, -0.02), ("volatile", 0.9, 0.15))):
+            pid = f"p-linvol{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"V{j}", d, "2026-01-01", 10.0, db.dumps({"num": {"vol60": vol}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, ex, "2026-02-01"))
+    beliefs = lineages._graded_beliefs(since="2098-01-01")
+    assert len(beliefs) == 12 and all(len(b) == 2 for b in beliefs)
+    risky, calm = lineages.score({"vol60": 1.0}, beliefs), lineages.score({"vol60": -1.0}, beliefs)
+    assert risky["fitness"] < 0 < calm["fitness"]  # with the volatile idea in, 'risky' would have scored +15%
+
+    nums = [{"vol60": 0.2}, {"vol60": 0.5}, {"vol60": 0.9}]
+    s = lineages.score_candidates({"vol60": 1.0}, nums, ["bullish", "bearish", "volatile"])
+    assert s[1] > s[0] and s[2] == (s[0] + s[1]) / 2  # volatile idea sits at the average: never moved
+    assert lineages.score_candidates({"vol60": 1.0}, nums, ["bullish", "volatile", "volatile"]) is None
+
+
 def test_champion_moves_ranking_but_never_breaks_a_belief(monkeypatch):
     from backend.v4 import lineages
     monkeypatch.setattr(lineages, "champion", lambda: {"id": "st-x", "name": "Momentum · Gen 9", "weights": {"mom60": 5.0}})
