@@ -28,7 +28,7 @@ export default function WelcomePage() {
           </div>
         </div>
         <div className="text-center">
-          <h1 className="text-[28px] leading-[1.15] font-extrabold">Got a hunch?<br />Turn it into a <span className="whitespace-nowrap">stock trade.</span></h1>
+          <h1 className="text-[28px] leading-[1.15] font-extrabold">Got an idea?<br />Turn it into a <span className="whitespace-nowrap">stock trade.</span></h1>
           <p className="mt-3 text-slate-300">Practice free today.<br />Real money coming soon.</p>
         </div>
         <div className="mt-8 flex flex-col gap-3">
