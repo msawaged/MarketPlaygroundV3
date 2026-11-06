@@ -192,6 +192,11 @@ def build_user_message(belief: str, risk_profile: str, as_of: Optional[date], co
     if prefs and (prefs.get("instrument", "auto") != "auto" or prefs.get("goal")):
         parts.append(f"User preferences: trade with {prefs.get('instrument', 'auto')}"
                      + (f"; what matters most: {prefs['goal']}" if prefs.get("goal") else ""))
+    if prefs and prefs.get("budget_usd"):
+        parts.append(f"User budget for this idea: ${prefs['budget_usd']:,.0f} total. Suggest strategies one unit of which "
+                     "fits it (shares work for any amount; one option contract is 100 shares).")
+    if prefs and prefs.get("horizon_days"):
+        parts.append(f"User timeline: {prefs['horizon_days']} days. Use this as the horizon.")
     if as_of:
         parts.append(f"As of: {as_of.isoformat()}")
     if context and context.get("regime"):

@@ -1924,3 +1924,14 @@ def test_budget_and_timeline_shape_the_strategies():
     for pk in r["picks"]:
         assert pk["budget"]["budget"] == 300.0
         assert pk["budget"]["fits"] or "No version" in pk["structure_reason"]
+
+
+def test_ai_is_told_the_budget_and_timeline():
+    from backend.v4 import interpreter
+    msg = interpreter.build_user_message("gyms will be packed in January", "moderate", None, None,
+                                         strategy.normalize_prefs({"budget_usd": "750", "horizon_days": 90}))
+    assert "$750 total" in msg and "90 days" in msg
+    plain = interpreter.build_user_message("gyms will be packed in January", "moderate", None, None, strategy.normalize_prefs({}))
+    assert "budget" not in plain and "timeline" not in plain
+    # a typed amount below the floor is raised to $10, never zero or negative
+    assert strategy.normalize_prefs({"budget_usd": 3})["budget_usd"] == 10.0

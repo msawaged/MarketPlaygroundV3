@@ -181,7 +181,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const [idx, setIdx] = useState(0);
   const budget = Number(data.prefs?.budget_usd || prefs?.budget_usd || 0);
   const [amount, setAmount] = useState(budget || 1000);
-  const [custom, setCustom] = useState('');
+  const [custom, setCustom] = useState(budget && !AMOUNTS.includes(budget) ? String(budget) : '');
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
   const [useAlt, setUseAlt] = useState({}); // pick_id -> true when showing the other version
@@ -441,6 +441,13 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || pick.trade?.plain || ''}</p>
+            {pick.budget && !useAlt[basePick.pick_id] && (
+              <p className={`text-xs mt-1.5 font-semibold ${pick.budget.fits ? 'text-emerald-300' : 'text-amber-200'}`}>
+                {pick.budget.fits
+                  ? `Fits your $${Number(pick.budget.budget).toLocaleString()}${pick.budget.unit === 'contracts' ? `: ${pick.budget.units} contract${pick.budget.units === 1 ? '' : 's'} for $${Number(pick.budget.cost).toLocaleString()}` : pick.budget.unit === 'shares' ? `: about ${Number(pick.budget.units).toFixed(2)} shares` : ''}${data.prefs?.horizon_days ? ` · ${({ 30: '1 month', 90: '3 months', 180: '6 months', 365: '1 year' })[data.prefs.horizon_days] || `${data.prefs.horizon_days} days`}` : ''}`
+                  : `Doesn't fit $${Number(pick.budget.budget).toLocaleString()} even at 1 contract`}
+              </p>
+            )}
             {pick.structure_reason && pick.structure_reason !== 'rule' && (
               <p className="text-xs text-blue-200 mt-1.5 leading-relaxed"><span className="font-semibold">Why this strategy: </span>{pick.structure_reason}</p>
             )}

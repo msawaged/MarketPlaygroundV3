@@ -142,7 +142,8 @@ def process_belief(
 
     # 1-2. learned context + one Claude call (live requests reuse a recent identical interpretation)
     prefs = strategy.normalize_prefs(prefs)
-    cache_key = f"p4|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
+    cache_key = (f"p4|{risk_profile}|{prefs['instrument']}|{prefs['goal']}"  # p2: direction-first prompt
+                 + (f"|b{prefs['budget_usd']:.0f}|h{prefs['horizon_days']}" if prefs.get("budget_usd") or prefs.get("horizon_days") else ""))
     # The companies a belief affects don't depend on how you trade it: the same question reuses the same
     # interpretation across Shares / Options / AI and risk levels; only the strategies are re-chosen below.
     same_q_key = "p4|any"
