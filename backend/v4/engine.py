@@ -532,7 +532,7 @@ def trending(days: int = 14, limit: int = 8) -> dict:
                 for t in top
             ],
         })
-    return {"window": window, "themes": out}
+    return {"window": window, "label_days": learning.LABEL_DAYS, "themes": out}
 
 
 # ---------------- what users see about learning and their own calls ----------------

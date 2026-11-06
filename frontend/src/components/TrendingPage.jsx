@@ -122,9 +122,11 @@ export default function TrendingPage() {
 
 
 
-        <p className="mt-6 text-[11px] text-slate-500">
-          "vs S&amp;P" is how a pick did against the S&amp;P 500, in the direction people expected, 30 days after it was suggested. Past results don't predict future ones.
-        </p>
+        {themes.some((t) => t.tickers?.some((k) => k.graded > 0 && k.avg_vs_spy != null)) && (
+          <p className="mt-6 text-[11px] text-slate-500">
+            "vs S&amp;P" is how a pick did against the S&amp;P 500, in the direction people expected, {state.data?.label_days || 90} days after it was suggested. Past results don't predict future ones.
+          </p>
+        )}
       </div>
       {account && <BottomNavigation />}
     </div>
