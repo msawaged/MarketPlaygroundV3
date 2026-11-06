@@ -299,7 +299,7 @@ def normalize_prefs(prefs: Optional[dict]) -> dict:
     goal = str(p.get("goal") or "").lower()
     out = {"instrument": inst if inst in ("auto", "shares", "options") else "auto",
            "goal": goal if goal in library.GOALS else ""}
-    # What they're willing to put on this hunch, and for how long (0 = not said: no cap / the AI picks the time frame)
+    # What they're willing to put on this idea, and for how long (0 = not said: no cap / the AI picks the time frame)
     try:
         b = float(p.get("budget_usd") or 0)
     except (TypeError, ValueError):

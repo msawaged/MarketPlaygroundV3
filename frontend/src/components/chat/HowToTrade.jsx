@@ -40,7 +40,7 @@ export default function HowToTrade({ belief, onPick }) {
   return (
     <div className="rounded-2xl border border-blue-400/40 bg-blue-500/[0.08] p-3.5">
       <div className="text-sm font-bold">How do you want to trade “{belief.length > 60 ? belief.slice(0, 57) + '…' : belief}”?</div>
-      <Chips label="How much do you want to put on this hunch?" value={budget} onChange={setBudget}
+      <Chips label="How much do you want to put on this idea?" value={budget} onChange={setBudget}
         items={[...BUDGETS.map((b) => ({ v: b, l: `$${b.toLocaleString()}` })), { v: 0, l: 'Not sure' }]} />
       <Chips label="For how long?" value={days} onChange={setDays} items={TIMES.map((t) => ({ v: t.d, l: t.l }))} />
       {!goalStep ? (
