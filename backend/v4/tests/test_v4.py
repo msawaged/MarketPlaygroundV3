@@ -1089,6 +1089,20 @@ def test_brain_learns_from_real_news_both_sides(monkeypatch):
     assert r["ok"] == 2 and {s for _, s in seen} == {"seed_news"} and {t for t, _ in seen} == set(got)
 
 
+def test_opposite_side_keeps_names_and_acronyms_capitalised():
+    f = seeder._lower_first
+    assert f("AI demand will keep lifting chips") == "AI demand will keep lifting chips"
+    assert f("UK regulators will tighten rules") == "UK regulators will tighten rules"
+    assert f("Microsoft pulling back will hurt neoclouds") == "Microsoft pulling back will hurt neoclouds"
+    assert f("Tesla's robotaxi push will grow") == "Tesla's robotaxi push will grow"
+    assert f("Hong Kong regulators will act") == "Hong Kong regulators will act"
+    assert f("Canadian plant closures will shift output") == "Canadian plant closures will shift output"
+    assert f("Fresenius will win clinics", "rivals lose to Fresenius in China") == "Fresenius will win clinics"
+    assert f("Cheap chips will spread") == "cheap chips will spread"
+    assert f("A Democratic Congress will block it") == "a Democratic Congress will block it"
+    assert f("Data center demand will rise") == "data center demand will rise"
+
+
 def test_price_target_below_today_means_bearish():
     interp = {"direction": "bullish", "target_price": 5.0}
     valid = [{"ticker": "SLS", "price": 9.0, "direction": "bullish"}, {"ticker": "XBI", "price": 90.0, "direction": "bullish"}]

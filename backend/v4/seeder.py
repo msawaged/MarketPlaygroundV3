@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import os
 import random
 import threading
@@ -89,6 +90,37 @@ def _random_past_weekday(min_days_ago: int, max_days_ago: int) -> date:
     return d
 
 
+_PROPER = {
+    "iran", "israel", "china", "canada", "mexico", "europe", "japan", "russia", "ukraine", "india", "brazil", "taiwan",
+    "korea", "germany", "britain", "france", "italy", "venezuela", "gaza", "gulf", "saudi", "english", "fed",
+    "congress", "senate", "democrats", "republicans", "democratic", "republican", "trump", "musk", "washington",
+    "wall", "medicare", "medicaid", "opec", "hormuz", "microsoft", "apple", "tesla", "nvidia", "amazon", "google",
+    "alphabet", "meta", "intel", "oracle", "boeing", "netflix", "walmart", "palantir", "anthropic", "openai",
+}
+
+
+def _lower_first(sentence: str, context: str = "") -> str:
+    """Lower-case a hunch's first letter so it reads naturally after "I don't think ...", unless the first word is a
+    name or acronym: "AI ..." / "UK ..." / "Microsoft ..." / "Iran ..." / "Tesla's ..." stay as they are.
+    context: other sentence-case text about the same story (summary, reasons); a word written with a capital in the
+    middle of a sentence there is a name."""
+    words = sentence.split()
+    if not words:
+        return sentence
+    w = words[0]
+    core = re.sub(r"[^\w'’-]", "", w)
+    bare = re.sub(r"['’]s$", "", core)
+    if bare.lower() in ("a", "an", "the"):
+        return w[0].lower() + sentence[1:]
+    if (any(ch.isupper() or ch.isdigit() for ch in core[1:])                 # AI, UK, US-China, McDonald's, 5G
+            or bare != core                                                    # possessive: Brazil's, Oracle's
+            or (len(words) > 1 and words[1][:1].isupper())                     # Hong Kong, Social Security, North Sea
+            or bare.lower() in _PROPER or re.search(r"(ian|ese)$", bare)       # common names, Canadian, Chinese
+            or re.search(rf"[a-z,;:] {re.escape(bare)}\b", context)):          # capitalised mid-sentence elsewhere
+        return sentence
+    return w[0].lower() + sentence[len(w[0]):] if w[0].isupper() else sentence
+
+
 def news_beliefs(limit: int) -> list[str]:
     """Today's real headlines as hunches (from the Moving now feed), each paired with its opposite so the
     network sees both sides of real news. Only ones not seeded before."""
@@ -104,7 +136,8 @@ def news_beliefs(limit: int) -> list[str]:
         h = (it.get("hunch") or "").strip().rstrip(".")
         if not h or h == it.get("headline"):
             continue  # no AI rewrite: a raw headline isn't a belief
-        for b in (h, f"I don't think {h[0].lower() + h[1:]}"):
+        context = " ".join([it.get("summary") or "", it.get("why") or ""] + [c.get("why") or "" for c in it.get("companies", [])])
+        for b in (h, f"I don't think {_lower_first(h, context)}"):
             if b.lower() not in used and b not in out:
                 out.append(b)
     return out[:limit]

@@ -73,3 +73,25 @@ Changed:
 - Track record tooltip: "graded automatically 90 days (about 3 months) after each pick".
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 106 passed.
+
+## 2026-11-07
+
+Walked /welcome, /trending, /live, /story, /account, /brain on the live site at 390x844: no page errors, no 4xx/5xx,
+no horizontal overflow (only a sandbox-proxy-blocked third-party request).
+
+Found:
+- Brain page "Just learned" showed the opposite side of news hunches with names and acronyms lower-cased:
+  "I don't think microsoft pulling back on AI computing deals...". In the live DB, 49 "I don't think aI ..." beliefs,
+  plus "uK", "iran", "tesla's", "ukraine's", "european", "microsoft" (seeder.news_beliefs lower-cased the first letter blindly).
+- "Just graded by the market" showed the signed call result next to the stock: "FXA bearish ✗ -3.8% vs S&P 500".
+  A reader sees FXA lagging the S&P by 3.8% (a win for a bearish call) next to a red ✗; in fact FXA beat the S&P.
+- The ranker box said "live since Nov 7" (yesterday "since Nov 6"): the date is the last daily refit, not when it went live.
+
+Changed:
+- seeder._lower_first: keeps acronyms, possessives, multi-word names, nationalities, a short list of common names, and
+  any word written capitalised mid-sentence in the story's own summary/reasons; lower-cases the rest ("a", "the" too). Test added.
+- /v4/brain graded items carry stock_vs_market (ret - spy_ret); the feed shows it for bullish/bearish as
+  "stock vs S&P 500" (FXA bearish ✗ +3.8%), and labels volatile calls "size of move vs S&P".
+- Ranker box: "retrained Nov 7".
+
+Checks: vite build passes, payoff/figures tests pass, backend tests 107 passed.

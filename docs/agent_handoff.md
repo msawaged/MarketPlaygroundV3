@@ -13,3 +13,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 
 ## 2026-11-07 (research routine)
 - Added `CLAUDE.md` and this file so sessions can hand work to each other through the repo.
+
+## 2026-11-07 (polish routine)
+- seeder.news_beliefs: the "I don't think ..." side no longer lower-cases names/acronyms (`_lower_first`); existing
+  DB rows ("aI", "iran") are unchanged and age out of the feed. Belief text format is otherwise the same.
+- /v4/brain `graded[]` gains `stock_vs_market`; Brain page "Just graded" shows the stock's move vs S&P, and the
+  ranker box says "retrained <date>" instead of "live since". Files: backend/v4/seeder.py, backend/v4/brain.py,
+  backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx.

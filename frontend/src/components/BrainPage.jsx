@@ -340,7 +340,7 @@ export default function BrainPage({ viewOnly = false }) {
               </p>
               {sk.ranker?.active && sk.ranker.oos?.n > 0 && (
                 <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · live since {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · retrained {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                   <div className="mt-1 text-xs text-slate-200">
                     Tested on {Number(sk.ranker.oos.n).toLocaleString()} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
                     (old way: {Math.round((sk.ranker.old?.beat || 0) * 100)}%) and beat our other ideas by {pts(sk.ranker.oos.lift)} pts (old way: {pts(sk.ranker.old?.lift || 0)}).
@@ -406,18 +406,23 @@ export default function BrainPage({ viewOnly = false }) {
 
         <h2 className="mt-8 text-xl font-extrabold">Just graded by the market</h2>
         <div className="mt-2">
-          <Feed every={2100} items={d?.graded || []} render={(x) => (
+          <Feed every={2100} items={d?.graded || []} render={(x) => {
+            // Show the stock's own move vs the S&P (a bearish call wins when it's negative), not the signed call result.
+            const stock = (x.direction === 'bullish' || x.direction === 'bearish') && x.stock_vs_market != null;
+            const v = stock ? x.stock_vs_market : x.vs_market;
+            return (
             <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-bold">{x.ticker} <span className="text-xs font-semibold text-slate-400">{x.direction} · after {x.days} days</span></div>
                 <div className="text-[11px] text-slate-500">{ago(x.at, now)}</div>
               </div>
               <div className={`text-right font-extrabold ${x.right ? 'text-green-300' : 'text-red-300'}`}>
-                {x.right ? '✓' : '✗'} {x.vs_market >= 0 ? '+' : ''}{(x.vs_market * 100).toFixed(1)}%
-                <div className="text-[10px] font-medium text-slate-500">vs S&amp;P 500</div>
+                {x.right ? '✓' : '✗'} {v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%
+                <div className="text-[10px] font-medium text-slate-500">{stock ? 'stock vs S&P 500' : x.direction === 'volatile' ? 'size of move vs S&P' : 'vs S&P 500'}</div>
               </div>
             </div>
-          )} />
+            );
+          }} />
         </div>
 
         <h2 className="mt-8 text-xl font-extrabold">Growing every day</h2>
