@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from datetime import date, datetime, timedelta, timezone
 from typing import Callable
 
@@ -117,6 +118,12 @@ class FeatRow:
     def __init__(self, d: dict):
         self.v = np.fromiter((d.get(k, 0.0) for k in FeatRow.KEYS), dtype=np.float64, count=len(FeatRow.KEYS))
 
+    @classmethod
+    def from_array(cls, v: np.ndarray) -> "FeatRow":
+        r = cls.__new__(cls)
+        r.v = np.array(v, dtype=np.float64)
+        return r
+
     def __getitem__(self, k: str) -> float:
         return float(self.v[FeatRow.IDX[k]])
 
@@ -141,23 +148,44 @@ def directional(direction) -> bool:
     return str(direction).lower() in ("bullish", "bearish")
 
 
-def load() -> list[dict]:
-    """One dict per belief: {date, cands: [{f: {...}, ex, top}]}."""
+AUG_MAX = int(os.getenv("MP_AUG_MAX", "40000"))  # cap on time-shifted training ideas held in memory (512 MB jobs)
+
+
+def load(include_aug: bool = False) -> list[dict]:
+    """One dict per belief: {date, cands: [{f: {...}, ex, top}]}. With include_aug, time-shifted practice calls
+    (augment.py) are added as beliefs flagged aug=True with src_date; they are only ever used for training."""
     rows = db.query(
         """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, o.ret, o.spy_ret, b.as_of_date
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ?""", (DAYS,))
+    if include_aug:
+        try:
+            from . import augment
+            augment.ensure_table()
+            for a in db.query(
+                    """SELECT basket, shift, src_date, as_of, direction, num, dir_excess, ret, spy_ret FROM aug_ideas
+                       WHERE dir_excess IS NOT NULL ORDER BY id LIMIT ?""", (AUG_MAX,)):
+                rows.append({"belief_id": f"aug:{a['basket']}:{a['shift']}", "direction": a["direction"],
+                             "features": a["num"], "final_rank": None, "dir_excess": a["dir_excess"], "ret": a["ret"],
+                             "spy_ret": a["spy_ret"], "as_of_date": a["as_of"], "src_date": a["src_date"],
+                             "num_only": True})
+        except Exception:
+            pass
     by: dict[str, dict] = {}
     for r in rows:
         if not directional(r["direction"]):
             continue  # graded on |move| (see grader), not comparable with the others' directional excess
-        num = _with_derived((db.loads(r["features"], {}) or {}).get("num", {}))
+        raw = db.loads(r["features"], {}) or {}
+        num = _with_derived(raw if r.get("num_only") else raw.get("num", {}))
         sign = -1.0 if str(r["direction"]).lower() == "bearish" else 1.0
-        f = {k: float(num.get(k, NEUTRAL.get(k, 0.0)) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS}
-        f["bearish"] = 1.0 if sign < 0 else 0.0
-        for k in REG_KEYS:
-            f[k] = float(num.get(k, 0.0) or 0.0)
+        # raw values as one small float array (FEATS, bearish, regime); z-scores are added per belief below.
+        # A dict of Python floats per idea here was the job's memory peak (~5 KB x every graded idea).
+        f = np.fromiter([float(num.get(k, NEUTRAL.get(k, 0.0)) or 0.0) * (sign if k in DIRECTIONAL else 1.0) for k in FEATS]
+                        + [1.0 if sign < 0 else 0.0] + [float(num.get(k, 0.0) or 0.0) for k in REG_KEYS],
+                        dtype=np.float64, count=len(FEATS) + 1 + len(REG_KEYS))
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
+        if r.get("src_date"):
+            b["aug"], b["src_date"] = True, str(r["src_date"])[:10]
         ex = float(r["dir_excess"])
         # risk-matched outcome: beat what the S&P would have done at this stock's own beta (as of the pick's date).
         # Without a stored beta (older picks not yet backfilled) it equals the plain outcome.
@@ -168,21 +196,24 @@ def load() -> list[dict]:
     _set_keys()
     del rows  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
+    nf, idx = len(FEATS), FeatRow.IDX
+    xa = [(idx["z_" + a], idx[g]) for a, g in INTERACTIONS]
     for b in out:  # within-belief versions: selection is a choice among this belief's ideas
-        for k in FEATS:
-            vals = np.array([c["f"][k] for c in b["cands"]])
-            mu, sd = vals.mean(), vals.std()
-            for c, z in zip(b["cands"], (vals - mu) / (sd if sd > 1e-9 else 1.0)):
-                c["f"]["z_" + k] = float(z)
-        for c in b["cands"]:
-            for a, g in INTERACTIONS:
-                c["f"][f"zx_{a}_{g}"] = c["f"]["z_" + a] * c["f"][g]
+        raw = np.vstack([c["f"] for c in b["cands"]])                 # ideas x (FEATS, bearish, regime)
+        mu, sd = raw[:, :nf].mean(0), raw[:, :nf].std(0)
+        z = (raw[:, :nf] - mu) / np.where(sd > 1e-9, sd, 1.0)
+        full = np.zeros((len(b["cands"]), len(FeatRow.KEYS)))
+        full[:, :raw.shape[1]] = raw
+        full[:, raw.shape[1]:raw.shape[1] + nf] = z
+        for j, (zi, gi) in enumerate(xa):
+            full[:, raw.shape[1] + nf + j] = full[:, zi] * full[:, gi]
+        for c, v in zip(b["cands"], full):
+            c["f"] = FeatRow.from_array(v)
         mean_ex = float(np.mean([c["ex"] for c in b["cands"]]))
         mean_exa = float(np.mean([c["exa"] for c in b["cands"]]))
         for c in b["cands"]:
             c["rel"] = c["ex"] - mean_ex
             c["rela"] = c["exa"] - mean_exa
-            c["f"] = FeatRow(c["f"])  # compact from here on
     out.sort(key=lambda b: b["date"])
     return out
 
@@ -217,12 +248,19 @@ def _pick(b: dict, c: dict) -> tuple[float, float, float, float]:
 
 
 def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
-    x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
+    x = _matrix(train, keys)
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in train for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + alpha * np.eye(len(keys)), xs.T @ y)
     return lambda f: float(((np.array([f[k] for k in keys]) - mu) / sd) @ w), dict(zip(keys, np.round(w, 4).tolist()))
+
+
+def _matrix(beliefs: list[dict], keys: list[str]) -> np.ndarray:
+    """Ideas x keys, sliced straight from the compact rows (no per-value Python floats: this was a memory peak)."""
+    cols = [FeatRow.IDX[k] for k in keys]
+    rows = [c["f"].v[cols] for b in beliefs for c in b["cands"]]
+    return np.vstack(rows) if rows else np.zeros((0, len(keys)))
 
 
 class MLPRanker:
@@ -246,7 +284,7 @@ class MLPRanker:
 
 
 def _xy(train: list[dict], keys: list[str], label: str):
-    x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
+    x = _matrix(train, keys)
     y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
     return x, y
 
@@ -258,7 +296,7 @@ def _fit_mlp(train: list[dict], keys: list[str], label: str = "rel"):
 
 def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
     from sklearn.ensemble import HistGradientBoostingRegressor
-    x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
+    x = _matrix(train, keys)
     y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
     m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
                                       l2_regularization=1.0, random_state=7).fit(x, y)
@@ -266,7 +304,9 @@ def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
 
 
 def run(folds: int = 5, data: list[dict] | None = None) -> dict:
-    data = load() if data is None else data
+    data = load(include_aug=True) if data is None else data
+    aug = [b for b in data if b.get("aug")]
+    data = [b for b in data if not b.get("aug")]  # every test, rule and baseline is on real calls only
     dates = sorted({b["date"] for b in data})
     if len(data) < 150:
         return {"error": f"only {len(data)} graded beliefs"}
@@ -299,7 +339,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     }
     zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)",
-                                          "neural net (learned)", "neural net (risk-adjusted)"]}
+                                          "neural net (learned)", "neural net (risk-adjusted)"]
+               + (["gbm (+ shifted)", "gbm (risk-adjusted, + shifted)"] if aug else [])}
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
@@ -325,6 +366,15 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             res["gbm (risk-adjusted)"] += [_choose(b, gbma) for b in test]
         except Exception:
             pass
+        if aug:  # same trees, trained with time-shifted practice calls added (both dates before the cutoff)
+            extra = [b for b in aug if b["date"] < cutoff and b["src_date"] < cutoff]
+            try:
+                g2 = _fit_gbm(train + extra, zkeys)
+                res["gbm (+ shifted)"] += [_choose(b, g2) for b in test]
+                g2a = _fit_gbm(train + extra, zkeys, label="rela")
+                res["gbm (risk-adjusted, + shifted)"] += [_choose(b, g2a) for b in test]
+            except Exception:
+                pass
         try:  # the neural network competes on exactly the same inputs, labels and walk-forward test
             mlp = _fit_mlp(train, zkeys)
             res["neural net (learned)"] += [_choose(b, mlp) for b in test]
@@ -332,7 +382,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             res["neural net (risk-adjusted)"] += [_choose(b, mlpa) for b in test]
         except Exception:
             pass
-    out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS,
+    out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS, "shifted_beliefs": len(aug),
            "test_from": dates[start], "results": {k: _metrics(v) for k, v in res.items()},
            "ridge_weights_last": weights,
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
@@ -405,17 +455,21 @@ def fit_production(results: dict | None = None) -> dict:
     they never saw): ridge, gradient-boosted trees and a small neural network (each trees/net also on risk-matched
     outcomes). The one with the bigger out-of-sample edge goes live, but only if it clears the gate; otherwise nothing
     changes the ranking."""
-    data = load()
-    if len(data) < 150:
+    data = load(include_aug=True)
+    real = [b for b in data if not b.get("aug")]
+    if len(real) < 150:
         return {"active": False, "reason": "not enough graded calls"}
     full = results or run(data=data)  # reuse the same data: loading it twice ran the nightly job out of memory
+    aug, data = [b for b in data if b.get("aug")], real
     res = full["results"]
     risk = float(full.get("beta_coverage", 0) or 0) >= RISK_COVERAGE
     app = res.get("app (current #1)", {})
     cands = {"ridge": (res.get("ridge (learned)", {}), "rel"), "gbm": (res.get("gbm (learned)", {}), "rel"),
              "gbm_adj": (res.get("gbm (risk-adjusted)", {}), "rela"),
              "mlp": (res.get("neural net (learned)", {}), "rel"), "mlp_adj": (res.get("neural net (risk-adjusted)", {}), "rela")}
-    x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])
+    if aug and "gbm (+ shifted)" in res:
+        cands.update({"gbm_aug": (res["gbm (+ shifted)"], "rel"), "gbm_adj_aug": (res["gbm (risk-adjusted, + shifted)"], "rela")})
+    x = _matrix(data, ZKEYS)
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
@@ -430,10 +484,12 @@ def fit_production(results: dict | None = None) -> dict:
             import base64
             import pickle
             from sklearn.ensemble import HistGradientBoostingRegressor
-            yy = np.array([max(-0.5, min(0.5, c[label])) for b in data for c in b["cands"]])
-            m = MLPRanker(x, yy) if kind == "mlp" else HistGradientBoostingRegressor(
+            fit_on = data + aug if best.endswith("_aug") else data
+            xx = x if fit_on is data else _matrix(fit_on, ZKEYS)
+            yy = np.array([max(-0.5, min(0.5, c[label])) for b in fit_on for c in b["cands"]])
+            m = MLPRanker(xx, yy) if kind == "mlp" else HistGradientBoostingRegressor(
                 max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
-                random_state=7).fit(x, yy)
+                random_state=7).fit(xx, yy)
             blob = base64.b64encode(pickle.dumps(m)).decode()
             db.execute("DELETE FROM kv_cache WHERE k = ?", (GBM_KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (GBM_KEY, blob, datetime.now(timezone.utc).isoformat()))
@@ -441,7 +497,7 @@ def fit_production(results: dict | None = None) -> dict:
             best, kind, (oos, label) = "ridge", "ridge", cands["ridge"]
     active = _passes(oos, app, risk)
     out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
-           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data),
+           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data), "shifted": len(aug),
            "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
            "candidates": {k: m for k, (m, _) in cands.items()}}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))

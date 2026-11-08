@@ -1651,7 +1651,7 @@ def test_nightly_refit_loads_graded_calls_once_and_compactly(monkeypatch):
                        (pid, 90, "2025-06-01", 10.0, 0.0, 0.0, rng.gauss(0, 0.1), "2025-06-01"))
     calls = []
     real = research.load
-    monkeypatch.setattr(research, "load", lambda: calls.append(1) or real())
+    monkeypatch.setattr(research, "load", lambda **kw: calls.append(1) or real(**kw))
     out = research.fit_production()
     assert len(calls) == 1 and out["trained_on"] == 170                    # never two copies in memory at once
     row = real()[0]["cands"][0]["f"]
@@ -2085,3 +2085,62 @@ def test_brain_forward_test_counts_only_live_calls():
     f = brain._forward()["by_days"]["7"]
     assert f["beliefs"] == 2 and f["top_beat"] == 0.5
     assert abs(f["top_avg"] - 0.01) < 1e-9 and abs(f["lift"] - (0.02 + -0.02) / 2) < 1e-9
+
+
+def test_time_shifted_practice_calls_are_training_only(monkeypatch):
+    # augment: a practice basket re-scored a quarter earlier/later from prices only (no Claude); research uses the
+    # shifted copies for training only, never for a test or a baseline
+    from datetime import timedelta as _td
+    from backend.v4 import augment, research
+    asof = TODAY - _td(days=400)
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-aug", "seed", "x", "x", asof.isoformat() + "T00:00:00", asof.isoformat(), "seed_backfill"))
+    for j, (t, d) in enumerate((("WINR", "bullish"), ("LOSR", "bullish"), ("FLAT", "bearish"), ("PIPE", "volatile"))):
+        db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                   (f"p-aug{j}", "b-aug", t, d, asof.isoformat(), 10.0, db.dumps({"num": {"same_dir": 1.0, "log_horizon": 0.7}}), j + 1))
+    out = augment.generate(10)
+    assert out["baskets"] == 1 and out["ideas"] == 6                    # 3 directional ideas x 2 shifts; volatile skipped
+    rows = db.query("SELECT shift, as_of, ticker, num, dir_excess FROM aug_ideas WHERE basket = 'b-aug' ORDER BY id")
+    assert {r["shift"] for r in rows} == {-91, 91}
+    for r in rows:  # features only from prices up to the shifted date; the stored static fields carry over
+        num = json.loads(r["num"])
+        assert num["same_dir"] == 1.0 and "mom60" in num
+        d = __import__("datetime").date.fromisoformat(r["as_of"])
+        assert abs(num["mom60"] - market.features(r["ticker"], d)["mom60"]) < 1e-9
+    win = [r["dir_excess"] for r in rows if r["ticker"] == "WINR"]
+    los = [r["dir_excess"] for r in rows if r["ticker"] == "LOSR"]
+    assert min(win) > max(los)                                          # the uptrend beat the downtrend both times
+    assert augment.generate(10)["baskets"] == 0                         # done baskets aren't redone
+    data = research.load(include_aug=True)
+    aug = [b for b in data if b.get("aug")]
+    assert len(aug) == 2 and all(b["src_date"] == asof.isoformat() for b in aug)
+    assert not any(b.get("aug") for b in research.load())
+
+
+def test_research_adds_shifted_candidates_without_touching_tests(monkeypatch):
+    from backend.v4 import augment, research
+    test_research_walk_forward_runs_and_stores(monkeypatch)  # 400 real beliefs from 2024-01-01, planted momentum
+    base = research.run()["results"]
+    augment.ensure_table()
+    rng = __import__("random").Random(9)
+    d0 = __import__("datetime").date(2023, 6, 1)
+    rows = []
+    for i in range(300):
+        asof = (d0 + __import__("datetime").timedelta(days=i * 3)).isoformat()
+        src = "2099-01-01" if i % 10 == 0 else asof          # a basket "from the future" must never be trained on
+        for j in range(4):
+            mom = rng.uniform(-0.3, 0.3)
+            rows.append((f"a{i}-{j}", f"bk{i}", 91, src, asof, f"T{j}", "bullish", json.dumps({"mom60": mom}),
+                         mom * 0.3 + rng.gauss(0, 0.05), 0.0, 0.0, asof))
+    db.executemany("INSERT INTO aug_ideas (id, basket, shift, src_date, as_of, ticker, direction, num, dir_excess, ret, spy_ret, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+    seen = []
+    real_fit = research._fit_gbm
+    monkeypatch.setattr(research, "_fit_gbm", lambda train, keys, label="rel": seen.append(train) or real_fit(train, keys, label))
+    out = research.run()
+    r = out["results"]
+    assert out["shifted_beliefs"] == 300 and r["gbm (+ shifted)"]["n"] == r["gbm (learned)"]["n"] > 100
+    assert r["app (current #1)"] == base["app (current #1)"]          # baselines and tests: real calls only
+    assert r["gbm (+ shifted)"]["lift"] > 0.02
+    for train in seen:
+        assert not any(b.get("aug") and b["src_date"] >= "2099" for b in train)
+    assert any(any(b.get("aug") for b in train) for train in seen)

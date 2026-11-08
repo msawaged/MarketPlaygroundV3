@@ -29,3 +29,6 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - brain.py `_forward()` → `/v4/brain` `forward`: live forward test (non-backfill calls, directional ideas) per
   checkpoint: #1 beat rate, avg, lift vs same-belief ideas, t. BrainPage shows it under the scorecard. This is the
   metric Murad will use before trading his own money; don't fold backfill into it.
+- augment.py (new) + seeder hourly `augment` step + research.load(include_aug) / run / fit_production "+ shifted"
+  candidates. research.load builds compact rows directly (FeatRow.from_array, `_matrix`). Shifted calls are
+  training-only; don't let them into tests or baselines. Env: MP_AUG_SHIFTS, MP_AUG_BATCH, MP_AUG_MAX.

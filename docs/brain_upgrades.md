@@ -233,3 +233,34 @@ old network's problem was its inputs and target, not the architecture.
 **What counts as a win.** The Brain/ranker numbers list the neural-net candidates; a real win is a net candidate
 becoming the live ranker through the same gate, or the old network's nightly scores no longer jumping on identical
 data.
+
+## 2026-11-08 — Time-shifted practice calls: more graded training data with no Claude spend
+
+**Problem.** Data is the limit. Graded 90-day ideas barely grow (108,002 → 108,779 in a week); real users' calls
+start grading in late January; more Claude backfill costs money. A learning curve on ranker v2's own walk-forward
+(training on 25/50/75/100% of the available beliefs) put the live model type's risk-matched lift at +0.36% / +0.19% /
++0.62% / +0.99%: noisy, but rising with data.
+
+**Change.** `backend/v4/augment.py`: each practice belief's basket of directional ideas is re-scored at its date
+±91 days (`MP_AUG_SHIFTS`), with features from `market.features(ticker, shifted_date)` (prices up to that date only)
+and the 90-day outcome after it, stored in `aug_ideas`. The hourly seeder job adds a batch (`MP_AUG_BATCH`, 120
+baskets, 4-minute cap). Research:
+- shifted calls are training data only: every test, fixed rule and baseline (including "app (current #1)") is on
+  real calls, unchanged;
+- a shifted call trains a fold only when its own date AND its source belief's date are before that fold's cutoff
+  (90-day embargo; no test belief lends its basket);
+- they enter as their own candidates, "gbm (+ shifted)" and "gbm (risk-adjusted, + shifted)", so the walk-forward
+  decides; `fit_production` picks among all candidates through the unchanged gate; if a "+ shifted" one wins, the
+  live model is fit on real + shifted.
+- Memory: `research.load` now builds compact rows directly (no per-idea dict of Python floats) and model matrices
+  are sliced from them (`_matrix`). With a simulated 45k shifted ideas the run + refit stayed ~320 MB; cap
+  `MP_AUG_MAX` = 40,000 shifted ideas.
+
+**Known limit.** Claude picked the basket with today's knowledge (the same hindsight the practice calls already
+have); shifting dates adds no new outcome information, and tests stay on real calls only.
+
+**Checks.** Backend tests: 111 passed (new: `test_time_shifted_practice_calls_are_training_only`,
+`test_research_adds_shifted_candidates_without_touching_tests`).
+
+**What counts as a win.** Once a few thousand baskets are shifted (~1–2 days of hourly batches), "+ shifted"
+candidates beat their plain versions on the same test, and one becomes the live ranker through the gate.

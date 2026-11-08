@@ -268,6 +268,13 @@ def auto(claude_client=None, batch_override: Optional[int] = None, concurrency: 
     except Exception as e:
         out["enrich"] = {"error": f"{type(e).__name__}: {e}"}
     lap("enrich")
+    try:  # time-shifted copies of practice calls: more graded training data for ranker v2, no Claude (augment.py)
+        import time as _time
+        from . import augment
+        out["augment"] = augment.generate(int(os.getenv("MP_AUG_BATCH", "120")), deadline=_time.time() + 240)
+    except Exception as e:
+        out["augment"] = {"error": f"{type(e).__name__}: {e}"}
+    lap("augment")
     try:  # daily check that real option implied volatility is reachable (practice options use it when it is)
         if _kv_get("iv_probe_date") != market.today().isoformat():
             from datetime import timedelta as _td
