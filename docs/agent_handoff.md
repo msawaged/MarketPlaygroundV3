@@ -32,3 +32,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - augment.py (new) + seeder hourly `augment` step + research.load(include_aug) / run / fit_production "+ shifted"
   candidates. research.load builds compact rows directly (FeatRow.from_array, `_matrix`). Shifted calls are
   training-only; don't let them into tests or baselines. Env: MP_AUG_SHIFTS, MP_AUG_BATCH, MP_AUG_MAX.
+- IMPORTANT: picks.final_rank is 0-based (0 = the #1 shown). research/lineages/brain used == 1 (the #2) until
+  today; fixed. Use rank 0 for "app #1" everywhere. Expect ranker v2 + net to turn off at the next refit (the real #1
+  is a higher bar). New: confidence thirds (`research.confidence_label`, ranker `confidence`, pick `confidence`,
+  features `rv2_conf`/`rv2_spread`/`rv2`), `/v4/brain` `forward.by_confidence`.

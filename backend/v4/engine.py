@@ -236,6 +236,8 @@ def process_belief(
         parts = nn.on_claude_scale(rv2, [v["final_score"] for v in valid])
         for i, v in enumerate(valid):
             v["final_score"] = (1 - research.WEIGHT) * v["final_score"] + research.WEIGHT * parts[i]
+            v["rv2"] = float(rv2[i])
+            records[i]["rv2"] = round(float(rv2[i]), 6)  # kept with the pick for the forward test (not a model input)
     # A strategist that proved itself on calls it never saw gets a modest say (see lineages.pick_champion).
     champ = _champion()
     raw = None
@@ -256,6 +258,23 @@ def process_belief(
     def _leads(v):
         return 1 if core not in ("bullish", "bearish") or v.get("direction") == core else 0
     valid.sort(key=lambda v: (_leads(v), v["final_score"]), reverse=True)
+
+    # How sure the live ranker is about the #1 idea: its score minus the belief's average, against the walk-forward
+    # cuts for that model (thirds). In the walk-forward test the most confident third beat the S&P far more often.
+    # With the ranker off, the same is measured on the app's own score (final_score), with that score's cuts.
+    confidence = ""
+    if valid and not backfill:
+        try:
+            if rv2 and "rv2" in valid[0]:
+                spread = valid[0]["rv2"] - sum(v.get("rv2", 0.0) for v in valid) / len(valid)
+            else:
+                spread = valid[0]["final_score"] - sum(v["final_score"] for v in valid) / len(valid)
+            confidence = research.confidence_label(spread, ((research.ranker() or {}).get("confidence") or {}).get("cuts"))
+            if confidence:
+                valid[0]["features"]["rv2_conf"] = confidence
+                valid[0]["features"]["rv2_spread"] = round(spread, 6)
+        except Exception:
+            confidence = ""
 
     # 5. structures
     picks_out = []
@@ -297,6 +316,7 @@ def process_belief(
             "score": round(v["final_score"], 4), "claude_score": v["score"],
             "nn_score": None if v["nn_score"] is None else round(v["nn_score"], 4),
             "track_record": v["track"], "shown": shown, "alt": alt,
+            "confidence": confidence if final_rank == 0 else "",
             "budget": strategy.size_for_budget(trade, float(v["price"]), prefs["budget_usd"]) if prefs.get("budget_usd") else None,
             "levels": None if backfill else _levels(v["ticker"]),
             "trend": None if backfill or not shown else _trend(v["ticker"]),

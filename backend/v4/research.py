@@ -155,7 +155,8 @@ def load(include_aug: bool = False) -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}. With include_aug, time-shifted practice calls
     (augment.py) are added as beliefs flagged aug=True with src_date; they are only ever used for training."""
     rows = db.query(
-        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, o.ret, o.spy_ret, b.as_of_date
+        """SELECT p.belief_id, p.direction, p.features, p.final_rank, p.final_score, o.dir_excess, o.ret, o.spy_ret,
+                  b.as_of_date
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ?""", (DAYS,))
     if include_aug:
@@ -192,7 +193,8 @@ def load(include_aug: bool = False) -> list[dict]:
         beta = num.get("beta")
         exa = ex if beta is None or r["ret"] is None or r["spy_ret"] is None else \
             sign * (float(r["ret"]) - float(beta) * float(r["spy_ret"]))
-        b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": r["final_rank"] == 1})
+        b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": r["final_rank"] == 0,
+                           "app": float(r.get("final_score") or 0.0)})  # final_rank is 0-based: 0 is the #1 shown
     _set_keys()
     del rows  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
@@ -235,6 +237,24 @@ def _metrics(picks: list[tuple]) -> dict:
         out.update({"beat_adj": round(float((exa > 0).mean()), 4), "avg_adj": round(float(exa.mean()), 4),
                     "lift_adj": round(float(lifta.mean()), 4), "lift_adj_t": tstat(lifta)})
     return out
+
+
+def _by_confidence(picks: list[tuple], spreads: list[float]) -> dict:
+    """Split a candidate's walk-forward picks into thirds by confidence (how far the top idea's score stood out from
+    the belief's average) and score each third. cuts are the two spread values between the thirds."""
+    a = np.array(spreads)
+    q1, q2 = (float(x) for x in np.quantile(a, [1 / 3, 2 / 3]))
+    out = {"cuts": [round(q1, 6), round(q2, 6)]}
+    for name, lo, hi in (("low", -np.inf, q1), ("mid", q1, q2), ("high", q2, np.inf)):
+        out[name] = _metrics([p for p, x in zip(picks, a) if lo < x <= hi])
+    return out
+
+
+def confidence_label(spread: float, cuts) -> str:
+    """'high' / 'medium' / 'low' for a live call, using the walk-forward cuts of the model that scored it."""
+    if not cuts or len(cuts) != 2:
+        return ""
+    return "high" if spread > cuts[1] else "medium" if spread > cuts[0] else "low"
 
 
 def _choose(b: dict, score: Callable[[dict], float]) -> tuple[float, float, float, float]:
@@ -345,6 +365,17 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
     weights = None
+    spreads: dict[str, list[float]] = {}
+
+    def learned(name: str, fn, test: list[dict]) -> None:
+        """Pick each test belief's top idea and remember how far it stood out (top score minus the belief's mean):
+        the model's confidence, used to show how the most confident calls did."""
+        for b in test:
+            sc = [fn(c["f"]) for c in b["cands"]]
+            i = int(np.argmax(sc))
+            res[name].append(_pick(b, b["cands"][i]))
+            spreads.setdefault(name, []).append(float(sc[i] - np.mean(sc)))
+
     for blk in blocks:
         lo, hi = blk[0], blk[-1]
         cutoff = (date.fromisoformat(lo) - timedelta(days=DAYS)).isoformat()
@@ -354,35 +385,39 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             continue
         for name, fn in fixed.items():
             if fn is None:
-                res[name] += [_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][0])) for b in test]
+                for b in test:
+                    top = next((c for c in b["cands"] if c["top"]), b["cands"][0])
+                    res[name].append(_pick(b, top))
+                    spreads.setdefault(name, []).append(top.get("app", 0.0) - float(np.mean([c.get("app", 0.0) for c in b["cands"]])))
             else:
                 res[name] += [_choose(b, fn) for b in test]
         ridge, weights = _fit_ridge(train, zkeys)
-        res["ridge (learned)"] += [_choose(b, ridge) for b in test]
+        learned("ridge (learned)", ridge, test)
         try:
             gbm = _fit_gbm(train, zkeys)
-            res["gbm (learned)"] += [_choose(b, gbm) for b in test]
+            learned("gbm (learned)", gbm, test)
             gbma = _fit_gbm(train, zkeys, label="rela")  # learns from risk-matched outcomes, not raw ones
-            res["gbm (risk-adjusted)"] += [_choose(b, gbma) for b in test]
+            learned("gbm (risk-adjusted)", gbma, test)
         except Exception:
             pass
         if aug:  # same trees, trained with time-shifted practice calls added (both dates before the cutoff)
             extra = [b for b in aug if b["date"] < cutoff and b["src_date"] < cutoff]
             try:
                 g2 = _fit_gbm(train + extra, zkeys)
-                res["gbm (+ shifted)"] += [_choose(b, g2) for b in test]
+                learned("gbm (+ shifted)", g2, test)
                 g2a = _fit_gbm(train + extra, zkeys, label="rela")
-                res["gbm (risk-adjusted, + shifted)"] += [_choose(b, g2a) for b in test]
+                learned("gbm (risk-adjusted, + shifted)", g2a, test)
             except Exception:
                 pass
         try:  # the neural network competes on exactly the same inputs, labels and walk-forward test
             mlp = _fit_mlp(train, zkeys)
-            res["neural net (learned)"] += [_choose(b, mlp) for b in test]
+            learned("neural net (learned)", mlp, test)
             mlpa = _fit_mlp(train, zkeys, label="rela")
-            res["neural net (risk-adjusted)"] += [_choose(b, mlpa) for b in test]
+            learned("neural net (risk-adjusted)", mlpa, test)
         except Exception:
             pass
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS, "shifted_beliefs": len(aug),
+           "confidence": {k: _by_confidence(res[k], v) for k, v in spreads.items() if len(v) == len(res[k]) >= 90},
            "test_from": dates[start], "results": {k: _metrics(v) for k, v in res.items()},
            "ridge_weights_last": weights,
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
@@ -496,8 +531,13 @@ def fit_production(results: dict | None = None) -> dict:
         except Exception:
             best, kind, (oos, label) = "ridge", "ridge", cands["ridge"]
     active = _passes(oos, app, risk)
+    names = {"ridge": "ridge (learned)", "gbm": "gbm (learned)", "gbm_adj": "gbm (risk-adjusted)",
+             "mlp": "neural net (learned)", "mlp_adj": "neural net (risk-adjusted)", "gbm_aug": "gbm (+ shifted)",
+             "gbm_adj_aug": "gbm (risk-adjusted, + shifted)"}
+    # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score
+    conf = (full.get("confidence") or {}).get(names.get(best, "") if active else "app (current #1)")
     out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
-           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data), "shifted": len(aug),
+           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
            "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
            "candidates": {k: m for k, (m, _) in cands.items()}}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))

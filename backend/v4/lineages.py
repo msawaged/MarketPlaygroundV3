@@ -148,7 +148,7 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
             by[r["belief_id"]] = []
             order.append(r["belief_id"])
         by[r["belief_id"]].append(features_of(r["features"], r["direction"], ex=float(r["dir_excess"]),
-                                              top=r["final_rank"] == 1))
+                                              top=r["final_rank"] == 0))  # 0-based: 0 is the app's #1
     return [by[b] for b in order if len(by[b]) >= 2]  # a choice needs at least two candidates
 
 

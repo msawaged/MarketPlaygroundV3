@@ -2076,7 +2076,7 @@ def test_brain_forward_test_counts_only_live_calls():
         for j, (d, ex) in enumerate(ideas):
             pid = f"{bid}-{j}"
             db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
-                       (pid, bid, f"T{j}", d, "2026-11-01", 10.0, "{}", j + 1))
+                       (pid, bid, f"T{j}", d, "2026-11-01", 10.0, "{}", j))
             db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
                        (pid, 7, "2026-11-08", 10.0, 0.0, 0.0, ex, "2026-11-08"))
     add("fw-1", "user", [("bullish", 0.04), ("bullish", 0.00)])
@@ -2144,3 +2144,48 @@ def test_research_adds_shifted_candidates_without_touching_tests(monkeypatch):
     for train in seen:
         assert not any(b.get("aug") and b["src_date"] >= "2099" for b in train)
     assert any(any(b.get("aug") for b in train) for train in seen)
+
+
+def test_ranker_confidence_thirds_and_live_label(monkeypatch):
+    from backend.v4 import brain, research
+    assert research.confidence_label(0.5, [0.1, 0.3]) == "high"
+    assert research.confidence_label(0.2, [0.1, 0.3]) == "medium" and research.confidence_label(0.0, [0.1, 0.3]) == "low"
+    assert research.confidence_label(0.5, None) == ""
+    test_research_walk_forward_runs_and_stores(monkeypatch)  # planted momentum: confident calls should do better
+    out = research.run()
+    c = out["confidence"]["gbm (learned)"]
+    assert c["cuts"][0] <= c["cuts"][1] and c["low"]["n"] + c["mid"]["n"] + c["high"]["n"] == out["results"]["gbm (learned)"]["n"]
+    assert c["high"]["lift"] > c["low"]["lift"]
+    rv = research.fit_production(out)
+    assert rv["active"] and rv["confidence"] and len(rv["confidence"]["cuts"]) == 2
+    monkeypatch.setattr(learning, "build_context", lambda belief: {})  # the planted beliefs' text is just "x"
+    r = engine.process_belief("plumbing demand is going to be high", "u-conf", "moderate", claude_client=FakeClaude())
+    top = r["picks"][0]
+    assert top["confidence"] in ("high", "medium", "low") and all(p["confidence"] == "" for p in r["picks"][1:])
+    f = json.loads(db.query_one("SELECT features FROM picks WHERE belief_id = ? AND final_rank = 0", (r["belief_id"],))["features"])
+    assert f["rv2_conf"] == top["confidence"] and "rv2" in f
+    sk = brain._skill()
+    assert sk["ranker"]["confidence"]["cuts"] == rv["confidence"]["cuts"]
+    # ranker off: the label comes from the app's own score, with the app's walk-forward cuts
+    monkeypatch.setattr(research, "MIN_T", 99.0)
+    off = research.fit_production(out)
+    assert not off["active"] and off["confidence"] == out["confidence"]["app (current #1)"]
+    r2 = engine.process_belief("plumbing demand will boom this year", "u-conf2", "moderate", claude_client=FakeClaude())
+    assert r2["picks"][0]["confidence"] in ("high", "medium", "low")
+
+
+def test_the_app_number_one_is_final_rank_zero():
+    # engine stores final_rank from enumerate(): 0 is the #1 idea people see. Research's "app (current #1)",
+    # lineages' app baseline and the Brain scorecard must read rank 0 (they read rank 1, the #2 idea, until 2026-11-08)
+    from backend.v4 import research
+    r = engine.process_belief("plumbing demand is going to be high", "u-rank", claude_client=FakeClaude())
+    assert db.query_one("SELECT ticker FROM picks WHERE belief_id = ? AND final_rank = 0", (r["belief_id"],))["ticker"] == r["picks"][0]["ticker"]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-r0", "seed", "x", "x", "2025-01-01T00:00:00", "2025-01-01", "seed_backfill"))
+    for j in range(3):
+        db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                   (f"p-r0{j}", "b-r0", f"T{j}", "bullish", "2025-01-01", 10.0, "{}", j))
+        db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                   (f"p-r0{j}", 90, "2025-04-01", 10.0, 0.0, 0.0, 0.1 * j, "2025-04-01"))
+    b = [x for x in research.load() if any(c["ex"] == 0.2 for c in x["cands"])][0]
+    assert [c["top"] for c in b["cands"]] == [True, False, False]

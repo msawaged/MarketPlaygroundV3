@@ -129,10 +129,10 @@ def _skill() -> dict:
     """The honest scorecard, at the horizon the brain learns on: does the app's #1 pick beat the S&P 500, and does
     it beat the app's own other ideas for the same belief (the part that is skill, not market luck)?"""
     rows = db.query(
-        """SELECT CASE WHEN p.final_rank = 1 THEN 'top' ELSE 'rest' END AS g, COUNT(*) AS n,
+        """SELECT CASE WHEN p.final_rank = 0 THEN 'top' ELSE 'rest' END AS g, COUNT(*) AS n,
                   SUM(CASE WHEN o.dir_excess > 0 THEN 1 ELSE 0 END) AS beat, AVG(o.dir_excess) AS ex
            FROM outcomes o JOIN picks p ON p.id = o.pick_id
-           WHERE o.checkpoint_days = ? GROUP BY CASE WHEN p.final_rank = 1 THEN 'top' ELSE 'rest' END""",
+           WHERE o.checkpoint_days = ? GROUP BY CASE WHEN p.final_rank = 0 THEN 'top' ELSE 'rest' END""",  # 0 = #1
         (learning.LABEL_DAYS,))
     out = {"days": learning.LABEL_DAYS}
     try:
@@ -140,7 +140,8 @@ def _skill() -> dict:
         rv = research.ranker()
         if rv:
             out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old"),
-                             "risk_check": bool(rv.get("risk_check")), "model": rv.get("model")}
+                             "risk_check": bool(rv.get("risk_check")), "model": rv.get("model"),
+                             "confidence": rv.get("confidence")}
     except Exception:
         pass
     for r in rows:
@@ -226,28 +227,45 @@ def _forward() -> dict:
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE b.source <> 'seed_backfill' AND p.direction IN ('bullish', 'bearish')""")
     first = db.query_one("SELECT MIN(created_at) AS t FROM beliefs WHERE source <> 'seed_backfill'") or {}
-    out = {"since": str(first.get("t") or "")[:10], "by_days": {}}
+    out = {"since": str(first.get("t") or "")[:10], "by_days": {}, "by_confidence": {}}
+    conf = {}
+    for r in db.query(
+            """SELECT p.belief_id, p.features FROM picks p JOIN beliefs b ON b.id = p.belief_id
+               WHERE b.source <> 'seed_backfill' AND p.final_rank = 0 AND p.features LIKE '%rv2_conf%'"""):
+        c = (db.loads(r["features"], {}) or {}).get("rv2_conf")
+        if c:
+            conf[r["belief_id"]] = c
     groups: dict = {}
     for r in rows:
         groups.setdefault((int(r["d"]), r["belief_id"]), []).append((r["final_rank"], float(r["ex"])))
-    for d in sorted({k[0] for k in groups}):
-        tops, lifts = [], []
-        for (dd, _), ideas in groups.items():
-            if dd != d or len(ideas) < 2:
-                continue
-            top = [ex for rank, ex in ideas if rank == 1]
-            if not top:
-                continue
-            tops.append(top[0])
-            lifts.append(top[0] - sum(ex for _, ex in ideas) / len(ideas))
+    def summary(tops: list[float], lifts: list[float]) -> dict:
         n = len(tops)
-        if not n:
-            continue
         mean = sum(lifts) / n
         sd = math.sqrt(sum((x - mean) ** 2 for x in lifts) / (n - 1)) if n > 1 else 0.0
-        out["by_days"][str(d)] = {"beliefs": n, "top_beat": round(sum(1 for x in tops if x > 0) / n, 3),
-                                  "top_avg": round(sum(tops) / n, 4), "lift": round(mean, 4),
-                                  "lift_t": round(mean / (sd / math.sqrt(n)), 2) if sd > 0 else 0.0}
+        return {"beliefs": n, "top_beat": round(sum(1 for x in tops if x > 0) / n, 3),
+                "top_avg": round(sum(tops) / n, 4), "lift": round(mean, 4),
+                "lift_t": round(mean / (sd / math.sqrt(n)), 2) if sd > 0 else 0.0}
+
+    for d in sorted({k[0] for k in groups}):
+        tops, lifts, by_c = [], [], {}
+        for (dd, bid), ideas in groups.items():
+            if dd != d or len(ideas) < 2:
+                continue
+            top = [ex for rank, ex in ideas if rank == 0]  # final_rank is 0-based
+            if not top:
+                continue
+            lift = top[0] - sum(ex for _, ex in ideas) / len(ideas)
+            tops.append(top[0])
+            lifts.append(lift)
+            if bid in conf:
+                by_c.setdefault(conf[bid], ([], []))
+                by_c[conf[bid]][0].append(top[0])
+                by_c[conf[bid]][1].append(lift)
+        if not tops:
+            continue
+        out["by_days"][str(d)] = summary(tops, lifts)
+        if by_c:
+            out["by_confidence"][str(d)] = {c: summary(*v) for c, v in by_c.items()}
     return out
 
 

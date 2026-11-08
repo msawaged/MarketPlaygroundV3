@@ -264,3 +264,41 @@ have); shifting dates adds no new outcome information, and tests stay on real ca
 
 **What counts as a win.** Once a few thousand baskets are shifted (~1–2 days of hourly batches), "+ shifted"
 candidates beat their plain versions on the same test, and one becomes the live ranker through the gate.
+
+## 2026-11-08 — Off-by-one: every "app #1" comparison was reading the #2 idea; confidence thirds
+
+**Bug.** The engine stores `final_rank` from `enumerate()` (0 = the #1 idea people see; production: every belief has
+a rank 0). Research's "app (current #1)" baseline, the lineages' app baseline and the Brain scorecard all used
+`final_rank == 1`, i.e. the **#2** idea. On the walk-forward test (2,703 real practice beliefs):
+
+| | lift / t / beat | risk-matched lift / t / beat |
+|---|---|---|
+| what the gate compared against (the #2 idea) | +0.37% / 1.34 / 52.3% | +0.32% / 1.18 / 52.9% |
+| the real app #1 | **+1.49% / 4.54 / 53.4%** | **+1.24% / 3.87 / 54.2%** |
+| best learned candidate (gbm risk-adjusted) | +0.93% / 2.80 / 51.7% | +0.99% / 3.10 / 53.6% |
+
+Live forward test, 7 days (108 real-time calls): the real #1 is **+1.12% vs its own belief's other ideas (t 1.24)**;
+the #2 was -0.33%. So "the #1 pick trails at 7 days" (logged earlier today) was the #2.
+
+**Change.** `research.load`, `lineages._graded_beliefs`, `brain._skill` and `brain._forward` read rank 0. Gate code
+unchanged; it now compares against the real #1, a higher bar. Expected effect at the next refit: ranker v2 and the
+neural net **turn off** (no candidate beats the app's own #1 on its own) and the #1 goes back to the app's ordering.
+Caveat: on practice calls Claude's ordering may carry hindsight (it knows how 2023–25 went), which makes this bar
+conservative; the live forward test is where the ranker has to prove itself. Offline, blending a model into the
+app's score at 25% (what production would do when a ranker is active) added only ~+0.2 pts risk-matched over the app
+alone (gbm risk-adjusted @0.25: +1.43%, t 4.56 vs app +1.22%, t 3.85); not shipped as a gate change.
+
+**Confidence thirds (new).** How far the #1 idea's score stands out from its belief's average sorts outcomes. On the
+walk-forward test, by thirds of that spread: gbm risk-adjusted's most confident third beat a risk-matched S&P
+**57.8%** of the time (least confident 49.2%); the neural net (risk-adjusted) **60.2%** (50.4%); the app's own score:
+lift +2.46% in its top third vs +0.93% in its bottom. `research.run` stores `confidence` (cuts + thirds) per learned
+candidate and for the app; `fit_production` keeps the cuts for whatever orders the live #1 (the active model, else
+the app's score); the engine labels the live #1 `confidence: high/medium/low` and stores `rv2_conf` with the pick;
+`/v4/brain` `forward.by_confidence` tracks the live result by label. Picks also keep `rv2` (ranker score) and research
+rows carry the app's `final_score` (`app`) for later analysis.
+
+**Checks.** Backend tests: 113 passed (new: `test_the_app_number_one_is_final_rank_zero`,
+`test_ranker_confidence_thirds_and_live_label`; `test_brain_forward_test_counts_only_live_calls` now uses rank 0).
+
+**What counts as a win.** Brain scorecard and forward test show the real #1; over the coming weeks the live
+"high-confidence" #1 calls beat the S&P clearly more often than "low" ones (the 30- and 90-day columns).
