@@ -371,6 +371,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-extrabold text-white">{pick.ticker}</span>
                 <DirectionBadge direction={pick.direction} />
+                {basePick.confidence && (
+                  <span title="How far this idea's score stands out from the other ideas for your belief. In testing on past calls the AI never saw, its most confident #1 picks beat the S&P 500 more often than its least confident ones."
+                    className={`text-[11px] font-bold rounded-full px-2 py-0.5 border ${basePick.confidence === 'high' ? 'bg-green-500/15 border-green-400/50 text-green-300' : basePick.confidence === 'medium' ? 'bg-blue-500/10 border-blue-400/40 text-blue-200' : 'bg-slate-700/40 border-slate-600 text-slate-300'}`}>
+                    {basePick.confidence === 'high' ? 'High confidence' : basePick.confidence === 'medium' ? 'Medium confidence' : 'Low confidence'}
+                  </span>
+                )}
               </div>
               <div className="text-sm text-slate-400 truncate">{pick.name}</div>
             </div>

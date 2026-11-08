@@ -355,6 +355,29 @@ export default function BrainPage({ viewOnly = false }) {
           );
         })()}
 
+        {d?.skill?.ranker?.confidence?.high?.n > 0 && (() => {
+          const c = d.skill.ranker.confidence, pts = (v) => `${v >= 0 ? '+' : ''}${((v || 0) * 100).toFixed(1)}`;
+          const top = Math.max(...['high', 'mid', 'low'].map((k) => Math.abs(c[k]?.lift || 0)), 0.005);
+          const rows = [['high', 'Most confident'], ['mid', 'In between'], ['low', 'Least confident']];
+          return (
+            <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">When the AI is most sure · tested on past calls it never saw</div>
+              <div className="mt-2 space-y-1.5">
+                {rows.map(([k, label]) => (
+                  <div key={k} className="flex items-center gap-3 text-sm">
+                    <span className="w-32 text-slate-300">{label}</span>
+                    <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className={`h-full ${k === 'high' ? 'bg-green-500' : 'bg-blue-500/70'}`} style={{ width: `${Math.max(0, Math.min(100, (c[k]?.lift || 0) / top * 100))}%` }} />
+                    </div>
+                    <span className="w-16 text-right font-bold tabular-nums">{pts(c[k]?.lift)} pts</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average of the other ideas for the same belief over 90 days, split into thirds by how far its score stood out. Each #1 pick now shows its confidence; the live results by confidence appear below as calls are graded.</p>
+            </div>
+          );
+        })()}
+
         {d?.forward?.by_days && Object.keys(d.forward.by_days).length > 0 && (() => {
           const f = d.forward, pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
           return (
