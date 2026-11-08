@@ -195,7 +195,8 @@ def _training_rows() -> list[dict]:
            FROM picks p
            JOIN outcomes o ON o.pick_id = p.id AND o.checkpoint_days = ?
            JOIN beliefs b ON b.id = p.belief_id
-           WHERE p.features IS NOT NULL""",
+           WHERE p.features IS NOT NULL
+           ORDER BY p.id""",  # fixed order: the same data must train the same network (no nightly lottery)
         (LABEL_DAYS,),
     )
     out = []

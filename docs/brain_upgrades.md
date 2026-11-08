@@ -194,3 +194,42 @@ volatile ideas with a `sel_edge`, so it was not affected). No extra memory.
 line leads; no champion appears on the old artifact. The real win is a strategist later earning champion through the
 unchanged gate on directional ideas only. Known leftover (not fixed, separate issue): on backfill beliefs Claude's
 score is hidden, so Follow-the-AI picks by database tie order; its record there is noise, not skill.
+
+## 2026-11-08 — The neural network joins ranker v2's competition (same inputs, labels, walk-forward and gate)
+
+**Problem.** The standalone network (`nn.py`) has never left shadow: retrains on identical data scored lift
++0.54% / +0.78% / +0.45% (t 1.13 / 1.62 / 0.94) on Nov 4–6, and the spread between those runs came from row order,
+not data (`_training_rows` had no ORDER BY). It also sees only 15 raw numbers, while ranker v2's trees see ~40
+direction-signed, within-belief z-scores and are active.
+
+**Test (offline, production data, 23,279 graded 90-day picks, ranker v2's exact 5-fold walk-forward with the
+90-day embargo).** A small MLP (one hidden layer of 32, alpha 1.0, 5 seeds averaged, inputs standardized) trained on
+ranker v2's own inputs and label:
+
+| candidate | lift / t / beat | risk-matched lift / t / beat |
+|---|---|---|
+| app (old #1) | +0.37% / 1.34 / 52.3% | +0.32% / 1.18 / 52.9% |
+| gbm | +1.01% / 3.01 / 51.5% | +0.62% / 1.92 / 52.3% |
+| gbm (risk-adjusted) | +0.94% / 2.81 / 51.7% | +0.99% / 3.10 / 53.6% |
+| **neural net** | **+1.16% / 3.46** / 51.7% | +0.61% / 1.90 / 52.1% |
+| neural net (risk-adjusted) | +0.48% / 1.47 / 51.4% | +0.67% / 2.13 / **53.7%** |
+
+Robustness (same harness, not used to pick settings): other seeds 1.09% (t 3.2), alpha 0.1 1.36% (t 4.1), alpha 3
+1.03% (t 3.0), two layers 0.76% (t 2.2). So with the right inputs and target the network is a real contender; the
+old network's problem was its inputs and target, not the architecture.
+
+**Change.**
+- `research.MLPRanker` + `_fit_mlp`; `run()` adds "neural net (learned)" and "neural net (risk-adjusted)";
+  `fit_production()` adds candidates `mlp` / `mlp_adj`. The best candidate that clears the **unchanged** gate
+  (`_passes`, risk-matched edge when the risk check is on) goes live; a winning net is stored in the same kv slot as
+  the trees and `score_candidates` uses it. On the offline data the trees (gbm_adj) still win on risk-matched edge,
+  so nothing changes for users until the network earns it.
+- `nn._training_rows` reads rows in a fixed order, so the same data trains the same network.
+- Cost: run + refit 83 s, peak 256 MB in the offline harness (cron limit 512 Mi; the refit already runs in its own
+  process).
+
+**Checks.** Backend tests: 108 passed (new: `test_ranker_v2_neural_net_competes_on_the_same_walk_forward`).
+
+**What counts as a win.** The Brain/ranker numbers list the neural-net candidates; a real win is a net candidate
+becoming the live ranker through the same gate, or the old network's nightly scores no longer jumping on identical
+data.

@@ -225,6 +225,37 @@ def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
     return lambda f: float(((np.array([f[k] for k in keys]) - mu) / sd) @ w), dict(zip(keys, np.round(w, 4).tolist()))
 
 
+class MLPRanker:
+    """A small neural network for ranker v2: same inputs and within-belief label as the trees. Inputs are standardized
+    on the training rows, the label is scaled to unit spread, and a few seeds are averaged (one net's result moves with
+    its random start). Picklable, so the nightly refit can store it like the tree model."""
+    SEEDS = (7, 8, 9, 10, 11)
+
+    def __init__(self, x: np.ndarray, y: np.ndarray, hidden=(32,), alpha: float = 1.0):
+        from sklearn.neural_network import MLPRegressor
+        self.mu, self.sd = x.mean(0), x.std(0) + 1e-9
+        xs = np.clip((x - self.mu) / self.sd, -5, 5)
+        self.ys = float(y.std()) + 1e-9
+        self.nets = [MLPRegressor(hidden_layer_sizes=hidden, alpha=alpha, learning_rate_init=1e-3, max_iter=200,
+                                  early_stopping=True, n_iter_no_change=10, random_state=k).fit(xs, y / self.ys)
+                     for k in self.SEEDS]
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        xs = np.clip((np.asarray(x, dtype=float) - self.mu) / self.sd, -5, 5)
+        return np.mean([n.predict(xs) for n in self.nets], axis=0)
+
+
+def _xy(train: list[dict], keys: list[str], label: str):
+    x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
+    y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
+    return x, y
+
+
+def _fit_mlp(train: list[dict], keys: list[str], label: str = "rel"):
+    m = MLPRanker(*_xy(train, keys, label))
+    return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
+
+
 def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
     from sklearn.ensemble import HistGradientBoostingRegressor
     x = np.array([[c["f"][k] for k in keys] for b in train for c in b["cands"]])
@@ -267,7 +298,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
                                          + 0.5 * f["z_mom250"] * f["reg_trend"],
     }
     zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
-    res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)"]}
+    res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)",
+                                          "neural net (learned)", "neural net (risk-adjusted)"]}
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
@@ -291,6 +323,13 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             res["gbm (learned)"] += [_choose(b, gbm) for b in test]
             gbma = _fit_gbm(train, zkeys, label="rela")  # learns from risk-matched outcomes, not raw ones
             res["gbm (risk-adjusted)"] += [_choose(b, gbma) for b in test]
+        except Exception:
+            pass
+        try:  # the neural network competes on exactly the same inputs, labels and walk-forward test
+            mlp = _fit_mlp(train, zkeys)
+            res["neural net (learned)"] += [_choose(b, mlp) for b in test]
+            mlpa = _fit_mlp(train, zkeys, label="rela")
+            res["neural net (risk-adjusted)"] += [_choose(b, mlpa) for b in test]
         except Exception:
             pass
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS,
@@ -362,9 +401,10 @@ def _passes(m: dict, app: dict, risk: bool = False) -> bool:
 
 
 def fit_production(results: dict | None = None) -> dict:
-    """Refit the production ranker on every graded call. Two candidates, both judged on the walk-forward test (calls
-    they never saw): a ridge model and a gradient-boosted tree model. The one with the bigger out-of-sample edge goes
-    live, but only if it clears the gate; otherwise nothing changes the ranking."""
+    """Refit the production ranker on every graded call. Candidates, all judged on the same walk-forward test (calls
+    they never saw): ridge, gradient-boosted trees and a small neural network (each trees/net also on risk-matched
+    outcomes). The one with the bigger out-of-sample edge goes live, but only if it clears the gate; otherwise nothing
+    changes the ranking."""
     data = load()
     if len(data) < 150:
         return {"active": False, "reason": "not enough graded calls"}
@@ -373,7 +413,8 @@ def fit_production(results: dict | None = None) -> dict:
     risk = float(full.get("beta_coverage", 0) or 0) >= RISK_COVERAGE
     app = res.get("app (current #1)", {})
     cands = {"ridge": (res.get("ridge (learned)", {}), "rel"), "gbm": (res.get("gbm (learned)", {}), "rel"),
-             "gbm_adj": (res.get("gbm (risk-adjusted)", {}), "rela")}
+             "gbm_adj": (res.get("gbm (risk-adjusted)", {}), "rela"),
+             "mlp": (res.get("neural net (learned)", {}), "rel"), "mlp_adj": (res.get("neural net (risk-adjusted)", {}), "rela")}
     x = np.array([[c["f"][k] for k in ZKEYS] for b in data for c in b["cands"]])
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
@@ -383,15 +424,16 @@ def fit_production(results: dict | None = None) -> dict:
     edge = "lift_adj" if risk else "lift"
     passing = [k for k, (m, _) in cands.items() if _passes(m, app, risk)]
     best = max(passing, key=lambda k: cands[k][0].get(edge, 0)) if passing else "ridge"
-    kind, (oos, label) = ("ridge" if best == "ridge" else "gbm"), cands[best]
-    if kind == "gbm":
+    kind, (oos, label) = ("ridge" if best == "ridge" else "mlp" if best.startswith("mlp") else "gbm"), cands[best]
+    if kind in ("gbm", "mlp"):
         try:
             import base64
             import pickle
             from sklearn.ensemble import HistGradientBoostingRegressor
             yy = np.array([max(-0.5, min(0.5, c[label])) for b in data for c in b["cands"]])
-            m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
-                                              l2_regularization=1.0, random_state=7).fit(x, yy)
+            m = MLPRanker(x, yy) if kind == "mlp" else HistGradientBoostingRegressor(
+                max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
+                random_state=7).fit(x, yy)
             blob = base64.b64encode(pickle.dumps(m)).decode()
             db.execute("DELETE FROM kv_cache WHERE k = ?", (GBM_KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (GBM_KEY, blob, datetime.now(timezone.utc).isoformat()))
@@ -466,7 +508,7 @@ def score_candidates(nums: list[dict], directions: list[str]) -> list[float] | N
     for f in rows:
         for a, g in INTERACTIONS:
             f[f"zx_{a}_{g}"] = f.get("z_" + a, 0.0) * f.get(g, 0.0)
-    if r.get("kind") == "gbm":
+    if r.get("kind") in ("gbm", "mlp"):  # the stored model (trees or neural net), same inputs either way
         try:
             m = _gbm_model(r["at"])
             if m is not None:

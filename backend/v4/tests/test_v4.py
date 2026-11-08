@@ -2042,3 +2042,27 @@ def test_ideas_that_fit_the_budget_are_shown_first(monkeypatch):
     rows = db.query("SELECT ticker, final_rank, shown FROM picks WHERE belief_id = ? ORDER BY final_rank", (r["belief_id"],))
     assert [x["ticker"] for x in rows] == [p["ticker"] for p in picks]
     assert [x["shown"] for x in rows] == [1 if p["shown"] else 0 for p in picks]
+
+
+def test_ranker_v2_neural_net_competes_on_the_same_walk_forward(monkeypatch):
+    # the neural network is a ranker v2 candidate: same inputs, labels and test; it learns the planted signal, and if
+    # it is the best candidate that clears the (unchanged) gate it is stored and used to score live ideas
+    import pickle
+    from backend.v4 import research
+    test_research_walk_forward_runs_and_stores(monkeypatch)  # planted momentum signal
+    out = research.run()
+    nn_res = out["results"]["neural net (learned)"]
+    assert nn_res["n"] > 100 and nn_res["lift"] > 0.02
+    assert "neural net (risk-adjusted)" in out["results"]
+    x = np.random.default_rng(0).normal(size=(200, 3)); y = x[:, 0] * 0.1
+    m = pickle.loads(pickle.dumps(research.MLPRanker(x, y)))
+    p = m.predict(np.array([[1.0, 0, 0], [-1.0, 0, 0]]))
+    assert p[0] > p[1]
+    # force the net to be the only candidate that clears the gate
+    def fake_passes(m_, app, risk=False):
+        return m_ is out["results"]["neural net (learned)"]
+    monkeypatch.setattr(research, "_passes", fake_passes)
+    rv = research.fit_production(out)
+    assert rv["model"] == "mlp" and rv["kind"] == "mlp" and rv["active"]
+    s = research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}, {"mom60": 0.0}], ["bullish"] * 3)
+    assert s[0] > s[2] > s[1]

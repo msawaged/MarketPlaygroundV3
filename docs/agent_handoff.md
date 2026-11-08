@@ -20,3 +20,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - /v4/brain `graded[]` gains `stock_vs_market`; Brain page "Just graded" shows the stock's move vs S&P, and the
   ranker box says "retrained <date>" instead of "live since". Files: backend/v4/seeder.py, backend/v4/brain.py,
   backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx.
+
+## 2026-11-08 (build chat, CTO)
+- research.py: new `MLPRanker`/`_fit_mlp`; ranker v2 now also evaluates "neural net (learned)" / "(risk-adjusted)"
+  and `fit_production` may pick `mlp`/`mlp_adj` (kind "mlp", stored in GBM_KEY). Gate untouched. nn.py:
+  `_training_rows` ORDER BY p.id. Details in docs/brain_upgrades.md (2026-11-08). Murad is in hospital: he wants
+  sessions self-sufficient and to notify only when his action is needed.
