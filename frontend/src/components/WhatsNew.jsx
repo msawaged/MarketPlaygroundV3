@@ -2,11 +2,12 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 2';
+export const UPDATED = 'Nov 8';
 export const UPDATES = [
+  'New: a confidence badge on the #1 pick, checked on past calls the AI never saw',
   'New: MuLine, our own trend line, on every pick: uptrend or downtrend at a glance',
   "Market's open alerts: the day's top story at 9:35 am ET",
-  'Smarter #1 pick, tested on past calls it never saw (live scorecard on the Brain page)',
+  'Live forward test on the Brain page: real-time calls only, no hindsight',
   'Watch any news story in 30 seconds with Story mode',
   'AI strategists compete daily: only the strong survive',
   'An honest scorecard on the brain page, real numbers only',

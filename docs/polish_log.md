@@ -95,3 +95,29 @@ Changed:
 - Ranker box: "retrained Nov 7".
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 107 passed.
+
+## 2026-11-08
+
+Walked /welcome, /trending, /live, /story, /account, /brain on the live site at 390x844: no page errors, no 4xx/5xx,
+no horizontal overflow (only a sandbox-proxy-blocked third-party request). Focused on today's new Brain boxes.
+
+Found:
+- Welcome "What's new" still said "Smarter #1 pick, tested on past calls it never saw", but /v4/brain now reports
+  skill.ranker.active = false (after the rank-0 fix, ranker v2 lost to the real #1: lift +0.74 vs old way +1.49 pts).
+- "When the AI is most sure" promised live results by confidence "below", but the forward-test box never rendered
+  forward.by_confidence. It also said "beat the average of the other ideas"; research/_forward lift is #1 minus the
+  average of ALL the belief's ideas (the #1 included).
+- Forward test card: "7 days · 108 calls" read like a duration; "since 2026-10-28" wrapped mid-date at 390px; "+1.1 pts"
+  shown green with t = 1.24; footer pointed to "the 90-day column", which doesn't exist yet.
+- Confidence badge tooltip claimed the most confident #1 picks "beat the S&P 500 more often" than the least confident:
+  true by 1 pt raw (54.8% vs 53.8%) but false risk-adjusted (54.4% vs 55.4%). The robust claim is the lift (+2.5 vs +0.9, t 4.5).
+
+Changed:
+- WhatsNew: dropped the "Smarter #1 pick" claim; added the confidence badge and the live forward test; updated Nov 8.
+- BrainPage forward test: "After N days" + call count, date as "Oct 28", "vs our average idea", t-stat note
+  ("could still be luck" below t 2; green only when t >= 2), by-confidence row (High/Medium/Low) from
+  forward.by_confidence, and the date the first live calls reach 90 days. Confidence-box wording fixed.
+- StrategyCard confidence tooltip states the lift claim, "a guide, not a promise".
+
+Checks: vite build passes, payoff/figures tests pass, backend tests 113 passed. Verified with a mocked /v4/brain
+(30-day checkpoint + by_confidence) at 390px.

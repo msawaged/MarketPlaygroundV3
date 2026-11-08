@@ -373,27 +373,50 @@ export default function BrainPage({ viewOnly = false }) {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average of the other ideas for the same belief over 90 days, split into thirds by how far its score stood out. Each #1 pick now shows its confidence; the live results by confidence appear below as calls are graded.</p>
+              <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average idea for the same belief over 90 days (points of return vs the S&P 500), split into thirds by how far its score stood out from that belief's other ideas. Each #1 pick now shows its confidence; live results by confidence appear in the forward test below once its calls are graded.</p>
             </div>
           );
         })()}
 
         {d?.forward?.by_days && Object.keys(d.forward.by_days).length > 0 && (() => {
-          const f = d.forward, pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
+          const f = d.forward, pts = (v) => `${v >= 0 ? '+' : ''}${((v || 0) * 100).toFixed(1)}`;
+          const day = (iso, plus = 0) => { const t = new Date(`${iso}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + plus); return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
+          const sure = (r) => Math.abs(r.lift_t || 0) >= 2;
+          const confDays = Object.keys(f.by_confidence || {}).map(Number).sort((x, y) => y - x)[0];
+          const conf = confDays ? f.by_confidence[String(confDays)] : null;
           return (
             <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
-              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Live forward test · real-time calls since {f.since}</div>
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Live forward test · real-time calls since {f.since ? day(f.since) : '—'}</div>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {Object.entries(f.by_days).map(([days, r]) => (
                   <div key={days} className="rounded-xl bg-slate-800/60 p-2.5">
-                    <div className="text-[11px] text-slate-400">{days} days · {r.beliefs} calls</div>
-                    <div className="text-lg font-extrabold tabular-nums">{Math.round(r.top_beat * 100)}%</div>
+                    <div className="text-[11px] font-semibold text-slate-300">After {days} days</div>
+                    <div className="text-[11px] text-slate-500">{r.beliefs} calls</div>
+                    <div className="mt-1 text-lg font-extrabold tabular-nums">{Math.round(r.top_beat * 100)}%</div>
                     <div className="text-[11px] text-slate-400">#1 beat the S&P</div>
-                    <div className={`text-xs font-bold tabular-nums mt-1 ${r.lift > 0 ? 'text-green-400' : 'text-slate-300'}`}>{pts(r.lift)} pts vs other ideas</div>
+                    <div className={`text-xs font-bold tabular-nums mt-1 ${r.lift > 0 && sure(r) ? 'text-green-400' : 'text-slate-300'}`}>{pts(r.lift)} pts vs our average idea</div>
+                    <div className="text-[10px] text-slate-500">{sure(r) ? `unlikely to be luck (t ${r.lift_t.toFixed(1)})` : `could still be luck (t ${(r.lift_t || 0).toFixed(1)})`}</div>
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-xs text-slate-400">No hindsight here: these calls were made before the outcome existed. Early numbers swing a lot; the 90-day column is the one that counts.</p>
+              {conf && (
+                <div className="mt-3">
+                  <div className="text-[11px] text-slate-400">By the #1 pick's confidence, after {confDays} days (vs our average idea)</div>
+                  <div className="mt-1 grid grid-cols-3 gap-2 text-center">
+                    {[['high', 'High'], ['medium', 'Medium'], ['low', 'Low']].map(([k, label]) => (
+                      <div key={k} className="rounded-lg bg-slate-800/60 py-1.5">
+                        <div className="text-[11px] text-slate-400">{label}</div>
+                        <div className="text-sm font-bold tabular-nums">{conf[k] ? `${pts(conf[k].lift)} pts` : '—'}</div>
+                        <div className="text-[10px] text-slate-500">{conf[k] ? `${conf[k].beliefs} calls` : 'none yet'}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <p className="mt-3 text-xs text-slate-400">
+                No hindsight here: these calls were made before the outcome existed. Early numbers swing a lot; the 90-day result, the one the scorecard above uses, counts most
+                {!f.by_days['90'] && f.since ? `. The first live calls reach 90 days on ${day(f.since, 91)}.` : '.'}
+              </p>
             </div>
           );
         })()}

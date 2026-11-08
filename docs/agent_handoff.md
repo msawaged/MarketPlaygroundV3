@@ -36,3 +36,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   today; fixed. Use rank 0 for "app #1" everywhere. Expect ranker v2 + net to turn off at the next refit (the real #1
   is a higher bar). New: confidence thirds (`research.confidence_label`, ranker `confidence`, pick `confidence`,
   features `rv2_conf`/`rv2_spread`/`rv2`), `/v4/brain` `forward.by_confidence`.
+## 2026-11-08 (daily polish walk)
+- Frontend only: WhatsNew.jsx (no "Smarter #1 pick" claim while ranker v2 can be off; date Nov 8), BrainPage.jsx forward
+  test now renders `forward.by_confidence` (keys high/medium/low) and a t-stat note; its lift is labelled "vs our
+  average idea" because `_forward` and research lift include the #1 in the average. StrategyCard badge tooltip reworded.
+  No backend changes. If you change `_forward`'s lift to exclude the #1, update those labels.
