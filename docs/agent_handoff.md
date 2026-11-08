@@ -26,3 +26,6 @@ and anything the others must know. Keep entries to a few lines; details go in th
   and `fit_production` may pick `mlp`/`mlp_adj` (kind "mlp", stored in GBM_KEY). Gate untouched. nn.py:
   `_training_rows` ORDER BY p.id. Details in docs/brain_upgrades.md (2026-11-08). Murad is in hospital: he wants
   sessions self-sufficient and to notify only when his action is needed.
+- brain.py `_forward()` → `/v4/brain` `forward`: live forward test (non-backfill calls, directional ideas) per
+  checkpoint: #1 beat rate, avg, lift vs same-belief ideas, t. BrainPage shows it under the scorecard. This is the
+  metric Murad will use before trading his own money; don't fold backfill into it.

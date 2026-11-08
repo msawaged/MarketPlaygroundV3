@@ -2066,3 +2066,22 @@ def test_ranker_v2_neural_net_competes_on_the_same_walk_forward(monkeypatch):
     assert rv["model"] == "mlp" and rv["kind"] == "mlp" and rv["active"]
     s = research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}, {"mom60": 0.0}], ["bullish"] * 3)
     assert s[0] > s[2] > s[1]
+
+
+def test_brain_forward_test_counts_only_live_calls():
+    from backend.v4 import brain
+    def add(bid, src, ideas):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "u", "x", "x", "2026-11-01T00:00:00", "2026-11-01", src))
+        for j, (d, ex) in enumerate(ideas):
+            pid = f"{bid}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", d, "2026-11-01", 10.0, "{}", j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 7, "2026-11-08", 10.0, 0.0, 0.0, ex, "2026-11-08"))
+    add("fw-1", "user", [("bullish", 0.04), ("bullish", 0.00)])
+    add("fw-2", "seed_news", [("bearish", -0.02), ("bullish", 0.02), ("volatile", 0.30)])
+    add("fw-old", "seed_backfill", [("bullish", 0.50), ("bullish", -0.50)])     # hindsight: never counted
+    f = brain._forward()["by_days"]["7"]
+    assert f["beliefs"] == 2 and f["top_beat"] == 0.5
+    assert abs(f["top_avg"] - 0.01) < 1e-9 and abs(f["lift"] - (0.02 + -0.02) / 2) < 1e-9

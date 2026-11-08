@@ -216,6 +216,48 @@ def _safe_trendlab():
         return None
 
 
+def _forward() -> dict:
+    """The live forward test: calls made in real time (never backfill, so no hindsight anywhere), directional ideas
+    only. Per checkpoint: how the #1 pick did vs the S&P 500 and vs the average of the same belief's other ideas.
+    This is the number to trust before real money; the walk-forward test is history, this is the future arriving."""
+    import math
+    rows = db.query(
+        """SELECT p.belief_id, p.final_rank, o.checkpoint_days AS d, o.dir_excess AS ex, b.created_at
+           FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+           WHERE b.source <> 'seed_backfill' AND p.direction IN ('bullish', 'bearish')""")
+    first = db.query_one("SELECT MIN(created_at) AS t FROM beliefs WHERE source <> 'seed_backfill'") or {}
+    out = {"since": str(first.get("t") or "")[:10], "by_days": {}}
+    groups: dict = {}
+    for r in rows:
+        groups.setdefault((int(r["d"]), r["belief_id"]), []).append((r["final_rank"], float(r["ex"])))
+    for d in sorted({k[0] for k in groups}):
+        tops, lifts = [], []
+        for (dd, _), ideas in groups.items():
+            if dd != d or len(ideas) < 2:
+                continue
+            top = [ex for rank, ex in ideas if rank == 1]
+            if not top:
+                continue
+            tops.append(top[0])
+            lifts.append(top[0] - sum(ex for _, ex in ideas) / len(ideas))
+        n = len(tops)
+        if not n:
+            continue
+        mean = sum(lifts) / n
+        sd = math.sqrt(sum((x - mean) ** 2 for x in lifts) / (n - 1)) if n > 1 else 0.0
+        out["by_days"][str(d)] = {"beliefs": n, "top_beat": round(sum(1 for x in tops if x > 0) / n, 3),
+                                  "top_avg": round(sum(tops) / n, 4), "lift": round(mean, 4),
+                                  "lift_t": round(mean / (sd / math.sqrt(n)), 2) if sd > 0 else 0.0}
+    return out
+
+
+def _safe_forward() -> dict:
+    try:
+        return _forward()
+    except Exception:
+        return {}
+
+
 def _build() -> dict:
     today = datetime.now(timezone.utc).date().isoformat()
     one = lambda sql, args=(): int((db.query_one(sql, args) or {}).get("n") or 0)  # noqa: E731
@@ -247,6 +289,7 @@ def _build() -> dict:
         "graded": _recent_graded(),
         "lineages": _safe_lineages(),
         "skill": _skill(),
+        "forward": _safe_forward(),
         "regime": _safe_regime(),
         "trendlab": _safe_trendlab(),
     }

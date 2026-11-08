@@ -355,6 +355,26 @@ export default function BrainPage({ viewOnly = false }) {
           );
         })()}
 
+        {d?.forward?.by_days && Object.keys(d.forward.by_days).length > 0 && (() => {
+          const f = d.forward, pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
+          return (
+            <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Live forward test · real-time calls since {f.since}</div>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {Object.entries(f.by_days).map(([days, r]) => (
+                  <div key={days} className="rounded-xl bg-slate-800/60 p-2.5">
+                    <div className="text-[11px] text-slate-400">{days} days · {r.beliefs} calls</div>
+                    <div className="text-lg font-extrabold tabular-nums">{Math.round(r.top_beat * 100)}%</div>
+                    <div className="text-[11px] text-slate-400">#1 beat the S&P</div>
+                    <div className={`text-xs font-bold tabular-nums mt-1 ${r.lift > 0 ? 'text-green-400' : 'text-slate-300'}`}>{pts(r.lift)} pts vs other ideas</div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-slate-400">No hindsight here: these calls were made before the outcome existed. Early numbers swing a lot; the 90-day column is the one that counts.</p>
+            </div>
+          );
+        })()}
+
         <BrainLineages data={d?.lineages} ago={ago} now={now} />
 
         {d?.trendlab?.results?.MuLine && (() => {
