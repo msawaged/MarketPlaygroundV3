@@ -321,7 +321,7 @@ each model as the mix that would go live, at 25%, with an extra real-time requir
   for the strongest mix even while it can't go live.
 - Why 30 days: the ranker learns 90-day outcomes, but real-time calls (first ones Oct 28) only reach 90 days in late
   January; 7 days is mostly noise. 30-day grades start ~Nov 27 and should pass 300 calls in early December.
-  `MP_RANKER_LIVE_DAYS=90` makes it stricter (waits until ~February).
+  `MP_RANKER_LIVE_DAYS=90` makes it stricter (waits until ~February). **Murad confirmed 30 days (2026-11-09); keep it.**
 
 **Today's numbers (offline replay, real app #1 as the bar).** App alone: risk-matched lift +1.24%, beat 54.2%.
 Mixes: gbm risk-adjusted +1.43% / 53.5%, neural net risk-adjusted +1.38% / 53.7%, gbm +1.36% / 53.5%. A bigger edge
