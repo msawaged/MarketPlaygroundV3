@@ -330,3 +330,48 @@ over the other ideas, but none beats the S&P as often as the app, so nothing swi
 **Checks.** Backend tests: 115 passed (new: `test_ranker_mix_is_tested_as_it_goes_live_and_needs_real_time_proof`,
 `test_live_check_uses_real_time_calls_only`; `test_nightly_refit_loads_graded_calls_once_and_compactly` now ignores
 the small live-only load).
+
+## 2026-11-09 (weekly) — The app's #1 on practice calls had look-ahead; new "app, no look-ahead" baseline
+
+**Problem (real numbers).** Every gate compares learned rankers with "app (current #1)", the stored `final_rank` 0
+of each practice call. On the walk-forward test (2,703 practice beliefs, 90-day checkpoint) that bar is
+**+1.49% lift, t 4.54, beat 53.4%**, and no learned model alone reaches it (best: gbm +1.32%, t 3.89). But practice
+calls were scored long after their date (warm-up, Oct 30 – Nov 2), and the app's score is Claude's score plus a
+track-record nudge (`learning.ticker_adjustment` from `ticker_stats`), which had **no date filter**: it counted
+outcomes graded *after* the call's own date, including other practice calls in the same months. Decomposed on
+production data (read-only SQL, same test beliefs):
+
+| ordering of the #1 | lift / t / beat |
+|---|---|
+| stored app #1 (the gate's bar) | +1.49% / 4.52 / 53.3% |
+| Claude's score alone (user's direction first) | +0.06% / 0.22 / 51.8% |
+| Claude + nudge from outcomes graded **before** the call's date | **+0.53% / 1.71 / 52.2%** |
+
+So about two-thirds of the bar (~0.96 pts) is look-ahead. The #1 differs between the stored and point-in-time
+orderings in 34% of test beliefs. Live users were never affected (in real time the track record only holds the
+past), and the learned models never saw this score as an input (Claude's score/rank are zeroed on practice calls).
+The effect: the gate has been comparing honest models with a contaminated bar, and the "+ app (25%)" mixes are
+tested with the contaminated score mixed in (their offline numbers are inflated the same way; the real-time
+`live_check` is unaffected).
+
+**Change (measurement only; no gate changed).** `research.load` rebuilds, for each practice idea, the app's score
+as of the call's own date (`_pit_index`, `_pit_score`: Claude's score + `learning.ticker_adjustment` from outcomes
+graded strictly before the call's date, user's direction first; real-time calls keep their stored #1).
+Approximation: the rebuilt nudge counts the ticker's outcomes under any theme and ignores votes. `research.run`
+reports it as the baseline **"app, no look-ahead"**; `fit_production` stores it as `old_pit` and `/v4/brain`
+`skill.ranker.old_pit` shows it. `_passes`, `MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, the mix live check, the embargo and the
+bar the gate uses (`old`, the stored #1) are all unchanged, so nothing changes for users. Memory: one extra float
+per idea plus a per-ticker index of ~23k outcomes (a few MB), built and freed inside `load`.
+
+**Decision for Murad (not taken by the routine).** Under a look-ahead-free bar, gbm alone (+1.32%, t 3.89) would
+likely clear the lift part of the gate against +0.53%, and the 25% mixes should be tested with the point-in-time app
+score. Switching the gate's bar from `old` to `old_pit` would let a model reach users sooner, so it counts as
+changing a safety gate and is left for you. Until then, the conservative bar stays, and mixes still need the
+real-time live check (300 calls at 30 days, ~early December).
+
+**Checks.** Backend tests: 117 passed (new: `test_app_baseline_without_look_ahead_uses_only_earlier_track_records`).
+
+**What counts as a win.** After tonight's refit, `research:ranker` shows "app, no look-ahead" near +0.5% lift
+(t ≈ 1.7) next to the stored app's +1.5%, which confirms the bar is inflated on the live job's own data. The real
+win: a ranker going live through a look-ahead-free comparison, then its real-time #1 beating the app's #1 in the
+live check.

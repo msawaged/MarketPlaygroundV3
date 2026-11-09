@@ -2283,3 +2283,29 @@ def test_live_check_uses_real_time_calls_only():
     r = research.live_check(None, zero, [1.0] * len(research.ZKEYS), zero, days=30, min_calls=4)
     assert r["n"] == 4 and r["ok"] and abs(r["app"]["avg"] - 0.05) < 1e-9   # a flat model leaves the app's #1 in place
     assert not research.live_check(None, zero, [1.0] * len(research.ZKEYS), zero, days=30, min_calls=5)["ok"]
+
+
+def test_app_baseline_without_look_ahead_uses_only_earlier_track_records():
+    # practice calls were scored long after their date, so the app's track-record nudge saw later outcomes. The
+    # "app, no look-ahead" baseline rebuilds it from outcomes graded before each call's own date (2026-11-09 log)
+    from backend.v4 import research
+    def belief(bid, as_of, src, ranks, claude, exs, ev):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", "2026-11-01T00:00:00", as_of, src, "bullish"))
+        for j, (tk, rk, cs, ex) in enumerate(zip(("AAA", "BBB"), ranks, claude, exs)):
+            pid = f"{bid}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank, claude_score, final_score) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (pid, bid, tk, "bullish", as_of, 10.0, "{}", rk, cs, cs))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, sel_edge, graded_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                       (pid, 90, ev, 10.0, 0.0, 0.0, ex, ex, ev))
+    # a LATER practice call where BBB did far better: its outcome lifted BBB's track record when the early call was
+    # scored, so the stored #1 of the early call is BBB although Claude preferred AAA
+    belief("pit-late", "2025-06-01", "seed_backfill", (1, 0), (0.505, 0.5), (-0.2, 0.3), "2025-09-01")
+    belief("pit-early", "2025-01-01", "seed_backfill", (1, 0), (0.505, 0.5), (0.0, 0.3), "2025-04-01")
+    belief("pit-live", "2026-11-01", "user", (1, 0), (0.505, 0.5), (0.0, 0.1), "2027-01-30")
+    data = research.load()
+    early, late, live = ([b for b in data if b["date"] == d][0] for d in ("2025-01-01", "2025-06-01", "2026-11-01"))
+    pick = lambda b: max(range(2), key=lambda i: b["cands"][i]["pit"])
+    assert early["cands"][1]["top"] and pick(early) == 0     # nothing graded before 2025-01-01: Claude's order
+    assert late["cands"][1]["top"] and pick(late) == 1       # by June, BBB's earlier win was already graded
+    assert live["cands"][1]["top"] and pick(live) == 1       # real-time calls were point-in-time: stored #1 stays

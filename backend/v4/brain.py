@@ -140,6 +140,7 @@ def _skill() -> dict:
         rv = research.ranker()
         if rv:
             out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old"),
+                             "old_pit": rv.get("old_pit"),
                              "risk_check": bool(rv.get("risk_check")), "model": rv.get("model"),
                              "confidence": rv.get("confidence")}
     except Exception:

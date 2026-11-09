@@ -156,15 +156,70 @@ def directional(direction) -> bool:
 AUG_MAX = int(os.getenv("MP_AUG_MAX", "40000"))  # cap on time-shifted training ideas held in memory (512 MB jobs)
 
 
+PIT_DAYS = 90  # the checkpoint learning.ticker_stats reads (LABEL_DAYS) and so the one the app's nudge used
+
+
+def _pit_index(rows: list) -> dict:
+    """Per ticker, every graded outcome sorted by the day it was graded, with running sums of what
+    learning.ticker_stats averages. Lets us rebuild the app's track-record nudge for a practice call as of the call's
+    own date: only outcomes already graded before that date count (no look-ahead)."""
+    by: dict[str, list] = {}
+    for r in rows:
+        if not r.get("ticker") or r.get("eval_date") is None or r.get("dir_excess") is None:
+            continue
+        d, ex, se = str(r["direction"]).lower(), float(r["dir_excess"]), r.get("sel_edge")
+        by.setdefault(r["ticker"], []).append((str(r["eval_date"])[:10], -ex if d == "bearish" else ex,
+                                               None if se is None or d != "bullish" else float(se),
+                                               None if se is None or d != "bearish" else float(se)))
+    out = {}
+    for t, v in by.items():
+        v.sort(key=lambda x: x[0])
+        def cum(j):
+            s, c, ss, cc = 0.0, 0, [0.0], [0]
+            for x in v:
+                if x[j] is not None:
+                    s, c = s + x[j], c + 1
+                ss.append(s); cc.append(c)
+            return ss, cc
+        out[t] = ([x[0] for x in v], cum(1), cum(2), cum(3))
+    return out
+
+
+def _pit_score(pit: dict | None, r: dict, top: bool, app: float) -> float:
+    """The app's score for this idea as it would have been on the call's own date: Claude's score plus the
+    track-record nudge (learning.ticker_adjustment) from outcomes graded before that date, with the user's
+    direction leading (as engine.process_belief sorts). Practice calls were scored long after their date, so their
+    stored final_score / final_rank used track records that include later outcomes (look-ahead). Calls made in real
+    time already were point-in-time: their stored #1 stays the #1. Approximation: the nudge here counts the ticker's
+    outcomes under any theme (the live one filters by the belief's themes) and ignores user votes."""
+    if pit is None or r.get("source") != "seed_backfill":
+        return 100.0 + app if top else app
+    from bisect import bisect_left
+    from . import learning
+    d, core = str(r["direction"]).lower(), str(r.get("bdir") or "").lower()
+    lead = 1.0 if core not in ("bullish", "bearish") or d == core else 0.0
+    stat = None
+    hit = pit.get(r.get("ticker"))
+    if hit:
+        dates, (rs, rc), (bs, bc), (es, ec) = hit
+        i = bisect_left(dates, str(r["as_of_date"])[:10])  # graded strictly before the call's date
+        if i:
+            stat = {"n": i, "raw_mean": rs[i] / max(rc[i], 1),
+                    "n_sel_bull": bc[i], "sel_bull": bs[i] / bc[i] if bc[i] else None,
+                    "n_sel_bear": ec[i], "sel_bear": es[i] / ec[i] if ec[i] else None}
+    return 10.0 * lead + float(r.get("claude_score") or 0.0) + learning.ticker_adjustment(stat, d)
+
+
 def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}. With include_aug, time-shifted practice calls
     (augment.py) are added as beliefs flagged aug=True with src_date; they are only ever used for training.
     live_only: calls made in real time only (no practice/backfill), for the live check."""
     rows = db.query(
         """SELECT p.belief_id, p.direction, p.features, p.final_rank, p.final_score, o.dir_excess, o.ret, o.spy_ret,
-                  b.as_of_date
+                  b.as_of_date, p.ticker, p.claude_score, o.sel_edge, o.eval_date, b.direction AS bdir, b.source
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ?""" + (" AND b.source <> 'seed_backfill'" if live_only else ""), (days,))
+    pit = _pit_index(rows) if days == PIT_DAYS and not live_only else None
     if include_aug:
         try:
             from . import augment
@@ -199,10 +254,12 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
         beta = num.get("beta")
         exa = ex if beta is None or r["ret"] is None or r["spy_ret"] is None else \
             sign * (float(r["ret"]) - float(beta) * float(r["spy_ret"]))
-        b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": r["final_rank"] == 0,
-                           "app": float(r.get("final_score") or 0.0)})  # final_rank is 0-based: 0 is the #1 shown
+        top = r["final_rank"] == 0
+        app = float(r.get("final_score") or 0.0)
+        b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": top,  # 0 is the #1 shown
+                           "app": app, "pit": _pit_score(pit, r, top, app)})
     _set_keys()
-    del rows  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
+    del rows, pit  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
     nf, idx = len(FEATS), FeatRow.IDX
     xa = [(idx["z_" + a], idx[g]) for a, g in INTERACTIONS]
@@ -348,6 +405,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         return {"error": f"only {len(data)} graded beliefs"}
     fixed = {
         "app (current #1)": None,
+        # the same app ordering without look-ahead (see _pit_score); reported, not (yet) the gate's bar
+        "app, no look-ahead": None,
         "momentum (z_mom60)": lambda f: f["z_mom60"],
         "rel strength (z_rs60)": lambda f: f["z_rs60"],
         "1y trend (z_mom250)": lambda f: f["z_mom250"],
@@ -406,7 +465,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         if len(train) < 80 or not test:
             continue
         for name, fn in fixed.items():
-            if fn is None:
+            if fn is None and name == "app, no look-ahead":
+                res[name] += [_pick(b, max(b["cands"], key=lambda c: c.get("pit", 0.0))) for b in test]
+            elif fn is None:
                 for b in test:
                     top = next((c for c in b["cands"] if c["top"]), b["cands"][0])
                     res[name].append(_pick(b, top))
@@ -618,7 +679,8 @@ def fit_production(results: dict | None = None) -> dict:
     # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score
     conf = (full.get("confidence") or {}).get(names.get(best, "") if active else "app (current #1)")
     out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
-           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
+           "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app,
+           "old_pit": res.get("app, no look-ahead"), "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
            "weight": MIX_WEIGHT if best.endswith("_mix") else WEIGHT, "mix": best.endswith("_mix"), "live": live,
            "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
            "candidates": {k: m for k, (m, _) in cands.items()}}
