@@ -70,7 +70,7 @@ function cards(data, navigate, reel = false, launched = false) {
       <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, type: 'spring', stiffness: 220 }}
         className="mt-5 rounded-full bg-blue-600 px-5 py-2 text-lg font-black uppercase tracking-[0.15em]">Story mode</motion.div>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="mt-3 text-base text-slate-300">
-        Any news story, explained fast
+        The news: what you need to know
       </motion.div>
     </div>
   );
