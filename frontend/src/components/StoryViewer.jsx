@@ -137,7 +137,7 @@ function cards(data, navigate, reel = false) {
   return out;
 }
 
-export default function StoryViewer({ headline, onClose, reel = false, cardMs = CARD_MS }) {
+export default function StoryViewer({ headline, onClose, reel = false, cardMs: baseMs = CARD_MS, durations = null }) {
   const navigate = useNavigate();
   const [data, setData] = useState(() => _stories.get(headline) || null);
   const [err, setErr] = useState('');
@@ -165,6 +165,8 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs = 
 
   const list = data ? cards(data, navigate, reel) : [];
   const last = list.length - 1;
+  // A reel can give each card its own length (e.g. to fit a voiceover line); otherwise every card gets baseMs.
+  const cardMs = (durations && durations[idx]) || baseMs;
   const go = useCallback((d) => {
     setElapsed(0);
     setIdx((i) => {
@@ -188,6 +190,8 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs = 
     return () => clearInterval(t);
   }, [data, paused, idx, last, go, reel, cardMs]);
   useEffect(() => { if (reel && data) window.__reelStart = performance.now(); }, [reel, data]);
+  // when each card appeared, so a recorder can line up a voiceover with the cards
+  useEffect(() => { if (reel && data) (window.__reelMarks = window.__reelMarks || [])[idx] = performance.now(); }, [reel, data, idx]);
   useEffect(() => { if (reel && err) window.__reelError = err; }, [reel, err]);
 
   const onDown = () => { downAt.current = Date.now(); setPaused(true); };

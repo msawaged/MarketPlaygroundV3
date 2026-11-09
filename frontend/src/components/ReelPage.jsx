@@ -8,6 +8,9 @@ export default function ReelPage() {
   const q = new URLSearchParams(window.location.search);
   const i = Math.max(0, parseInt(q.get('i') || '0', 10) || 0);
   const ms = Math.min(9000, Math.max(2500, parseInt(q.get('ms') || '4200', 10) || 4200));
+  // d=4100,6300,... gives each card its own length in ms (a voiceover's line lengths)
+  const durations = (q.get('d') || '').split(',').map((x) => parseInt(x, 10)).filter((x) => x > 0)
+    .map((x) => Math.min(15000, Math.max(1500, x)));
   const [headline, setHeadline] = useState(q.get('h') || '');
   const [err, setErr] = useState('');
   useEffect(() => {
@@ -20,5 +23,5 @@ export default function ReelPage() {
   useEffect(() => { if (err) window.__reelError = err; }, [err]);
   if (err) return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center">{err}</div>;
   if (!headline) return <div className="min-h-screen bg-slate-950" />;
-  return <StoryViewer headline={headline} reel cardMs={ms} onClose={() => {}} />;
+  return <StoryViewer headline={headline} reel cardMs={ms} durations={durations.length ? durations : null} onClose={() => {}} />;
 }
