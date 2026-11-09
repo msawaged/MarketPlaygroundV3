@@ -316,18 +316,68 @@ def ensure_schema() -> None:
     with _lock:
         if key in _initialized:
             return
-        with connect() as conn:
-            cur = conn.cursor()
+        # On Postgres every DDL statement here waits for a table lock, even when the table, index or column
+        # already exists. Behind one long-running query that wait was unbounded: on 2026-11-09 a 44-minute ad-hoc
+        # SELECT on picks left "ALTER TABLE picks ADD COLUMN spy_entry" queued, every later query on picks queued
+        # behind it, and the web service hung at startup (502s) until the SELECT was cancelled. So: bounded lock
+        # waits, and migrations whose column is already there are skipped without taking a lock.
+        try:
+            with connect() as conn:
+                cur = conn.cursor()
+                _bound_lock_wait(cur)
+                for stmt in _schema():
+                    cur.execute(stmt)
+        except Exception as e:
+            if not is_postgres():
+                raise
+            print(f"[db] schema in one pass failed ({e}); retrying statement by statement")
             for stmt in _schema():
-                cur.execute(stmt)
+                try:
+                    with connect() as conn:
+                        cur = conn.cursor()
+                        _bound_lock_wait(cur)
+                        cur.execute(stmt)
+                except Exception as e2:
+                    print(f"[db] schema statement skipped ({e2}): {stmt.split(chr(10))[0][:80]}")
+        have = _pg_columns() if is_postgres() else None
         # additive migrations for tables that already exist (each in its own transaction; "already there" is fine)
         for stmt in _migrations():
+            tc = _migration_target(stmt)
+            if have is not None and tc is not None and tc in have:
+                continue
             try:
                 with connect() as conn:
-                    conn.cursor().execute(stmt)
+                    cur = conn.cursor()
+                    _bound_lock_wait(cur)
+                    cur.execute(stmt)
             except Exception:
                 pass
         _initialized.add(key)
+
+
+def _bound_lock_wait(cur) -> None:
+    if is_postgres():
+        cur.execute("SET LOCAL lock_timeout = '10s'")
+
+
+def _migration_target(stmt: str) -> Optional[tuple[str, str]]:
+    """("picks", "spy_entry") for "ALTER TABLE picks ADD COLUMN spy_entry REAL", else None."""
+    w = stmt.split()
+    if len(w) >= 6 and [x.upper() for x in w[:2]] == ["ALTER", "TABLE"] and [x.upper() for x in w[3:5]] == ["ADD", "COLUMN"]:
+        return (w[2].lower(), w[5].lower())
+    return None
+
+
+def _pg_columns() -> Optional[set[tuple[str, str]]]:
+    """Existing (table, column) pairs in the current schema; None if the lookup fails (then migrations just run)."""
+    try:
+        with connect() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = current_schema()")
+            return {(str(t).lower(), str(c).lower()) for t, c in cur.fetchall()}
+    except Exception as e:
+        print(f"[db] column lookup failed ({e})")
+        return None
 
 
 def _migrations() -> list[str]:

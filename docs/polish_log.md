@@ -121,3 +121,28 @@ Changed:
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 113 passed. Verified with a mocked /v4/brain
 (30-day checkpoint + by_confidence) at 390px.
+
+## 2026-11-09
+
+Walked /welcome, /trending, /live, /story, /account, /brain on the live site at 390x844 at ~21:24 UTC.
+
+Found (outage):
+- Every API call failed: the backend returned 502 on /health, /v4/brain, /v4/movers, /v4/trending (the browser showed
+  them as CORS errors because Render's 502 page has no CORS headers). Trending, Story, Live and Brain were empty.
+- Render: the 21:00 deploy of d856c72 timed out ("No open ports detected"); the instance logged "Waiting for application
+  startup." and never finished, and the rollback instance hung the same way. Disk-backed service, so no old instance
+  kept serving: down from ~21:00 to ~21:40 UTC.
+- pg_stat_activity: an ad-hoc read-only SELECT (correlated subqueries over outcomes/picks, run through the Render
+  Postgres query tool, no application_name) had been running 44 min. Startup's `ALTER TABLE picks ADD COLUMN spy_entry`
+  (a migration that runs on every start and normally fails "already exists") queued for an ACCESS EXCLUSIVE lock behind
+  it, and every later statement on picks (startup `CREATE INDEX IF NOT EXISTS`, all reads) queued behind the ALTER.
+
+Changed:
+- Cancelled the runaway SELECT (pg_cancel_backend); the backend came back within a minute.
+- backend/v4/db.py ensure_schema: on Postgres, migrations whose column already exists are skipped (information_schema
+  lookup, no lock); all schema/migration DDL runs with `SET LOCAL lock_timeout = '10s'`; if the one-pass schema fails on
+  Postgres it retries statement by statement and logs skips instead of hanging or crashing. Reproduced the hang on a
+  local Postgres 16 (old code still blocked after 25s behind an open reader; new code 0.0s) and checked a missing
+  column is still added. Test added for the migration parser.
+
+Checks: backend tests 118 passed. No frontend change.

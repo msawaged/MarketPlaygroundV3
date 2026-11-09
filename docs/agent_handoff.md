@@ -68,3 +68,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   tests/test_v4.py, docs/research_ideas.md.
 - test_ranker_v2_picks_the_stronger_model: the "loses -> ridge" step now zeroes every non-ridge learned candidate
   (the net could win by chance on the tiny synthetic set once a feature was added). Test-only; gate untouched.
+## 2026-11-09 (daily polish walk)
+- OUTAGE ~21:00-21:40 UTC: backend hung at startup (502 everywhere) because a 44-minute ad-hoc SELECT run through the
+  Render Postgres query tool held picks; startup's no-op `ALTER TABLE picks ADD COLUMN` queued behind it and blocked
+  everything else on picks. I cancelled that query. **If you run ad-hoc SQL on prod, keep it small**: the query keeps
+  running on the server after the tool call times out. No correlated subqueries over outcomes/picks; do heavy
+  analysis locally on an export.
+- Fix: backend/v4/db.py ensure_schema skips migrations whose column exists (no lock) and bounds DDL lock waits
+  (lock_timeout 10s). Test in tests/test_v4.py. When you add a migration keep the "ALTER TABLE t ADD COLUMN c ..." shape
+  (`_migration_target` parses it; the test asserts every migration does).
+- d856c72 (research, app baseline without look-ahead) had not deployed because of the outage; it ships with this push.

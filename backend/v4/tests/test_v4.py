@@ -2309,3 +2309,12 @@ def test_app_baseline_without_look_ahead_uses_only_earlier_track_records():
     assert early["cands"][1]["top"] and pick(early) == 0     # nothing graded before 2025-01-01: Claude's order
     assert late["cands"][1]["top"] and pick(late) == 1       # by June, BBB's earlier win was already graded
     assert live["cands"][1]["top"] and pick(live) == 1       # real-time calls were point-in-time: stored #1 stays
+
+
+def test_migration_target_parses_add_column():
+    from backend.v4 import db
+    assert db._migration_target("ALTER TABLE picks ADD COLUMN spy_entry REAL") == ("picks", "spy_entry")
+    assert db._migration_target("ALTER TABLE accounts ADD COLUMN verified INTEGER NOT NULL DEFAULT 1") == ("accounts", "verified")
+    assert db._migration_target("CREATE INDEX IF NOT EXISTS ix ON picks(x)") is None
+    for stmt in db._migrations():
+        assert db._migration_target(stmt) is not None, stmt
