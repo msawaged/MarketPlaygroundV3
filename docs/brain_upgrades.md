@@ -375,3 +375,32 @@ real-time live check (300 calls at 30 days, ~early December).
 (t ≈ 1.7) next to the stored app's +1.5%, which confirms the bar is inflated on the live job's own data. The real
 win: a ranker going live through a look-ahead-free comparison, then its real-time #1 beating the app's #1 in the
 live check.
+
+## 2026-11-09 (night check) — First nightly run with mixes, shifted data and the rank-0 fix
+
+**Run.** v4-grade-and-train 22:47 UTC finished successfully (refit 22:59, no OOM; 6,451 shifted ideas in memory).
+Old network retrain: shadow, lift +0.58% (t 1.21).
+
+**Ranker v2 (walk-forward, 2,703 real practice calls; risk-matched lift / beat a risk-matched S&P):**
+
+| | lift | beat |
+|---|---|---|
+| app #1 as stored (the gate's bar; has look-ahead, see d856c72) | +1.24% | 54.3% |
+| app #1 point-in-time (no look-ahead, research routine) | +0.50% | 53.0% |
+| gbm / gbm risk-adj / net risk-adj, alone | +0.94% / +0.93% / +1.00% | 52.8% / 53.7% / 53.9% |
+| **gbm risk-adj + shifted, 25% mix** | **+1.55%** | **54.5%** (passes `_passes`) |
+| gbm risk-adj 25% mix / gbm 25% mix | +1.65% / +1.58% | 54.0% / 53.6% |
+
+- A 25% mix (gbm risk-adjusted trained with the shifted data) now clears the unchanged gate against the stored #1.
+  It is **not live**: `live_check` has 0 of the 300 real-time calls it needs at 30 days (first ones ~Nov 27).
+- Shifted data on its own does not help yet (gbm risk-adj +0.70% with it vs +0.93% without); in the mix it nudges the
+  beat rate up. No net "+ shifted" candidate added: no evidence yet that shifted data helps.
+- Against the honest (point-in-time) app, every learned model roughly doubles the edge (+0.9–1.0% vs +0.5%).
+
+**Proposal for Murad (not changed: a gate decision).** Judge models against the point-in-time app #1 instead of the
+stored #1 that carries look-ahead. That would let a model *alone* switch on today (e.g. net risk-adjusted: +1.00% vs
++0.50%, beat 53.9% vs 53.0%). My recommendation: leave it; the 25% mix plus the real-time check already gives an
+honest path and switches on in early December if the live calls agree.
+
+**Live forward test.** 7 days, 108 real-time calls: #1 +1.12% vs its belief's other ideas (t 1.24). Confidence
+labels started Nov 8; first graded ones arrive ~Nov 15.

@@ -78,3 +78,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (lock_timeout 10s). Test in tests/test_v4.py. When you add a migration keep the "ALTER TABLE t ADD COLUMN c ..." shape
   (`_migration_target` parses it; the test asserts every migration does).
 - d856c72 (research, app baseline without look-ahead) had not deployed because of the outage; it ships with this push.
+## 2026-11-09 night (build chat, CTO, scheduled check)
+- Nightly run OK. gbm_adj_aug_mix passes `_passes` but waits on live_check (0/300 real-time calls at 30 days). Docs
+  only: docs/brain_upgrades.md (2026-11-09 night check) incl. a proposal (point-in-time baseline) left for Murad.
+- Note from the polish walk respected: keep ad-hoc prod SQL small (I only read kv_cache rows tonight).
