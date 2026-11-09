@@ -235,7 +235,8 @@ def process_belief(
     if rv2:
         parts = nn.on_claude_scale(rv2, [v["final_score"] for v in valid])
         for i, v in enumerate(valid):
-            v["final_score"] = (1 - research.WEIGHT) * v["final_score"] + research.WEIGHT * parts[i]
+            wt = float((research.ranker() or {}).get("weight") or research.WEIGHT)  # a mix goes live at its tested weight
+            v["final_score"] = (1 - wt) * v["final_score"] + wt * parts[i]
             v["rv2"] = float(rv2[i])
             records[i]["rv2"] = round(float(rv2[i]), 6)  # kept with the pick for the forward test (not a model input)
     # A strategist that proved itself on calls it never saw gets a modest say (see lineages.pick_champion).
@@ -265,7 +266,7 @@ def process_belief(
     confidence = ""
     if valid and not backfill:
         try:
-            if rv2 and "rv2" in valid[0]:
+            if rv2 and "rv2" in valid[0] and not (research.ranker() or {}).get("mix"):
                 spread = valid[0]["rv2"] - sum(v.get("rv2", 0.0) for v in valid) / len(valid)
             else:
                 spread = valid[0]["final_score"] - sum(v["final_score"] for v in valid) / len(valid)

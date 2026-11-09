@@ -41,3 +41,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test now renders `forward.by_confidence` (keys high/medium/low) and a t-stat note; its lift is labelled "vs our
   average idea" because `_forward` and research lift include the #1 in the average. StrategyCard badge tooltip reworded.
   No backend changes. If you change `_forward`'s lift to exclude the #1, update those labels.
+## 2026-11-09 (build chat, CTO)
+- Gate amendment approved by Murad (option B): `<key>_mix` candidates (model mixed into the app score at
+  MIX_WEIGHT 0.25) must pass `_passes` vs the real app #1 AND `research.live_check` (>=300 real-time calls graded at
+  30 days, mix avg >= app avg). Ranker record gains `weight`, `mix`, `live`; engine uses `ranker.weight`.
+  `research.load(days=, live_only=)`. Env: MP_RANKER_MIX_WEIGHT, MP_RANKER_LIVE_DAYS, MP_RANKER_LIVE_MIN.

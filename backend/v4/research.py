@@ -151,14 +151,15 @@ def directional(direction) -> bool:
 AUG_MAX = int(os.getenv("MP_AUG_MAX", "40000"))  # cap on time-shifted training ideas held in memory (512 MB jobs)
 
 
-def load(include_aug: bool = False) -> list[dict]:
+def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -> list[dict]:
     """One dict per belief: {date, cands: [{f: {...}, ex, top}]}. With include_aug, time-shifted practice calls
-    (augment.py) are added as beliefs flagged aug=True with src_date; they are only ever used for training."""
+    (augment.py) are added as beliefs flagged aug=True with src_date; they are only ever used for training.
+    live_only: calls made in real time only (no practice/backfill), for the live check."""
     rows = db.query(
         """SELECT p.belief_id, p.direction, p.features, p.final_rank, p.final_score, o.dir_excess, o.ret, o.spy_ret,
                   b.as_of_date
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
-           WHERE o.checkpoint_days = ?""", (DAYS,))
+           WHERE o.checkpoint_days = ?""" + (" AND b.source <> 'seed_backfill'" if live_only else ""), (days,))
     if include_aug:
         try:
             from . import augment
@@ -237,6 +238,16 @@ def _metrics(picks: list[tuple]) -> dict:
         out.update({"beat_adj": round(float((exa > 0).mean()), 4), "avg_adj": round(float(exa.mean()), 4),
                     "lift_adj": round(float(lifta.mean()), 4), "lift_adj_t": tstat(lifta)})
     return out
+
+
+def mix_scores(app, model, w: float) -> np.ndarray:
+    """The app's score with a model mixed in, exactly as the engine does it live: the model's scores are put on the
+    app's scale for this belief (z-scored, clipped to +-2, times the app's spread, at least 0.08), then weighted."""
+    a, m = np.asarray(app, dtype=float), np.asarray(model, dtype=float)
+    if len(a) < 2:
+        return a
+    z = np.clip((m - m.mean()) / m.std(), -2.0, 2.0) if m.std() > 1e-9 else np.zeros_like(m)
+    return (1 - w) * a + w * (a.mean() + z * max(float(a.std()), 0.08))
 
 
 def _by_confidence(picks: list[tuple], spreads: list[float]) -> dict:
@@ -375,6 +386,10 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             i = int(np.argmax(sc))
             res[name].append(_pick(b, b["cands"][i]))
             spreads.setdefault(name, []).append(float(sc[i] - np.mean(sc)))
+            mx = mix_scores([c.get("app", 0.0) for c in b["cands"]], sc, MIX_WEIGHT)  # what would go live
+            j = int(np.argmax(mx))
+            res.setdefault(name + MIX, []).append(_pick(b, b["cands"][j]))
+            spreads.setdefault(name + MIX, []).append(float(mx[j] - mx.mean()))
 
     for blk in blocks:
         lo, hi = blk[0], blk[-1]
@@ -459,6 +474,12 @@ RANKER_KEY = "ranker:v2"
 ZKEYS = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
 MIN_LIFT, MIN_T = 0.005, 1.5
 WEIGHT = 0.5
+# Murad's decision (2026-11-09, option B): also test each model the way it would go live, mixed into the app's own
+# score at MIX_WEIGHT, against the app alone; a mix must clear the same gate AND hold up on real-time calls.
+MIX_WEIGHT = float(os.getenv("MP_RANKER_MIX_WEIGHT", "0.25"))
+LIVE_DAYS = int(os.getenv("MP_RANKER_LIVE_DAYS", "30"))
+LIVE_MIN_CALLS = int(os.getenv("MP_RANKER_LIVE_MIN", "300"))
+MIX = " + app (25%)"
 
 
 GBM_KEY = "ranker:v2:gbm"
@@ -485,6 +506,27 @@ def _passes(m: dict, app: dict, risk: bool = False) -> bool:
                 and m.get("beat", 0) >= app.get("beat", 1) - RAW_BEAT_SLACK)
 
 
+def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None = None) -> dict:
+    """Would the mix have done at least as well as the app's own #1 on calls made in real time (never practice, so no
+    hindsight; all after every training outcome)? Needs min_calls such calls graded at `days`. model None = ridge."""
+    days, min_calls = days or LIVE_DAYS, min_calls or LIVE_MIN_CALLS
+    try:
+        live = load(days=days, live_only=True)
+    except Exception as e:
+        return {"ok": False, "n": 0, "reason": f"{type(e).__name__}"}
+    mix_p, app_p = [], []
+    for b in live:
+        xb = _matrix([b], ZKEYS)
+        sc = model.predict(xb) if model is not None else ((xb - np.asarray(mu)) / np.asarray(sd)) @ np.asarray(w)
+        app = [c.get("app", 0.0) for c in b["cands"]]
+        mix_p.append(_pick(b, b["cands"][int(np.argmax(mix_scores(app, sc, MIX_WEIGHT)))]))
+        app_p.append(_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][int(np.argmax(app))])))
+    mm, am = _metrics(mix_p), _metrics(app_p)
+    n = mm.get("n", 0)
+    ok = n >= min_calls and mm.get("avg", 0) >= am.get("avg", 0)
+    return {"ok": bool(ok), "n": n, "days": days, "needed": min_calls, "mix": mm, "app": am}
+
+
 def fit_production(results: dict | None = None) -> dict:
     """Refit the production ranker on every graded call. Candidates, all judged on the same walk-forward test (calls
     they never saw): ridge, gradient-boosted trees and a small neural network (each trees/net also on risk-matched
@@ -504,40 +546,73 @@ def fit_production(results: dict | None = None) -> dict:
              "mlp": (res.get("neural net (learned)", {}), "rel"), "mlp_adj": (res.get("neural net (risk-adjusted)", {}), "rela")}
     if aug and "gbm (+ shifted)" in res:
         cands.update({"gbm_aug": (res["gbm (+ shifted)"], "rel"), "gbm_adj_aug": (res["gbm (risk-adjusted, + shifted)"], "rela")})
+    names = {"ridge": "ridge (learned)", "gbm": "gbm (learned)", "gbm_adj": "gbm (risk-adjusted)",
+             "mlp": "neural net (learned)", "mlp_adj": "neural net (risk-adjusted)", "gbm_aug": "gbm (+ shifted)",
+             "gbm_adj_aug": "gbm (risk-adjusted, + shifted)"}
+    for k in list(cands):  # each model also as it would go live: mixed into the app's score
+        if names[k] + MIX in res:
+            cands[k + "_mix"] = (res[names[k] + MIX], cands[k][1])
+            names[k + "_mix"] = names[k] + MIX
     x = _matrix(data, ZKEYS)
     y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
-    # the candidate with the biggest out-of-sample edge (risk-matched once betas are in) among those clearing the gate
     edge = "lift_adj" if risk else "lift"
-    passing = [k for k, (m, _) in cands.items() if _passes(m, app, risk)]
-    best = max(passing, key=lambda k: cands[k][0].get(edge, 0)) if passing else "ridge"
-    kind, (oos, label) = ("ridge" if best == "ridge" else "mlp" if best.startswith("mlp") else "gbm"), cands[best]
-    if kind in ("gbm", "mlp"):
+    passing = sorted((k for k, (m, _) in cands.items() if _passes(m, app, risk)),
+                     key=lambda k: cands[k][0].get(edge, 0), reverse=True)
+
+    def fit(key: str):
+        """The production model for a candidate (trees / net / ridge weights), fit on every graded call."""
+        base = key[:-4] if key.endswith("_mix") else key
+        kind_ = "ridge" if base == "ridge" else "mlp" if base.startswith("mlp") else "gbm"
+        if kind_ == "ridge":
+            return kind_, None
+        from sklearn.ensemble import HistGradientBoostingRegressor
+        fit_on = data + aug if base.endswith("_aug") else data
+        xx = x if fit_on is data else _matrix(fit_on, ZKEYS)
+        yy = np.array([max(-0.5, min(0.5, c[cands[key][1]])) for b in fit_on for c in b["cands"]])
+        return kind_, (MLPRanker(xx, yy) if kind_ == "mlp" else HistGradientBoostingRegressor(
+            max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
+            random_state=7).fit(xx, yy))
+
+    # the candidate with the biggest out-of-sample edge (risk-matched once betas are in) among those clearing the gate;
+    # a mix must also hold up on real-time calls (live_check) before it can go live
+    best, kind, model, live = "ridge", "ridge", None, None
+    for k in passing:
+        try:
+            kd, m = fit(k)
+        except Exception:
+            continue
+        if k.endswith("_mix"):
+            live = live_check(m, mu, sd, w)
+            if not live.get("ok"):
+                continue
+        best, kind, model = k, kd, m
+        break
+    oos, label = cands[best]
+    if model is not None:
         try:
             import base64
             import pickle
-            from sklearn.ensemble import HistGradientBoostingRegressor
-            fit_on = data + aug if best.endswith("_aug") else data
-            xx = x if fit_on is data else _matrix(fit_on, ZKEYS)
-            yy = np.array([max(-0.5, min(0.5, c[label])) for b in fit_on for c in b["cands"]])
-            m = MLPRanker(xx, yy) if kind == "mlp" else HistGradientBoostingRegressor(
-                max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
-                random_state=7).fit(xx, yy)
-            blob = base64.b64encode(pickle.dumps(m)).decode()
+            blob = base64.b64encode(pickle.dumps(model)).decode()
             db.execute("DELETE FROM kv_cache WHERE k = ?", (GBM_KEY,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (GBM_KEY, blob, datetime.now(timezone.utc).isoformat()))
         except Exception:
             best, kind, (oos, label) = "ridge", "ridge", cands["ridge"]
-    active = _passes(oos, app, risk)
-    names = {"ridge": "ridge (learned)", "gbm": "gbm (learned)", "gbm_adj": "gbm (risk-adjusted)",
-             "mlp": "neural net (learned)", "mlp_adj": "neural net (risk-adjusted)", "gbm_aug": "gbm (+ shifted)",
-             "gbm_adj_aug": "gbm (risk-adjusted, + shifted)"}
+    active = best in passing and _passes(oos, app, risk)
+    if live is None:  # show how the strongest mix is doing on real-time calls, even while it can't go live
+        mixes = sorted((k for k in cands if k.endswith("_mix")), key=lambda k: cands[k][0].get(edge, 0), reverse=True)
+        if mixes:
+            try:
+                live = {**live_check(fit(mixes[0])[1], mu, sd, w), "candidate": mixes[0]}
+            except Exception:
+                live = None
     # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score
     conf = (full.get("confidence") or {}).get(names.get(best, "") if active else "app (current #1)")
     out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
            "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app, "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
+           "weight": MIX_WEIGHT if best.endswith("_mix") else WEIGHT, "mix": best.endswith("_mix"), "live": live,
            "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
            "candidates": {k: m for k, (m, _) in cands.items()}}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))

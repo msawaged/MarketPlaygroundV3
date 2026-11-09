@@ -1651,9 +1651,10 @@ def test_nightly_refit_loads_graded_calls_once_and_compactly(monkeypatch):
                        (pid, 90, "2025-06-01", 10.0, 0.0, 0.0, rng.gauss(0, 0.1), "2025-06-01"))
     calls = []
     real = research.load
-    monkeypatch.setattr(research, "load", lambda **kw: calls.append(1) or real(**kw))
+    monkeypatch.setattr(research, "load", lambda **kw: (None if kw.get("live_only") else calls.append(1)) or real(**kw))
     out = research.fit_production()
-    assert len(calls) == 1 and out["trained_on"] == 170                    # never two copies in memory at once
+    assert len(calls) == 1 and out["trained_on"] == 170                    # never two full copies in memory at once
+    # (the live check's small load of real-time calls only is not counted)
     row = real()[0]["cands"][0]["f"]
     assert isinstance(row, research.FeatRow) and abs(row["z_mom60"]) < 5 and row.get("nope", 7.0) == 7.0
 
@@ -2189,3 +2190,46 @@ def test_the_app_number_one_is_final_rank_zero():
                    (f"p-r0{j}", 90, "2025-04-01", 10.0, 0.0, 0.0, 0.1 * j, "2025-04-01"))
     b = [x for x in research.load() if any(c["ex"] == 0.2 for c in x["cands"])][0]
     assert [c["top"] for c in b["cands"]] == [True, False, False]
+
+
+def test_ranker_mix_is_tested_as_it_goes_live_and_needs_real_time_proof(monkeypatch):
+    # option B (2026-11-09): each model is also judged mixed into the app's score at 25%, vs the app alone; a mix can
+    # only go live after it holds up on enough real-time calls (live_check), and then runs at its tested weight
+    from backend.v4 import research
+    import numpy as _np
+    mx = research.mix_scores([0.5, 0.6, 0.7], [3.0, 0.0, -3.0], 0.25)
+    assert _np.argmax(mx) == 2 and abs(mx.mean() - 0.6) < 1e-9          # 25% can't flip a clear app ordering...
+    assert _np.argmax(research.mix_scores([0.6, 0.6, 0.6], [3.0, 0.0, -3.0], 0.25)) == 0   # ...but breaks a tie
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    out = research.run()
+    assert out["results"]["gbm (learned)" + research.MIX]["n"] == out["results"]["gbm (learned)"]["n"]
+    target = out["results"]["gbm (learned)" + research.MIX]
+    monkeypatch.setattr(research, "_passes", lambda m, app, risk=False: m is target)
+    rv = research.fit_production(out)                                    # no real-time calls yet: stays off
+    assert not rv["active"] and rv["live"]["n"] == 0 and not rv["live"]["ok"] and rv["live"]["needed"] == 300
+    monkeypatch.setattr(research, "live_check", lambda *a, **k: {"ok": True, "n": 300})
+    rv = research.fit_production(out)
+    assert rv["active"] and rv["model"] == "gbm_mix" and rv["mix"] and rv["weight"] == 0.25
+    s = research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}], ["bullish"] * 2)
+    assert s and s[0] > s[1]
+
+
+def test_live_check_uses_real_time_calls_only():
+    from backend.v4 import research
+    def add(bid, src):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "u", "x", "x", "2026-11-01T00:00:00", "2026-11-01", src))
+        for j in range(3):
+            pid = f"{bid}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank, final_score) VALUES (?,?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", "2026-11-01", 10.0, db.dumps({"num": {"mom60": 0.1 * j}}), j, 0.9 - 0.1 * j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 30, "2026-12-01", 10.0, 0.0, 0.0, 0.05 - 0.02 * j, "2026-12-01"))
+    for i in range(4):
+        add(f"lv{i}", "user")
+    add("lv-old", "seed_backfill")                                      # practice calls never count here
+    zero = [0.0] * len(research.ZKEYS)
+    research._set_keys()
+    r = research.live_check(None, zero, [1.0] * len(research.ZKEYS), zero, days=30, min_calls=4)
+    assert r["n"] == 4 and r["ok"] and abs(r["app"]["avg"] - 0.05) < 1e-9   # a flat model leaves the app's #1 in place
+    assert not research.live_check(None, zero, [1.0] * len(research.ZKEYS), zero, days=30, min_calls=5)["ok"]

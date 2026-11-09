@@ -302,3 +302,31 @@ rows carry the app's `final_score` (`app`) for later analysis.
 
 **What counts as a win.** Brain scorecard and forward test show the real #1; over the coming weeks the live
 "high-confidence" #1 calls beat the S&P clearly more often than "low" ones (the 30- and 90-day columns).
+
+## 2026-11-09 — Gate amendment (Murad's decision, option B): test each model the way it would go live
+
+**Why.** Ranker v2 is never used on its own: when active, the engine mixes its score into the app's own score. The gate
+compared the model *alone* with the app alone, i.e. something users never get. Murad chose (2026-11-09) to also test
+each model as the mix that would go live, at 25%, with an extra real-time requirement.
+
+**Change.**
+- `research.mix_scores` reproduces the engine's mixing (model z-scored within the belief, clipped ±2, put on the app
+  score's spread, weight `MIX_WEIGHT` = 0.25). `run()` adds "<model> + app (25%)" for every learned model, on the same
+  walk-forward test, with confidence thirds.
+- `fit_production` adds `<key>_mix` candidates. They must pass the **same, unchanged `_passes`** against the app's real
+  #1 **and** `live_check`: on at least `LIVE_MIN_CALLS` = 300 calls made in real time (never practice; all after every
+  training outcome) graded at `LIVE_DAYS` = 30 days, the mix's #1 must do at least as well as the app's #1 (average
+  move vs the S&P). Models alone keep the old rule. A live mix runs at its tested weight (`ranker.weight`, engine reads
+  it); confidence for a mix comes from the mixed score. The ranker record shows `live` (n so far, needed, mix vs app)
+  for the strongest mix even while it can't go live.
+- Why 30 days: the ranker learns 90-day outcomes, but real-time calls (first ones Oct 28) only reach 90 days in late
+  January; 7 days is mostly noise. 30-day grades start ~Nov 27 and should pass 300 calls in early December.
+  `MP_RANKER_LIVE_DAYS=90` makes it stricter (waits until ~February).
+
+**Today's numbers (offline replay, real app #1 as the bar).** App alone: risk-matched lift +1.24%, beat 54.2%.
+Mixes: gbm risk-adjusted +1.43% / 53.5%, neural net risk-adjusted +1.38% / 53.7%, gbm +1.36% / 53.5%. A bigger edge
+over the other ideas, but none beats the S&P as often as the app, so nothing switches on now.
+
+**Checks.** Backend tests: 115 passed (new: `test_ranker_mix_is_tested_as_it_goes_live_and_needs_real_time_proof`,
+`test_live_check_uses_real_time_calls_only`; `test_nightly_refit_loads_graded_calls_once_and_compactly` now ignores
+the small live-only load).
