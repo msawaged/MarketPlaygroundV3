@@ -35,5 +35,5 @@ Logs are in `~/.mp_social/bot.log`. To stop the bot: `launchctl unload ~/Library
 
 Notes:
 - If the Mac is asleep at a scheduled time, the post goes out when it wakes.
-- Videos are silent. Both apps accept that, but trending audio usually gets more reach. Adding a sound in the app later is fine.
+- Bot videos are silent; adding a trending sound in the app is fine. The daily "Market's open" reel (scripts/make_reel.js) has a voiceover (scripts/reel_voice.py) and no music, so a trending sound can go under it at low volume.
 - Tokens stay in `~/.mp_social` (chmod 600), never in the repo.

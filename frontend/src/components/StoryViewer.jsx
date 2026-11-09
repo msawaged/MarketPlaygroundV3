@@ -53,7 +53,7 @@ function Pct({ v }) {
   return <span className={`text-lg font-black tabular-nums ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span>;
 }
 
-function cards(data, navigate, reel = false) {
+function cards(data, navigate, reel = false, launched = false) {
   const { story: s, item } = data;
   const big = 'text-[1.7rem] leading-snug font-bold text-white';
   const out = [
@@ -114,8 +114,13 @@ function cards(data, navigate, reel = false) {
           className="mt-8 text-4xl font-black text-white">Believe it<span className="text-slate-500"> or </span>doubt it?</motion.div>
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
           className="mt-8 rounded-2xl bg-blue-600 px-5 py-4 text-center">
-          <div className="text-lg font-black">Make your call free</div>
-          <div className="text-sm text-blue-100">MarketPlayground · link in bio</div>
+          {launched ? (<>
+            <div className="text-lg font-black">Make your call free</div>
+            <div className="text-sm text-blue-100">MarketPlayground · link in bio</div>
+          </>) : (<>
+            <div className="text-lg font-black">MarketPlayground is coming soon</div>
+            <div className="text-sm text-blue-100">Follow for launch day</div>
+          </>)}
         </motion.div>
         <p className="mt-4 text-center text-xs text-slate-500">Practice money only. Not investment advice.</p>
       </div>,
@@ -137,7 +142,7 @@ function cards(data, navigate, reel = false) {
   return out;
 }
 
-export default function StoryViewer({ headline, onClose, reel = false, cardMs: baseMs = CARD_MS, durations = null }) {
+export default function StoryViewer({ headline, onClose, reel = false, cardMs: baseMs = CARD_MS, durations = null, launched = false }) {
   const navigate = useNavigate();
   const [data, setData] = useState(() => _stories.get(headline) || null);
   const [err, setErr] = useState('');
@@ -163,7 +168,7 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs: b
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
-  const list = data ? cards(data, navigate, reel) : [];
+  const list = data ? cards(data, navigate, reel, launched) : [];
   const last = list.length - 1;
   // A reel can give each card its own length (e.g. to fit a voiceover line); otherwise every card gets baseMs.
   const cardMs = (durations && durations[idx]) || baseMs;
