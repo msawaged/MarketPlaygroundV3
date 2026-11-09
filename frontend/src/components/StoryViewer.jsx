@@ -7,8 +7,10 @@ import { X } from 'lucide-react';
 import { getStory } from '../lib/api';
 import { ago, believeUrl, doubtUrl } from './MoversFeed';
 import { amount, change, barWidths } from '../lib/figures';
+import { LogoMark, Wordmark } from './ui/Logo';
 
 const CARD_MS = 7000;
+const INTRO_MS = 1600; // a reel's brand card, when no voiceover sets its length
 const _stories = new Map(); // headline -> story response, for this page load
 
 // The hook is huge; a long word ("Semiconductors") must still fit a 365px-wide card.
@@ -56,7 +58,24 @@ function Pct({ v }) {
 function cards(data, navigate, reel = false, launched = false) {
   const { story: s, item } = data;
   const big = 'text-[1.7rem] leading-snug font-bold text-white';
+  // A reel opens on a quick brand card, so viewers see this is Story mode, a feature of the app.
+  const intro = (
+    <div key="intro" className="flex h-full flex-col items-center justify-center text-center">
+      <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 16 }}>
+        <LogoMark size={112} className="drop-shadow-[0_10px_40px_rgba(37,99,235,0.55)]" />
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-5 text-4xl">
+        <Wordmark />
+      </motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, type: 'spring', stiffness: 220 }}
+        className="mt-5 rounded-full bg-blue-600 px-5 py-2 text-lg font-black uppercase tracking-[0.15em]">Story mode</motion.div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="mt-3 text-base text-slate-300">
+        Any news story, explained fast
+      </motion.div>
+    </div>
+  );
   const out = [
+    ...(reel ? [intro] : []),
     <div key="hook" className="flex h-full flex-col justify-center">
       <Label>Moving now</Label>
       <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 160 }}
@@ -171,7 +190,7 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs: b
   const list = data ? cards(data, navigate, reel, launched) : [];
   const last = list.length - 1;
   // A reel can give each card its own length (e.g. to fit a voiceover line); otherwise every card gets baseMs.
-  const cardMs = (durations && durations[idx]) || baseMs;
+  const cardMs = (durations && durations[idx]) || (reel && idx === 0 ? INTRO_MS : baseMs);
   const go = useCallback((d) => {
     setElapsed(0);
     setIdx((i) => {
@@ -221,7 +240,7 @@ export default function StoryViewer({ headline, onClose, reel = false, cardMs: b
         </div>
         <div className="mt-3 flex items-center justify-between">
           <div className="text-sm font-bold">Market<span className="text-blue-400">Playground</span></div>
-          {reel ? <div className="text-xs font-semibold text-slate-400">Moving now</div>
+          {reel ? <div className="rounded-full border border-blue-500/40 bg-blue-600/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-300">Story mode</div>
             : <button onClick={onClose} aria-label="Close story" className="rounded-full p-2 hover:bg-white/10"><X className="h-5 w-5" /></button>}
         </div>
         <div className="relative flex-1" {...(reel ? {} : { onPointerDown: onDown, onPointerUp: onUp, onPointerLeave: () => setPaused(false) })}>

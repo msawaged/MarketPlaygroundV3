@@ -24,7 +24,7 @@ const CARD_MS = parseInt(process.env.CARD_MS || '4200', 10);
 const LEAD_IN = parseFloat(process.env.LEAD_IN || '0.3'); // seconds past the first card's appearance
 const VOICE = process.env.VOICE !== '0';
 const LIVE = process.env.LIVE === '1';
-const VOICE_LEAD = 0.25, VOICE_TAIL = 0.35, LAST_HOLD = 1.2; // seconds around each line
+const VOICE_LEAD = 0.15, VOICE_TAIL = 0.3, LAST_HOLD = 1.2; // seconds around each line
 const W = 1080, H = 1920, ZOOM = W / 405; // lay the page out like a 405px-wide phone, render at full HD
 
 async function getJson(url) {
@@ -37,9 +37,10 @@ async function getJson(url) {
 const spell = (t) => String(t).replace(/[^A-Z]/g, '').split('').join(' ');
 const decode = (t) => String(t || '').replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 
-// One line per card, in StoryViewer's order: hook, what happened, why, twist, [who it moves], your call.
+// One line per card, in StoryViewer's order: brand intro, hook, what happened, why, twist, [who it moves], your call.
 function voiceLines({ story: s, item }) {
   const lines = [
+    'MarketPlayground Story mode.', // the brand card
     `${s.hook_big}. ${s.hook_line}`,
     s.happened,
     `Why it matters: ${s.why}`,
@@ -111,7 +112,7 @@ function voiceLines({ story: s, item }) {
   if (!marks.length) throw new Error('The page gave no card timings (is the site deployed with per-card durations?)');
   if (VOICE && marks.length !== lens.length) throw new Error(`The page showed ${marks.length} cards but there are ${lens.length} voice lines`);
 
-  // 4. trim (skip the first card's fade-in, so frame one is the hook, not "Writing the story..."), mix the voice in
+  // 4. trim (skip the first card's fade-in, so frame one is the brand card, not "Writing the story..."), mix the voice in
   const sec = (t) => (t - t0) / 1000;
   const start = Math.max(0, sec(marks[0]) + LEAD_IN);
   const len = sec(end) - start - 0.2;

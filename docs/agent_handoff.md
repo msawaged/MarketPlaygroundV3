@@ -57,3 +57,6 @@ and anything the others must know. Keep entries to a few lines; details go in th
   scripts/make_reel.js, scripts/reel_voice.py, scripts/social/README.md.
 - Feed gap: today's biggest story (Nvidia board probing Jensen Huang over an alleged Chinese spy, NVDA about -5%) never
   showed up as its own item in /v4/movers. Worth a look by whoever owns the movers ranking.
+- (same day, later) Reels now open on a ~2s brand card (logo, wordmark, "Story mode" pill) and show a "Story mode" pill
+  in the header, so viewers tie the reel to the in-app feature. Reel-only (`reel` prop); in-app Story mode unchanged.
+  The voice's first line is "MarketPlayground Story mode." (make_reel.js voiceLines). Keep them in sync if you edit.
