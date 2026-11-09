@@ -1708,8 +1708,11 @@ def test_ranker_v2_picks_the_stronger_model(monkeypatch):
     assert rv["active"] and rv["kind"] == "gbm"
     s = research.score_candidates([{"mom60": 0.25}, {"mom60": -0.25}, {"mom60": 0.0}], ["bullish"] * 3)
     assert s[0] > s[1]
-    # tree model loses -> ridge
-    res["results"]["gbm (learned)"] = dict(res["results"]["ridge (learned)"], lift=0.0)
+    # tree model (and every other learned candidate) loses -> ridge; zero them all so a lucky net on the tiny
+    # synthetic set can't win by chance
+    for name in list(res["results"]):
+        if name.startswith(("gbm", "neural net")) or (name != "ridge (learned)" and name.startswith("ridge")):
+            res["results"][name] = dict(res["results"]["ridge (learned)"], lift=0.0, lift_adj=0.0)
     assert research.fit_production(res)["kind"] == "ridge"
 
 
@@ -1920,6 +1923,53 @@ def test_max_effect_lottery_rule_and_enrich_backfill(monkeypatch):
     research.enrich(10000)
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-mx'")["features"])["num"]
     assert abs(num["max5"] - 0.10) < 1e-9 and num["beta"] == 1.2 and num["vp_poc_dist"] == 0.2
+
+
+def test_intermediate_momentum_echo_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    # 300 closes: +50% from index 49 (i-250) to 174 (i-125), then flat; only the 12-7 leg counts
+    closes = [100.0] * 50 + [100.0 * (1.5 ** (k / 125)) for k in range(1, 126)] + [150.0] * 125
+    i = 299
+    assert abs(market.mom_12_7(closes, i) - 0.5) < 1e-9
+    assert market.mom_12_7(closes, 200) == 0.0                     # not a year of history
+    assert market.mom_12_7(closes + [999.0], i) == market.mom_12_7(closes, i)   # later prices never seen
+    assert "mom_12_7" in research.FEATS and "mom_12_7" in research.DIRECTIONAL
+    # planted: high 12-7 momentum longs pay and shorts of it lag; the rule (z_mom_12_7, flipped for bearish) finds it
+    rng = _r.Random(7)
+    d0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-e-{k}", (d0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            m = rng.uniform(-0.3, 0.3)
+            ex = -m * 0.1 if bear else m * 0.1
+            pid = f"p-e-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"mom_12_7": m}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["intermediate momentum (z_mom_12_7)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills mom_12_7 as of each pick's own date only, leaving the other features alone
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(len(closes) + 30)]
+    after = closes + [closes[-1] * (2.0 if k % 2 else 0.5) for k in range(30)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, after))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03}
+    asof = dates[i]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-ec", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-ec", "b-ec", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-ec", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-ec'")["features"])["num"]
+    assert abs(num["mom_12_7"] - 0.5) < 1e-9 and num["max5"] == 0.03 and num["beta"] == 1.2
 
 
 def test_daily_job_runs_each_phase_in_its_own_process():

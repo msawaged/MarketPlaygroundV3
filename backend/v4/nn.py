@@ -111,6 +111,8 @@ def make_features(
         "beta": market.get("beta", 1.0),
         # lottery-ness: mean of the 5 biggest daily returns in the last month (research + ranker v2 only)
         "max5": market.get("max5", 0.0),
+        # intermediate (12-7 month) momentum, Novy-Marx's "echo" (research + ranker v2 only; not MODEL_NUMERIC)
+        "mom_12_7": market.get("mom_12_7", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

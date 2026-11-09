@@ -606,6 +606,22 @@ def max_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"max5": max5(closes, i) if i >= 0 else 0.0}
 
 
+def mom_12_7(closes: list[float], i: int) -> float:
+    """Intermediate-horizon momentum ("echo", Novy-Marx 2012): return from ~12 months ago to ~6 months ago
+    (months t-12 to t-7), leaving out the most recent six months. Novy-Marx found this older leg, not the recent
+    one, drives most of momentum's profits. Uses closes up to index i only; 0.0 without a year of history."""
+    if i < 250 or closes[i - 250] <= 0:
+        return 0.0
+    return closes[i - 125] / closes[i - 250] - 1.0
+
+
+def echo_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"mom_12_7": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"mom_12_7": mom_12_7(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -706,6 +722,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "resid_mom": resid_mom(dates, closes, sdates, scloses, i),
         "beta": beta_value(dates, closes, sdates, scloses, i),
         "max5": max5(closes, i),
+        "mom_12_7": mom_12_7(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

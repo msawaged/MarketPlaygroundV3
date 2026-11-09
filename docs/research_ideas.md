@@ -171,4 +171,32 @@ the app's (52.9%).
   the learned ridge/gbm.
 - **Note:** until enrich finishes backfilling older picks they read `max5 = 0` (looks like "no lottery"), so the first
   runs after deploy understate or distort the rule; trust the result once every graded pick has `max5`.
+- **Result (run 2026-11-09 17:05 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; all 23,279 graded picks carry
+  max5):** raw lift **-0.87%**, beat **49.4%**, t **-2.40**; risk-matched lift **-0.32%**, beat_adj **50.8%**,
+  t **-0.95**. No MAX effect at our 90-day horizon: avoiding lottery stocks hurts raw returns and is flat once risk is
+  matched, and the learned ridge gives z_max5 a small positive weight (+0.004, mildly prefers the spiky stock in the
+  call's direction). Consistent with high vol winning raw. Not a ranker v2 candidate.
+  Same run (first one scoring the real 0-based app #1, see handoff 2026-11-08): app **+1.49% / 53.4% / t 4.54**
+  (adj +1.24% / 54.3% / t 3.89), now ahead of every fixed rule; frog in the pan +0.80% / 49.7% / t 2.47 (adj +0.69%,
+  t 2.22); residual momentum +0.49% / 50.9% / t 1.49 (adj +0.57% / 53.2% / t 1.81); BAB -1.28% / 50.4% (adj +0.03% /
+  54.0%); high vol +0.87% / 51.9% / t 2.04 (adj +0.49%, t 1.19); gbm +1.32% / 51.8% / t 3.89; gbm + app (25%)
+  +1.87% / 53.2% / t 5.75 (adj +1.47%, t 4.67); random beat 51.0%.
+
+### 6. Intermediate-horizon momentum, the "echo" (Novy-Marx)
+- **Added:** 2026-11-09
+- **Source:** Novy-Marx (2012), "Is Momentum Really Momentum?", Journal of Financial Economics 103(3), 429-453:
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:103:y:2012:i:3:p:429-453 ; practitioner debate:
+  https://alphaarchitect.com/when-academics-disagree-on-momentum-investing/ ; critique (the echo is weaker outside
+  the US and partly a 12-month seasonality): Goyal & Wahal (2015), "Is Momentum an Echo?", JFQA 50(6):
+  https://econpapers.repec.org/RePEc:cup:jfinqa:v:50:y:2015:i:06:p:1237-1267_00
+- **Why:** Novy-Marx found that momentum's profits come mainly from returns 12 to 7 months back, not from the most
+  recent six months, so "stocks that went up a while ago" beat "stocks that went up recently". Our 12-1 rule mixes
+  both legs; this isolates the older one. Slow signal, suits the ~90-day hold.
+- **Computed as:** `mom_12_7 = close[t-125] / close[t-250] - 1` (trading days; 0 without a year of history).
+  `market.mom_12_7` / `market.echo_features`; stored for new picks via `market.features` and `nn.make_features`
+  (not MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes up to each pick's own date only
+  (other features untouched). Directional. Research rule: `intermediate momentum (z_mom_12_7)`; `z_mom_12_7` is also
+  available to the learned ridge/gbm/net.
+- **Note:** until enrich finishes backfilling older picks they read `mom_12_7 = 0`; trust the result once every
+  graded pick has `mom_12_7`.
 - **Result:** pending.
