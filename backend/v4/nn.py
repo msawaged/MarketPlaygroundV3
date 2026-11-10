@@ -113,6 +113,8 @@ def make_features(
         "max5": market.get("max5", 0.0),
         # intermediate (12-7 month) momentum, Novy-Marx's "echo" (research + ranker v2 only; not MODEL_NUMERIC)
         "mom_12_7": market.get("mom_12_7", 0.0),
+        # moving average distance, 21-day / 200-day average close - 1 (research + ranker v2 only; not MODEL_NUMERIC)
+        "mad": market.get("mad", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

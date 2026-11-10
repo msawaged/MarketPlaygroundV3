@@ -199,4 +199,36 @@ the app's (52.9%).
   available to the learned ridge/gbm/net.
 - **Note:** until enrich finishes backfilling older picks they read `mom_12_7 = 0`; trust the result once every
   graded pick has `mom_12_7`.
+- **Result (run 2026-11-10 14:45 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; all 23,279 graded picks carry
+  mom_12_7):** lift **+0.77%**, beat **50.0%**, t **2.20**; risk-matched lift **+0.38%**, beat_adj **51.9%**,
+  t **1.12**. About the same as plain 12-1 momentum in the same run (+0.69% / 49.5% / t 1.97; adj +0.43%, t 1.29), so
+  the older 12-7 leg alone is not better than the full 12-1 window here: no echo effect beyond ordinary momentum.
+  Beat rate is below random (51.0%) and well below the app's; the learned ridge gives z_mom_12_7 almost no weight
+  (+0.0007). Not a ranker v2 candidate. Same run: app +1.49% / 53.4% / t 4.54 (adj +1.24% / 54.2% / t 3.87);
+  app, no look-ahead +0.53% / 52.2% / t 1.71; frog in the pan +0.78% / 49.6% / t 2.38 (adj +0.66%, t 2.13);
+  gbm +1.16% / 52.1% / t 3.38; gbm (+ shifted) + app (25%) +1.87% / 53.0% / t 5.82 (adj +1.47%, t 4.74);
+  random beat 51.0%.
+
+### 7. Moving average distance (Avramov, Kaplanski & Subrahmanyam)
+- **Added:** 2026-11-10
+- **Source:** Avramov, Kaplanski & Subrahmanyam (2021), "Moving Average Distance as a Predictor of Equity Returns",
+  Review of Financial Economics 39(2), 127-145: https://ideas.repec.org/a/wly/revfec/v39y2021i2p127-145.html ;
+  working paper: https://anderson-review.ucla.edu/wp-content/uploads/2021/03/Avramov-Kaplanski-Subra_2018_SSRN-id3111334.pdf ;
+  practitioner summaries: https://alphaarchitect.com/moving-average-distance/ ,
+  https://www.cxoadvisory.com/technical-trading/distance-between-fast-and-slow-price-smas-and-stock-returns
+- **Why:** investors anchor on a stock's long-run average price and under-react when the recent price drifts far
+  from it, so stocks whose 21-day average is well above their 200-day average keep outperforming for months, and
+  those far below keep lagging. The paper reports the MAD long-short spread survives controls for 12-1 momentum and
+  the 52-week high (both tried here), and is stronger in hard-to-value stocks. It is a trend-strength signal rather
+  than a point-to-point return, which is a different shape from ideas 1-3 and 6; monthly rebalancing in the paper
+  fits our ~90-day hold better than daily technical rules.
+- **Computed as:** `mad = mean(close[t-20..t]) / mean(close[t-199..t]) - 1`, clipped to [-0.9, 3]; 0 with under 200
+  days of history. (The paper uses the ratio MA21/MA200; subtracting 1 doesn't change the within-belief z-score.)
+  `market.mad` / `market.mad_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes up to each pick's own date only
+  (other features untouched). Directional (bearish calls flip it, so the rule shorts the stock furthest below its
+  200-day average). Research rule: `moving average distance (z_mad)`; `z_mad` is also available to the learned
+  ridge/gbm/net.
+- **Note:** until enrich finishes backfilling older picks (~23k, 300 per hourly run, so about 3-4 days) they read
+  `mad = 0`; trust the result once every graded pick has `mad`.
 - **Result:** pending.

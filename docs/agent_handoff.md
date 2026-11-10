@@ -134,3 +134,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Switch OFF blocks new BUY previews/orders only; selling and the exits watcher always work. Default is OFF; disconnect
   turns it off. Real-money buttons on idea cards need broker.on. Files: brokerage.py, router.py, AccountPage.jsx,
   StrategyCard.jsx, lib/broker.js, tests.
+## 2026-11-10 (daily ranker research routine)
+- Idea 6 (Novy-Marx 12-7 echo) result logged: lift +0.77%, beat 50.0%, t 2.20 (adj +0.38%, t 1.12), no better than
+  plain 12-1. Idea 7 added: moving average distance `mad` = MA21/MA200 - 1 (Avramov, Kaplanski & Subrahmanyam 2021),
+  new feature in market.features/mad_features, nn.make_features num, research.FEATS + DIRECTIONAL, enrich backfill
+  (as of each pick's date), rule `moving average distance (z_mad)`. Gate untouched. Files: backend/v4/market.py, nn.py,
+  research.py, tests/test_v4.py, docs/research_ideas.md.

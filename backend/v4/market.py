@@ -622,6 +622,26 @@ def echo_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"mom_12_7": mom_12_7(closes, i) if i >= 0 else 0.0}
 
 
+def mad(closes: list[float], i: int) -> float:
+    """Moving average distance (Avramov, Kaplanski & Subrahmanyam 2021): 21-day average close over the 200-day
+    average close, minus 1. Stocks whose short average sits far above their long one tend to keep outperforming
+    for months (anchoring on the long average). Uses closes up to index i only; 0.0 without 200 days of history."""
+    if i < 199:
+        return 0.0
+    ma200 = sum(closes[i - 199: i + 1]) / 200.0
+    if ma200 <= 0:
+        return 0.0
+    ma21 = sum(closes[i - 20: i + 1]) / 21.0
+    return max(-0.9, min(3.0, ma21 / ma200 - 1.0))
+
+
+def mad_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"mad": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"mad": mad(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -723,6 +743,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "beta": beta_value(dates, closes, sdates, scloses, i),
         "max5": max5(closes, i),
         "mom_12_7": mom_12_7(closes, i),
+        "mad": mad(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

@@ -1975,6 +1975,53 @@ def test_intermediate_momentum_echo_rule_and_enrich_backfill(monkeypatch):
     assert abs(num["mom_12_7"] - 0.5) < 1e-9 and num["max5"] == 0.03 and num["beta"] == 1.2
 
 
+def test_moving_average_distance_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    # 250 closes: 179 at 100 then 71 at 200 -> MA21 = 200, MA200 = (129*100 + 71*200)/200 = 135.5
+    closes = [100.0] * 179 + [200.0] * 71
+    i = 249
+    assert abs(market.mad(closes, i) - (200.0 / 135.5 - 1.0)) < 1e-9
+    assert market.mad(closes, 150) == 0.0                           # under 200 days of history
+    assert market.mad(closes + [999.0], i) == market.mad(closes, i)  # later prices never seen
+    assert "mad" in research.FEATS and "mad" in research.DIRECTIONAL
+    # planted: high-MAD longs pay and shorts of high MAD lag; the rule (z_mad, flipped for bearish) finds it
+    rng = _r.Random(11)
+    d0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-md-{k}", (d0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            m = rng.uniform(-0.3, 0.3)
+            ex = -m * 0.1 if bear else m * 0.1
+            pid = f"p-md-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"mad": m}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["moving average distance (z_mad)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills mad as of each pick's own date only, leaving the other features alone
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(len(closes) + 30)]
+    after = closes + [closes[-1] * (3.0 if k % 2 else 0.3) for k in range(30)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, after))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4}
+    asof = dates[i]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-mdx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-mdx", "b-mdx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-mdx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-mdx'")["features"])["num"]
+    assert abs(num["mad"] - (200.0 / 135.5 - 1.0)) < 1e-9 and num["mom_12_7"] == 0.4 and num["beta"] == 1.2
+
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""
