@@ -840,6 +840,33 @@ def option_quote(symbol: str) -> Optional[dict]:
         return None
 
 
+def option_chain_near(underlying: str, strike: float, expiration: date, days: int = 21, band: float = 0.15) -> list[dict]:
+    """Listed calls AND puts near (strike, expiration), with live quotes and implied volatility, from Alpaca's options
+    snapshots. [] when unavailable. Each row: symbol, type, strike, expiration, bid, ask, iv."""
+    params = {"feed": os.getenv("ALPACA_OPTIONS_FEED", "indicative"), "limit": 1000,
+              "expiration_date_gte": max(date.today(), expiration - timedelta(days=days)).isoformat(),
+              "expiration_date_lte": (expiration + timedelta(days=days)).isoformat(),
+              "strike_price_gte": f"{strike * (1 - band):.2f}", "strike_price_lte": f"{strike * (1 + band):.2f}"}
+    try:
+        r = _session.get(f"{_data_base()}/v1beta1/options/snapshots/{underlying.upper()}", headers=_headers(), params=params, timeout=10)
+        if r.status_code != 200:
+            return []
+        snaps = (r.json() or {}).get("snapshots") or {}
+    except Exception:
+        return []
+    out = []
+    for sym, snap in snaps.items():
+        o = parse_occ(sym)
+        if not o:
+            continue
+        q = (snap or {}).get("latestQuote") or {}
+        iv = (snap or {}).get("impliedVolatility")
+        out.append({"symbol": sym, "type": o["type"], "strike": o["strike"], "expiration": o["expiration"],
+                    "bid": float(q.get("bp") or 0), "ask": float(q.get("ap") or 0),
+                    "iv": float(iv) if iv and 0.01 < float(iv) < 5 else None})
+    return out
+
+
 def parse_occ(symbol: str) -> Optional[dict]:
     """'NVDA261219C00150000' -> {'underlying': 'NVDA', 'expiration': date(2026,12,19), 'type': 'call', 'strike': 150.0}"""
     m = _OCC.match((symbol or "").upper())

@@ -2487,3 +2487,37 @@ def test_exits_stock_bracket_and_option_watcher(monkeypatch):
     # restart safety: a second process can't tick while the lease is fresh
     monkeypatch.setattr(exits, "_OWNER", "someone-else")
     assert exits.tick() == {"ran": False}
+
+
+def test_price_check_parity_vol_and_log(monkeypatch):
+    from backend.v4 import pricecheck
+    today = date(2026, 11, 10); exp = date(2026, 12, 18)
+    # European parity holds exactly -> within the spread
+    S, K, r = 100.0, 100.0, 0.038
+    t = (exp - today).days / 365
+    p_mid = 3.0; c_mid = p_mid + S - K * math.exp(-r * t)
+    call = {"type": "call", "strike": K, "expiration": exp, "bid": c_mid - 0.05, "ask": c_mid + 0.05, "iv": 0.3}
+    put = {"type": "put", "strike": K, "expiration": exp, "bid": p_mid - 0.05, "ask": p_mid + 0.05, "iv": 0.31}
+    p = pricecheck.parity(call, put, S, r, today)
+    assert abs(p["gap"]) < 1e-9 and p["within_spread"]
+    # calls $1 too cheap (e.g. a dividend) -> outside the spread, explained, never called free money
+    cheap = dict(call, bid=call["bid"] - 1, ask=call["ask"] - 1)
+    p2 = pricecheck.parity(cheap, put, S, r, today)
+    assert abs(p2["gap"] + 1) < 1e-9 and not p2["within_spread"]
+    txt = pricecheck.parity_text(p2, "WINR")
+    assert "dividends" in txt and "Not free money" in txt
+    assert pricecheck.vol_verdict(0.2, 0.3)[0] == "cheap" and pricecheck.vol_verdict(0.33, 0.3)[0] == "normal"
+    assert pricecheck.vol_verdict(0.6, 0.3)[0] == "expensive" and pricecheck.vol_verdict(None, 0.3)[0] == "unknown"
+
+    # end to end with a fake chain: the check is logged point-in-time for the pick
+    chain = [dict(call, symbol="WINR261218C00100000"), dict(put, symbol="WINR261218P00100000")]
+    monkeypatch.setattr(market, "option_chain_near", lambda *a, **k: chain)
+    monkeypatch.setattr(market, "latest_price", lambda s: 100.0)
+    pricecheck._cache.clear()
+    r1 = _client().get("/v4/price_check", params={"underlying": "WINR", "option_type": "Call", "strike": 100,
+                                                  "expiration": "2026-12-18", "pick_id": "pk1"}).json()
+    assert r1["available"] and r1["contract"] == "WINR261218C00100000" and r1["parity"] is not None
+    assert r1["vol_verdict"] in ("cheap", "normal", "expensive") and len(r1["lines"]) >= 3
+    row = db.query_one("SELECT * FROM feature_log WHERE pick_id = 'pk1'")
+    assert row["feature"] == "price_check" and json.loads(row["value"])["vol_verdict"] == r1["vol_verdict"]
+    assert pricecheck.log_daily(limit=2, force=True)["logged"] >= 1

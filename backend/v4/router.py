@@ -384,6 +384,14 @@ async def broker_exit_cancel(eid: str, authorization: Optional[str] = Header(Non
     return await _broker_call(lambda t: exits.cancel(brokerage._require(t), eid), _token(authorization))
 
 
+@router.get("/price_check")
+async def price_check(underlying: str, option_type: str, strike: float, expiration: str, pick_id: Optional[str] = None):
+    """Public: is this option fairly priced (put-call parity), cheap or expensive (implied vs realized vol), and what
+    does it cost to trade (spread)? Cached 10 minutes per contract."""
+    from backend.v4 import pricecheck
+    return await run_in_threadpool(pricecheck.check, underlying[:10], option_type, strike, expiration, pick_id)
+
+
 @router.get("/journey")
 async def get_journey():
     """Public: the owner's real-money trades, every fill, wins and losses. Off unless MP_JOURNEY_PUBLIC=on."""

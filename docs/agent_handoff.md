@@ -111,3 +111,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (/broker/exits, /broker/exits/{id}/cancel), db.py, seeder.py (watchdog), app.py, frontend RealMoneySheet, AccountPage,
   lib/broker.js. Next agreed with Murad: option "Price check" (parity + IV vs realized vol, daily option-IV logging),
   then a point-in-time experiment log + real fills feeding cost/slippage modelling (not P&L into rankings).
+## 2026-11-10 (build chat, later: option Price check + daily option-vol log + feature_log)
+- backend/v4/pricecheck.py: put-call parity gap vs the bid-ask spread (European formula, explained as dividends /
+  borrow / early exercise; never "free money"), implied vs realized vol (cheap < 0.9x, expensive > 1.35x of 60-day RV),
+  spread cost, and IV percentile once 20+ days are logged. Public GET /v4/price_check (10-min cache). MP_RISK_FREE
+  (default 0.038, 3-month T-bill Nov 2026). market.option_chain_near.
+- New tables: option_vol_daily (one row per underlying per trading day: ATM IV ~30d, RV20/60, put-call skew; written by
+  pricecheck.log_daily from the hourly seeder after 16:15 ET) and feature_log (point-in-time record of any feature's
+  verdict for a pick; price_check writes it when a pick_id is passed). Brain: once option_vol_daily has history, test
+  "cheap/expensive" against graded outcomes through the normal gates; don't use it in rankings before that.
+- Frontend: chat/PriceCheck.jsx on option idea cards ("Is this a fair price?", loads on tap).

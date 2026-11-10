@@ -379,6 +379,11 @@ def main() -> None:
             print("exits watchdog:", exits.watchdog())
         except Exception as e:
             print(f"exits watchdog failed: {e}")
+        try:  # once a trading day after the close: option volatility history for the Price check
+            from . import pricecheck
+            print("option vol log:", pricecheck.log_daily())
+        except Exception as e:
+            print(f"option vol log failed: {e}")
         print(json.dumps(auto_with_health(), indent=2, default=str))
         return
     print(json.dumps(run(args.mode, args.n, args.generate, args.years, args.concurrency, args.max_usd, args.model), indent=2))

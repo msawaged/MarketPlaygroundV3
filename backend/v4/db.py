@@ -324,6 +324,28 @@ def _schema() -> list[str]:
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )""",
+        """CREATE TABLE IF NOT EXISTS option_vol_daily (
+            day TEXT NOT NULL,
+            underlying TEXT NOT NULL,
+            spot REAL,
+            atm_iv REAL,
+            atm_days INTEGER,
+            rv20 REAL,
+            rv60 REAL,
+            put_call_skew REAL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY (day, underlying)
+        )""",
+        """CREATE TABLE IF NOT EXISTS feature_log (
+            id TEXT PRIMARY KEY,
+            feature TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            pick_id TEXT,
+            as_of TEXT NOT NULL,
+            value TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_feature_log_pick ON feature_log(pick_id)",
         """CREATE TABLE IF NOT EXISTS kv_cache (
             k TEXT PRIMARY KEY,
             v TEXT NOT NULL,
