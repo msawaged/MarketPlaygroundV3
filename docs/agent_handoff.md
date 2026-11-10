@@ -126,3 +126,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   judged while the market is open (overnight the stock's last trade and option quotes are from different moments).
   Next (not built): real fills vs preview estimates (broker_orders est_price vs filled_avg_price) feeding a
   spread/slippage model for practice grading, once real trades exist.
+## 2026-11-10 (build chat, later: in-app Real money switch + user setup flow)
+- Account page card "Real money" with a switch everyone sees. Non-pilot users: locked, "Coming soon". Owner (MP_OWNER_EMAIL,
+  else first MP_REAL_MONEY_PILOT email): sees a server-setup checklist (which settings exist, never values) until set up.
+  Pilot users not connected: 4-step connect guide (open Alpaca, Connect Alpaca via OAuth, per-order limit, switch on).
+- Server: per-account switch `rm:on:<id>` and limit `rm:cap:<id>` in kv_cache; POST /v4/broker/switch {on, max_order_usd}.
+  Switch OFF blocks new BUY previews/orders only; selling and the exits watcher always work. Default is OFF; disconnect
+  turns it off. Real-money buttons on idea cards need broker.on. Files: brokerage.py, router.py, AccountPage.jsx,
+  StrategyCard.jsx, lib/broker.js, tests.

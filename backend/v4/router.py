@@ -314,6 +314,16 @@ async def broker_callback(code: str = "", state: str = "", error: str = ""):
     return RedirectResponse(f"{site}/account?broker=connected")
 
 
+class SwitchIn(BaseModel):
+    on: bool
+    max_order_usd: Optional[float] = None
+
+
+@router.post("/broker/switch")
+async def broker_switch(body: SwitchIn, authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.set_switch, _token(authorization), body.on, body.max_order_usd)
+
+
 @router.post("/broker/disconnect")
 async def broker_disconnect(authorization: Optional[str] = Header(None)):
     await _broker_call(brokerage.disconnect, _token(authorization))

@@ -624,12 +624,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           )}
           {st?.startsWith?.('error:') && <p className="text-xs text-red-400">{st.slice(6)}</p>}
 
-          {broker?.enabled && broker?.connected && pick.structure === 'Buy Stock' && pick.direction === 'bullish' && (
+          {broker?.enabled && broker?.connected && broker?.on && pick.structure === 'Buy Stock' && pick.direction === 'bullish' && (
             <button onClick={() => setRealOpen(true)} className="w-full rounded-lg py-3 text-sm font-bold border border-amber-300/50 bg-amber-400/10 text-amber-100 hover:border-amber-200">
               {broker.env === 'live' ? 'Invest real money in' : 'Buy in my Alpaca account (practice side):'} {pick.ticker}
             </button>
           )}
-          {broker?.enabled && broker?.connected && broker?.options && realLeg && (
+          {broker?.enabled && broker?.connected && broker?.on && broker?.options && realLeg && (
             <button onClick={() => setRealOpen(true)} className="w-full rounded-lg py-3 text-sm font-bold border border-amber-300/50 bg-amber-400/10 text-amber-100 hover:border-amber-200">
               {broker.env === 'live' ? 'Buy this option with real money' : 'Buy this option in my Alpaca account (practice side)'}
             </button>

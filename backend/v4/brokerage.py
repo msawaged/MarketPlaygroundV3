@@ -67,6 +67,70 @@ def max_order() -> float:
     return float(os.getenv("MP_MAX_ORDER_USD", "1000"))
 
 
+# --- the in-app "Real money" switch (2026-11-10) -----------------------------------------------------------------
+# Everyone sees the switch. Only accounts in the pilot can flip it, and only once their brokerage is connected.
+# Off = no new real-money buys (idea cards show no real-money buttons). Selling what you hold and the take-profit /
+# max-loss watcher keep working while it's off, so switching off never leaves a position unprotected.
+def owner_email() -> Optional[str]:
+    e = (os.getenv("MP_OWNER_EMAIL") or "").strip().lower()
+    return e or (_pilot_list() or [None])[0]
+
+
+def is_owner(acc: Optional[dict]) -> bool:
+    return bool(acc) and bool(owner_email()) and acc["email"].lower() == owner_email()
+
+
+def _kv_get(k: str) -> Optional[str]:
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (k,))
+    return row["v"] if row else None
+
+
+def _kv_put(k: str, v: str) -> None:
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (k,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (k, v, _now().isoformat()))
+
+
+def switch_on(acc: dict) -> bool:
+    return _kv_get(f"rm:on:{acc['id']}") == "1"
+
+
+def user_cap(acc: dict) -> Optional[float]:
+    v = _kv_get(f"rm:cap:{acc['id']}")
+    return float(v) if v else None
+
+
+def max_order_for(acc: dict) -> float:
+    cap = user_cap(acc)
+    return min(max_order(), cap) if cap else max_order()
+
+
+def _connected(acc: dict) -> bool:
+    if keys_mode():
+        return _pilot_ok(acc)
+    row = db.query_one("SELECT env FROM broker_links WHERE account_id = ?", (acc["id"],))
+    return bool(row) and row["env"] == env()
+
+
+def set_switch(token: Optional[str], on: bool, cap_usd: Optional[float] = None) -> dict:
+    acc = _require(token)
+    if cap_usd is not None:
+        cap = round(float(cap_usd), 2)
+        if cap < 1:
+            raise BrokerError("The per-order limit must be at least $1.")
+        _kv_put(f"rm:cap:{acc['id']}", str(min(cap, max_order())))
+    if on and not _connected(acc):
+        raise BrokerError("Connect your brokerage first, then switch real money on.", 409)
+    _kv_put(f"rm:on:{acc['id']}", "1" if on else "0")
+    return status(token)
+
+
+def _require_buy(token: Optional[str]) -> dict:
+    acc = _require(token)
+    if not switch_on(acc):
+        raise BrokerError("Real money is switched off. Turn it on under Account → Real money.", 403)
+    return acc
+
+
 def keys_mode() -> bool:
     """Personal mode: one Alpaca account's own API keys on the server (no OAuth)."""
     return bool(os.getenv("MP_BROKER_KEY_ID") and os.getenv("MP_BROKER_SECRET_KEY"))
@@ -107,20 +171,31 @@ def _require(token: Optional[str]) -> dict:
 
 
 def status(token: Optional[str]) -> dict:
-    out = {"enabled": enabled(), "env": env(), "max_order_usd": max_order(), "connected": False}
-    if not enabled():
-        return out
+    """What the Real money card needs. Setup details (which server settings exist, never their values) go to the owner only."""
+    out = {"enabled": enabled(), "env": env(), "max_order_usd": max_order(), "connected": False, "on": False,
+           "can_switch": False, "owner": False, "pilot": False}
     acc = auth.account_for_token(token)
     if not acc:
         return out
-    out["pilot"] = _pilot_ok(acc)
+    out["owner"] = is_owner(acc)
+    out["pilot"] = enabled() and _pilot_ok(acc)
+    if out["owner"]:
+        out["setup"] = {"real_money_setting": enabled(), "keys": keys_mode(), "oauth_app": bool(os.getenv("ALPACA_OAUTH_CLIENT_ID")),
+                        "live": env() == "live", "pilot_list": bool(_pilot_list()), "journey_public": journey_enabled()}
+    if not out["pilot"]:
+        return out
     out["mode"] = "keys" if keys_mode() else "oauth"
     out["funding_url"] = FUNDING_URL
+    out["signup_url"] = "https://app.alpaca.markets/signup"
     out["options"] = True
+    out["max_order_usd"] = max_order_for(acc)
+    out["server_max_order_usd"] = max_order()
     row = None if keys_mode() else db.query_one("SELECT connected_at, env FROM broker_links WHERE account_id = ?", (acc["id"],))
-    if (keys_mode() and out["pilot"]) or (row and row["env"] == env()):
+    if _connected(acc):
         out["connected"] = True
         out["connected_at"] = row["connected_at"] if row else None
+        out["on"] = switch_on(acc)
+        out["can_switch"] = True
         try:
             a = _alpaca(acc, "GET", "/v2/account")
             out["account"] = {"buying_power": float(a.get("buying_power") or 0), "cash": float(a.get("cash") or 0),
@@ -174,6 +249,7 @@ def finish_connect(code: str, state: str) -> str:
 def disconnect(token: Optional[str]) -> None:
     acc = auth.require(token)
     db.execute("DELETE FROM broker_links WHERE account_id = ?", (acc["id"],))
+    _kv_put(f"rm:on:{acc['id']}", "0")
 
 
 def _alpaca(acc: dict, method: str, path: str, json_body: Optional[dict] = None, params: Optional[dict] = None) -> dict:
@@ -209,7 +285,7 @@ def _alpaca(acc: dict, method: str, path: str, json_body: Optional[dict] = None,
 
 def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, belief_id: Optional[str] = None,
             pick_id: Optional[str] = None, tp_pct: Optional[float] = None, sl_pct: Optional[float] = None) -> dict:
-    acc = _require(token)
+    acc = _require_buy(token)
     tp, sl = _exit_pcts(tp_pct, sl_pct)
     side = (side or "").lower()
     if side not in ("buy", "sell"):
@@ -217,8 +293,8 @@ def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, bel
     amount = round(float(amount_usd or 0), 2)
     if amount < 1:
         raise BrokerError("The smallest order is $1.")
-    if amount > max_order():
-        raise BrokerError(f"During the pilot the largest order is ${max_order():,.0f}.")
+    if amount > max_order_for(acc):
+        raise BrokerError(f"Your per-order limit is ${max_order_for(acc):,.0f}.")
     info = market.asset_info(ticker.upper())
     if not info or not info.get("tradable"):
         raise BrokerError(f"{ticker.upper()} can't be traded right now.")
@@ -337,6 +413,8 @@ def place(token: Optional[str], preview_id: str, confirm: bool) -> dict:
         raise BrokerError("That order preview wasn't found.", 404)
     if row["status"] != "previewed":
         raise BrokerError("That order was already sent.", 409)
+    if row["side"] == "buy" and not switch_on(acc):
+        raise BrokerError("Real money is switched off. Turn it on under Account → Real money.", 403)
     if row["created_at"] < (_now() - timedelta(seconds=PREVIEW_SECONDS)).isoformat():
         db.execute("UPDATE broker_orders SET status = 'expired' WHERE id = ?", (preview_id,))
         raise BrokerError("That preview expired. Prices move, so please preview again.", 410)
@@ -424,7 +502,7 @@ def preview_option(token: Optional[str], underlying: str, option_type: str, stri
                    contracts: int = 1, limit_price: Optional[float] = None, belief_id: Optional[str] = None,
                    pick_id: Optional[str] = None, tp_pct: Optional[float] = None, sl_pct: Optional[float] = None) -> dict:
     """Buy to open ONE kind of listed call or put, with a limit price. The most you can lose is what you pay."""
-    acc = _require(token)
+    acc = _require_buy(token)
     tp, sl = _exit_pcts(tp_pct, sl_pct)
     kind = (option_type or "").lower()
     if kind not in ("call", "put"):
@@ -447,9 +525,9 @@ def preview_option(token: Optional[str], underlying: str, option_type: str, stri
     if lp <= 0:
         raise BrokerError("The limit price must be above $0.")
     cost = round(qty * 100 * lp, 2)
-    if cost > max_order():
-        most = int(max_order() // (100 * lp))
-        raise BrokerError(f"That's ${cost:,.2f}. During the pilot the largest order is ${max_order():,.0f}"
+    if cost > max_order_for(acc):
+        most = int(max_order_for(acc) // (100 * lp))
+        raise BrokerError(f"That's ${cost:,.2f}. Your per-order limit is ${max_order_for(acc):,.0f}"
                           + (f" ({most} contract{'s' if most != 1 else ''} at this price)." if most >= 1 else ", and one contract costs more than that."))
     a = _alpaca(acc, "GET", "/v2/account")
     obp = float(a.get("options_buying_power") or a.get("buying_power") or 0)

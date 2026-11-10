@@ -9,7 +9,7 @@ import {
   resendVerification, forgotPassword,
   passkeySupported, biometricName, passkeyStatus, addPasskey, loginWithPasskey, removePasskeys, passkeyCancelled,
 } from '../lib/auth';
-import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions, getOrders, getExits, cancelExit } from '../lib/broker';
+import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions, getOrders, getExits, cancelExit, setRealMoney } from '../lib/broker';
 import RealMoneySheet from './chat/RealMoneySheet';
 import WhatsNew from './WhatsNew';
 import AlertsCard from './AlertsCard';
@@ -271,37 +271,116 @@ function RealHoldings({ broker }) {
   );
 }
 
+function Toggle({ on, disabled, onChange, label }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} disabled={disabled} onClick={() => onChange(!on)}
+      className={`relative shrink-0 w-14 h-8 rounded-full transition-colors ${on ? 'bg-green-500' : 'bg-slate-600'} ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+      <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-6' : ''}`} />
+    </button>
+  );
+}
+
+const SETUP_ITEMS = [
+  ['real_money_setting', 'MP_REAL_MONEY', 'on', 'turns the feature on'],
+  ['keys', 'MP_BROKER_KEY_ID + MP_BROKER_SECRET_KEY', 'your live Alpaca API keys', 'connects your own account'],
+  ['live', 'MP_BROKER_ENV', 'live', 'real money instead of Alpaca\'s practice side'],
+  ['pilot_list', 'MP_REAL_MONEY_PILOT', 'your login email', 'only your account can use it'],
+];
+
+function Steps({ items }) {
+  return (
+    <ol className="mt-2 space-y-2">
+      {items.map(([done, text], i) => (
+        <li key={i} className="flex gap-2.5 text-sm">
+          <span className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${done ? 'bg-green-500 text-slate-950' : 'bg-slate-700 text-slate-200'}`}>{done ? '✓' : i + 1}</span>
+          <span className="text-slate-300 leading-snug pt-0.5">{text}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function Brokerage() {
   const b = useBroker();
   const loc = useLocation();
   const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [cap, setCap] = useState('');
   const flag = new URLSearchParams(loc.search).get('broker');
   useEffect(() => { refreshBroker(); }, []);
+  useEffect(() => { if (b?.max_order_usd) setCap(String(b.max_order_usd)); }, [b?.max_order_usd]);
   if (!b) return null;
-  if (!b.enabled) {
-    return (
-      <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
-        <div className="text-sm font-bold">Real money: coming after the beta</div>
-        <p className="mt-1 text-sm text-slate-300">You'll be able to connect your own brokerage account and act on your beliefs with real money, approving every single trade. Practice stays free.</p>
-      </Card>
-    );
-  }
+
+  const flip = async (on) => {
+    setBusy(true); setErr(null);
+    try { await setRealMoney(on); } catch (e) { setErr(e.message); } finally { setBusy(false); }
+  };
+  const saveCap = async () => {
+    setErr(null);
+    try { await setRealMoney(b.on, Number(cap)); } catch (e) { setErr(e.message); }
+  };
+  const live = b.env === 'live';
+  let status;
+  if (!b.pilot && !b.owner) status = 'Coming soon. Practice money stays free; when real money opens, you\'ll connect your own brokerage here.';
+  else if (!b.pilot) status = 'Not set up on the server yet. Steps below (only you can see this).';
+  else if (!b.connected) status = 'Connect your brokerage to use this switch.';
+  else if (b.on) status = live ? 'ON: idea cards show real-money buttons. You approve every order.' : 'ON (Alpaca practice side): idea cards show buttons that trade your Alpaca practice account.';
+  else status = 'OFF: practice mode only. You can still sell what you hold, and take-profit / max-loss exits keep working.';
+
   return (
-    <Card className="mt-3 border-amber-300/30 bg-amber-400/5">
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-bold">Your brokerage</div>
-        <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-amber-400/15 text-amber-200">{b.env === 'live' ? 'Real money' : 'Alpaca practice side'}</span>
+    <Card className={`mt-3 ${b.on ? 'border-green-400/50 bg-green-500/5' : 'border-amber-300/30 bg-amber-400/5'}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="text-base font-bold">Real money</div>
+            {b.pilot && <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-amber-400/15 text-amber-200">{live ? 'Live' : 'Practice side'}</span>}
+          </div>
+          <p className="mt-0.5 text-sm text-slate-300 leading-snug">{status}</p>
+        </div>
+        <Toggle on={!!b.on} disabled={!b.can_switch || busy} onChange={flip} label="Real money" />
       </div>
       {flag === 'connected' && <p className="mt-2 text-sm text-green-300">✓ Connected.</p>}
       {flag === 'failed' && <p className="mt-2 text-sm text-red-300">That didn't work. Please try again.</p>}
-      {b.connected ? (
+      {err && <p className="mt-2 text-sm text-red-300">{err}</p>}
+
+      {b.owner && b.setup && !b.pilot && (
+        <div className="mt-3 rounded-2xl border border-slate-700 bg-slate-950/40 p-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Owner setup · Render → marketplayground-backend → Environment</div>
+          <Steps items={SETUP_ITEMS.map(([k, name, val, why]) => [b.setup[k], <><b className="text-white">{name}</b> = {val} <span className="text-slate-500">({why})</span></>])} />
+          <p className="mt-2 text-[11px] text-slate-500">Save, wait a minute or two for the restart, then come back: this switch unlocks for your account only. Keys are never shown here.</p>
+        </div>
+      )}
+
+      {b.pilot && !b.connected && (
+        <div className="mt-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Set up in 4 steps</div>
+          <Steps items={[
+            [false, <>Open an Alpaca brokerage account (free) and add money. <a href={b.signup_url} target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">Open Alpaca ↗</a> Want options? Ask Alpaca for options approval in their app.</>],
+            [false, 'Tap Connect Alpaca below and approve. You sign in on Alpaca\'s own page; we never see your password.'],
+            [false, 'Pick your per-order limit (the most any single order can be).'],
+            [false, 'Flip the Real money switch on. You still confirm every order, and you can switch off any time.'],
+          ]} />
+          {b.mode !== 'keys' && (
+            <button onClick={() => connectBroker().catch((e) => setErr(e.message))} className="mt-3 w-full rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 py-3 font-bold">Connect Alpaca</button>
+          )}
+        </div>
+      )}
+
+      {b.connected && (
         <>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-3 text-sm text-slate-300">
             {b.mode === 'keys' ? 'Your own Alpaca account is connected' : 'Alpaca account connected'}
-            {b.account ? ` · buying power $${b.account.buying_power.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}.
-            {' '}Stock and single-option ideas show a button to invest; you approve every order.
+            {b.account ? ` · buying power $${b.account.buying_power.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}.
           </p>
           {b.account_error && <p className="mt-1 text-sm text-red-300">{b.account_error}</p>}
+          <div className="mt-3 flex items-end gap-2">
+            <label className="block flex-1">
+              <span className="text-xs font-semibold text-slate-300">Per-order limit (up to ${Number(b.server_max_order_usd || b.max_order_usd).toLocaleString()})</span>
+              <input type="number" inputMode="decimal" min="1" max={b.server_max_order_usd} value={cap} onChange={(e) => setCap(e.target.value)}
+                className="mt-1 w-full rounded-2xl bg-slate-950/70 border border-slate-700 focus:border-blue-400 px-3.5 py-2.5 text-white focus:outline-none" />
+            </label>
+            <button onClick={saveCap} disabled={!(Number(cap) >= 1) || Number(cap) === b.max_order_usd} className="rounded-2xl border border-slate-600 px-4 py-2.5 font-bold disabled:opacity-40">Save</button>
+          </div>
           {b.funding_url && (
             <a href={b.funding_url} target="_blank" rel="noopener noreferrer"
               className="mt-3 block w-full text-center rounded-2xl border border-amber-300/50 bg-amber-400/10 text-amber-100 py-3 font-bold">
@@ -312,15 +391,7 @@ function Brokerage() {
           <RealHoldings broker={b} />
           {b.mode !== 'keys' && <button onClick={() => disconnectBroker().catch((e) => setErr(e.message))} className="mt-3 text-xs text-slate-400 underline">Disconnect</button>}
         </>
-      ) : b.pilot === false ? (
-        <p className="mt-2 text-sm text-slate-300">Real money is in a small private pilot right now.</p>
-      ) : (
-        <>
-          <p className="mt-2 text-sm text-slate-300">Connect your own Alpaca account. Alpaca holds your money; MarketPlayground never does, and nothing is bought without your OK.</p>
-          <button onClick={() => connectBroker().catch((e) => setErr(e.message))} className="mt-3 w-full rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 py-3 font-bold">Connect Alpaca</button>
-        </>
       )}
-      {err && <p className="mt-2 text-sm text-red-300">{err}</p>}
     </Card>
   );
 }

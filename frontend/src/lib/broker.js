@@ -61,3 +61,10 @@ export async function getOrders() { return (await request('/v4/broker/orders')).
 export function getJourney() { return request('/v4/journey'); }
 export async function getExits() { return (await request('/v4/broker/exits')).exits || []; }
 export function cancelExit(id) { return request(`/v4/broker/exits/${id}/cancel`, { method: 'POST' }); }
+
+// The in-app Real money switch (and optional per-order limit). Returns fresh status.
+export async function setRealMoney(on, maxOrderUsd) {
+  cached = await request('/v4/broker/switch', { method: 'POST', body: { on, max_order_usd: maxOrderUsd ?? null } });
+  listeners.forEach((f) => f(cached));
+  return cached;
+}

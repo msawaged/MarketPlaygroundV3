@@ -636,7 +636,10 @@ def test_real_money_is_off_by_default_and_safe_when_on(monkeypatch):
     monkeypatch.setattr(brokerage.requests, "request", fake_request)
     assert c.get("/v4/broker/callback", params={"code": "abc", "state": state}, follow_redirects=False).status_code in (302, 307)
     assert "secret-token" not in db.query_one("SELECT token_enc FROM broker_links")["token_enc"]  # encrypted at rest
-    assert c.get("/v4/broker/status", headers=h).json()["connected"] is True
+    st = c.get("/v4/broker/status", headers=h).json()
+    assert st["connected"] is True and st["on"] is False and st["can_switch"] is True
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 50}, headers=h).status_code == 403  # switch is off
+    assert c.post("/v4/broker/switch", json={"on": True}, headers=h).json()["on"] is True
     assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 900}, headers=h).status_code == 400  # over cap
     assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 400}, headers=h).status_code == 400  # over buying power
     pv = c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 100}, headers=h).json()
@@ -2372,7 +2375,14 @@ def test_personal_keys_mode_options_close_and_journey(monkeypatch):
 
     st = c.get("/v4/broker/status", headers=h).json()
     assert st["connected"] is True and st["mode"] == "keys" and st["env"] == "live" and st["funding_url"]
+    assert st["owner"] is True and st["setup"]["keys"] is True and "ksec" not in json.dumps(st)  # never the values
+    so = c.get("/v4/broker/status", headers=ho).json()
+    assert so["owner"] is False and so["can_switch"] is False and "setup" not in so
+    assert c.post("/v4/broker/switch", json={"on": True}, headers=ho).status_code == 403
+    assert c.post("/v4/broker/switch", json={"on": True, "max_order_usd": 600}, headers=h).json()["max_order_usd"] == 600
     body = {"underlying": "WINR", "option_type": "Call", "strike": 100, "expiration": "2026-12-18"}
+    assert c.post("/v4/broker/preview_option", json=dict(body, contracts=3), headers=h).status_code == 400  # $750 > my $600 limit
+    c.post("/v4/broker/switch", json={"on": True, "max_order_usd": 1000}, headers=h)
     assert c.post("/v4/broker/preview_option", json=dict(body, contracts=5), headers=h).status_code == 400  # $1,250 > cap
     assert c.post("/v4/broker/preview_option", json=dict(body, contracts=4), headers=h).status_code == 400  # > options buying power
     pv = c.post("/v4/broker/preview_option", json=dict(body, contracts=2), headers=h).json()
@@ -2386,6 +2396,8 @@ def test_personal_keys_mode_options_close_and_journey(monkeypatch):
     assert c.post("/v4/broker/preview_close", json={"symbol": "WINR270115C00110000"}, headers=h).status_code == 400
     held[sym] = 2
     assert c.post("/v4/broker/preview_close", json={"symbol": sym, "qty": 3}, headers=h).status_code == 400
+    c.post("/v4/broker/switch", json={"on": False}, headers=h)  # off: no buys, but you can always sell what you hold
+    assert c.post("/v4/broker/preview_option", json=dict(body, contracts=1), headers=h).status_code == 403
     cl = c.post("/v4/broker/preview_close", json={"symbol": sym, "qty": 1}, headers=h).json()
     assert cl["side"] == "sell" and cl["limit_price"] == 2.4
     assert c.post("/v4/broker/order", json={"preview_id": cl["preview_id"], "confirm": True}, headers=h).status_code == 200
@@ -2450,6 +2462,7 @@ def test_exits_stock_bracket_and_option_watcher(monkeypatch):
     monkeypatch.setattr(market, "is_open", lambda: True)
     monkeypatch.setattr(brokerage, "_spy", lambda: 500.0)
 
+    assert c.post("/v4/broker/switch", json={"on": True}, headers=h).json()["on"] is True
     # stocks: whole shares, bracket at Alpaca
     assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10, "take_profit_pct": 0.2, "max_loss_pct": 0.1}, headers=h).status_code == 400
     pv = c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 1000, "take_profit_pct": 0.2, "max_loss_pct": 0.1}, headers=h).json()
