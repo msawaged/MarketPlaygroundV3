@@ -91,15 +91,16 @@ def vol_verdict(iv: Optional[float], rv60: Optional[float]) -> tuple[str, Option
     return "normal", ratio
 
 
-def _vol_text(verdict: str, iv: Optional[float], rv20: Optional[float], rv60: Optional[float], ratio: Optional[float]) -> str:
+def _vol_text(verdict: str, iv: Optional[float], rv20: Optional[float], rv60: Optional[float], ratio: Optional[float],
+              who: str = "At-the-money options on this stock") -> str:
     if verdict == "unknown":
         return "No implied volatility for this contract right now."
-    base = (f"The price assumes {iv * 100:.0f}% yearly volatility; the stock actually moved {rv60 * 100:.0f}% (60 days) "
+    base = (f"{who} assume {iv * 100:.0f}% yearly volatility; the stock actually moved {rv60 * 100:.0f}% (60 days) "
             f"and {rv20 * 100:.0f}% (20 days), so implied is {ratio:.2f}x realized.")
     if verdict == "cheap":
-        return base + " That's cheap: you're paying for less movement than the stock has been showing."
+        return base + " That's cheap: options on this stock are priced for less movement than it has been showing."
     if verdict == "expensive":
-        return base + " That's expensive: the stock has to move more than it has been for this to pay off. Often it's an earnings date or news."
+        return base + " That's expensive: the stock has to move more than it has been for options to pay off. Often it's an earnings date or news."
     return base + " That's normal (implied usually runs a bit above realized)."
 
 
@@ -175,14 +176,18 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     mid = _mid(c)
     spread_pct = round((c["ask"] - c["bid"]) / mid, 4) if mid else None
     atm_iv, atm_days, skew = _atm(chain, spot, c["expiration"])
-    # Deep in-the-money contracts often carry no IV in the feed. Parity implies the matching put/call has the same IV
-    # (European), so use that, else the at-the-money level, and say which.
-    iv, iv_src = c["iv"], "this contract"
-    if not iv and twin and twin["iv"]:
-        iv, iv_src = twin["iv"], f"the matching {twin['type']} (same strike and date)"
-    elif not iv and atm_iv:
-        iv, iv_src = atm_iv, "at-the-money options (this one has no quote-based volatility)"
+    # Cheap/expensive is judged on AT-THE-MONEY implied vol vs realized vol. Far-from-the-money strikes carry extra
+    # implied vol from the volatility smile/skew (normal, not "expensive"), and deep in-the-money ones often have no IV
+    # in the feed. The contract's own IV is reported beside it.
+    iv = atm_iv or c["iv"]
+    iv_src = "at-the-money options" if atm_iv else "this contract"
     verdict, ratio = vol_verdict(iv, rv60)
+    moneyness = c["strike"] / spot - 1 if spot else 0
+    smile_text = None
+    if c["iv"] and atm_iv and abs(moneyness) > 0.07:
+        smile_text = (f"This strike is {abs(moneyness) * 100:.0f}% {'above' if moneyness > 0 else 'below'} the stock price; its own volatility is "
+                      f"{c['iv'] * 100:.0f}% vs {atm_iv * 100:.0f}% at the money. That difference (the volatility smile) is normal for "
+                      "strikes far from the price, not a sign of a bad deal.")
     hist = _history(u, atm_iv)
     cost_text = ("No two-sided quote right now, so the trading cost is unknown." if spread_pct is None else
                  f"Buyers pay ${c['ask']:.2f}, sellers get ${c['bid']:.2f}: buying and selling right away would cost about "
@@ -204,8 +209,8 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
         "iv_rv": round(ratio, 3) if ratio else None, "vol_verdict": verdict, "parity": par, "risk_free": risk_free(),
         "atm_iv": round(atm_iv, 4) if atm_iv else None, "history": hist, "headline": headline,
         "iv_source": iv_src if iv else None,
-        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio) + ("" if iv_src == "this contract" or not iv else f" (Volatility from {iv_src}.)"),
-                              parity_text(par, u), cost_text, hist_text) if l],
+        "contract_iv": round(c["iv"], 4) if c["iv"] else None,
+        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option's price and its market"), smile_text, parity_text(par, u), cost_text, hist_text) if l],
         "note": ("Prices come from a free data feed that can lag a little. Parity uses mid prices and a "
                  f"{risk_free() * 100:.1f}% risk-free rate; US stock options are American-style, so dividends and early exercise "
                  "can explain a gap. A guide, not a guarantee."),
