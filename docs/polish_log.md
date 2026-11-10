@@ -146,3 +146,33 @@ Changed:
   column is still added. Test added for the migration parser.
 
 Checks: backend tests 118 passed. No frontend change.
+
+## 2026-11-10
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only a sandbox-proxy-blocked third-party request). Walked a signed-in options idea
+locally (offline server) and called the live /v4/price_check on AAPL and NVDA contracts. Focus: today's new Price check.
+
+Found:
+- "Fairly priced" headline on every normal result, although only implied vs realized vol was judged (parity is skipped
+  outside market hours). Overclaims next to the honest "Cheap/Expensive vs how much the stock moves" headlines.
+- "the stock actually moved 43% (60 days)" describes realized volatility as if it were a 43% price move.
+- NVDA at 1.33x implied/realized (the "expensive" line is 1.35x) was called "normal (implied usually runs a bit above
+  realized)"; 1.33x is not "a bit".
+- Bid-ask cost "about 0% of the price" for an NVDA $185 put ($25.12 / $25.20, really 0.3%).
+- The check prices the closest LISTED contract (e.g. $170 put for the card's $167.5 leg) with no sign that it differs;
+  dates shown as 2027-02-19 while the card says Feb 19, 2027; the same footnote repeated under each leg and mentioned
+  parity even when parity wasn't checked.
+
+Changed (backend/v4/pricecheck.py, frontend chat/PriceCheck.jsx):
+- Headline "Normal price vs how much the stock moves" (parity-gap variant to match).
+- Vol line: "priced for X% yearly volatility. The stock's actual daily swings work out to Y% a year over the last 60
+  trading days (Z% over the last 20)"; normal band split into low end (<1.0x), plain (1.0-1.2x) and high end (>1.2x,
+  "a buyer needs bigger moves than the stock has been making"). Footnote defines realized vol; parity sentence only
+  when parity was computed.
+- Spread shown to one decimal under 10% ("0.3%"), "less than 0.1%" for tiny.
+- UI: "Closest listed contract to the idea's $167.5 · Feb 19, 2027" when strike/date differ; nice dates; footnote once.
+- Test: vol wording tiers and percentage formatting.
+
+Checks: vite build passes, payoff/figures tests pass, backend tests 124 passed. Verified at 390px with a mocked
+price_check (live NVDA data) on a local Bear Put Spread card.

@@ -140,3 +140,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   new feature in market.features/mad_features, nn.make_features num, research.FEATS + DIRECTIONAL, enrich backfill
   (as of each pick's date), rule `moving average distance (z_mad)`. Gate untouched. Files: backend/v4/market.py, nn.py,
   research.py, tests/test_v4.py, docs/research_ideas.md.
+## 2026-11-10 (daily polish walk)
+- Price check wording only (no thresholds or logic changed: cheap < 0.9x, expensive > 1.35x, parity rules untouched):
+  headline "Normal price vs how much the stock moves" instead of "Fairly priced", realized vol described as yearly
+  swings (not "moved X%"), normal band says low/high end, spread % to one decimal, footnote mentions parity only when
+  checked. PriceCheck.jsx shows "Closest listed contract to the idea's $K · date" when the checked contract differs.
+  Files: backend/v4/pricecheck.py, frontend/src/components/chat/PriceCheck.jsx, tests/test_v4.py, docs/polish_log.md.

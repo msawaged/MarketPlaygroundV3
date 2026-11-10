@@ -80,6 +80,14 @@ def parity_text(p: Optional[dict], u: str) -> str:
             f"one-sided quote, not a riskless gain: after spreads (about ${p['spread_cost']:.2f}) there's little or nothing left.")
 
 
+def _pct_text(x: float) -> str:
+    """A small share as plain words: 0.3% stays 0.3%, never rounds to 0%."""
+    pct = x * 100
+    if pct < 0.1:
+        return "less than 0.1%"
+    return f"{pct:.1f}%" if pct < 10 else f"{pct:.0f}%"
+
+
 def vol_verdict(iv: Optional[float], rv60: Optional[float]) -> tuple[str, Optional[float]]:
     if not iv or not rv60:
         return "unknown", None
@@ -95,13 +103,21 @@ def _vol_text(verdict: str, iv: Optional[float], rv20: Optional[float], rv60: Op
               who: str = "At-the-money options on this stock") -> str:
     if verdict == "unknown":
         return "No implied volatility for this contract right now."
-    base = (f"{who} assume {iv * 100:.0f}% yearly volatility; the stock actually moved {rv60 * 100:.0f}% (60 days) "
-            f"and {rv20 * 100:.0f}% (20 days), so implied is {ratio:.2f}x realized.")
+    swings = f"{rv60 * 100:.0f}% a year over the last 60 trading days"
+    if rv20:
+        swings += f" ({rv20 * 100:.0f}% over the last 20)"
+    base = (f"{who} {'is' if who.startswith('This') else 'are'} priced for {iv * 100:.0f}% yearly volatility. The stock's actual daily swings work out to "
+            f"{swings}, so implied is {ratio:.2f}x realized.")
     if verdict == "cheap":
         return base + " That's cheap: options on this stock are priced for less movement than it has been showing."
     if verdict == "expensive":
         return base + " That's expensive: the stock has to move more than it has been for options to pay off. Often it's an earnings date or news."
-    return base + " That's normal (implied usually runs a bit above realized)."
+    if ratio < 1.0:
+        return base + " That's normal, at the low end: options here are priced for a little less movement than the stock has shown."
+    if ratio > 1.2:
+        return base + (" That's normal, at the high end: implied usually runs above realized, and here it runs well above, "
+                       "so a buyer needs bigger moves than the stock has been making.")
+    return base + " That's normal: implied usually runs a little above realized."
 
 
 def _history(u: str, atm_iv: Optional[float]) -> Optional[dict]:
@@ -195,16 +211,16 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     hist = _history(u, atm_iv)
     cost_text = ("No two-sided quote right now, so the trading cost is unknown." if spread_pct is None else
                  f"Buyers pay ${c['ask']:.2f}, sellers get ${c['bid']:.2f}: buying and selling right away would cost about "
-                 f"{spread_pct * 100:.0f}% of the price." + (" That's a wide spread; use a limit order." if spread_pct > 0.1 else ""))
+                 f"{_pct_text(spread_pct)} of the price." + (" That's a wide spread; use a limit order." if spread_pct > 0.1 else ""))
     hist_text = None
     if hist and hist["percentile"] is not None:
         hist_text = f"Today's at-the-money volatility is higher than on {hist['percentile'] * 100:.0f}% of the last {hist['days']} days we logged."
     elif hist:
         hist_text = f"We've logged {hist['days']} day{'s' if hist['days'] != 1 else ''} of {u} option volatility so far; a range comparison starts at 20."
     headline = {"cheap": "Cheap vs how much the stock moves", "expensive": "Expensive vs how much the stock moves",
-                "normal": "Fairly priced", "unknown": "Partly checked"}[verdict]
+                "normal": "Normal price vs how much the stock moves", "unknown": "Partly checked"}[verdict]
     if par and not par["within_spread"] and verdict == "normal":
-        headline = "Fairly priced, with a parity gap"
+        headline = "Normal price vs the stock's moves, with a parity gap"
     return {
         "available": True, "as_of": datetime.now(timezone.utc).isoformat(), "underlying": u, "contract": c["symbol"],
         "type": kind, "strike": c["strike"], "expiration": c["expiration"].isoformat(), "spot": round(spot, 2),
@@ -214,11 +230,12 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
         "atm_iv": round(atm_iv, 4) if atm_iv else None, "history": hist, "headline": headline,
         "iv_source": iv_src if iv else None,
         "contract_iv": round(c["iv"], 4) if c["iv"] else None,
-        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option's price and its market"), smile_text, (parity_text(par, u) if is_open else "Put-call parity is checked while the market is open (overnight, stock and option prices come from different moments)."),
+        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option"), smile_text, (parity_text(par, u) if is_open else "Put-call parity is checked while the market is open (overnight, stock and option prices come from different moments)."),
                               cost_text, hist_text) if l],
-        "note": ("Prices come from a free data feed that can lag a little. Parity uses mid prices and a "
-                 f"{risk_free() * 100:.1f}% risk-free rate; US stock options are American-style, so dividends and early exercise "
-                 "can explain a gap. A guide, not a guarantee."),
+        "note": ("Prices come from a free data feed that can lag a little. Realized volatility is the standard deviation of "
+                 "daily closing moves (log returns), annualized. " + (f"Parity uses mid prices and a {risk_free() * 100:.1f}% risk-free rate; "
+                 "US stock options are American-style, so dividends and early exercise can explain a gap. " if par else "")
+                 + "A guide, not a guarantee."),
     }
 
 

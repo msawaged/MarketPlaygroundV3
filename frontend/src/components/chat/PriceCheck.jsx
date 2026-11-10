@@ -2,6 +2,7 @@
 // and what it costs to trade. Loads on tap (live quotes), one block per option leg.
 import React, { useState } from 'react';
 import { request } from '../../lib/api';
+import { niceDate } from '../../lib/payoff';
 
 const TONE = { cheap: 'text-green-300', normal: 'text-slate-100', expensive: 'text-amber-300', unknown: 'text-slate-300' };
 
@@ -35,12 +36,17 @@ export default function PriceCheck({ ticker, legs, pickId }) {
         <div key={i} className={i ? 'mt-3 pt-3 border-t border-slate-800' : 'mt-2'}>
           {!r.available ? <p className="text-sm text-slate-400">{r.reason}</p> : (
             <>
-              <div className="text-xs text-slate-400">{opts.length > 1 ? `${opts[i].action || ''} ` : ''}{r.underlying} ${r.strike} {r.type} · {r.expiration}</div>
+              <div className="text-xs text-slate-400">{opts.length > 1 ? `${opts[i].action || ''} ` : ''}{r.underlying} ${r.strike} {r.type} · {niceDate(r.expiration)}</div>
+              {(Math.abs(Number(r.strike) - Number(opts[i].strike_price)) > 0.001 || r.expiration !== String(opts[i].expiration).slice(0, 10)) && (
+                <div className="text-[11px] text-slate-500">Closest listed contract to the idea's ${Number(opts[i].strike_price)} · {niceDate(String(opts[i].expiration).slice(0, 10))}</div>
+              )}
               <div className={`mt-0.5 font-bold ${TONE[r.vol_verdict]}`}>{r.headline}</div>
               <ul className="mt-1.5 space-y-1.5 text-sm text-slate-300 leading-snug">
                 {r.lines.map((t) => <li key={t}>{t}</li>)}
               </ul>
-              <p className="mt-2 text-[11px] text-slate-500 leading-snug">{r.note}</p>
+              {(i === res.length - 1 || r.note !== res[res.length - 1].note) && (
+                <p className="mt-2 text-[11px] text-slate-500 leading-snug">{r.note}</p>
+              )}
             </>
           )}
         </div>

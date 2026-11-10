@@ -2582,3 +2582,17 @@ def test_price_check_parity_vol_and_log(monkeypatch):
     row = db.query_one("SELECT * FROM feature_log WHERE pick_id = 'pk1'")
     assert row["feature"] == "price_check" and json.loads(row["value"])["vol_verdict"] == r1["vol_verdict"]
     assert pricecheck.log_daily(limit=2, force=True)["logged"] >= 1
+
+
+def test_price_check_vol_wording_is_plain_and_tiered():
+    """Realized vol is described as yearly swings (not a % price move), and 'normal' says where in the band it sits."""
+    from backend.v4 import pricecheck
+    hi = pricecheck._vol_text("normal", 0.566, 0.508, 0.43, 0.566 / 0.43)
+    assert "actually moved" not in hi and "43% a year over the last 60 trading days" in hi and "high end" in hi
+    mid = pricecheck._vol_text("normal", 0.23, 0.27, 0.22, 0.23 / 0.22)
+    assert "a little above realized" in mid and "high end" not in mid
+    lo = pricecheck._vol_text("normal", 0.20, 0.21, 0.21, 0.20 / 0.21)
+    assert "low end" in lo
+    assert pricecheck._vol_text("cheap", 0.2, 0.3, 0.3, 0.67, "This option").startswith("This option is priced for 20%")
+    assert pricecheck._pct_text(0.0032) == "0.3%" and pricecheck._pct_text(0.0005) == "less than 0.1%"
+    assert pricecheck._pct_text(0.0127) == "1.3%" and pricecheck._pct_text(0.15) == "15%"
