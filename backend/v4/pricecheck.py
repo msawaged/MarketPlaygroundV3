@@ -174,8 +174,15 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     par = parity(call, put, spot, risk_free()) if twin else None
     mid = _mid(c)
     spread_pct = round((c["ask"] - c["bid"]) / mid, 4) if mid else None
-    verdict, ratio = vol_verdict(c["iv"], rv60)
     atm_iv, atm_days, skew = _atm(chain, spot, c["expiration"])
+    # Deep in-the-money contracts often carry no IV in the feed. Parity implies the matching put/call has the same IV
+    # (European), so use that, else the at-the-money level, and say which.
+    iv, iv_src = c["iv"], "this contract"
+    if not iv and twin and twin["iv"]:
+        iv, iv_src = twin["iv"], f"the matching {twin['type']} (same strike and date)"
+    elif not iv and atm_iv:
+        iv, iv_src = atm_iv, "at-the-money options (this one has no quote-based volatility)"
+    verdict, ratio = vol_verdict(iv, rv60)
     hist = _history(u, atm_iv)
     cost_text = ("No two-sided quote right now, so the trading cost is unknown." if spread_pct is None else
                  f"Buyers pay ${c['ask']:.2f}, sellers get ${c['bid']:.2f}: buying and selling right away would cost about "
@@ -193,10 +200,12 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
         "available": True, "as_of": datetime.now(timezone.utc).isoformat(), "underlying": u, "contract": c["symbol"],
         "type": kind, "strike": c["strike"], "expiration": c["expiration"].isoformat(), "spot": round(spot, 2),
         "bid": c["bid"], "ask": c["ask"], "mid": round(mid, 4) if mid else None, "spread_pct": spread_pct,
-        "iv": round(c["iv"], 4) if c["iv"] else None, "rv20": round(rv20, 4) if rv20 else None, "rv60": round(rv60, 4) if rv60 else None,
+        "iv": round(iv, 4) if iv else None, "rv20": round(rv20, 4) if rv20 else None, "rv60": round(rv60, 4) if rv60 else None,
         "iv_rv": round(ratio, 3) if ratio else None, "vol_verdict": verdict, "parity": par, "risk_free": risk_free(),
         "atm_iv": round(atm_iv, 4) if atm_iv else None, "history": hist, "headline": headline,
-        "lines": [l for l in (_vol_text(verdict, c["iv"], rv20, rv60, ratio), parity_text(par, u), cost_text, hist_text) if l],
+        "iv_source": iv_src if iv else None,
+        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio) + ("" if iv_src == "this contract" or not iv else f" (Volatility from {iv_src}.)"),
+                              parity_text(par, u), cost_text, hist_text) if l],
         "note": ("Prices come from a free data feed that can lag a little. Parity uses mid prices and a "
                  f"{risk_free() * 100:.1f}% risk-free rate; US stock options are American-style, so dividends and early exercise "
                  "can explain a gap. A guide, not a guarantee."),
