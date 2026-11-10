@@ -2513,6 +2513,7 @@ def test_price_check_parity_vol_and_log(monkeypatch):
     chain = [dict(call, symbol="WINR261218C00100000"), dict(put, symbol="WINR261218P00100000")]
     monkeypatch.setattr(market, "option_chain_near", lambda *a, **k: chain)
     monkeypatch.setattr(market, "latest_price", lambda s: 100.0)
+    monkeypatch.setattr(market, "is_open", lambda: True)
     pricecheck._cache.clear()
     r1 = _client().get("/v4/price_check", params={"underlying": "WINR", "option_type": "Call", "strike": 100,
                                                   "expiration": "2026-12-18", "pick_id": "pk1"}).json()

@@ -172,10 +172,14 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     except Exception:
         return {"available": False, "reason": f"No stock price for {u} right now."}
     call, put = (c, twin) if kind == "call" else (twin, c)
-    par = parity(call, put, spot, risk_free()) if twin else None
+    is_open = market.is_open()
+    # Outside market hours the stock's last trade and the options' last quotes come from different moments, which
+    # makes fake parity gaps. Only judge parity while the market is open.
+    par = parity(call, put, spot, risk_free()) if twin and is_open else None
     mid = _mid(c)
     spread_pct = round((c["ask"] - c["bid"]) / mid, 4) if mid else None
-    atm_iv, atm_days, skew = _atm(chain, spot, c["expiration"])
+    atm_chain = chain if abs(c["strike"] / spot - 1) < 0.08 else market.option_chain_near(u, spot, c["expiration"], band=0.05)
+    atm_iv, atm_days, skew = _atm(atm_chain, spot, c["expiration"])
     # Cheap/expensive is judged on AT-THE-MONEY implied vol vs realized vol. Far-from-the-money strikes carry extra
     # implied vol from the volatility smile/skew (normal, not "expensive"), and deep in-the-money ones often have no IV
     # in the feed. The contract's own IV is reported beside it.
@@ -210,7 +214,8 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
         "atm_iv": round(atm_iv, 4) if atm_iv else None, "history": hist, "headline": headline,
         "iv_source": iv_src if iv else None,
         "contract_iv": round(c["iv"], 4) if c["iv"] else None,
-        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option's price and its market"), smile_text, parity_text(par, u), cost_text, hist_text) if l],
+        "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option's price and its market"), smile_text, (parity_text(par, u) if is_open else "Put-call parity is checked while the market is open (overnight, stock and option prices come from different moments)."),
+                              cost_text, hist_text) if l],
         "note": ("Prices come from a free data feed that can lag a little. Parity uses mid prices and a "
                  f"{risk_free() * 100:.1f}% risk-free rate; US stock options are American-style, so dividends and early exercise "
                  "can explain a gap. A guide, not a guarantee."),
