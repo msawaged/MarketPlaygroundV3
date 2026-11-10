@@ -204,7 +204,8 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     verdict, ratio = vol_verdict(iv, rv60)
     moneyness = c["strike"] / spot - 1 if spot else 0
     smile_text = None
-    if c["iv"] and atm_iv and abs(moneyness) > 0.07:
+    # Only when the strike's own IV really differs (2+ vol points); "48% vs 48%" is no smile to explain.
+    if c["iv"] and atm_iv and abs(moneyness) > 0.07 and abs(c["iv"] - atm_iv) >= 0.02:
         smile_text = (f"This strike is {abs(moneyness) * 100:.0f}% {'above' if moneyness > 0 else 'below'} the stock price; its own volatility is "
                       f"{c['iv'] * 100:.0f}% vs {atm_iv * 100:.0f}% at the money. That difference (the volatility smile) is normal for "
                       "strikes far from the price, not a sign of a bad deal.")

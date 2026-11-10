@@ -173,6 +173,8 @@ Changed (backend/v4/pricecheck.py, frontend chat/PriceCheck.jsx):
 - Spread shown to one decimal under 10% ("0.3%"), "less than 0.1%" for tiny.
 - UI: "Closest listed contract to the idea's $167.5 · Feb 19, 2027" when strike/date differ; nice dates; footnote once.
 - Test: vol wording tiers and percentage formatting.
+- (after deploy) Live NVDA $185 put said "its own volatility is 48% vs 48% at the money. That difference (the volatility
+  smile) is normal": the smile line now shows only when the strike's IV differs from at-the-money by 2+ vol points.
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 124 passed. Verified at 390px with a mocked
 price_check (live NVDA data) on a local Bear Put Spread card.

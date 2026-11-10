@@ -145,4 +145,5 @@ and anything the others must know. Keep entries to a few lines; details go in th
   headline "Normal price vs how much the stock moves" instead of "Fairly priced", realized vol described as yearly
   swings (not "moved X%"), normal band says low/high end, spread % to one decimal, footnote mentions parity only when
   checked. PriceCheck.jsx shows "Closest listed contract to the idea's $K · date" when the checked contract differs.
+  Smile line only when strike IV differs from ATM by 2+ vol points.
   Files: backend/v4/pricecheck.py, frontend/src/components/chat/PriceCheck.jsx, tests/test_v4.py, docs/polish_log.md.
