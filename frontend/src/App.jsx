@@ -13,6 +13,7 @@ import WelcomePage from './components/WelcomePage';
 import BrainPage from './components/BrainPage';
 import ReelPage from './components/ReelPage';
 import StoryPage from './components/StoryPage';
+import JourneyPage from './components/JourneyPage';
 import { useAccount } from './lib/auth';
 
 // Heavier, less-used screens load on demand.
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/reel" element={<ReelPage />} />
           <Route path="/story" element={<StoryPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/journey" element={<JourneyPage />} />
           <Route path="/verify" element={<VerifyPage />} />
           <Route path="/reset" element={<ResetPage />} />
           <Route path="/basket-builder" element={g(<BasketBuilderPage />)} />

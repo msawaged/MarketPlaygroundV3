@@ -2318,3 +2318,93 @@ def test_migration_target_parses_add_column():
     assert db._migration_target("CREATE INDEX IF NOT EXISTS ix ON picks(x)") is None
     for stmt in db._migrations():
         assert db._migration_target(stmt) is not None, stmt
+
+
+def test_personal_keys_mode_options_close_and_journey(monkeypatch):
+    from backend.v4 import brokerage
+    c = _client()
+    tok = c.post("/v4/auth/signup", json={"email": "owner@example.com", "password": "long enough pw"}).json()["token"]
+    other = c.post("/v4/auth/signup", json={"email": "other@example.com", "password": "long enough pw"}).json()["token"]
+    h, ho = {"Authorization": f"Bearer {tok}"}, {"Authorization": f"Bearer {other}"}
+    monkeypatch.setenv("MP_REAL_MONEY", "on"); monkeypatch.setenv("MP_BROKER_ENV", "live"); monkeypatch.setenv("MP_MAX_ORDER_USD", "1000")
+    monkeypatch.setenv("MP_BROKER_KEY_ID", "kid"); monkeypatch.setenv("MP_BROKER_SECRET_KEY", "ksec")
+    monkeypatch.delenv("MP_REAL_MONEY_PILOT", raising=False)
+    # keys mode with no pilot list: nobody can trade (never "everyone")
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10}, headers=h).status_code == 403
+    monkeypatch.setenv("MP_REAL_MONEY_PILOT", "owner@example.com")
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10}, headers=ho).status_code == 403
+    assert c.get("/v4/broker/connect", headers=h).status_code == 409
+
+    sent, held = [], {}
+    sym = "WINR261218C00100000"
+
+    class R:
+        def __init__(self, code, js): self.status_code, self._js, self.content, self.text = code, js, b"x", ""
+        def json(self): return self._js
+
+    def fake_request(method, url, headers=None, json=None, timeout=None, params=None):
+        assert headers["APCA-API-KEY-ID"] == "kid" and url.startswith("https://api.alpaca.markets")
+        path = url.split("alpaca.markets")[1]
+        if path == "/v2/account":
+            return R(200, {"buying_power": "5000", "options_buying_power": "800", "equity": "5000", "status": "ACTIVE"})
+        if path == "/v2/options/contracts":
+            assert params["type"] == "call"
+            return R(200, {"option_contracts": [
+                {"symbol": sym, "strike_price": "100", "expiration_date": "2026-12-18", "tradable": True},
+                {"symbol": "WINR270115C00110000", "strike_price": "110", "expiration_date": "2027-01-15", "tradable": True}]})
+        if path.startswith("/v2/positions/"):
+            s = path.split("/")[-1]
+            return R(200, {"symbol": s, "qty": str(held[s])}) if s in held else R(404, {"message": "position does not exist"})
+        if path == "/v2/orders" and method == "POST":
+            sent.append(json); return R(200, {"id": f"o{len(sent)}", "status": "accepted"})
+        if path.startswith("/v2/orders/"):
+            n = int(path.split("o")[-1]); o = sent[n - 1]
+            px = {"buy": 2.5, "sell": 4.0}[o["side"]] if o["symbol"] == sym else 100.0
+            return R(200, {"id": f"o{n}", "status": "filled", "filled_qty": o.get("qty") or "1", "filled_avg_price": str(px),
+                           "filled_at": f"2026-11-1{n}T15:00:00Z"})
+        raise AssertionError(path)
+    monkeypatch.setattr(brokerage.requests, "request", fake_request)
+    monkeypatch.setattr(market, "option_quote", lambda s: {"bid": 2.4, "ask": 2.5, "mid": 2.45, "t": None} if s == sym else None)
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(brokerage, "_spy", lambda: 500.0)
+
+    st = c.get("/v4/broker/status", headers=h).json()
+    assert st["connected"] is True and st["mode"] == "keys" and st["env"] == "live" and st["funding_url"]
+    body = {"underlying": "WINR", "option_type": "Call", "strike": 100, "expiration": "2026-12-18"}
+    assert c.post("/v4/broker/preview_option", json=dict(body, contracts=5), headers=h).status_code == 400  # $1,250 > cap
+    assert c.post("/v4/broker/preview_option", json=dict(body, contracts=4), headers=h).status_code == 400  # > options buying power
+    pv = c.post("/v4/broker/preview_option", json=dict(body, contracts=2), headers=h).json()
+    assert pv["contract"] == sym and pv["limit_price"] == 2.5 and pv["total_usd"] == 500.0 and pv["max_loss_usd"] == 500.0
+    assert pv["breakeven"] == 102.5 and "most you can lose" in pv["plain"]
+    r = c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h)
+    assert r.status_code == 200
+    assert sent[-1] == {"symbol": sym, "qty": "2", "side": "buy", "type": "limit", "limit_price": "2.50",
+                        "time_in_force": "day", "client_order_id": f"mp-{pv['preview_id']}"}
+    # can't sell what you don't hold (no naked options)
+    assert c.post("/v4/broker/preview_close", json={"symbol": "WINR270115C00110000"}, headers=h).status_code == 400
+    held[sym] = 2
+    assert c.post("/v4/broker/preview_close", json={"symbol": sym, "qty": 3}, headers=h).status_code == 400
+    cl = c.post("/v4/broker/preview_close", json={"symbol": sym, "qty": 1}, headers=h).json()
+    assert cl["side"] == "sell" and cl["limit_price"] == 2.4
+    assert c.post("/v4/broker/order", json={"preview_id": cl["preview_id"], "confirm": True}, headers=h).status_code == 200
+    assert sent[-1]["side"] == "sell" and sent[-1]["qty"] == "1" and sent[-1]["type"] == "limit"
+
+    # the public journey: off until switched on, then every fill as lots
+    assert c.get("/v4/journey").json()["enabled"] is False
+    monkeypatch.setenv("MP_JOURNEY_PUBLIC", "on"); brokerage._journey_cache.clear()
+    j = c.get("/v4/journey").json()
+    assert j["enabled"] and j["trades"] == 2 and "cost_usd" not in j["lots"][0]  # dollars hidden by default
+    closed = [l for l in j["lots"] if l["status"] == "closed"]; still = [l for l in j["lots"] if l["status"] == "open"]
+    assert len(closed) == 1 and abs(closed[0]["return"] - 0.6) < 1e-9  # 2.50 -> 4.00
+    assert len(still) == 1 and abs(still[0]["return"] - (2.45 / 2.5 - 1)) < 1e-6
+    assert j["summary"]["wins"] == 1 and j["summary"]["closed"] == 1
+
+
+def test_build_lots_fifo_partial():
+    from backend.v4 import brokerage
+    lots = brokerage.build_lots([
+        {"symbol": "A", "side": "buy", "qty": 10, "price": 10, "at": "1", "kind": "stock"},
+        {"symbol": "A", "side": "buy", "qty": 10, "price": 20, "at": "2", "kind": "stock"},
+        {"symbol": "A", "side": "sell", "qty": 15, "price": 30, "at": "3", "kind": "stock"},
+    ])
+    assert [(l["qty"], l["entry"], l["exit"]) for l in lots] == [(10, 10, 30), (5, 20, 30), (5, 20, None)]

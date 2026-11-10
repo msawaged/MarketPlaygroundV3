@@ -328,6 +328,50 @@ async def broker_order(body: PlaceIn, authorization: Optional[str] = Header(None
     return await _broker_call(brokerage.place, _token(authorization), body.preview_id, body.confirm)
 
 
+class OptionPreviewIn(BaseModel):
+    underlying: str
+    option_type: str
+    strike: float
+    expiration: str
+    contracts: int = 1
+    limit_price: Optional[float] = None
+    belief_id: Optional[str] = None
+    pick_id: Optional[str] = None
+
+
+class ClosePreviewIn(BaseModel):
+    symbol: str
+    qty: Optional[float] = None
+    limit_price: Optional[float] = None
+
+
+@router.post("/broker/preview_option")
+async def broker_preview_option(body: OptionPreviewIn, authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.preview_option, _token(authorization), body.underlying, body.option_type, body.strike,
+                              body.expiration, body.contracts, body.limit_price, body.belief_id, body.pick_id)
+
+
+@router.post("/broker/preview_close")
+async def broker_preview_close(body: ClosePreviewIn, authorization: Optional[str] = Header(None)):
+    return await _broker_call(brokerage.preview_close, _token(authorization), body.symbol, body.qty, body.limit_price)
+
+
+@router.get("/broker/positions")
+async def broker_positions(authorization: Optional[str] = Header(None)):
+    return {"positions": await _broker_call(brokerage.positions, _token(authorization))}
+
+
+@router.get("/broker/orders")
+async def broker_orders(authorization: Optional[str] = Header(None)):
+    return {"orders": await _broker_call(brokerage.orders, _token(authorization))}
+
+
+@router.get("/journey")
+async def get_journey():
+    """Public: the owner's real-money trades, every fill, wins and losses. Off unless MP_JOURNEY_PUBLIC=on."""
+    return await _broker_call(brokerage.journey)
+
+
 @router.get("/headlines")
 async def get_headlines(limit: int = 6):
     return {"headlines": await run_in_threadpool(market.headlines, max(1, min(limit, 12)))}

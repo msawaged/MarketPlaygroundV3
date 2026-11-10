@@ -9,7 +9,8 @@ import {
   resendVerification, forgotPassword,
   passkeySupported, biometricName, passkeyStatus, addPasskey, loginWithPasskey, removePasskeys, passkeyCancelled,
 } from '../lib/auth';
-import { useBroker, refreshBroker, connectBroker, disconnectBroker } from '../lib/broker';
+import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions, getOrders } from '../lib/broker';
+import RealMoneySheet from './chat/RealMoneySheet';
 import WhatsNew from './WhatsNew';
 import AlertsCard from './AlertsCard';
 
@@ -201,6 +202,60 @@ export function FaceIdCard({ compact = false, onDone }) {
   );
 }
 
+function RealHoldings({ broker }) {
+  const [pos, setPos] = useState(null);
+  const [ords, setOrds] = useState(null);
+  const [selling, setSelling] = useState(null);
+  const [err, setErr] = useState(null);
+  const load = () => {
+    getPositions().then(setPos).catch((e) => setErr(e.message));
+    getOrders().then(setOrds).catch(() => setOrds([]));
+  };
+  useEffect(load, []);
+  const pct = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
+  return (
+    <div className="mt-4">
+      <div className="text-xs font-bold uppercase tracking-wider text-slate-400">What you hold</div>
+      {err && <p className="mt-1 text-sm text-red-300">{err}</p>}
+      {pos === null ? <p className="mt-1 text-sm text-slate-500">Loading…</p> : pos.length === 0 ? (
+        <p className="mt-1 text-sm text-slate-400">Nothing yet.</p>
+      ) : (
+        <ul className="mt-1.5 space-y-1.5">
+          {pos.map((p) => (
+            <li key={p.symbol} className="flex items-center justify-between gap-2 rounded-2xl bg-slate-950/50 border border-slate-800 px-3 py-2.5">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold break-words">{p.label}</div>
+                <div className="text-xs text-slate-400">
+                  ${p.market_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ·{' '}
+                  <span className={p.unrealized_plpc >= 0 ? 'text-green-300' : 'text-red-300'}>{pct(p.unrealized_plpc)}</span> since you bought
+                </div>
+              </div>
+              <button onClick={() => setSelling(p)} className="shrink-0 rounded-xl border border-slate-600 px-3 py-1.5 text-xs font-bold hover:border-red-300">Sell</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {ords && ords.length > 0 && (
+        <>
+          <div className="mt-4 text-xs font-bold uppercase tracking-wider text-slate-400">Recent orders</div>
+          <ul className="mt-1.5 space-y-1 text-sm">
+            {ords.slice(0, 8).map((o) => (
+              <li key={o.id} className="flex justify-between gap-2">
+                <span className="min-w-0 break-words"><span className={o.side === 'sell' ? 'text-red-300' : 'text-green-300'}>{o.side === 'sell' ? 'Sold' : 'Bought'}</span> {o.label}</span>
+                <span className="shrink-0 text-slate-400">{o.filled_avg_price ? `$${o.filled_avg_price.toFixed(2)}` : (o.status || 'sent').replace(/_/g, ' ')}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <a href="/journey" className="mt-3 inline-block text-sm text-blue-300 underline">Your public real-money journey →</a>
+      {selling && (
+        <RealMoneySheet open={!!selling} onClose={() => setSelling(null)} broker={broker} position={selling} onDone={load} />
+      )}
+    </div>
+  );
+}
+
 function Brokerage() {
   const b = useBroker();
   const loc = useLocation();
@@ -226,8 +281,21 @@ function Brokerage() {
       {flag === 'failed' && <p className="mt-2 text-sm text-red-300">That didn't work. Please try again.</p>}
       {b.connected ? (
         <>
-          <p className="mt-2 text-sm text-slate-300">Alpaca account connected{b.account ? ` · buying power $${b.account.buying_power.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}. Stock ideas now show a button to invest; you approve every order.</p>
-          <button onClick={() => disconnectBroker().catch((e) => setErr(e.message))} className="mt-3 text-xs text-slate-400 underline">Disconnect</button>
+          <p className="mt-2 text-sm text-slate-300">
+            {b.mode === 'keys' ? 'Your own Alpaca account is connected' : 'Alpaca account connected'}
+            {b.account ? ` · buying power $${b.account.buying_power.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}.
+            {' '}Stock and single-option ideas show a button to invest; you approve every order.
+          </p>
+          {b.account_error && <p className="mt-1 text-sm text-red-300">{b.account_error}</p>}
+          {b.funding_url && (
+            <a href={b.funding_url} target="_blank" rel="noopener noreferrer"
+              className="mt-3 block w-full text-center rounded-2xl border border-amber-300/50 bg-amber-400/10 text-amber-100 py-3 font-bold">
+              Deposit or withdraw in Alpaca ↗
+            </a>
+          )}
+          <p className="mt-1.5 text-[11px] text-slate-500">Money moves in Alpaca's own app; MarketPlayground never touches it. Come back here and your balance updates.</p>
+          <RealHoldings broker={b} />
+          {b.mode !== 'keys' && <button onClick={() => disconnectBroker().catch((e) => setErr(e.message))} className="mt-3 text-xs text-slate-400 underline">Disconnect</button>}
         </>
       ) : b.pilot === false ? (
         <p className="mt-2 text-sm text-slate-300">Real money is in a small private pilot right now.</p>

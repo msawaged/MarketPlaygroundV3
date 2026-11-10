@@ -823,6 +823,33 @@ def option_iv(underlying: str, kind: str, strike: float, expiration: date) -> Op
     return best[2]
 
 
+def option_quote(symbol: str) -> Optional[dict]:
+    """Latest bid/ask for one listed option contract (OCC symbol), from Alpaca's options data. None when unavailable.
+    The free 'indicative' feed can lag the real market a little; real orders are LIMIT orders for that reason."""
+    try:
+        r = _session.get(f"{_data_base()}/v1beta1/options/quotes/latest", headers=_headers(), timeout=10,
+                         params={"symbols": symbol.upper(), "feed": os.getenv("ALPACA_OPTIONS_FEED", "indicative")})
+        if r.status_code != 200:
+            return None
+        q = ((r.json() or {}).get("quotes") or {}).get(symbol.upper()) or {}
+        bid, ask = float(q.get("bp") or 0), float(q.get("ap") or 0)
+        if bid <= 0 and ask <= 0:
+            return None
+        return {"bid": bid, "ask": ask, "mid": round((bid + ask) / 2, 4) if bid > 0 and ask > 0 else (ask or bid), "t": q.get("t")}
+    except Exception:
+        return None
+
+
+def parse_occ(symbol: str) -> Optional[dict]:
+    """'NVDA261219C00150000' -> {'underlying': 'NVDA', 'expiration': date(2026,12,19), 'type': 'call', 'strike': 150.0}"""
+    m = _OCC.match((symbol or "").upper())
+    if not m:
+        return None
+    y = m.group(2)
+    return {"underlying": m.group(1), "expiration": date(2000 + int(y[:2]), int(y[2:4]), int(y[4:6])),
+            "type": "call" if m.group(3) == "C" else "put", "strike": int(m.group(4)) / 1000.0}
+
+
 _state_cache: dict[str, dict] = {}
 
 

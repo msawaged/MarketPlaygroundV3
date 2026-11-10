@@ -82,3 +82,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Nightly run OK. gbm_adj_aug_mix passes `_passes` but waits on live_check (0/300 real-time calls at 30 days). Docs
   only: docs/brain_upgrades.md (2026-11-09 night check) incl. a proposal (point-in-time baseline) left for Murad.
 - Note from the polish walk respected: keep ad-hoc prod SQL small (I only read kv_cache rows tonight).
+## 2026-11-10 (build chat with Murad: personal real-money + options + public journey)
+- Murad asked for real-money trading for HIS OWN account only (pre-launch), options included, and a public
+  "watch my journey" record for IG/TikTok. Still OFF in production until he sets env vars himself:
+  MP_REAL_MONEY=on, MP_BROKER_ENV=live, MP_BROKER_KEY_ID / MP_BROKER_SECRET_KEY (his live Alpaca keys; separate from
+  ALPACA_API_KEY which stays market-data only), MP_REAL_MONEY_PILOT=<his email>, MP_JOURNEY_PUBLIC=on.
+  Optional MP_JOURNEY_SHOW_DOLLARS=on (default: percentages only), MP_MAX_ORDER_USD (default 1000).
+- brokerage.py: "keys mode" requires a non-empty pilot list (empty = nobody, never everyone). preview_option (single
+  listed call/put, buy to open, LIMIT, cap + options buying power, closest listed contract), preview_close (sell what
+  you hold only; no shorts / naked options), positions, orders (+ _sync of fills), journey (FIFO lots via build_lots,
+  vs SPY at preview time). broker_orders.request is now {"order", "meta"}; place() still reads old flat rows.
+- Routes: /v4/broker/preview_option, /preview_close, /positions, /orders, public /v4/journey. market.option_quote,
+  market.parse_occ. Frontend: RealMoneySheet (stock/option/close modes, portalled to body), StrategyCard real-money
+  button for single-leg Long Call/Long Put, AccountPage holdings + Sell + "Deposit or withdraw in Alpaca" link
+  (Alpaca's Trading API can't move money), new public /journey page. No spreads yet. Don't open this to other users
+  without Murad + a securities lawyer (adviser question discussed with him).

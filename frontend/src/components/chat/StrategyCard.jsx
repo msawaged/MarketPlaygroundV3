@@ -212,6 +212,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const isOptions = model?.kind === 'options';
   const avoid = model?.kind === 'avoid';
   const legs = pick.trade?.trade_legs || [];
+  // Real money handles single listed calls/puts only (no spreads yet): one "Buy" option leg with a date.
+  const realLeg = legs.length === 1 && legs[0].option_type && String(legs[0].action).toLowerCase() === 'buy' && legs[0].expiration && legs[0].strike_price
+    ? legs[0] : null;
   const skey = `${pick.pick_id}${useAlt[pick.pick_id] && basePick.alt ? ':alt' : ''}`;
   const st = status[skey];
   const track = pick.track_record;
@@ -623,7 +626,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               {broker.env === 'live' ? 'Invest real money in' : 'Buy in my Alpaca account (practice side):'} {pick.ticker}
             </button>
           )}
-          <RealMoneySheet open={realOpen} onClose={() => setRealOpen(false)} pick={pick} beliefId={data.belief_id} defaultAmount={amount} broker={broker} />
+          {broker?.enabled && broker?.connected && broker?.options && realLeg && (
+            <button onClick={() => setRealOpen(true)} className="w-full rounded-lg py-3 text-sm font-bold border border-amber-300/50 bg-amber-400/10 text-amber-100 hover:border-amber-200">
+              {broker.env === 'live' ? 'Buy this option with real money' : 'Buy this option in my Alpaca account (practice side)'}
+            </button>
+          )}
+          <RealMoneySheet open={realOpen} onClose={() => setRealOpen(false)} pick={pick} beliefId={data.belief_id} defaultAmount={amount} broker={broker} leg={realLeg} />
 
           {/* Variations + share */}
           <div className="grid grid-cols-3 gap-2 pt-1">
