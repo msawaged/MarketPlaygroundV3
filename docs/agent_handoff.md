@@ -121,3 +121,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   verdict for a pick; price_check writes it when a pick_id is passed). Brain: once option_vol_daily has history, test
   "cheap/expensive" against graded outcomes through the normal gates; don't use it in rankings before that.
 - Frontend: chat/PriceCheck.jsx on option idea cards ("Is this a fair price?", loads on tap).
+- (same day) Price check fixes found on live AAPL data: cheap/expensive uses AT-THE-MONEY IV from a chain around the
+  stock price (far strikes carry smile/skew IV; that's explained separately, never called "expensive"); parity is only
+  judged while the market is open (overnight the stock's last trade and option quotes are from different moments).
+  Next (not built): real fills vs preview estimates (broker_orders est_price vs filled_avg_price) feeding a
+  spread/slippage model for practice grading, once real trades exist.
