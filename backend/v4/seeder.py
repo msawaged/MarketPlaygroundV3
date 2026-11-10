@@ -374,6 +374,11 @@ def main() -> None:
         print("seeding disabled (MP_SEED_ENABLED)")
         return
     if args.mode == "auto":
+        try:  # hourly second opinion on the real-money exit watcher (alerts the owner if it's silent)
+            from . import exits
+            print("exits watchdog:", exits.watchdog())
+        except Exception as e:
+            print(f"exits watchdog failed: {e}")
         print(json.dumps(auto_with_health(), indent=2, default=str))
         return
     print(json.dumps(run(args.mode, args.n, args.generate, args.years, args.concurrency, args.max_usd, args.model), indent=2))

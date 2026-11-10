@@ -9,7 +9,7 @@ import {
   resendVerification, forgotPassword,
   passkeySupported, biometricName, passkeyStatus, addPasskey, loginWithPasskey, removePasskeys, passkeyCancelled,
 } from '../lib/auth';
-import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions, getOrders } from '../lib/broker';
+import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions, getOrders, getExits, cancelExit } from '../lib/broker';
 import RealMoneySheet from './chat/RealMoneySheet';
 import WhatsNew from './WhatsNew';
 import AlertsCard from './AlertsCard';
@@ -207,10 +207,14 @@ function RealHoldings({ broker }) {
   const [ords, setOrds] = useState(null);
   const [selling, setSelling] = useState(null);
   const [err, setErr] = useState(null);
+  const [exits, setExits] = useState([]);
   const load = () => {
     getPositions().then(setPos).catch((e) => setErr(e.message));
     getOrders().then(setOrds).catch(() => setOrds([]));
+    getExits().then(setExits).catch(() => setExits([]));
   };
+  const live = (sym) => exits.filter((x) => x.symbol === sym && ['at_alpaca', 'waiting_fill', 'armed', 'tp_sent'].includes(x.status));
+  const money = (v) => (v == null ? '—' : `$${Number(v).toFixed(2)}`);
   useEffect(load, []);
   const pct = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
   return (
@@ -229,6 +233,17 @@ function RealHoldings({ broker }) {
                   ${p.market_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ·{' '}
                   <span className={p.unrealized_plpc >= 0 ? 'text-green-300' : 'text-red-300'}>{pct(p.unrealized_plpc)}</span> since you bought
                 </div>
+                {live(p.symbol).map((x) => (
+                  <div key={x.id} className="mt-1 text-[11px] text-slate-400">
+                    {x.tp_price != null && <span className="text-green-300">Take profit {money(x.tp_price)}</span>}
+                    {x.tp_price != null && x.sl_price != null && ' · '}
+                    {x.sl_price != null && <span className="text-red-300">Max loss {money(x.sl_price)}</span>}
+                    {x.status === 'waiting_fill' && ' · set when the buy fills'}
+                    {x.held_at === 'alpaca' ? ' · held at Alpaca' : ' · stop at Alpaca, take-profit watched'}
+                    {x.kind === 'option' && <button onClick={() => cancelExit(x.id).then(load).catch((e) => setErr(e.message))} className="ml-1 underline">turn off</button>}
+                    {x.note && <div className="text-amber-200/80">{x.note}</div>}
+                  </div>
+                ))}
               </div>
               <button onClick={() => setSelling(p)} className="shrink-0 rounded-xl border border-slate-600 px-3 py-1.5 text-xs font-bold hover:border-red-300">Sell</button>
             </li>

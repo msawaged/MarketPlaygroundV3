@@ -2357,6 +2357,8 @@ def test_personal_keys_mode_options_close_and_journey(monkeypatch):
             return R(200, {"symbol": s, "qty": str(held[s])}) if s in held else R(404, {"message": "position does not exist"})
         if path == "/v2/orders" and method == "POST":
             sent.append(json); return R(200, {"id": f"o{len(sent)}", "status": "accepted"})
+        if path == "/v2/orders" and method == "GET":
+            return R(200, [])
         if path.startswith("/v2/orders/"):
             n = int(path.split("o")[-1]); o = sent[n - 1]
             px = {"buy": 2.5, "sell": 4.0}[o["side"]] if o["symbol"] == sym else 100.0
@@ -2408,3 +2410,80 @@ def test_build_lots_fifo_partial():
         {"symbol": "A", "side": "sell", "qty": 15, "price": 30, "at": "3", "kind": "stock"},
     ])
     assert [(l["qty"], l["entry"], l["exit"]) for l in lots] == [(10, 10, 30), (5, 20, 30), (5, 20, None)]
+
+
+def test_exits_stock_bracket_and_option_watcher(monkeypatch):
+    from backend.v4 import brokerage, exits
+    c = _client()
+    tok = c.post("/v4/auth/signup", json={"email": "exits@example.com", "password": "long enough pw"}).json()["token"]
+    h = {"Authorization": f"Bearer {tok}"}
+    monkeypatch.setenv("MP_REAL_MONEY", "on"); monkeypatch.setenv("MP_BROKER_ENV", "live")
+    monkeypatch.setenv("MP_BROKER_KEY_ID", "kid"); monkeypatch.setenv("MP_BROKER_SECRET_KEY", "ksec")
+    monkeypatch.setenv("MP_REAL_MONEY_PILOT", "exits@example.com"); monkeypatch.setenv("MP_MAX_ORDER_USD", "1000")
+    sym = "WINR261218C00100000"
+    orders, held, quote = {}, {}, {"bid": 2.4, "ask": 2.5}
+
+    class R:
+        def __init__(self, code, js): self.status_code, self._js, self.content, self.text = code, js, b"x", ""
+        def json(self): return self._js
+
+    def fake_request(method, url, headers=None, json=None, timeout=None, params=None):
+        path = url.split("alpaca.markets")[1]
+        if path == "/v2/account":
+            return R(200, {"buying_power": "5000", "options_buying_power": "5000", "equity": "5000"})
+        if path == "/v2/options/contracts":
+            return R(200, {"option_contracts": [{"symbol": sym, "strike_price": "100", "expiration_date": "2026-12-18"}]})
+        if path.startswith("/v2/positions/"):
+            s = path.split("/")[-1]
+            return R(200, {"qty": str(held[s])}) if held.get(s) else R(404, {})
+        if path == "/v2/orders" and method == "POST":
+            oid = f"o{len(orders) + 1}"; orders[oid] = dict(json, id=oid, status="accepted"); return R(200, orders[oid])
+        if path.startswith("/v2/orders/"):
+            oid = path.split("/")[-1]
+            if method == "DELETE":
+                orders[oid]["status"] = "canceled"; return R(204, {})
+            return R(200, orders[oid])
+        raise AssertionError(path)
+    monkeypatch.setattr(brokerage.requests, "request", fake_request)
+    monkeypatch.setattr(market, "option_quote", lambda s: dict(quote, mid=(quote["bid"] + quote["ask"]) / 2))
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(market, "is_open", lambda: True)
+    monkeypatch.setattr(brokerage, "_spy", lambda: 500.0)
+
+    # stocks: whole shares, bracket at Alpaca
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 10, "take_profit_pct": 0.2, "max_loss_pct": 0.1}, headers=h).status_code == 400
+    pv = c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 1000, "take_profit_pct": 0.2, "max_loss_pct": 0.1}, headers=h).json()
+    assert "est_price" in pv, pv
+    px = pv["est_price"]; n = int(1000 // px)
+    assert pv["exits"]["tp_price"] == round(px * 1.2, 2) and pv["amount_usd"] == round(n * px, 2)
+    c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h)
+    o = orders["o1"]
+    assert o["order_class"] == "bracket" and o["qty"] == str(n) and "notional" not in o and o["time_in_force"] == "gtc"
+    assert o["stop_loss"]["stop_price"] == f"{px * 0.9:.2f}"
+    assert c.post("/v4/broker/preview", json={"ticker": "WINR", "amount_usd": 100, "max_loss_pct": 0.99}, headers=h).status_code == 400
+
+    # options: buy with exits -> watcher arms a stop, take-profit sells at the bid
+    pv = c.post("/v4/broker/preview_option", json={"underlying": "WINR", "option_type": "call", "strike": 100, "expiration": "2026-12-18",
+                                                   "contracts": 2, "take_profit_pct": 0.5, "max_loss_pct": 0.4}, headers=h).json()
+    assert "renewed each trading morning" in pv["plain"]
+    c.post("/v4/broker/order", json={"preview_id": pv["preview_id"], "confirm": True}, headers=h)
+    buy = "o2"
+    exits.tick(); assert db.query_one("SELECT status FROM broker_exits WHERE kind='option'")["status"] == "waiting_fill"
+    orders[buy].update(status="filled", filled_qty="2", filled_avg_price="2.00"); held[sym] = 2
+    exits.tick()
+    ex = db.query_one("SELECT * FROM broker_exits WHERE kind='option'")
+    assert ex["status"] == "armed" and ex["tp_price"] == 3.0 and ex["sl_price"] == 1.2
+    stop = orders[ex["stop_order"]]
+    assert stop["type"] == "stop" and stop["stop_price"] == "1.20" and stop["qty"] == "2" and stop["side"] == "sell"
+    exits.tick(); assert len(orders) == 3  # a live stop for today is left alone
+    quote.update(bid=3.1, ask=3.2)
+    exits.tick(); assert orders[ex["stop_order"]]["status"] == "canceled" and len(orders) == 3  # free the contracts first
+    exits.tick()
+    ex = db.query_one("SELECT * FROM broker_exits WHERE kind='option'")
+    sell = orders[ex["sell_order"]]
+    assert ex["status"] == "tp_sent" and sell["type"] == "limit" and sell["limit_price"] == "3.10" and sell["qty"] == "2"
+    sell.update(status="filled", filled_avg_price="3.10")
+    exits.tick(); assert db.query_one("SELECT status FROM broker_exits WHERE kind='option'")["status"] == "done"
+    # restart safety: a second process can't tick while the lease is fresh
+    monkeypatch.setattr(exits, "_OWNER", "someone-else")
+    assert exits.tick() == {"ran": False}

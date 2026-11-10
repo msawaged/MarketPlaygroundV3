@@ -16,6 +16,11 @@ export default function RealMoneySheet({ open, onClose, pick, beliefId, defaultA
   const [amount, setAmount] = useState(Math.min(defaultAmount, cap));
   const [contracts, setContracts] = useState(1);
   const [limit, setLimit] = useState('');
+  // Exits, in whole percent. Starting values are only a starting point; the person sets them.
+  const [useExits, setUseExits] = useState(false);
+  const [tpPct, setTpPct] = useState(mode === 'option' ? 50 : 20);
+  const [slPct, setSlPct] = useState(mode === 'option' ? 40 : 10);
+  const exits = useExits ? { tp: Number(tpPct) > 0 ? Number(tpPct) / 100 : null, sl: Number(slPct) > 0 ? Number(slPct) / 100 : null } : null;
   const [pv, setPv] = useState(null);
   const [ok, setOk] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -29,11 +34,11 @@ export default function RealMoneySheet({ open, onClose, pick, beliefId, defaultA
     setBusy(true); setErr(null);
     try {
       if (mode === 'option') {
-        setPv(await previewOptionOrder({ leg, underlying: pick.ticker, contracts, limitPrice: limit || null, beliefId, pickId: pick.pick_id }));
+        setPv(await previewOptionOrder({ leg, underlying: pick.ticker, contracts, limitPrice: limit || null, beliefId, pickId: pick.pick_id, exits }));
       } else if (mode === 'close') {
         setPv(await previewClose({ symbol: position.symbol, limitPrice: limit || null }));
       } else {
-        setPv(await previewOrder({ ticker: pick.ticker, amount: Number(amount), beliefId, pickId: pick.pick_id }));
+        setPv(await previewOrder({ ticker: pick.ticker, amount: Number(amount), beliefId, pickId: pick.pick_id, exits }));
       }
     } catch (e) { setErr(e.message); } finally { setBusy(false); }
   };
@@ -75,6 +80,7 @@ export default function RealMoneySheet({ open, onClose, pick, beliefId, defaultA
                     ? "It's a limit order: it fills only at your price or better, and is cancelled at the close if it doesn't."
                     : 'It fills at the market price.'} You'll see it under Account → Your brokerage.
                 </div>
+                {done.warning && <div className="mt-2 rounded-2xl bg-amber-400/10 border border-amber-300/30 px-3.5 py-2.5 text-sm text-amber-100">{done.warning}</div>}
                 <button onClick={close} className="mt-4 w-full rounded-2xl bg-blue-600 py-3 font-bold">Done</button>
               </div>
             ) : !pv ? (
@@ -108,6 +114,33 @@ export default function RealMoneySheet({ open, onClose, pick, beliefId, defaultA
                     )}
                   </>
                 )}
+                {mode !== 'close' && (
+                  <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-3">
+                    <label className="flex items-center gap-3 text-sm font-semibold">
+                      <input type="checkbox" checked={useExits} onChange={(e) => setUseExits(e.target.checked)} className="w-5 h-5" />
+                      Add take-profit and max loss
+                    </label>
+                    {useExits && (
+                      <>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <label className="block">
+                            <span className="text-[11px] text-slate-400">Take profit at +%</span>
+                            <input type="number" inputMode="decimal" min="1" max="1000" value={tpPct} onChange={(e) => setTpPct(e.target.value)} className={input} />
+                          </label>
+                          <label className="block">
+                            <span className="text-[11px] text-slate-400">Max loss −%</span>
+                            <input type="number" inputMode="decimal" min="1" max="95" value={slPct} onChange={(e) => setSlPct(e.target.value)} className={input} />
+                          </label>
+                        </div>
+                        <p className="mt-2 text-[11px] text-slate-400 leading-snug">
+                          {mode === 'option'
+                            ? 'Max loss: a stop order waits at Alpaca, renewed each trading morning. Take profit: MarketPlayground watches the price and sells, usually within seconds in market hours. Leave a box at 0 to skip it.'
+                            : 'Both wait at Alpaca, even if MarketPlayground is offline. Needs whole shares, so the amount rounds down. Leave a box at 0 to skip it.'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
                 {broker?.account && mode !== 'close' && (
                   <p className="text-xs text-slate-400">{mode === 'option' ? 'Options buying power' : 'Buying power'}: {usd(mode === 'option' ? (broker.account.options_buying_power ?? broker.account.buying_power) : broker.account.buying_power)}</p>
                 )}
@@ -126,6 +159,12 @@ export default function RealMoneySheet({ open, onClose, pick, beliefId, defaultA
                     <div className="rounded-2xl bg-slate-800/70 border border-slate-700 p-3"><div className="text-[11px] text-slate-400">{sell ? 'Least per share' : 'Most per share'}</div><div className="font-bold">{usd(pv.limit_price)}</div><div className="text-[11px] text-slate-500">bid {usd(pv.bid)} · ask {usd(pv.ask)}</div></div>
                     {!sell && <div className="rounded-2xl bg-slate-800/70 border border-slate-700 p-3"><div className="text-[11px] text-slate-400">Most you can lose</div><div className="font-bold text-red-300">{usd(pv.max_loss_usd)}</div></div>}
                     {!sell && <div className="rounded-2xl bg-slate-800/70 border border-slate-700 p-3"><div className="text-[11px] text-slate-400">Breakeven at expiration</div><div className="font-bold">{usd(pv.breakeven)}</div></div>}
+                  </div>
+                )}
+                {pv.exits && (
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {pv.exits.tp_price != null && <div className="rounded-2xl bg-green-950/30 border border-green-500/30 p-3"><div className="text-[11px] text-green-200/80">Take profit{pv.kind === 'option' ? ' (about)' : ''}</div><div className="font-bold text-green-200">{usd(pv.exits.tp_price)} · +{Math.round(pv.exits.tp_pct * 100)}%</div></div>}
+                    {pv.exits.sl_price != null && <div className="rounded-2xl bg-red-950/30 border border-red-500/30 p-3"><div className="text-[11px] text-red-200/80">Max loss{pv.kind === 'option' ? ' (about)' : ''}</div><div className="font-bold text-red-200">{usd(pv.exits.sl_price)} · −{Math.round(pv.exits.sl_pct * 100)}%</div></div>}
                   </div>
                 )}
                 <div className="rounded-2xl bg-slate-800/70 border border-slate-700 p-3.5 text-sm text-slate-100 leading-relaxed">{pv.plain}</div>

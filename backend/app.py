@@ -66,6 +66,8 @@ def _start_notify() -> None:
     feeder.start_background()
     lineages.bootstrap_background()
     research.run_background()
+    from backend.v4 import exits
+    exits.start_background()
 
 # === CORS ===
 # Local dev servers, the GitHub Pages landing page, any Render-hosted frontend,

@@ -273,6 +273,8 @@ class PreviewIn(BaseModel):
     amount_usd: float
     belief_id: Optional[str] = None
     pick_id: Optional[str] = None
+    take_profit_pct: Optional[float] = None
+    max_loss_pct: Optional[float] = None
 
 
 class PlaceIn(BaseModel):
@@ -320,7 +322,8 @@ async def broker_disconnect(authorization: Optional[str] = Header(None)):
 
 @router.post("/broker/preview")
 async def broker_preview(body: PreviewIn, authorization: Optional[str] = Header(None)):
-    return await _broker_call(brokerage.preview, _token(authorization), body.ticker, body.side, body.amount_usd, body.belief_id, body.pick_id)
+    return await _broker_call(brokerage.preview, _token(authorization), body.ticker, body.side, body.amount_usd, body.belief_id,
+                              body.pick_id, body.take_profit_pct, body.max_loss_pct)
 
 
 @router.post("/broker/order")
@@ -337,6 +340,8 @@ class OptionPreviewIn(BaseModel):
     limit_price: Optional[float] = None
     belief_id: Optional[str] = None
     pick_id: Optional[str] = None
+    take_profit_pct: Optional[float] = None
+    max_loss_pct: Optional[float] = None
 
 
 class ClosePreviewIn(BaseModel):
@@ -348,7 +353,8 @@ class ClosePreviewIn(BaseModel):
 @router.post("/broker/preview_option")
 async def broker_preview_option(body: OptionPreviewIn, authorization: Optional[str] = Header(None)):
     return await _broker_call(brokerage.preview_option, _token(authorization), body.underlying, body.option_type, body.strike,
-                              body.expiration, body.contracts, body.limit_price, body.belief_id, body.pick_id)
+                              body.expiration, body.contracts, body.limit_price, body.belief_id, body.pick_id,
+                              body.take_profit_pct, body.max_loss_pct)
 
 
 @router.post("/broker/preview_close")
@@ -364,6 +370,18 @@ async def broker_positions(authorization: Optional[str] = Header(None)):
 @router.get("/broker/orders")
 async def broker_orders(authorization: Optional[str] = Header(None)):
     return {"orders": await _broker_call(brokerage.orders, _token(authorization))}
+
+
+@router.get("/broker/exits")
+async def broker_exits(authorization: Optional[str] = Header(None)):
+    from backend.v4 import exits
+    return {"exits": await _broker_call(lambda t: exits.for_account(brokerage._require(t)), _token(authorization))}
+
+
+@router.post("/broker/exits/{eid}/cancel")
+async def broker_exit_cancel(eid: str, authorization: Optional[str] = Header(None)):
+    from backend.v4 import exits
+    return await _broker_call(lambda t: exits.cancel(brokerage._require(t), eid), _token(authorization))
 
 
 @router.get("/journey")

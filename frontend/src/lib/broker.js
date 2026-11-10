@@ -31,8 +31,11 @@ export async function disconnectBroker() {
   return refreshBroker();
 }
 
-export function previewOrder({ ticker, side = 'buy', amount, beliefId, pickId }) {
-  return request('/v4/broker/preview', { method: 'POST', body: { ticker, side, amount_usd: amount, belief_id: beliefId, pick_id: pickId } });
+// exits: { tp, sl } as fractions (0.2 = +20% / -20%), or null
+const exitBody = (exits) => ({ take_profit_pct: exits?.tp || null, max_loss_pct: exits?.sl || null });
+
+export function previewOrder({ ticker, side = 'buy', amount, beliefId, pickId, exits }) {
+  return request('/v4/broker/preview', { method: 'POST', body: { ticker, side, amount_usd: amount, belief_id: beliefId, pick_id: pickId, ...exitBody(exits) } });
 }
 
 export function placeOrder(previewId) {
@@ -40,11 +43,11 @@ export function placeOrder(previewId) {
 }
 
 // Options: buy ONE listed call or put with a limit price (the server finds the closest listed contract).
-export function previewOptionOrder({ leg, underlying, contracts = 1, limitPrice, beliefId, pickId }) {
+export function previewOptionOrder({ leg, underlying, contracts = 1, limitPrice, beliefId, pickId, exits }) {
   return request('/v4/broker/preview_option', { method: 'POST', body: {
     underlying, option_type: String(leg.option_type || '').toLowerCase(), strike: Number(leg.strike_price),
     expiration: String(leg.expiration || '').slice(0, 10), contracts: Number(contracts),
-    limit_price: limitPrice ? Number(limitPrice) : null, belief_id: beliefId, pick_id: pickId,
+    limit_price: limitPrice ? Number(limitPrice) : null, belief_id: beliefId, pick_id: pickId, ...exitBody(exits),
   } });
 }
 
@@ -56,3 +59,5 @@ export function previewClose({ symbol, qty, limitPrice }) {
 export async function getPositions() { return (await request('/v4/broker/positions')).positions || []; }
 export async function getOrders() { return (await request('/v4/broker/orders')).orders || []; }
 export function getJourney() { return request('/v4/journey'); }
+export async function getExits() { return (await request('/v4/broker/exits')).exits || []; }
+export function cancelExit(id) { return request(`/v4/broker/exits/${id}/cancel`, { method: 'POST' }); }

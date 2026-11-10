@@ -208,8 +208,9 @@ def _alpaca(acc: dict, method: str, path: str, json_body: Optional[dict] = None,
 
 
 def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, belief_id: Optional[str] = None,
-            pick_id: Optional[str] = None) -> dict:
+            pick_id: Optional[str] = None, tp_pct: Optional[float] = None, sl_pct: Optional[float] = None) -> dict:
     acc = _require(token)
+    tp, sl = _exit_pcts(tp_pct, sl_pct)
     side = (side or "").lower()
     if side not in ("buy", "sell"):
         raise BrokerError("Side must be buy or sell.")
@@ -236,17 +237,86 @@ def preview(token: Optional[str], ticker: str, side: str, amount_usd: float, bel
     pid = f"pv-{uuid.uuid4().hex[:16]}"
     order = {"symbol": ticker.upper(), "side": side, "type": "market", "time_in_force": "day",
              "notional": f"{amount:.2f}", "client_order_id": f"mp-{pid}"}
-    _save_preview(pid, acc, ticker.upper(), side, amount, price, belief_id, pick_id, order,
-                  {"kind": "stock", "underlying": ticker.upper()})
+    meta = {"kind": "stock", "underlying": ticker.upper(), "symbol": ticker.upper(), "est_price": price}
+    exits_out = None
+    if (tp or sl) and side == "buy":
+        # Exits live at Alpaca as a bracket (both) or OTO (one) order. Alpaca needs whole shares for those.
+        shares = int(amount // price) if price else 0
+        if shares < 1:
+            raise BrokerError(f"Take-profit and max-loss need at least one whole share. ${amount:,.2f} doesn't buy one "
+                              f"{ticker.upper()} share (about ${price:,.2f}).")
+        amount = round(shares * price, 2)
+        nd = 2 if price >= 1 else 4
+        order = {"symbol": ticker.upper(), "side": "buy", "type": "market", "qty": str(shares), "time_in_force": "gtc",
+                 "order_class": "bracket" if (tp and sl) else "oto", "client_order_id": f"mp-{pid}"}
+        exits_out = {"tp_pct": tp, "sl_pct": sl}
+        if tp:
+            exits_out["tp_price"] = round(price * (1 + tp), nd)
+            order["take_profit"] = {"limit_price": f"{exits_out['tp_price']:.{nd}f}"}
+        if sl:
+            exits_out["sl_price"] = round(price * (1 - sl), nd)
+            order["stop_loss"] = {"stop_price": f"{exits_out['sl_price']:.{nd}f}"}
+        meta.update(qty=shares, exits=exits_out)
+        warnings.append(f"With exits, this buys {shares} whole share{'s' if shares != 1 else ''} (about ${amount:,.2f}). "
+                        "Both exits wait at Alpaca until one fills, even if MarketPlayground is offline; "
+                        "they stay until you cancel them in Alpaca's app.")
+    _save_preview(pid, acc, ticker.upper(), side, amount, price, belief_id, pick_id, order, meta)
+    exit_txt = ""
+    if exits_out:
+        parts = []
+        if tp:
+            parts.append(f"sell automatically at ${exits_out['tp_price']:,.2f} (+{tp * 100:g}%)")
+        if sl:
+            parts.append(f"at ${exits_out['sl_price']:,.2f} (-{sl * 100:g}%) to cap the loss")
+        exit_txt = " Then Alpaca will " + " or ".join(parts) + ". A fast drop can sell below the stop price."
     return {
+        "exits": exits_out,
         "preview_id": pid, "env": env(), "ticker": ticker.upper(), "name": info.get("name"), "side": side,
         "amount_usd": amount, "est_price": price, "est_shares": round(amount / price, 4) if price else None,
         "buying_power": bp, "expires_in": PREVIEW_SECONDS, "warnings": warnings,
         "market_open": bool(clk.get("is_open")), "next_open": clk.get("next_open"),
         "plain": (f"You'll {'buy' if side == 'buy' else 'sell'} about ${amount:,.2f} of {ticker.upper()} "
                   f"(~{amount / price:.4f} shares at about ${price:,.2f}) in your own Alpaca account. "
-                  "The final price can differ a little. You can lose money."),
+                  "The final price can differ a little. You can lose money.") + exit_txt,
     }
+
+
+def _exit_pcts(tp_pct: Optional[float], sl_pct: Optional[float]) -> tuple[Optional[float], Optional[float]]:
+    """Fractions (0.5 = 50%). Take profit 1%..1000%; max loss 1%..95%."""
+    tp = float(tp_pct) if tp_pct else None
+    sl = float(sl_pct) if sl_pct else None
+    if tp is not None and not (0.01 <= tp <= 10):
+        raise BrokerError("Take profit must be between +1% and +1000%.")
+    if sl is not None and not (0.01 <= sl <= 0.95):
+        raise BrokerError("Max loss must be between 1% and 95%.")
+    return tp, sl
+
+
+def _clear_exits_for_sale(acc: dict, symbol: str) -> None:
+    """Selling by hand: open stop/take-profit sells hold the shares or contracts, so cancel them first and turn the
+    exits off (the person is closing the position themselves)."""
+    try:
+        open_orders = _alpaca(acc, "GET", "/v2/orders", params={"status": "open", "symbols": symbol, "nested": "true"}) or []
+    except BrokerError:
+        open_orders = []
+    flat = []
+    for o in open_orders if isinstance(open_orders, list) else []:
+        flat.append(o)
+        flat.extend(o.get("legs") or [])
+    cancelled = 0
+    for o in flat:
+        if o.get("symbol") == symbol and o.get("side") == "sell" and o.get("id"):
+            try:
+                _alpaca(acc, "DELETE", f"/v2/orders/{o['id']}")
+                cancelled += 1
+            except BrokerError:
+                pass
+    db.execute("UPDATE broker_exits SET status = 'cancelled', note = ?, updated_at = ? WHERE account_id = ? AND symbol = ? "
+               "AND status IN ('at_alpaca','waiting_fill','armed','tp_sent')",
+               ("Replaced by your own sale.", _now().isoformat(), acc["id"], symbol))
+    if cancelled:
+        import time as _t
+        _t.sleep(1.5)  # let Alpaca release the held shares/contracts
 
 
 def _when(iso: Optional[str]) -> str:
@@ -275,11 +345,20 @@ def place(token: Optional[str], preview_id: str, confirm: bool) -> dict:
         raise BrokerError("That order was already sent.", 409)  # two taps at once: only one goes through
     try:
         req = db.loads(row["request"]) or {}
+        if row["side"] == "sell":
+            _clear_exits_for_sale(acc, row["ticker"])
         res = _alpaca(acc, "POST", "/v2/orders", req.get("order", req))
     except BrokerError as e:
         db.execute("UPDATE broker_orders SET status = 'rejected', response = ? WHERE id = ?", (db.dumps({"error": str(e)}), preview_id))
         raise
     db.execute("UPDATE broker_orders SET status = 'sent', response = ? WHERE id = ?", (db.dumps(res), preview_id))
+    try:
+        from . import exits
+        exits.on_placed(acc, req.get("meta") or {}, res)
+    except Exception as e:  # the order is already at Alpaca; say so rather than fail
+        print(f"[broker] exits not recorded for {preview_id}: {e}")
+        return {"status": "sent", "order_id": res.get("id"), "alpaca_status": res.get("status"), "env": env(),
+                "warning": "The order was sent, but its take-profit/max-loss couldn't be saved. Set them in Alpaca's app."}
     return {"status": "sent", "order_id": res.get("id"), "alpaca_status": res.get("status"), "env": env()}
 
 
@@ -343,9 +422,10 @@ def _find_contract(acc: dict, underlying: str, kind: str, strike: float, expirat
 
 def preview_option(token: Optional[str], underlying: str, option_type: str, strike: float, expiration: str,
                    contracts: int = 1, limit_price: Optional[float] = None, belief_id: Optional[str] = None,
-                   pick_id: Optional[str] = None) -> dict:
+                   pick_id: Optional[str] = None, tp_pct: Optional[float] = None, sl_pct: Optional[float] = None) -> dict:
     """Buy to open ONE kind of listed call or put, with a limit price. The most you can lose is what you pay."""
     acc = _require(token)
+    tp, sl = _exit_pcts(tp_pct, sl_pct)
     kind = (option_type or "").lower()
     if kind not in ("call", "put"):
         raise BrokerError("Options here are single calls or puts.")
@@ -394,9 +474,25 @@ def preview_option(token: Optional[str], underlying: str, option_type: str, stri
     pid = f"pv-{uuid.uuid4().hex[:16]}"
     order = {"symbol": sym, "qty": str(qty), "side": "buy", "type": "limit", "limit_price": f"{lp:.2f}",
              "time_in_force": "day", "client_order_id": f"mp-{pid}"}
-    _save_preview(pid, acc, sym, "buy", cost, lp, belief_id, pick_id, order,
-                  {"kind": "option", "underlying": u, "type": kind, "strike": real_k, "expiration": real_exp.isoformat(), "qty": qty})
+    meta = {"kind": "option", "underlying": u, "symbol": sym, "type": kind, "strike": real_k, "expiration": real_exp.isoformat(),
+            "qty": qty, "est_price": lp}
+    exits_out, exit_txt = None, ""
+    if tp or sl:
+        exits_out = {"tp_pct": tp, "sl_pct": sl, "tp_price": round(lp * (1 + tp), 2) if tp else None,
+                     "sl_price": max(0.01, round(lp * (1 - sl), 2)) if sl else None}
+        meta["exits"] = {"tp_pct": tp, "sl_pct": sl}  # prices are set from the real fill
+        parts = []
+        if sl:
+            parts.append(f"a max-loss stop at about ${exits_out['sl_price']:.2f} (-{sl * 100:g}%) waits at Alpaca, renewed each "
+                         "trading morning (option orders only last a day)")
+        if tp:
+            parts.append(f"MarketPlayground watches for about ${exits_out['tp_price']:.2f} (+{tp * 100:g}%) and sells when buyers "
+                         "pay that, usually within seconds during market hours")
+        exit_txt = " After it fills, " + "; ".join(parts) + ". Exact levels are set from your real fill price."
+        warnings.append("Option stops sell at the market once triggered, so a fast drop or a wide gap can sell for less than the stop price.")
+    _save_preview(pid, acc, sym, "buy", cost, lp, belief_id, pick_id, order, meta)
     return {
+        "exits": exits_out,
         "preview_id": pid, "env": env(), "kind": "option", "contract": sym, "label": option_label(sym, qty),
         "side": "buy", "contracts": qty, "limit_price": lp, "bid": q["bid"], "ask": q["ask"], "total_usd": cost,
         "amount_usd": cost, "max_loss_usd": cost, "breakeven": round(be, 2), "expires_in": PREVIEW_SECONDS,
@@ -404,7 +500,7 @@ def preview_option(token: Optional[str], underlying: str, option_type: str, stri
         "plain": (f"You'll buy {option_label(sym, qty)} at up to ${lp:.2f} a share (${lp * 100:,.2f} per contract): "
                   f"${cost:,.2f} at most, in your own Alpaca account. That's also the most you can lose. "
                   f"You make money at expiration only if {u} is {'above' if kind == 'call' else 'below'} ${be:,.2f}. "
-                  "It's a limit order, so you never pay more than your limit, but it may not fill."),
+                  "It's a limit order, so you never pay more than your limit, but it may not fill.") + exit_txt,
     }
 
 

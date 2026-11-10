@@ -97,3 +97,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   button for single-leg Long Call/Long Put, AccountPage holdings + Sell + "Deposit or withdraw in Alpaca" link
   (Alpaca's Trading API can't move money), new public /journey page. No spreads yet. Don't open this to other users
   without Murad + a securities lawyer (adviser question discussed with him).
+## 2026-11-10 (build chat, later: take-profit / max-loss exits, Murad chose hybrid "C")
+- New backend/v4/exits.py + broker_exits table. Stocks: exits ride on the buy as an Alpaca bracket/OTO order (whole
+  shares, gtc), nothing watched. Options: max-loss = a STOP order at Alpaca re-armed each trading day (option orders are
+  day-only); take-profit watched by exits.tick() (15s in market hours), which cancels the stop and sells at the bid.
+- Restart safety: state in DB, catch-up on first tick, DB lease (`exits:lease`) so only one runner sells, heartbeat
+  `exits:beat`; exits.watchdog() runs in the web service and in the hourly seeder cron and pushes the owner if silent.
+- Runner: thread in the web service (MP_EXITS_RUNNER=web, default). Plan agreed with Murad: move to its own Render
+  background worker (`PYTHONPATH=./ python -m backend.v4.exits`, MP_EXITS_RUNNER=worker on the web service) before take-
+  profits are used regularly / before other users. Murad creates that ($7/mo); don't create paid services.
+- Selling by hand (place() with side sell) cancels open sell orders for that symbol and turns its exits off first.
+- Files: exits.py, brokerage.py (tp_pct/sl_pct on preview + preview_option, _clear_exits_for_sale), router.py
+  (/broker/exits, /broker/exits/{id}/cancel), db.py, seeder.py (watchdog), app.py, frontend RealMoneySheet, AccountPage,
+  lib/broker.js. Next agreed with Murad: option "Price check" (parity + IV vs realized vol, daily option-IV logging),
+  then a point-in-time experiment log + real fills feeding cost/slippage modelling (not P&L into rankings).
