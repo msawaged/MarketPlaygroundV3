@@ -642,6 +642,33 @@ def mad_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"mad": mad(closes, i) if i >= 0 else 0.0}
 
 
+def amihud(closes: list[float], vols: list[float], i: int, window: int = 252) -> float:
+    """Amihud (2002) illiquidity: the average daily |return| per dollar traded over the last `window` sessions up to
+    index i only, i.e. how far the price moves for each dollar of trading. Illiquid stocks have earned a premium
+    (higher later returns) to make up for being costly to trade. Stored as log(1 + 1e8 * ILLIQ) so it is
+    non-negative and not dominated by a few tiny stocks; uses our feed's volume (IEX by default, a slice of total
+    volume), which is fine for ranking stocks against each other. 0.0 without ~6 months of priced volume."""
+    if i < 1 or len(vols) != len(closes):
+        return 0.0
+    vals = []
+    for k in range(max(1, i - window + 1), i + 1):
+        a, b, v = closes[k - 1], closes[k], vols[k]
+        if a <= 0 or b <= 0 or v <= 0:
+            continue
+        vals.append(abs(b / a - 1.0) / (b * v))
+    if len(vals) < 120:
+        return 0.0
+    return max(0.0, min(15.0, math.log1p(1e8 * sum(vals) / len(vals))))
+
+
+def amihud_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"amihud": ...} using closes and volumes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    vols = daily_volumes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"amihud": amihud(closes, vols, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -744,6 +771,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "max5": max5(closes, i),
         "mom_12_7": mom_12_7(closes, i),
         "mad": mad(closes, i),
+        "amihud": amihud(closes, daily_volumes(symbol), i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

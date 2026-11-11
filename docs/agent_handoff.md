@@ -147,3 +147,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   checked. PriceCheck.jsx shows "Closest listed contract to the idea's $K · date" when the checked contract differs.
   Smile line only when strike IV differs from ATM by 2+ vol points.
   Files: backend/v4/pricecheck.py, frontend/src/components/chat/PriceCheck.jsx, tests/test_v4.py, docs/polish_log.md.
+## 2026-11-11 (daily ranker research + feature scout routine)
+- Idea 7 (moving average distance) result logged: lift -0.73%, beat 51.1%, t -2.41 (adj -0.67%, t -2.33); not a
+  candidate. Idea 8 added: Amihud (2002) illiquidity `amihud` = log(1 + 1e8 * mean |r| / dollar volume) over 252 days,
+  new feature in market.features/amihud_features, nn.make_features num, research.FEATS + DIRECTIONAL, enrich backfill
+  (as of each pick's date, closes+volumes), rule `illiquidity premium (z_amihud)`. Gate untouched.
+- New docs/feature_ideas.md (backlog of proposals for Murad and other sessions). First entry: user-stated "How sure
+  are you?" probability + personal Brier/calibration card (proposed, not built).
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.

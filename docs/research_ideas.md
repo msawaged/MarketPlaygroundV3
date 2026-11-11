@@ -231,4 +231,37 @@ the app's (52.9%).
   ridge/gbm/net.
 - **Note:** until enrich finishes backfilling older picks (~23k, 300 per hourly run, so about 3-4 days) they read
   `mad = 0`; trust the result once every graded pick has `mad`.
+- **Result (run 2026-11-10 22:56 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; checked 2026-11-11: no graded
+  pick is missing `mad`):** lift **-0.73%**, beat **51.1%**, t **-2.41**; risk-matched lift **-0.67%**, beat_adj
+  **50.9%**, t **-2.33**. The opposite of the paper: within a belief, picking the stock furthest above its 200-day
+  average (furthest below, for shorts) did *worse* than the belief's average idea, raw and risk-matched. Close to
+  "near highs (z_dist_high)" in the same run (-0.61%, t -1.67), so on our 90-day horizon stretched trends tended to
+  give some back rather than keep going. The learned ridge gives z_mad a small negative weight (-0.0023), consistent.
+  Not a ranker v2 candidate (and the reverse, -z_mad, is not tested out of sample; noted only). If backfill finished
+  only shortly before that run, the post-deploy re-run of 2026-11-11 is the clean read. Same run: app +1.49% / 53.4% /
+  t 4.54 (adj +1.24%, t 3.87); app, no look-ahead +0.53% / 52.2% / t 1.71; 12-1 momentum +0.69% / 49.5% / t 1.97;
+  frog in the pan +0.81% / 49.7% / t 2.50 (adj +0.69%, t 2.24); gbm +1.19% / 52.4% / t 3.51;
+  gbm (risk-adjusted) + app (25%) +1.89% / 52.9% / t 5.75 (adj +1.65%, t 5.20); random beat 51.0%.
+
+### 8. Illiquidity premium (Amihud)
+- **Added:** 2026-11-11
+- **Source:** Amihud (2002), "Illiquidity and Stock Returns: Cross-Section and Time-Series Effects", Journal of
+  Financial Markets 5(1), 31-56: https://www.cis.upenn.edu/~mkearns/finread/amihud.pdf ; follow-up with newer data:
+  Amihud & Noh (2021), "Illiquidity and Stock Returns II: Cross-section and Time-series Effects", Review of Financial
+  Studies 34(4), 2101-2123: https://econpapers.repec.org/RePEc:oup:rfinst:v:34:y:2021:i:4:p:2101-2123.
+- **Why:** investors want to be paid for holding stocks that are costly to trade, so stocks whose price moves a lot
+  per dollar traded (illiquid) have earned higher later returns. A slow, annual signal that fits the ~90-day hold,
+  and a different family from the momentum/trend ideas 1-3, 6 and 7 and the risk ideas 4-5. Our candidates are
+  mostly liquid large caps, so the spread within a belief is smaller than in the paper's full cross-section; this
+  tests whether it still helps choose among them.
+- **Computed as:** `amihud = log(1 + 1e8 * mean(|r_d| / (close_d * volume_d)))` over the last 252 sessions up to the
+  pick's date (needs 120+ days with volume, else 0), clipped to [0, 15]. Uses our feed's volume (IEX by default, a
+  slice of total volume; fine for ranking stocks against each other, not an absolute dollar figure).
+  `market.amihud` / `market.amihud_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes and volumes up to each pick's own date
+  only (other features untouched). Directional (bearish calls flip it, so the rule shorts the most liquid stock,
+  the side the premium says should lag). Research rule: `illiquidity premium (z_amihud)`; `z_amihud` is also
+  available to the learned ridge/gbm/net.
+- **Note:** until enrich finishes backfilling older picks they read `amihud = 0` (same as "most liquid"); trust the
+  result once every graded pick has `amihud`.
 - **Result:** pending.

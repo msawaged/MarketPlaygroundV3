@@ -39,13 +39,15 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "mom_12_7",
          # moving average distance (Avramov, Kaplanski & Subrahmanyam 2021): 21-day over 200-day average close, minus 1
          "mad",
+         # Amihud (2002) illiquidity: log(1 + 1e8 * mean daily |return| per dollar traded) over the past year
+         "amihud",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -79,13 +81,13 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%mu_dist%' OR p.features NOT LIKE '%fip_id%'
                   OR p.features NOT LIKE '%resid_mom%' OR p.features NOT LIKE '%"beta"%'
                   OR p.features NOT LIKE '%"max5"%' OR p.features NOT LIKE '%"mom_12_7"%'
-                  OR p.features NOT LIKE '%"mad"%')
+                  OR p.features NOT LIKE '%"mad"%' OR p.features NOT LIKE '%"amihud"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
         return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num \
             or "resid_mom" not in num or "beta" not in num or "max5" not in num \
-            or "mom_12_7" not in num or "mad" not in num
+            or "mom_12_7" not in num or "mad" not in num or "amihud" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -109,6 +111,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.echo_features(r["ticker"], d0))
             if "mad" not in have:
                 vp.update(market.mad_features(r["ticker"], d0))
+            if "amihud" not in have:
+                vp.update(market.amihud_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -429,6 +433,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         "intermediate momentum (z_mom_12_7)": lambda f: f["z_mom_12_7"],
         # idea log, added 2026-11-10: moving average distance — 21-day average far above the 200-day (below, for shorts)
         "moving average distance (z_mad)": lambda f: f["z_mad"],
+        # idea log, added 2026-11-11: Amihud illiquidity premium — the less liquid stock for a long, the most liquid
+        # for a short (illiquid stocks have earned more, so the liquid one is the weaker side of a bearish call)
+        "illiquidity premium (z_amihud)": lambda f: f["z_amihud"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
