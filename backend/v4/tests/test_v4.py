@@ -2649,3 +2649,39 @@ def test_price_check_vol_wording_is_plain_and_tiered():
     assert pricecheck._vol_text("cheap", 0.2, 0.3, 0.3, 0.67, "This option").startswith("This option is priced for 20%")
     assert pricecheck._pct_text(0.0032) == "0.3%" and pricecheck._pct_text(0.0005) == "less than 0.1%"
     assert pricecheck._pct_text(0.0127) == "1.3%" and pricecheck._pct_text(0.15) == "15%"
+
+
+def test_research_picks_the_number_one_within_the_beliefs_own_direction(monkeypatch):
+    # The engine always shows an idea in the belief's own direction first (engine._leads), so a ranker can only
+    # reorder within that group. Here every bullish belief also has a short on a competitor that always wins big:
+    # a model that learns "pick the short" must not get credit for a #1 users could never be shown (2026-11-11 log).
+    from backend.v4 import research
+    import datetime as _dt
+    rng = __import__("random").Random(5)
+    d0 = _dt.date(2024, 1, 1)
+    for i in range(300):
+        bid, asof = f"b-lead{i}", (d0 + _dt.timedelta(days=i * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill", "bullish"))
+        for j in range(4):
+            d = "bearish" if j == 3 else "bullish"
+            mom = rng.uniform(-0.3, 0.3)
+            ex = 0.3 if d == "bearish" else mom * 0.3 + rng.gauss(0, 0.02)
+            pid = f"p-lead{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"L{j}", d, asof, 10.0, db.dumps({"num": {"mom60": mom}}), j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex, asof))
+    data = research.load()
+    b = data[0]
+    assert [c["lead"] for c in b["cands"]] == [True, True, True, False]
+    assert research._top(b, [0.0, 0.1, 0.2, 9.0]) == 2               # the short can't be the #1, however high it scores
+    out = research.run(data=data)
+    assert out["lead_only"] and out["mixed_direction"] == 1.0
+    assert out["off_lead"]["ridge (learned)"] > 0.9                   # the model did learn to favour the short...
+    for name in ("ridge (learned)", "gbm (learned)", "ridge (learned)" + research.MIX):
+        # ...but is scored on the long it would really put first: always below the belief average (the short's +30%
+        # lifts it), never the +22% lift that picking the short would show
+        assert out["results"][name]["lift"] < 0
+    # a belief with no stated direction (or only opposite ideas) still has a #1
+    assert research._lead({"cands": [{"lead": False}, {"lead": False}]}) == [0, 1]

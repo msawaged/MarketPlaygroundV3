@@ -404,3 +404,34 @@ honest path and switches on in early December if the live calls agree.
 
 **Live forward test.** 7 days, 108 real-time calls: #1 +1.12% vs its belief's other ideas (t 1.24). Confidence
 labels started Nov 8; first graded ones arrive ~Nov 15.
+
+## 2026-11-11 (weekly) — Tests choose the #1 the way the engine shows it: within the belief's own direction
+
+**Problem (real numbers).** The engine always puts ideas in the belief's own direction first (`engine._leads`: on a
+bullish belief, a short on a competitor can only follow the longs), so a ranker can only reorder *within* that group.
+Ranker v2's walk-forward, its fixed rules, the 25% mixes and `live_check` instead took the argmax over *all*
+directional ideas. That matters on production data (read-only SQL, 90-day checkpoint, practice calls):
+**1,704 of 4,391 graded beliefs (39%) mix both directions**, and in the 714 mixed bullish beliefs the opposite-
+direction (short) ideas averaged **+2.85% vs the S&P (beat 59.4%) against −0.60% (44.4%) for the longs**; in
+the 990 mixed bearish ones, same-direction ideas led (+1.71% vs +0.64%). Every learned model has `same_dir` and
+`bearish` as inputs, so it can learn "pick the short in a bullish belief" and collect lift for a #1 users could never
+be shown. The app's stored #1 (the gate's bar) always obeys the rule, so the comparison was uneven. Tonight's
+numbers before this change: gbm +1.20% (t 3.47), neural net +1.34% (t 3.82), gbm risk-adj + app 25% +1.89%
+(t 5.74), vs the app's stored #1 +1.49% (t 4.52) and app without look-ahead +0.53% (t 1.71).
+
+**Change (measurement only; the gate is untouched).** `research.load` marks each idea `lead` (belief direction not
+bullish/bearish, or the idea's direction equals it). `_lead` / `_top` pick a belief's #1 as the engine would (best
+score within the lead group); used by every learned candidate and mix in `run`, the fixed rules (`_choose`), the
+"app, no look-ahead" baseline and `live_check`. Training is unchanged (all ideas, within-belief label). `run` now
+stores `lead_only: true`, `mixed_direction` (share of test beliefs with both directions) and `off_lead` per learned
+model (how often its unconstrained favourite was in the other direction: the size of the old mismatch). `_passes`,
+`MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, the 90-day embargo, the mix live check and the bar (`old`) are unchanged.
+Memory: one bool per idea. Not changed: `lineages` still scores strategists over all directional ideas (same issue;
+needs the belief's direction in `_graded_beliefs`) — next candidate for a follow-up.
+
+**Checks.** Backend tests: 126 passed (new: `test_research_picks_the_number_one_within_the_beliefs_own_direction`).
+
+**What counts as a win.** After tonight's refit, `research:ranker` shows `off_lead` per model; if it is well above
+zero, the learned models' lift drops by roughly that mismatch and the numbers are now what users would get. A real
+win is a candidate that still clears the unchanged gate under this rule, and whose live #1 then holds up in the
+real-time check. If learned models fall clearly below the app no-look-ahead baseline, that is the honest answer too.

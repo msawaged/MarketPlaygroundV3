@@ -265,8 +265,11 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
             sign * (float(r["ret"]) - float(beta) * float(r["spy_ret"]))
         top = r["final_rank"] == 0
         app = float(r.get("final_score") or 0.0)
+        core = str(r.get("bdir") or "").lower()
         b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": top,  # 0 is the #1 shown
-                           "app": app, "pit": _pit_score(pit, r, top, app)})
+                           "app": app, "pit": _pit_score(pit, r, top, app),
+                           # the engine always shows an idea in the belief's own direction first (engine._leads)
+                           "lead": core not in ("bullish", "bearish") or str(r["direction"]).lower() == core})
     _set_keys()
     del rows, pit  # the raw rows (full feature JSON) are the biggest thing in memory; drop them before building more
     out = [b for b in by.values() if len(b["cands"]) >= 2]
@@ -339,9 +342,23 @@ def confidence_label(spread: float, cuts) -> str:
     return "high" if spread > cuts[1] else "medium" if spread > cuts[0] else "low"
 
 
+def _lead(b: dict) -> list[int]:
+    """Which of a belief's ideas can be its #1. The engine sorts ideas in the belief's own direction first
+    (engine._leads: on a bullish belief a short on a competitor can only follow the longs), so a ranker can only
+    reorder within that group. Tests choose the #1 the same way, or a model gets credit (or blame) for a #1 users
+    could never be shown. On 2026-11-11 data, 39% of graded 90-day practice beliefs mixed both directions, and in
+    bullish ones the opposite-direction ideas averaged +2.85% vs -0.60% for the longs."""
+    idx = [i for i, c in enumerate(b["cands"]) if c.get("lead", True)]
+    return idx or list(range(len(b["cands"])))
+
+
+def _top(b: dict, scores) -> int:
+    """Index of the #1 idea for these scores, as the engine would show it (best score within the lead group)."""
+    return max(_lead(b), key=lambda i: scores[i])
+
+
 def _choose(b: dict, score: Callable[[dict], float]) -> tuple[float, float, float, float]:
-    best = max(b["cands"], key=lambda c: score(c["f"]))
-    return _pick(b, best)
+    return _pick(b, b["cands"][_top(b, [score(c["f"]) for c in b["cands"]])])
 
 
 def _pick(b: dict, c: dict) -> tuple[float, float, float, float]:
@@ -457,17 +474,19 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     blocks = np.array_split(np.array(dates[start:]), folds)
     weights = None
     spreads: dict[str, list[float]] = {}
+    off: dict[str, list[bool]] = {}  # test beliefs where the model's favourite idea was in the other direction
 
     def learned(name: str, fn, test: list[dict]) -> None:
         """Pick each test belief's top idea and remember how far it stood out (top score minus the belief's mean):
         the model's confidence, used to show how the most confident calls did."""
         for b in test:
             sc = [fn(c["f"]) for c in b["cands"]]
-            i = int(np.argmax(sc))
+            i = _top(b, sc)  # within the belief's own direction, as the engine shows it
+            off.setdefault(name, []).append(int(np.argmax(sc)) != i)
             res[name].append(_pick(b, b["cands"][i]))
             spreads.setdefault(name, []).append(float(sc[i] - np.mean(sc)))
             mx = mix_scores([c.get("app", 0.0) for c in b["cands"]], sc, MIX_WEIGHT)  # what would go live
-            j = int(np.argmax(mx))
+            j = _top(b, mx)
             res.setdefault(name + MIX, []).append(_pick(b, b["cands"][j]))
             spreads.setdefault(name + MIX, []).append(float(mx[j] - mx.mean()))
 
@@ -480,7 +499,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             continue
         for name, fn in fixed.items():
             if fn is None and name == "app, no look-ahead":
-                res[name] += [_pick(b, max(b["cands"], key=lambda c: c.get("pit", 0.0))) for b in test]
+                res[name] += [_pick(b, b["cands"][_top(b, [c.get("pit", 0.0) for c in b["cands"]])]) for b in test]
             elif fn is None:
                 for b in test:
                     top = next((c for c in b["cands"] if c["top"]), b["cands"][0])
@@ -516,7 +535,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS, "shifted_beliefs": len(aug),
            "confidence": {k: _by_confidence(res[k], v) for k, v in spreads.items() if len(v) == len(res[k]) >= 90},
            "test_from": dates[start], "results": {k: _metrics(v) for k, v in res.items()},
-           "ridge_weights_last": weights,
+           "ridge_weights_last": weights, "lead_only": True,
+           "mixed_direction": round(float(np.mean([len(_lead(b)) < len(b["cands"]) for b in data[start:]])), 4),
+           "off_lead": {k: round(float(np.mean(v)), 4) for k, v in off.items() if v},
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
@@ -601,8 +622,8 @@ def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None 
         xb = _matrix([b], ZKEYS)
         sc = model.predict(xb) if model is not None else ((xb - np.asarray(mu)) / np.asarray(sd)) @ np.asarray(w)
         app = [c.get("app", 0.0) for c in b["cands"]]
-        mix_p.append(_pick(b, b["cands"][int(np.argmax(mix_scores(app, sc, MIX_WEIGHT)))]))
-        app_p.append(_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][int(np.argmax(app))])))
+        mix_p.append(_pick(b, b["cands"][_top(b, mix_scores(app, sc, MIX_WEIGHT))]))
+        app_p.append(_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][_top(b, app)])))
     mm, am = _metrics(mix_p), _metrics(app_p)
     n = mm.get("n", 0)
     ok = n >= min_calls and mm.get("avg", 0) >= am.get("avg", 0)

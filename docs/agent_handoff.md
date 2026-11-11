@@ -155,3 +155,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - New docs/feature_ideas.md (backlog of proposals for Murad and other sessions). First entry: user-stated "How sure
   are you?" probability + personal Brier/calibration card (proposed, not built).
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.
+## 2026-11-11 (weekly brain upgrade routine)
+- Ranker v2 research now picks each belief's #1 only among ideas in the belief's own direction, as the engine shows it
+  (`research._lead` / `_top`; `lead` flag per idea from `b.direction`). Applies to learned models, mixes, fixed rules,
+  the no-look-ahead app baseline and `live_check`. Gate untouched. New diagnostics in `research:ranker`: `lead_only`,
+  `mixed_direction`, `off_lead`. 39% of graded beliefs mix directions, so expect learned lifts to move at the next
+  refit. Don't revert to argmax over all ideas. Follow-up not done: same rule in `lineages` (score/_graded_beliefs).
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md.
