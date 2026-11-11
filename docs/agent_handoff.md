@@ -162,3 +162,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
   `mixed_direction`, `off_lead`. 39% of graded beliefs mix directions, so expect learned lifts to move at the next
   refit. Don't revert to argmax over all ideas. Follow-up not done: same rule in `lineages` (score/_graded_beliefs).
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md.
+## 2026-11-11 (daily polish walk)
+- engine.trending: a theme card's sample summary now comes from the newest belief in the card's (majority) direction,
+  so "Bearish" is never shown above a bullish summary. WhatsNew: Price check line, UPDATED 'Nov 11'.
+  Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx, docs/polish_log.md.

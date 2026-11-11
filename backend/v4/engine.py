@@ -527,10 +527,15 @@ def trending(days: int = 14, limit: int = 8) -> dict:
         people[t] |= who[key]
         dirs[t][r["direction"] or "neutral"] += 1
         ids_by_theme[t].append(r["id"])
-        if t not in examples and interp.get("summary"):
-            examples[t] = interp["summary"]
+        if interp.get("summary"):
+            examples.setdefault(t, []).append((r["direction"] or "neutral", interp["summary"]))
     out = []
     for theme, n in counts.most_common(limit):
+        direction = dirs[theme].most_common(1)[0][0]
+        # The sample view must agree with the label next to it: newest summary in the theme's usual direction
+        # (a bullish summary under a "Bearish" tag reads as a contradiction).
+        ex = examples.get(theme, [])
+        example = next((txt for d, txt in ex if d == direction), "")
         ids = ids_by_theme[theme][:500]
         ph = ",".join("?" for _ in ids)
         top = db.query(
@@ -543,8 +548,8 @@ def trending(days: int = 14, limit: int = 8) -> dict:
             "theme": theme,
             "beliefs": n,
             "people": len(people[theme]),
-            "direction": dirs[theme].most_common(1)[0][0],
-            "example": examples.get(theme, ""),
+            "direction": direction,
+            "example": example,
             "tickers": [
                 {"ticker": t["ticker"], "picked": int(t["n"]),
                  "graded": (stats.get(t["ticker"]) or {}).get("n", 0),

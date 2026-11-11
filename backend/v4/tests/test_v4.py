@@ -2685,3 +2685,18 @@ def test_research_picks_the_number_one_within_the_beliefs_own_direction(monkeypa
         assert out["results"][name]["lift"] < 0
     # a belief with no stated direction (or only opposite ideas) still has a #1
     assert research._lead({"cands": [{"lead": False}, {"lead": False}]}) == [0, 1]
+
+
+def test_trending_example_matches_the_theme_direction(monkeypatch):
+    import json as _j
+    def row(i, d, summ, text):
+        return {"id": f"b-{i}", "user_id": f"u-{i}", "norm_text": text, "themes": _j.dumps(["ski resorts"]),
+                "direction": d, "interpretation": _j.dumps({"summary": summ}), "source": "user"}
+    rows = [row(1, "bullish", "Snowmaking will grow.", "more artificial snow"),   # newest, minority direction
+            row(2, "bearish", "No snow hurts ski resorts.", "no snow in denver"),
+            row(3, "bearish", "Warm winter hurts resorts.", "warm winter"),
+            row(4, "bearish", "x", "a"), row(5, "bearish", "y", "b")]
+    real = engine.db.query
+    monkeypatch.setattr(engine.db, "query", lambda sql, args=(): rows if "FROM beliefs" in sql else [] if "FROM picks" in sql else real(sql, args))
+    t = engine.trending(days=14)["themes"][0]
+    assert t["direction"] == "bearish" and t["example"] == "No snow hurts ski resorts."

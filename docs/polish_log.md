@@ -178,3 +178,23 @@ Changed (backend/v4/pricecheck.py, frontend chat/PriceCheck.jsx):
 
 Checks: vite build passes, payoff/figures tests pass, backend tests 124 passed. Verified at 390px with a mocked
 price_check (live NVDA data) on a local Bear Put Spread card.
+
+## 2026-11-11
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey on the live site at 390x844 at ~21:25 UTC: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request; the hero SVG on /live
+and /brain extends past 390px but is clipped, scrollWidth 390).
+
+Found:
+- Trending "What people believe": the Ski resorts card was tagged **Bearish** but its sample said "Artificial snowmaking
+  will grow ..." (a bullish belief), next to MTN / UAL / DAL. DB: the theme holds 1 bullish (snowmaking, newest) and
+  bearish "no snow in Denver hurts ski resorts and travel" beliefs; engine.trending took the label from the majority
+  direction and the sample from the newest belief, so they could disagree.
+- Welcome "What's new" still dated Nov 8 and didn't mention the option Price check shipped Nov 10.
+
+Changed:
+- backend/v4/engine.py trending: the sample view is the newest summary whose direction matches the card's label.
+  Test added (test_trending_example_matches_the_theme_direction).
+- frontend WhatsNew.jsx: Price check line, updated Nov 11.
+
+Checks: vite build passes, backend tests 127 passed.
