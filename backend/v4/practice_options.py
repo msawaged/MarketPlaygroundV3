@@ -120,7 +120,7 @@ def _priced(legs: list[dict], spot: float, vol: float) -> list[dict]:
     return out
 
 
-def quote(ticker: str, legs_in: list) -> dict:
+def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None) -> dict:
     ticker = (ticker or "").upper().strip()
     if not ticker or not market.asset_info(ticker):
         raise PracticeError("That isn't a stock we can trade.")
@@ -138,6 +138,8 @@ def quote(ticker: str, legs_in: list) -> dict:
                 ivs.append(iv)
     if ivs:
         vol, vol_source = min(1.5, max(0.05, sum(ivs) / len(ivs))), "market"
+    if vol_override:  # one volatility for every leg (Yes / No prices YES and NO alike, so they add up to the payout)
+        vol, vol_source = min(1.5, max(0.05, float(vol_override))), "market"
     entry = unit_value(legs, spot, vol)
     worst = float(library.economics(_priced(legs, spot, vol), spot)["max_loss"])
     set_aside = max(entry, worst, 1.0)
@@ -145,11 +147,12 @@ def quote(ticker: str, legs_in: list) -> dict:
             "unit_value": entry, "unit_set_aside": set_aside}
 
 
-def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contracts: int, belief: str = "") -> dict:
+def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contracts: int, belief: str = "",
+               vol_override: Optional[float] = None) -> dict:
     contracts = int(contracts or 1)
     if not 1 <= contracts <= MAX_CONTRACTS:
         raise PracticeError(f"Choose between 1 and {MAX_CONTRACTS} contracts.")
-    q = quote(ticker, legs_in)
+    q = quote(ticker, legs_in, vol_override)
     need = q["unit_set_aside"] * contracts
     eng = _engine()
     with eng._lock:

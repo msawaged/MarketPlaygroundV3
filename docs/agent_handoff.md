@@ -220,3 +220,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   "Coming soon. Got an invite? Jump in."; the brain's yes/no record is brand new, so don't claim it beats the market.
 - Files: backend/v4/yesno.py (new), db.py (table), router.py, seeder.py, tests; frontend YesNoPage.jsx (new), App.jsx,
   ToolSelectorPage.jsx, PracticePage.jsx, WhatsNew.jsx, lib/api.js.
+## 2026-11-12 (daily polish walk)
+- Yes / No: YES and NO now priced with ONE volatility (the line strike's IV) so they add up to the payout; before, after
+  hours they didn't (SPY YES $76 + NO $19 for $100 = free practice money). New optional `vol_override` kwarg on
+  practice_options.quote/open_trade (default None = old behaviour for every other options trade). Each side has
+  `breakeven`; page labels the lean "starting rules, untested" until `yesno:model` is active and drops "proven".
+- Open for the build chat (not changed): YES uses k1 at/below the line, so the spread's breakeven sits above the line;
+  centering the spread on the line would match the question better. SPY line chips step $25 (700-800), coarse for
+  1-day questions.
+- Files: backend/v4/yesno.py, practice_options.py, tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  docs/polish_log.md.

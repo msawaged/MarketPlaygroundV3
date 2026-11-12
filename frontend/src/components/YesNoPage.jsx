@@ -13,7 +13,7 @@ const POPULAR = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'TSLA', 'AMZN', 'META', 'MSFT'];
 function OddsBar({ label, p, tone }) {
   return (
     <div>
-      <div className="flex justify-between text-sm"><span className="text-slate-300">{label}</span><span className="font-extrabold tabular-nums">{pc(p)} YES</span></div>
+      <div className="flex justify-between gap-2 text-sm"><span className="text-slate-300 min-w-0">{label}</span><span className="shrink-0 whitespace-nowrap font-extrabold tabular-nums">{pc(p)} YES</span></div>
       <div className="mt-1 h-3 rounded-full bg-slate-800 overflow-hidden">
         <div className={`h-full rounded-full ${tone}`} style={{ width: `${Math.max(2, Math.min(98, p * 100))}%` }} />
       </div>
@@ -116,11 +116,13 @@ export default function YesNoPage() {
           <div className="text-xl font-extrabold leading-snug">{q.question}</div>
           <div className="mt-4 space-y-3">
             <OddsBar label="Market's odds (from option prices)" p={q.market_p} tone="bg-slate-400" />
-            <OddsBar label="Brain's lean" p={q.brain_p} tone="bg-blue-500" />
+            <OddsBar label={q.brain_model === 'learned' ? "Brain's lean (learned)" : "Brain's lean (starting rules, untested)"} p={q.brain_p} tone="bg-blue-500" />
           </div>
           <ul className="mt-3 text-xs text-slate-400 space-y-1">
             {q.reasons.map((r) => <li key={r}>• {r}</li>)}
-            <li>• The brain is proven on 90-day calls, not one-week ones, so it only nudges the market's odds. Every answer is graded.</li>
+            <li>• {q.brain_model === 'learned'
+              ? "This lean went live only after beating the market's odds on graded questions it hadn't seen. Every answer is graded."
+              : "The brain's track record is on 90-day stock ideas, not short yes/no questions. Until a learned lean beats the market's odds on graded questions it hasn't seen, fixed starting rules move the odds a few points at most. Every answer is graded."}</li>
           </ul>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -133,6 +135,9 @@ export default function YesNoPage() {
                   {t.cost != null ? (
                     <div className="mt-1 text-sm text-slate-200">Risk <b>{usd(t.cost * contracts)}</b> to make <b>{usd(t.profit * contracts)}</b></div>
                   ) : <div className="mt-1 text-sm text-slate-400">No price right now</div>}
+                  {t.cost != null && t.breakeven != null && (
+                    <div className="mt-0.5 text-xs text-slate-400 tabular-nums">Breaks even {yes ? 'above' : 'below'} {usd(t.breakeven, 2)}</div>
+                  )}
                   <button disabled={busy || t.cost == null} onClick={() => answer(side, true)}
                     className={`mt-3 w-full rounded-xl py-2.5 font-bold disabled:opacity-40 ${yes ? 'bg-green-600' : 'bg-red-600'}`}>Practice trade</button>
                   <button disabled={busy} onClick={() => answer(side, false)} className="mt-2 w-full rounded-xl py-2 text-sm border border-slate-600 text-slate-200">Just call it</button>

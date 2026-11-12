@@ -198,3 +198,32 @@ Changed:
 - frontend WhatsNew.jsx: Price check line, updated Nov 11.
 
 Checks: vite build passes, backend tests 127 passed.
+
+## 2026-11-12
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey on the live site at 390x844 at ~21:20 UTC: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). Focus: today's new
+Yes / No page, walked locally at 390px (fake local account, read-only GETs proxied to the live /v4/yesno/*), plus live
+/v4/yesno/quote calls on NVDA, SPY, TSLA after the close.
+
+Found:
+- Free money in practice: YES and NO were priced separately (call spread with the calls' IVs, put spread with the puts'),
+  so when the feed's call and put IVs disagree they don't add up to the payout. Live after the close: NVDA $170 Nov 13
+  YES $74 + NO $162 = $236 for a $250 payout; SPY $750 Nov 13 YES $76 + NO $19 = $95 for $100. Buying both = a sure
+  practice profit, and YES's cost didn't match the market's odds shown above it.
+- "The brain is proven on 90-day calls" overclaims (its 90-day edge is small: 53.4% vs 51.3%), and the "Brain's lean"
+  bar didn't say it comes from fixed, untested starting rules (no learned model yet).
+- The trade differs from the answer between the two strikes (NVDA 165/167.5 call spread costs $121: a "right" YES at a
+  $166 close still loses money) and no breakeven was shown.
+- "Of the app's last 666 ideas on NVDA" reads oddly (DB: 666 beliefs in 14 days each had NVDA as an idea).
+
+Changed:
+- yesno.quote prices YES and NO with one volatility, the line strike's IV (the one behind the market's odds), via a new
+  optional `vol_override` on practice_options.quote/open_trade (other option trades unchanged; marks use the stored vol).
+- Each side carries `breakeven` (YES k1 + cost, NO k2 - cost); the card shows "Breaks even above/below $X"; the note
+  names the call/put spreads and says the trade can differ from the answer between the strikes.
+- Lean label "Brain's lean (starting rules, untested)" (or "(learned)"), honest track-record sentence; reason line
+  "In the past 14 days the app suggested NVDA 666 times: 500 as a bullish idea, 166 as a bearish one."
+- Tests: breakeven, and YES + NO add up when call and put IVs differ.
+
+Checks: vite build passes, backend tests 135 passed.

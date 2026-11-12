@@ -167,8 +167,8 @@ def _reasons(sig: dict, u: str) -> list[str]:
     elif sig["trend"] < 0:
         r.append(f"{u}'s MuLine trend is falling" + (f" (for {sig['trend_age']} trading days)" if sig.get("trend_age") else "") + ".")
     if sig["ideas"] is not None:
-        r.append(f"Of the app's last {sig['ideas_n']} ideas on {u} (past {IDEA_DAYS} days), {sig['ideas_bull']} were bullish "
-                 f"and {sig['ideas_bear']} bearish.")
+        r.append(f"In the past {IDEA_DAYS} days the app suggested {u} {sig['ideas_n']:,} times: {sig['ideas_bull']:,} as a "
+                 f"bullish idea, {sig['ideas_bear']:,} as a bearish one.")
     if not r:
         r.append("The brain has no strong read on this stock, so it stays with the market's odds.")
     return r
@@ -226,12 +226,15 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     sides = {}
     for side, legs in (("yes", yes_legs), ("no", no_legs)):
         try:
-            q = practice_options.quote(u, legs)
+            q = practice_options.quote(u, legs, vol if vol_source == "market" else None)
             cost = round(max(1.0, min(width - 1.0, q["unit_value"])), 2)
         except Exception:
             cost = None
+        # Breakeven at expiration: YES (call spread k1/k2) is worth (close - k1) x 100 between the strikes,
+        # NO (put spread k2/k1) is worth (k2 - close) x 100, so neither breaks even exactly at the line.
+        be = None if cost is None else round(k1 + cost / 100.0 if side == "yes" else k2 - cost / 100.0, 2)
         sides[side] = {"legs": legs, "cost": cost, "payout": width,
-                       "profit": round(width - cost, 2) if cost is not None else None}
+                       "profit": round(width - cost, 2) if cost is not None else None, "breakeven": be}
     return {"ticker": u, "spot": spot, "level": level, "expiration": exp.isoformat(), "days": (exp - t).days,
             "question": f"Will {u} close above ${level:,.2f} on {exp.strftime('%a %b')} {exp.day}?",
             "market_p": round(m_p, 4), "brain_p": round(b_p, 4), "tilt": round(tilt, 3),
@@ -239,8 +242,14 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
-            "spread_note": (f"YES pays the full ${width:,.0f} per contract if {u} closes at or above ${k2:,.2f}, nothing at or "
-                            f"below ${k1:,.2f}, and part of it in between. NO is the mirror image.")}
+            "spread_note": spread_note(u, k1, k2, width)}
+
+
+def spread_note(u: str, k1: float, k2: float, width: float) -> str:
+    return (f"YES is a ${k1:,.2f}/${k2:,.2f} call spread: it pays the full ${width:,.0f} per contract if {u} closes at "
+            f"or above ${k2:,.2f}, nothing at or below ${k1:,.2f}, and part of it in between. NO is the matching put "
+            f"spread, the mirror image. So the trade's result can differ from the yes/no answer when {u} closes between "
+            f"the two strikes; the breakeven shows where each side starts to make money.")
 
 
 def make_call(user_id: str, ticker: str, level: float, expiration: str, side: str, trade: bool = False,
@@ -255,7 +264,8 @@ def make_call(user_id: str, ticker: str, level: float, expiration: str, side: st
         from . import practice_options
         try:
             r = practice_options.open_trade(user_id, q["ticker"], f"Yes/No: {side.upper()} {q['ticker']} > ${q['level']:,.2f}"[:40],
-                                            q[side]["legs"], contracts, q["question"])
+                                            q[side]["legs"], contracts, q["question"],
+                                            vol_override=q["vol"] if q["vol_source"] == "market" else None)
         except practice_options.PracticeError as e:
             raise YesNoError(str(e))
         position_id = r.get("position_id")

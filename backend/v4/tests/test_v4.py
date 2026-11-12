@@ -2837,6 +2837,12 @@ def test_yesno_quote_call_grade(monkeypatch):
     assert 0.3 < q["market_p"] < 0.8 and abs(q["brain_p"] - q["market_p"]) < 0.08
     assert q["yes"]["payout"] == 100 and 0 < q["yes"]["cost"] < 100 and 0 < q["no"]["cost"] < 100
     assert q["yes"]["legs"][0]["option_type"] == "call" and q["no"]["legs"][0]["option_type"] == "put"
+    # breakeven at expiration: YES call spread = k1 + cost, NO put spread = k2 - cost (per share)
+    assert q["yes"]["breakeven"] == pytest.approx(lvl + q["yes"]["cost"] / 100, abs=0.01)
+    assert q["no"]["breakeven"] == pytest.approx(lvl + 1 - q["no"]["cost"] / 100, abs=0.01)
+    assert lvl < q["yes"]["breakeven"] < lvl + 1 and "breakeven" in q["spread_note"]
+    # both sides priced with one volatility: YES + NO = the payout (less a little interest), never free money
+    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.5
     with pytest.raises(yesno.YesNoError):
         yesno.quote("WINR", spot * 3, e["expirations"][0])
     with pytest.raises(yesno.YesNoError):
@@ -2864,7 +2870,7 @@ def test_yesno_practice_trade(monkeypatch, tmp_path):
     yesno = _fake_chain(monkeypatch)
     from backend.v4 import practice_options
     seen = {}
-    def fake_open(user_id, ticker, structure, legs, contracts, belief=""):
+    def fake_open(user_id, ticker, structure, legs, contracts, belief="", vol_override=None):
         seen.update(user=user_id, legs=practice_options._clean_legs(legs, ticker), structure=structure, n=contracts)
         return {"status": "success", "position_id": "opt-x", "message": "Opened."}
     monkeypatch.setattr(practice_options, "open_trade", fake_open)
@@ -2917,3 +2923,13 @@ def test_yesno_real_money_order_is_ready_but_off(monkeypatch):
     assert o["order_class"] == "mleg" and o["type"] == "limit" and len(o["legs"]) == 2
     assert [l["position_intent"] for l in o["legs"]] == ["buy_to_open", "sell_to_open"]
     assert rm["yes"]["max_loss"] + rm["yes"]["max_gain"] == pytest.approx(100.0)
+
+
+def test_yesno_sides_add_up_when_call_and_put_ivs_differ(monkeypatch):
+    # After hours the feed's call and put IVs can disagree; pricing each side with its own legs' IV let YES + NO cost
+    # less than the payout (buy both = free practice money). Both sides now use the line's IV.
+    yesno = _fake_chain(monkeypatch)
+    monkeypatch.setattr(market, "option_iv", lambda u, kind, *a, **k: 0.9 if kind == "call" else 0.2)
+    e = yesno.expirations("WINR")
+    q = yesno.quote("WINR", float(int(market.latest_price("WINR"))), e["expirations"][0])
+    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.5
