@@ -51,12 +51,12 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-12 — Luck bar for research: count every rule we test and show the multiple-testing threshold
 - **Area:** brain (research honesty); a small app/brain-page benefit.
-- **Status:** proposed
+- **Status:** built 2026-11-12 (Murad: "build it"); see docs/brain_upgrades.md
 - **Problem:** every `research:ranker` run scores 37 methods on the same 2,703 test beliefs (run 2026-11-12 10:03 UTC:
   37 entries in `results`), and the daily routine adds one more rule a day (9 so far). The idea log then reads each
   rule's t-stat against the usual 2.0 bar. With 37 tries, the biggest |t| from pure noise is expected to be around
   2.5-3, so "t 2.9" (frog in the pan, today) or "t 3.0" (intermediate momentum, today) can be luck; a Bonferroni 5%
-  two-sided bar for 37 tests is |t| ≈ 3.21. Today 10 of 37 clear it: the app's #1 (4.54), the Amihud rule (3.98), plain
+  two-sided bar for 37 tests is |t| ≈ 3.20. Today 10 of 37 clear it: the app's #1 (4.54), the Amihud rule (3.98), plain
   gbm (3.68) and the seven "+ app (25%)" mixes; on the risk-matched t only the Amihud rule among fixed rules does. Nothing records how many rules were ever tried, including ones later dropped, so the
   number behind every claim on the brain page understates how much searching was done.
 - **Evidence / sources:**

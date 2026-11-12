@@ -427,6 +427,66 @@ def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
     return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
 
 
+TRIES_KEY = "research:tries"  # every method name research has ever scored, so dropped rules still count
+LUCK_ALPHA = 0.05
+
+
+def _p_two_sided(t: float) -> float:
+    return math.erfc(abs(float(t or 0.0)) / math.sqrt(2.0))
+
+
+def _bar(m: int, alpha: float = LUCK_ALPHA) -> float:
+    """Bonferroni two-sided critical t: with m methods tested, |t| must reach this before a 5% false alarm is likely
+    for even one of them."""
+    from statistics import NormalDist
+    return float(NormalDist().inv_cdf(1.0 - alpha / (2.0 * max(1, m))))
+
+
+def _holm(ts: dict, m: int, alpha: float = LUCK_ALPHA) -> set:
+    """Holm step-down at `alpha` over m tests (m >= len(ts): untested past tries count too). A method clears only with
+    a positive t. Assumes roughly independent tests; ours are correlated, so this errs on the strict side."""
+    order = sorted(ts.items(), key=lambda kv: _p_two_sided(kv[1]))
+    ok = set()
+    for k, (name, t) in enumerate(order):
+        if _p_two_sided(t) > alpha / max(1, m - k):
+            break
+        if t > 0:
+            ok.add(name)
+    return ok
+
+
+def luck(results: dict, tries_ever: int | None = None) -> dict:
+    """The luck bar (Harvey, Liu & Zhu 2016; Bailey & Lopez de Prado 2014): the more ways we try to pick the #1, the
+    likelier one looks good by chance, so judge every method against how many were tried. Reporting only: the
+    ranker v2 gate (_passes / fit_production) does not read this."""
+    names = [k for k, v in (results or {}).items() if (v or {}).get("n")]
+    m = max(len(names), int(tries_ever or 0))
+    raw = {k: float(results[k].get("lift_t", 0) or 0) for k in names}
+    adj = {k: float(results[k]["lift_adj_t"]) for k in names if results[k].get("lift_adj_t") is not None}
+    clear, clear_adj = _holm(raw, m), _holm(adj, m)
+    return {"tests": len(names), "tries_ever": m, "alpha": LUCK_ALPHA, "bar": round(_bar(len(names)), 2),
+            "bar_ever": round(_bar(m), 2), "clear": sorted(clear, key=lambda k: -raw[k]),
+            "clear_adj": sorted(clear_adj, key=lambda k: -adj[k]),
+            "app_clears": "app (current #1)" in clear, "app_clears_adj": "app (current #1)" in clear_adj}
+
+
+def _tries(names) -> int:
+    """Add this run's method names to the running set of everything research has ever scored; return its size."""
+    try:
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (TRIES_KEY,))
+        seen = set(json.loads(row["v"]) if row and row.get("v") else [])
+    except Exception:
+        seen = set()
+    seen |= set(names)
+    try:
+        db.execute("DELETE FROM kv_cache WHERE k = ?", (TRIES_KEY,))
+        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
+                   (TRIES_KEY, json.dumps(sorted(seen)), datetime.now(timezone.utc).isoformat()))
+    except Exception:
+        pass
+    return len(seen)
+
+
 def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     data = load(include_aug=True) if data is None else data
     aug = [b for b in data if b.get("aug")]
@@ -547,6 +607,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
            "off_lead": {k: round(float(np.mean(v)), 4) for k, v in off.items() if v},
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
+    out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
     db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (KEY, json.dumps(out), out["at"]))
     return out

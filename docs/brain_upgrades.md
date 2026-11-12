@@ -435,3 +435,19 @@ needs the belief's direction in `_graded_beliefs`) — next candidate for a foll
 zero, the learned models' lift drops by roughly that mismatch and the numbers are now what users would get. A real
 win is a candidate that still clears the unchanged gate under this rule, and whose live #1 then holds up in the
 real-time check. If learned models fall clearly below the app no-look-ahead baseline, that is the honest answer too.
+
+## 2026-11-12 — The luck bar: every research run is judged against how many ways we tried (reporting only)
+- **Why:** each `research:ranker` run scores 37 methods on the same test calls, and the daily routine adds one more a
+  day. With that many tries, a t near 3 can be chance (Harvey, Liu & Zhu 2016; Bailey & López de Prado 2014). Murad
+  asked for it to be built (proposal in docs/feature_ideas.md, 2026-11-12), also as a "receipts" point for the
+  "Prove them wrong" campaign.
+- **What:** `research.luck(results, tries_ever)` adds a `luck` block to `research:ranker`: `tests` (methods scored this
+  run), `tries_ever` (size of the running set of every method name ever scored, kv `research:tries`, so dropped rules
+  still count), `bar` / `bar_ever` (Bonferroni two-sided 5% critical t), `clear` / `clear_adj` (Holm step-down at 5%
+  over `tries_ever` tests on `lift_t` / `lift_adj_t`; positive t only), `app_clears` / `app_clears_adj`.
+  `/v4/brain` `skill.luck` carries it (plus `n`, `at`); the brain page scorecard shows a "luck check" line.
+- **Not changed:** `_passes`, `fit_production` and ranker v2's activation rules don't read it. Tightening the gate with
+  it would be a separate, deliberate decision.
+- **Caveat:** Bonferroni/Holm assume roughly independent tests; many of ours are correlated momentum variants, so the
+  bar errs strict. Overlapping 90-day windows likely also inflate the plain t-stats (not addressed here).
+- Files: backend/v4/research.py, backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx.

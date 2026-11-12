@@ -272,7 +272,7 @@ the app's (52.9%).
   ahead of ridge (+0.96% / 51.7% / t 2.94; adj +0.63%, t 1.97). Raw beat rate is still below the app's, so on its own
   it would not pass the ranker v2 gate; the learned ridge gives z_amihud almost no weight (+0.0001), so the learners
   are not yet using it. Caveat: 37 methods are scored each run, so a t near 3 is the bar for "not luck" (Bonferroni
-  5% two-sided ≈ 3.21); this one clears it, raw and risk-matched. Same run: 12-1 momentum +0.66% / 50.5% / t 1.94; frog in the pan +0.91% /
+  5% two-sided ≈ 3.20); this one clears it, raw and risk-matched. Same run: 12-1 momentum +0.66% / 50.5% / t 1.94; frog in the pan +0.91% /
   50.9% / t 2.89 (adj +0.78%, t 2.58); intermediate momentum +1.03% / 51.7% / t 3.02 (adj +0.65%, t 1.97); MAD
   +0.12% / 49.5% / t 0.36; gbm +1.20% / 52.1% / t 3.68; gbm (risk-adjusted) + app (25%) +1.92% / 53.5% / t 5.98
   (adj +1.74% / 54.8% / t 5.59); random beat 51.0%.

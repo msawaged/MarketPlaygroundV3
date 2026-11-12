@@ -5,6 +5,7 @@ Cached 60 seconds.
 """
 from __future__ import annotations
 
+import json
 import threading
 import time
 from collections import defaultdict
@@ -143,6 +144,14 @@ def _skill() -> dict:
                              "old_pit": rv.get("old_pit"),
                              "risk_check": bool(rv.get("risk_check")), "model": rv.get("model"),
                              "confidence": rv.get("confidence")}
+    except Exception:
+        pass
+    try:  # the luck bar: how many ways to pick the #1 were tested, and which cleared the multiple-testing bar
+        from . import research
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (research.KEY,))
+        rr = json.loads(row["v"]) if row and row.get("v") else {}
+        if rr.get("luck"):
+            out["luck"] = {**rr["luck"], "at": rr.get("at"), "n": (rr.get("results", {}).get("app (current #1)") or {}).get("n")}
     except Exception:
         pass
     for r in rows:

@@ -191,3 +191,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - feature_ideas.md: "Luck bar" proposal (count every rule tested, report Bonferroni/Holm thresholds; reporting only).
 - Not done: the "Skeptic" reward:risk filter from the campaign entry above is still open for the weekly brain routine.
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.
+## 2026-11-12 (CTO routine session, later: Murad said "build it")
+- Built the "luck bar" (reporting only, gate untouched): `research.luck` → `luck` block in `research:ranker`, running
+  set of tried methods in kv `research:tries` (don't delete it; it's what makes `tries_ever` honest), `skill.luck` in
+  /v4/brain, "luck check" line in BrainPage's honest scorecard. Research routine: quote "clears the luck bar" from
+  `luck.clear` / `clear_adj` instead of eyeballing t ≥ 2. Campaign: "we've tested N ways; X cleared" is a valid live
+  receipt (pull N and X from /v4/brain the same day). Appears after the next research run.
+- Files: backend/v4/research.py, brain.py, tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/brain_upgrades.md,
+  docs/feature_ideas.md.

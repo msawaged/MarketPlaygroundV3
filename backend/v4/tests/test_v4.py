@@ -2137,6 +2137,33 @@ def test_continuing_overreaction_rule_and_enrich_backfill(monkeypatch):
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-cox'")["features"])["num"]
     assert abs(num["co"] - v_mix) < 1e-12 and num["amihud"] == 2.5 and num["beta"] == 1.2
 
+
+def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
+    from backend.v4 import research, brain
+    import random as _r
+    assert abs(research._bar(37) - 3.2048) < 1e-3 and abs(research._bar(1) - 1.96) < 1e-2
+    rng = _r.Random(5)
+    res = {f"noise {k}": {"n": 2703, "lift_t": rng.gauss(0, 1), "lift_adj_t": rng.gauss(0, 1)} for k in range(36)}
+    res["app (current #1)"] = {"n": 2703, "lift_t": 6.0, "lift_adj_t": 2.5}
+    res["negative"] = {"n": 2703, "lift_t": -7.0, "lift_adj_t": -7.0}
+    res["empty"] = {}
+    lk = research.luck(res)
+    assert lk["tests"] == 38 and lk["tries_ever"] == 38
+    assert lk["clear"] == ["app (current #1)"]                 # noise never clears; a big negative t never "clears"
+    assert lk["app_clears"] and not lk["app_clears_adj"]       # t 2.5 is not enough once 38 ways were tried
+    assert research.luck(res, tries_ever=500)["bar_ever"] > lk["bar_ever"]   # past tries raise the bar
+    # the running set of tries keeps rules that were dropped later
+    assert research._tries(["a", "b"]) == 2 and research._tries(["b", "c"]) == 3
+    # the gate does not read it: same verdict with or without the luck block
+    m, app = {"lift": 0.02, "lift_t": 2.5, "beat": 0.56}, {"beat": 0.55}
+    assert research._passes(m, app) and research._passes({**m, "luck": {"clear": []}}, app)
+    # the brain page gets it from the latest research run
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (research.KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (research.KEY, json.dumps(
+        {"at": "2026-11-12T10:00:00+00:00", "results": res, "luck": lk}), "2026-11-12T10:00:00+00:00"))
+    sk = brain._skill()
+    assert sk["luck"]["tries_ever"] == 38 and sk["luck"]["n"] == 2703 and sk["luck"]["app_clears"]
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""

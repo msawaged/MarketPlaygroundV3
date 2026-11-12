@@ -338,6 +338,19 @@ export default function BrainPage({ viewOnly = false }) {
                   : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
                 {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
               </p>
+              {sk.luck?.tries_ever > 0 && (
+                <div className="mt-3 rounded-xl border border-slate-700/70 bg-slate-800/50 p-3">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300">The luck check · we count every try</div>
+                  <div className="mt-1 text-xs text-slate-300">
+                    We've tested {Number(sk.luck.tries_ever).toLocaleString()} ways to pick the #1{sk.luck.n ? ` on ${Number(sk.luck.n).toLocaleString()} past calls they never saw` : ''}.
+                    {' '}Try enough ways and one will look great by chance, so a result has to reach t {Number(sk.luck.bar_ever).toFixed(1)} (not the usual 2) before we call it more than luck.
+                    {' '}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
+                    {sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet"}
+                    {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
+                  </div>
+                  <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
+                </div>
+              )}
               {sk.ranker?.active && sk.ranker.oos?.n > 0 && (
                 <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · retrained {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
