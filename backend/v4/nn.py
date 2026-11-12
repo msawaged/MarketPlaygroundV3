@@ -117,6 +117,8 @@ def make_features(
         "mad": market.get("mad", 0.0),
         # Amihud illiquidity, log(1 + 1e8 * mean |return| per dollar traded) (research + ranker v2 only; not MODEL_NUMERIC)
         "amihud": market.get("amihud", 0.0),
+        # continuing overreaction, weighted signed volume over 12 months (research + ranker v2 only; not MODEL_NUMERIC)
+        "co": market.get("co", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

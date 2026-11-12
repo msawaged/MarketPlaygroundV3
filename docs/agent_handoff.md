@@ -182,3 +182,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   a testable idea. Treat it as a candidate filter in ranker research (does skipping low reward:risk ideas raise
   beat_adj out of sample?). Ship only if it passes `_passes`; log the result either way.
 - Weekly growth report: track this campaign's posts separately when Murad shares numbers.
+## 2026-11-12 (daily ranker research + feature scout routine)
+- Idea 8 (Amihud illiquidity) result logged: lift +1.20%, beat 52.7%, t 3.98 (adj +1.00% / 54.2% / t 3.44), the
+  strongest fixed rule so far; raw beat still below the app's, so not a gate pass on its own. Idea 9 added: continuing
+  overreaction `co` (Byun, Lim & Yun 2016) = weighted signed monthly volume over 12 months, -1..+1, new feature in
+  market.features/co_features, nn.make_features num, research.FEATS + DIRECTIONAL, enrich backfill (as of each pick's
+  date, closes+volumes), rule `continuing overreaction (z_co)`. Gate untouched.
+- feature_ideas.md: "Luck bar" proposal (count every rule tested, report Bonferroni/Holm thresholds; reporting only).
+- Not done: the "Skeptic" reward:risk filter from the campaign entry above is still open for the weekly brain routine.
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.

@@ -669,6 +669,39 @@ def amihud_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"amihud": amihud(closes, vols, i) if i >= 0 else 0.0}
 
 
+def co(closes: list[float], vols: list[float], i: int, months: int = 12, block: int = 21) -> float:
+    """Continuing overreaction (Byun, Lim & Yun 2016): a weighted average of signed trading volume over the past
+    year. Split the last `months` * 21 sessions (up to index i only) into ~monthly blocks; each block contributes
+    sign(block return) * block volume, with linearly declining weights (12 for the latest month down to 1), scaled
+    by the average block volume and the weight sum, so the value runs from -1 (heavy volume on down months) to +1
+    (heavy volume on up months). Volume confirms the move: the paper buys high CO and sells low CO, and finds CO
+    predicts returns better than past returns alone. 0.0 without a year of priced volume."""
+    n = months * block
+    if i < n or len(vols) != len(closes):
+        return 0.0
+    sv, vs, ws = 0.0, [], 0.0
+    for j in range(months):  # j = 0 is the latest month
+        hi, lo = i - j * block, i - (j + 1) * block  # block covers closes lo+1..hi, return from close[lo] to close[hi]
+        a, b = closes[lo], closes[hi]
+        v = sum(vols[lo + 1: hi + 1])
+        if a <= 0 or b <= 0 or v <= 0:
+            return 0.0
+        w = float(months - j)
+        sv += w * (1.0 if b > a else -1.0 if b < a else 0.0) * v
+        vs.append(v)
+        ws += w
+    mv = sum(vs) / len(vs)
+    return max(-1.0, min(1.0, sv / (mv * ws))) if mv > 0 else 0.0
+
+
+def co_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"co": ...} using closes and volumes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    vols = daily_volumes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"co": co(closes, vols, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -772,6 +805,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mom_12_7": mom_12_7(closes, i),
         "mad": mad(closes, i),
         "amihud": amihud(closes, daily_volumes(symbol), i),
+        "co": co(closes, daily_volumes(symbol), i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

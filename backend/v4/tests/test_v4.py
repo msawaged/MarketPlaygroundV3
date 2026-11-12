@@ -2075,6 +2075,68 @@ def test_amihud_illiquidity_rule_and_enrich_backfill(monkeypatch):
     assert abs(num["amihud"] - market.amihud(closes, vols, i)) < 1e-9 and num["mad"] == 0.05 and num["beta"] == 1.2
 
 
+
+def test_continuing_overreaction_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    # 252 sessions = 12 blocks of 21; every block rises with 1,000 shares a day -> CO = +1; falling -> -1
+    up = [100.0 + k for k in range(253)]
+    vols = [1000.0] * 253
+    i = 252
+    assert abs(market.co(up, vols, i) - 1.0) < 1e-12
+    assert abs(market.co(list(reversed(up)), vols, i) + 1.0) < 1e-12
+    # latest month down on heavy volume, the other 11 up on light volume: weights favour the recent month
+    mix = list(up)
+    for k in range(232, 253):
+        mix[k] = mix[231] - (k - 231)
+    heavy = [1000.0] * 232 + [20000.0] * 21
+    v_mix = market.co(mix, heavy, i)
+    sv = -12 * 21 * 20000.0 + sum(range(1, 12)) * 21 * 1000.0
+    mv = (21 * 20000.0 + 11 * 21 * 1000.0) / 12
+    assert abs(v_mix - sv / (mv * 78.0)) < 1e-12 and v_mix < 0
+    assert market.co(up, vols, 200) == 0.0                     # under a year of history
+    assert market.co(up, vols[:-1], i) == 0.0                  # volumes not aligned with closes
+    assert market.co(up + [1.0], vols + [1e9], i) == market.co(up, vols, i)  # later bars never seen
+    assert "co" in research.FEATS and "co" in research.DIRECTIONAL
+    # planted: high CO longs and low CO shorts pay; the rule (z_co, flipped for bearish) finds it
+    rng = _r.Random(17)
+    d0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-co-{k}", (d0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            c = rng.uniform(-1.0, 1.0)
+            ex = -c * 0.02 if bear else c * 0.02
+            pid = f"p-co-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"co": c}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["continuing overreaction (z_co)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills co as of each pick's own date only, leaving the other features alone
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(len(mix) + 30)]
+    after = mix + [mix[-1] * 3.0] * 30
+    after_v = heavy + [1e9] * 30
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, after))
+    monkeypatch.setattr(market, "daily_volumes", lambda s: after_v)
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5}
+    asof = dates[i]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-cox", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-cox", "b-cox", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-cox", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-cox'")["features"])["num"]
+    assert abs(num["co"] - v_mix) < 1e-12 and num["amihud"] == 2.5 and num["beta"] == 1.2
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""

@@ -264,4 +264,40 @@ the app's (52.9%).
   available to the learned ridge/gbm/net.
 - **Note:** until enrich finishes backfilling older picks they read `amihud = 0` (same as "most liquid"); trust the
   result once every graded pick has `amihud`.
+- **Result (run 2026-11-12 10:03 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; checked 2026-11-12: no graded
+  pick is missing `amihud`; first run with the "#1 within the belief's own direction" rule, `lead_only`, so every
+  fixed rule moved vs earlier runs):** lift **+1.20%**, beat **52.7%**, t **3.98**; risk-matched lift **+1.00%**,
+  beat_adj **54.2%**, t **3.44**. The strongest fixed rule logged so far and the first whose risk-matched edge holds
+  up at t > 3: close to the app's own #1 in the same run (+1.49% / 53.4% / t 4.54; adj +1.24% / 54.2% / t 3.87) and
+  ahead of ridge (+0.96% / 51.7% / t 2.94; adj +0.63%, t 1.97). Raw beat rate is still below the app's, so on its own
+  it would not pass the ranker v2 gate; the learned ridge gives z_amihud almost no weight (+0.0001), so the learners
+  are not yet using it. Caveat: 37 methods are scored each run, so a t near 3 is the bar for "not luck" (Bonferroni
+  5% two-sided ≈ 3.21); this one clears it, raw and risk-matched. Same run: 12-1 momentum +0.66% / 50.5% / t 1.94; frog in the pan +0.91% /
+  50.9% / t 2.89 (adj +0.78%, t 2.58); intermediate momentum +1.03% / 51.7% / t 3.02 (adj +0.65%, t 1.97); MAD
+  +0.12% / 49.5% / t 0.36; gbm +1.20% / 52.1% / t 3.68; gbm (risk-adjusted) + app (25%) +1.92% / 53.5% / t 5.98
+  (adj +1.74% / 54.8% / t 5.59); random beat 51.0%.
+
+### 9. Continuing overreaction: volume-confirmed trend (Byun, Lim & Yun)
+- **Added:** 2026-11-12
+- **Source:** Byun, Lim & Yun (2016), "Continuing Overreaction and Stock Return Predictability", Journal of Financial
+  and Quantitative Analysis 51(6), 2015-2046: https://ideas.repec.org/a/cup/jfinqa/v51y2016i06p2015-2046_00.html ;
+  publisher: https://www.cambridge.org/core/journals/journal-of-financial-and-quantitative-analysis/article/continuing-overreaction-and-stock-return-predictability/A97DDAC507CBDBAEBD4CCB50A84D3577
+- **Why:** overconfident investors with biased self-attribution keep overreacting in the same direction, and trading
+  volume shows how strongly. The paper's CO measure (a weighted average of *signed volume*) buys stocks with upward
+  continuing overreaction and sells downward, and predicts returns better than past returns alone; the effect is
+  stronger where such investors hold the stock. A volume-price confirmation signal over a 12-month window, monthly
+  rebalanced, which fits our ~90-day hold, and a different shape from the return-only momentum ideas 1-3 and 6 (here
+  a quiet up month counts for little, a heavy-volume up month for a lot).
+- **Computed as:** split the last 252 sessions (up to the pick's own date) into 12 blocks of 21 sessions; block j
+  (1 = latest) contributes `w_j * sign(block return) * block volume` with `w_j = 13 - j`;
+  `co = sum / (mean block volume * sum of weights)`, from -1 (heavy volume on down months) to +1 (on up months);
+  0 without a year of priced volume. (The paper uses monthly turnover; dividing by the stock's own mean volume plays
+  the same role, and the extra constant doesn't change the within-belief z-score.) Volume is our feed's (IEX by
+  default), fine for comparing a stock's months with each other. `market.co` / `market.co_features`; stored for new
+  picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by
+  `research.enrich` using closes and volumes up to each pick's own date only (other features untouched). Directional
+  (bearish calls flip it, so the rule shorts the stock with heavy-volume down months). Research rule:
+  `continuing overreaction (z_co)`; `z_co` is also available to the learned ridge/gbm/net.
+- **Note:** until enrich finishes backfilling older picks they read `co = 0`; trust the result once every graded pick
+  has `co`.
 - **Result:** pending.
