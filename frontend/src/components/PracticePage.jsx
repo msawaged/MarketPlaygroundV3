@@ -87,6 +87,10 @@ export default function PracticePage() {
         </button>
       }
     >
+      <button onClick={() => navigate('/yes-no')} className="mt-4 w-full flex items-center justify-between rounded-2xl border border-slate-700 bg-slate-900/60 px-4 py-2.5 text-left text-sm hover:border-blue-400">
+        <span><b>Yes / No</b> <span className="text-slate-400">· will it close above the line? Fixed risk, fixed payout.</span></span>
+        <span className="text-blue-300" aria-hidden>→</span>
+      </button>
       {s.loading && <div className="mt-6 h-40 rounded-3xl bg-slate-800/50 animate-pulse" />}
       {s.error && <Card className="mt-6 text-sm text-red-200 border-red-500/40">Couldn't load your practice account: {s.error}</Card>}
 

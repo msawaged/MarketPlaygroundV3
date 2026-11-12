@@ -171,7 +171,12 @@ export default function ToolSelectorPage() {
           </div>
         )}
 
-        <button onClick={() => navigate('/brain')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-green-400/25 bg-green-500/[0.06] px-4 py-3 text-left hover:border-green-300/50">
+        <button onClick={() => navigate('/yes-no')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-blue-400/30 bg-blue-500/[0.07] px-4 py-3 text-left hover:border-blue-300/60">
+          <span><span className="block text-sm font-bold"><span className="text-green-300">YES</span> / <span className="text-red-300">NO</span> · New</span><span className="block text-xs text-slate-400">Will it close above the line? Real option odds vs the brain.</span></span>
+          <span className="text-blue-300 text-lg" aria-hidden>→</span>
+        </button>
+
+        <button onClick={() => navigate('/brain')} className="mt-3 w-full flex items-center justify-between rounded-2xl border border-green-400/25 bg-green-500/[0.06] px-4 py-3 text-left hover:border-green-300/50">
           <span><span className="block text-sm font-bold"><Activity className="inline w-4 h-4 -mt-0.5 mr-1.5 text-green-300" aria-hidden />Watch the brain learn, live</span><span className="block text-xs text-slate-400">Every belief makes it smarter. See it happen.</span></span>
           <span className="text-green-300 text-lg" aria-hidden>→</span>
         </button>

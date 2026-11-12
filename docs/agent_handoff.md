@@ -199,3 +199,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
   receipt (pull N and X from /v4/brain the same day). Appears after the next research run.
 - Files: backend/v4/research.py, brain.py, tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/brain_upgrades.md,
   docs/feature_ideas.md.
+
+## 2026-11-12 (build chat, CTO): new feature "Yes / No" (Murad's request)
+- "Will NVDA close above $150 on Fri Nov 21?" Market's odds from real option prices (N(d2) at the listed strike's IV),
+  the brain's lean (small capped nudge: MuLine trend, recent ideas on the stock, people's own YES/NO), and a fixed-risk
+  practice trade: YES = call spread (k1 at/below line, next strike up), NO = put spread. Opened via
+  practice_options.open_trade, so it shows in Portfolio and settles at expiration like other option trades.
+- Purely additive: own table `yesno_calls` (with point-in-time `features`), own endpoints /v4/yesno/*, own page /yes-no
+  (entry cards on Home and Practice, What's new line). Does NOT write beliefs/picks/outcomes, so the 90-day scorecard,
+  ranker research and promo numbers are unaffected. Don't route it into picks without a deliberate decision.
+- Feeds the brain: hourly cron (seeder auto) grades expired questions; once a trading day (10:00-15:30 NY) the brain asks
+  itself one question on 15 big tickers; nightly `yesno.learn()` fits a logistic model on graded questions and turns it
+  on only if it beats the market's odds on the newest unseen 30% (Brier gain > 0, paired t >= 1.5, min 200 graded).
+  Status in kv `yesno:model`, public at /v4/yesno/scorecard.
+- Real money: every quote carries `real_money` = the Alpaca multi-leg (mleg) limit order for the same two listed
+  contracts. available=false; brokerage.py doesn't place spreads yet and user real money is off (MP_REAL_MONEY).
+  When legal signs off, wire it through brokerage preview -> confirm -> cap; don't bypass that path.
+- Marketing routine: Murad wants a promo LAYOUT (storyboard + captions) for Yes / No made for tomorrow (Nov 13) for
+  his review. Same campaign rules as "Prove them wrong": honest numbers only, practice money, not investment advice,
+  "Coming soon. Got an invite? Jump in."; the brain's yes/no record is brand new, so don't claim it beats the market.
+- Files: backend/v4/yesno.py (new), db.py (table), router.py, seeder.py, tests; frontend YesNoPage.jsx (new), App.jsx,
+  ToolSelectorPage.jsx, PracticePage.jsx, WhatsNew.jsx, lib/api.js.

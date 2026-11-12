@@ -402,6 +402,53 @@ async def price_check(underlying: str, option_type: str, strike: float, expirati
     return await run_in_threadpool(pricecheck.check, underlying[:10], option_type, strike, expiration, pick_id)
 
 
+class YesNoCall(BaseModel):
+    user_id: str = "anonymous"
+    ticker: str
+    level: float
+    expiration: str
+    side: str
+    trade: bool = False
+    contracts: int = 1
+
+
+def _yesno(fn, *a):
+    from backend.v4 import yesno
+    try:
+        return fn(yesno)(*a)
+    except yesno.YesNoError as e:
+        return {"status": "error", "message": str(e)}
+
+
+@router.get("/yesno/expirations")
+async def yesno_expirations(ticker: str):
+    """Public: listed expirations, the live price and suggested lines for a Yes / No question."""
+    return await run_in_threadpool(_yesno, lambda m: m.expirations, ticker[:10])
+
+
+@router.get("/yesno/quote")
+async def yesno_quote(ticker: str, level: float, expiration: str):
+    """Public: the market's odds, the brain's lean and the YES / NO practice trades for one question."""
+    return await run_in_threadpool(_yesno, lambda m: m.quote, ticker[:10], level, expiration)
+
+
+@router.post("/yesno/call")
+async def yesno_call(body: YesNoCall):
+    return await run_in_threadpool(_yesno, lambda m: m.make_call, body.user_id, body.ticker[:10], body.level,
+                                   body.expiration, body.side, body.trade, body.contracts)
+
+
+@router.get("/yesno/mine")
+async def yesno_mine(user_id: str):
+    return await run_in_threadpool(_yesno, lambda m: m.mine, user_id)
+
+
+@router.get("/yesno/scorecard")
+async def yesno_scorecard():
+    """Public: the brain's yes/no lean vs the market's odds on graded questions."""
+    return await run_in_threadpool(_yesno, lambda m: m.scorecard)
+
+
 @router.get("/journey")
 async def get_journey():
     """Public: the owner's real-money trades, every fill, wins and losses. Off unless MP_JOURNEY_PUBLIC=on."""

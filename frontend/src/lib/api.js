@@ -163,3 +163,20 @@ export function paperTradeOptions({ ticker, structure, trade_legs, contracts, be
 export function closeOption(positionId) {
   return request("/api/paper-trading/close_option", { method: "POST", body: { user_id: userId(), position_id: positionId } });
 }
+
+/** Yes / No questions (2026-11-12). */
+export function yesnoExpirations(ticker) {
+  return request(`/v4/yesno/expirations?ticker=${encodeURIComponent(ticker)}`);
+}
+export function yesnoQuote(ticker, level, expiration) {
+  return request(`/v4/yesno/quote?${new URLSearchParams({ ticker, level, expiration })}`);
+}
+export function yesnoCall({ ticker, level, expiration, side, trade, contracts }) {
+  return request("/v4/yesno/call", { method: "POST", body: { user_id: userId(), ticker, level, expiration, side, trade, contracts } });
+}
+export function yesnoMine() {
+  return request(`/v4/yesno/mine?user_id=${encodeURIComponent(userId())}`);
+}
+export function yesnoScorecard() {
+  return request("/v4/yesno/scorecard");
+}

@@ -336,6 +336,28 @@ def _schema() -> list[str]:
             created_at TEXT NOT NULL,
             PRIMARY KEY (day, underlying)
         )""",
+        """CREATE TABLE IF NOT EXISTS yesno_calls (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            ticker TEXT NOT NULL,
+            level REAL NOT NULL,
+            expiration TEXT NOT NULL,
+            side TEXT NOT NULL,
+            market_p REAL NOT NULL,
+            brain_p REAL NOT NULL,
+            spot REAL,
+            strikes TEXT,
+            cost REAL,
+            payout REAL,
+            contracts INTEGER,
+            position_id TEXT,
+            created_at TEXT NOT NULL,
+            close_price REAL,
+            above INTEGER,
+            graded_at TEXT,
+            features TEXT
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_yesno_user ON yesno_calls(user_id)",
         """CREATE TABLE IF NOT EXISTS feature_log (
             id TEXT PRIMARY KEY,
             feature TEXT NOT NULL,

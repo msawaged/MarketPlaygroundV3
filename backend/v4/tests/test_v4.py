@@ -2789,3 +2789,131 @@ def test_trending_example_matches_the_theme_direction(monkeypatch):
     monkeypatch.setattr(engine.db, "query", lambda sql, args=(): rows if "FROM beliefs" in sql else [] if "FROM picks" in sql else real(sql, args))
     t = engine.trending(days=14)["themes"][0]
     assert t["direction"] == "bearish" and t["example"] == "No snow hurts ski resorts."
+
+
+# ----------------------------------------------------------------------------- Yes / No (2026-11-12)
+
+def _fake_chain(monkeypatch, iv=0.4):
+    from backend.v4 import yesno
+
+    def chain(u, strike, exp, days=21, band=0.15):
+        spot = market.latest_price(u)
+        out = []
+        for e in (TODAY + timedelta(days=9), TODAY + timedelta(days=16)):
+            for k in range(int(spot * 0.8), int(spot * 1.2) + 1):
+                for t in ("call", "put"):
+                    out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": e,
+                                "bid": 1.0, "ask": 1.1, "iv": iv})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: iv)
+    return yesno
+
+
+def test_yesno_math():
+    from backend.v4 import yesno
+    assert abs(yesno.prob_above(100, 100, 0.0001, 0.3) - 0.5) < 0.02
+    assert yesno.prob_above(100, 120, 7 / 365, 0.3) < 0.05
+    assert yesno.prob_above(100, 80, 7 / 365, 0.3) > 0.95
+    p, tilt = yesno.lean(0.5, 1, 1)
+    assert tilt == pytest.approx(0.27) and 0.5 < p < 0.58          # small, capped nudge
+    p, tilt = yesno.lean(0.5, -1, -1)
+    assert p < 0.5 and abs(p - 0.5) < 0.08
+    assert yesno.lean(0.3, 0, None) == (pytest.approx(0.3), 0.0)    # no read -> market's odds
+    assert yesno.strikes_around([95, 100, 105], 101) == (100, 105)
+    assert yesno.strikes_around([95, 100, 105], 100) == (100, 105)
+    assert yesno.strikes_around([100, 105], 99) is None
+    assert yesno.brier(0.7, True) == pytest.approx(0.09)
+
+
+def test_yesno_quote_call_grade(monkeypatch):
+    yesno = _fake_chain(monkeypatch)
+    spot = market.latest_price("WINR")
+    e = yesno.expirations("WINR")
+    assert e["expirations"][0] == (TODAY + timedelta(days=9)).isoformat() and e["spot"] == spot
+    lvl = float(int(spot))
+    q = yesno.quote("WINR", lvl, e["expirations"][0])
+    assert q["strikes"] == [lvl, lvl + 1] and q["vol_source"] == "market"
+    assert 0.3 < q["market_p"] < 0.8 and abs(q["brain_p"] - q["market_p"]) < 0.08
+    assert q["yes"]["payout"] == 100 and 0 < q["yes"]["cost"] < 100 and 0 < q["no"]["cost"] < 100
+    assert q["yes"]["legs"][0]["option_type"] == "call" and q["no"]["legs"][0]["option_type"] == "put"
+    with pytest.raises(yesno.YesNoError):
+        yesno.quote("WINR", spot * 3, e["expirations"][0])
+    with pytest.raises(yesno.YesNoError):
+        yesno.quote("WINR", lvl, (TODAY + timedelta(days=10)).isoformat())   # nothing listed that day
+    r = yesno.make_call("u1", "WINR", lvl, e["expirations"][0], "yes")
+    assert r["status"] == "success" and r["position_id"] is None
+    assert yesno.log_brain("WINR", lvl, e["expirations"][0]) and yesno.log_brain("WINR", lvl, e["expirations"][0]) is None
+    assert yesno.mine("u1")[0]["result"] == "open"
+    # after expiration: grade from the expiration day's close
+    later = TODAY + timedelta(days=12)
+    exp_close = 999.0
+    real = market.daily_closes
+    def closes(s):
+        d, c = real(s)
+        return d + [(TODAY + timedelta(days=9)).isoformat()], c + [exp_close]
+    monkeypatch.setattr(market, "daily_closes", closes)
+    monkeypatch.setattr(market, "today", lambda: later)
+    assert yesno.grade_due() == 2
+    assert yesno.mine("u1")[0]["result"] == "right" and yesno.mine("u1")[0]["close_price"] == 999.0
+    sc = yesno.scorecard()
+    assert sc["graded"] == 1 and sc["open"] == 0 and sc["people_graded"] == 1 and sc["people_right"] == 1.0
+
+
+def test_yesno_practice_trade(monkeypatch, tmp_path):
+    yesno = _fake_chain(monkeypatch)
+    from backend.v4 import practice_options
+    seen = {}
+    def fake_open(user_id, ticker, structure, legs, contracts, belief=""):
+        seen.update(user=user_id, legs=practice_options._clean_legs(legs, ticker), structure=structure, n=contracts)
+        return {"status": "success", "position_id": "opt-x", "message": "Opened."}
+    monkeypatch.setattr(practice_options, "open_trade", fake_open)
+    e = yesno.expirations("WINR")
+    lvl = float(int(market.latest_price("WINR")))
+    r = yesno.make_call("u2", "WINR", lvl, e["expirations"][0], "no", trade=True, contracts=3)
+    assert r["position_id"] == "opt-x" and seen["n"] == 3 and seen["structure"].startswith("Yes/No: NO")
+    assert [l["option_type"] for l in seen["legs"]] == ["Put", "Put"] and seen["legs"][0]["strike_price"] == lvl + 1
+
+
+def _yn_rows(n, signal, seed=1):
+    from backend.v4 import yesno
+    rnd = random.Random(seed)
+    for i in range(n):
+        trend = rnd.choice((-1.0, 1.0))
+        mp = rnd.uniform(0.3, 0.7)
+        p_true = yesno._sig(yesno._logit(mp) + signal * trend)
+        day = (date(2025, 1, 1) + timedelta(days=i)).isoformat()
+        exp = (date(2025, 1, 1) + timedelta(days=i + 7)).isoformat()
+        f = {"m_logit": yesno._logit(mp), "trend": trend, "ideas": 0.0, "crowd": 0.0, "dist_sd": 0.0}
+        db.execute("""INSERT INTO yesno_calls (id, user_id, ticker, level, expiration, side, market_p, brain_p, created_at,
+                      above, graded_at, features) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   (f"r{i}", "brain", "WINR", 100.0 + i, exp, "yes", mp, mp, day + "T15:00:00",
+                    1 if rnd.random() < p_true else 0, exp, db.dumps(f)))
+
+
+def test_yesno_learns_only_when_it_beats_the_market(monkeypatch):
+    yesno = _fake_chain(monkeypatch)
+    assert yesno.learn()["active"] is False                      # nothing graded yet
+    _yn_rows(900, signal=0.0)                                     # trend means nothing -> stays on starting rules
+    r = yesno.learn()
+    assert r["active"] is False and yesno.active_model() is None
+    db.execute("DELETE FROM yesno_calls")
+    _yn_rows(900, signal=1.2, seed=2)                             # trend really matters -> learned, goes live
+    r = yesno.learn()
+    assert r["active"] is True and r["t"] >= 1.5 and r["w"][2] > 0.5
+    lvl = float(int(market.latest_price("WINR")))
+    q = yesno.quote("WINR", lvl, (TODAY + timedelta(days=9)).isoformat())
+    assert q["brain_model"] == "learned" and set(q["features"]) == set(yesno.FEATS)
+    assert yesno.scorecard()["learning"]["active"] is True
+
+
+def test_yesno_real_money_order_is_ready_but_off(monkeypatch):
+    yesno = _fake_chain(monkeypatch)
+    lvl = float(int(market.latest_price("WINR")))
+    q = yesno.quote("WINR", lvl, (TODAY + timedelta(days=9)).isoformat())
+    rm = q["real_money"]
+    assert rm["available"] is False and rm["switch"] == "off"
+    o = rm["yes"]["order"]
+    assert o["order_class"] == "mleg" and o["type"] == "limit" and len(o["legs"]) == 2
+    assert [l["position_intent"] for l in o["legs"]] == ["buy_to_open", "sell_to_open"]
+    assert rm["yes"]["max_loss"] + rm["yes"]["max_gain"] == pytest.approx(100.0)

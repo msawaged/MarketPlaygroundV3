@@ -14,6 +14,7 @@ import BrainPage from './components/BrainPage';
 import ReelPage from './components/ReelPage';
 import StoryPage from './components/StoryPage';
 import JourneyPage from './components/JourneyPage';
+import YesNoPage from './components/YesNoPage';
 import { useAccount } from './lib/auth';
 
 // Heavier, less-used screens load on demand.
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/reset" element={<ResetPage />} />
           <Route path="/basket-builder" element={g(<BasketBuilderPage />)} />
           <Route path="/portfolio" element={g(<PracticePage />)} />
+          <Route path="/yes-no" element={g(<YesNoPage />)} />
           <Route path="*" element={<Navigate to="/select-tool" replace />} />
         </Routes>
       </Suspense>

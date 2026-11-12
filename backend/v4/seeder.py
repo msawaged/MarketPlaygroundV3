@@ -384,6 +384,11 @@ def main() -> None:
             print("option vol log:", pricecheck.log_daily())
         except Exception as e:
             print(f"option vol log failed: {e}")
+        try:  # Yes / No: grade expired questions; once a trading day the brain asks its own
+            from . import yesno
+            print("yes/no:", yesno.daily())
+        except Exception as e:
+            print(f"yes/no failed: {e}")
         print(json.dumps(auto_with_health(), indent=2, default=str))
         return
     print(json.dumps(run(args.mode, args.n, args.generate, args.years, args.concurrency, args.max_usd, args.model), indent=2))
