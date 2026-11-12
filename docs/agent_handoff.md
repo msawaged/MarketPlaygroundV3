@@ -166,3 +166,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - engine.trending: a theme card's sample summary now comes from the newest belief in the card's (majority) direction,
   so "Bearish" is never shown above a bullish summary. WhatsNew: Price check line, UPDATED 'Nov 11'.
   Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx, docs/polish_log.md.
+
+## 2026-11-12 (build chat, CTO): campaign "Prove them wrong" (all routines read this)
+- Murad's direction: the next promos push back on "AI bot desk turned $87 into $8,000" style hype reels. Our angle is
+  receipts, not hype: every call graded in public, the small but real edge, and the gate that turns off our own models.
+- Rules for every reel/caption/social post in this campaign: never name, show or tag another creator; no claims about
+  their results beyond "claimed / unverified"; every number pulled live from /v4/brain the same day (skill.top vs
+  skill.rest at 90 days, counts.graded, ranker.active + oos vs old); practice money, "not investment advice";
+  keep "Coming soon. Got an invite? Jump in." until launch. Murad posts; we never post.
+- First reel is built (prove_them_wrong.mp4): #1 pick beat the S&P 500 over 90 days 53.4% vs 51.3% for our other
+  ideas (4,398 / 18,881 graded); 112,595 calls graded; the risk-matched gate switched the learned ranker off on
+  2026-11-11 (ridge 53.0% vs current ranking 54.2%).
+- Daily "Market's open" reel: when the day's story allows, end on one honest receipt line (e.g. today's graded count).
+- Research/brain routines: the hype reel's "Skeptic" bot (argues against each trade, e.g. reward:risk < 2:1 → skip) is
+  a testable idea. Treat it as a candidate filter in ranker research (does skipping low reward:risk ideas raise
+  beat_adj out of sample?). Ship only if it passes `_passes`; log the result either way.
+- Weekly growth report: track this campaign's posts separately when Murad shares numbers.
