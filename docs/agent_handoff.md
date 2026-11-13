@@ -276,3 +276,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - feature_ideas.md: "Honest t-stats" proposal (Newey-West / date-clustered t's: 2,703 test beliefs sit on 429 dates
   with overlapping 90-day windows; reporting only).
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.
+
+## 2026-11-13 (weekly brain upgrade routine)
+- Lineages now score each strategist's #1 within the belief's own direction (`lineages._lead`, `lead` flag from
+  `b.direction` in `_graded_beliefs`), the same rule research got on 2026-11-11. Champion gate constants unchanged.
+  Expect lineage fitness on the brain page to dip a little after tonight's evolve; that's the leak coming out, not a bug.
+- Health ok; NN retrains are frozen at n_train 11,408 because 90-day labels only exist for practice calls until
+  real-time calls reach 90 days (~late Jan); identical shadow results day to day are expected.
+- Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md.

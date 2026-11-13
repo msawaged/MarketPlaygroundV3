@@ -451,3 +451,28 @@ real-time check. If learned models fall clearly below the app no-look-ahead base
 - **Caveat:** Bonferroni/Holm assume roughly independent tests; many of ours are correlated momentum variants, so the
   bar errs strict. Overlapping 90-day windows likely also inflate the plain t-stats (not addressed here).
 - Files: backend/v4/research.py, backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx.
+
+## 2026-11-13 (weekly) — Lineages choose their #1 within the belief's own direction (follow-up to 2026-11-11)
+
+**Problem (real numbers).** The 2026-11-11 fix made ranker v2 pick a belief's #1 the way the engine shows it (ideas in
+the belief's own direction first, `engine._leads`), but `lineages.score` still took each strategist's favourite over
+*all* directional ideas. On the lineages' own window (300 most recent graded beliefs, 90-day checkpoint, read-only
+SQL today): in bullish beliefs the **shorts averaged +4.11% vs the S&P (beat 58.9%, 56 ideas)** against **−1.21%
+(44.4%, 728 ideas)** for the longs that weren't the app's #1. A strategist that liked those shorts scored fitness for a
+#1 users can never be shown, so evolution (10 generations, all 8 alive are now Trend-riders, fitness +2.4–3.0%) was
+partly selecting for "pick the other direction", and the champion gate (`pick_champion`: live record vs the app's
+#1, which always obeys the rule) would compare unevenly once live 90-day calls arrive (~late January).
+
+**Change.** `_graded_beliefs` reads the belief's direction and marks each idea `lead` (belief not bullish/bearish, or
+idea direction equals it). `score` picks the strategist's #1 within the lead group (`_lead`, falls back to all ideas),
+so fitness, evolution and the live record all measure what users would get. `_baseline` (app's #1), `LIVE_MIN`,
+`LIVE_MARGIN`, `CHAMPION_WEIGHT`, the 90-day checkpoint and the engine path are unchanged: this only removes credit
+the old scoring gave; it can't make a champion easier to earn. Memory: one bool per idea in a 300-belief window.
+
+**Checks.** Backend tests: 137 passed (new: `test_lineages_pick_the_number_one_within_the_beliefs_own_direction`).
+Commit: see git log ("Lineages: choose each strategist's #1 within the belief's own direction").
+
+**What counts as a win.** After the next nightly evolve, alive fitness should drop by roughly the old off-direction
+credit (expect a few tenths of a point) and the ranking of strategists may reshuffle. Over the following generations,
+the best strategist's fitness on the window should move toward or above the app's #1 on the same calls (~+3.1% on
+today's window) without the leak; in late January, a champion is only crowned on a fair live comparison.

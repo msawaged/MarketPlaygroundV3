@@ -1372,6 +1372,30 @@ def test_lineages_leave_out_volatile_ideas():
     assert lineages.score_candidates({"vol60": 1.0}, nums, ["bullish", "volatile", "volatile"]) is None
 
 
+def test_lineages_pick_the_number_one_within_the_beliefs_own_direction():
+    """The engine shows a bullish belief's longs first, so a strategist that 'picks' the short on a competitor gets
+    no credit for it: its #1 is its favourite among the longs (same rule as research._lead)."""
+    from backend.v4 import lineages
+    for i in range(10):
+        bid = f"b-linlead{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", f"2097-03-{1 + i:02d}T00:00:00", "2026-01-01", "seed_backfill", "bullish"))
+        # two longs (the calm one does better) and a short on a competitor with the highest vol60 and a big win
+        for j, (d, vol, ex) in enumerate((("bullish", 0.2, 0.02), ("bullish", 0.5, -0.02), ("bearish", 0.9, 0.12))):
+            pid = f"p-linlead{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"L{j}", d, "2026-01-01", 10.0, db.dumps({"num": {"vol60": vol}}), j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, ex, "2026-02-01"))
+    beliefs = lineages._graded_beliefs(since="2097-01-01", limit=10)
+    assert len(beliefs) == 10 and all(len(b) == 3 for b in beliefs)
+    assert all(sum(not c["lead"] for c in b) == 1 for b in beliefs)
+    risky, calm = lineages.score({"vol60": 1.0}, beliefs), lineages.score({"vol60": -1.0}, beliefs)
+    assert abs(risky["fitness"] + 0.02) < 1e-9  # its #1 is the riskier long, not the short (+12%) it liked best
+    assert abs(calm["fitness"] - 0.02) < 1e-9 and calm["fitness"] > risky["fitness"]
+    assert lineages._baseline(beliefs)["fitness"] == 0.02  # the app's #1 (rank 0) is the calm long
+
+
 def test_champion_moves_ranking_but_never_breaks_a_belief(monkeypatch):
     from backend.v4 import lineages
     monkeypatch.setattr(lineages, "champion", lambda: {"id": "st-x", "name": "Momentum · Gen 9", "weights": {"mom60": 5.0}})

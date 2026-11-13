@@ -133,7 +133,7 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
     """Candidates of the most recent graded beliefs: [[{feat..., ex, top}, ...], ...]. `since`: only beliefs created
     after that time (a strategist's live record: calls it never saw). Directional ideas only (see directional)."""
     rows = db.query(
-        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at
+        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at, b.direction AS bdir
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ? AND b.created_at > ?
            ORDER BY b.created_at DESC""", (CHECKPOINT, since or ""))
@@ -147,8 +147,10 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
                 continue
             by[r["belief_id"]] = []
             order.append(r["belief_id"])
+        core = str(r.get("bdir") or "").lower()
         by[r["belief_id"]].append(features_of(r["features"], r["direction"], ex=float(r["dir_excess"]),
-                                              top=r["final_rank"] == 0))  # 0-based: 0 is the app's #1
+                                              top=r["final_rank"] == 0,  # 0-based: 0 is the app's #1
+                                              lead=core not in ("bullish", "bearish") or str(r["direction"]).lower() == core))
     return [by[b] for b in order if len(by[b]) >= 2]  # a choice needs at least two candidates
 
 
@@ -172,10 +174,20 @@ def _baseline(beliefs: list[list[dict]]) -> dict:
     return {"fitness": sum(xs) / n if n else 0.0, "beat_rate": sum(1 for x in xs if x > 0) / n if n else 0.0, "n": n}
 
 
+def _lead(cands: list[dict]) -> list[dict]:
+    """The ideas that can be a belief's #1. The engine always shows ideas in the belief's own direction first
+    (engine._leads), so a strategist can only reorder within that group; scoring its favourite over all ideas gave
+    credit for a #1 users could never be shown (same fix as research._lead, 2026-11-11). On the 300-belief window
+    (2026-11-13), shorts inside bullish beliefs averaged +4.11% vs the S&P (beat 58.9%) against -1.21% (44.4%) for
+    the longs that weren't the app's #1, so evolution rewarded picking the opposite direction."""
+    keep = [c for c in cands if c.get("lead", True)]
+    return keep or cands
+
+
 def score(weights: dict, beliefs: list[list[dict]]) -> dict:
     results = []
     for cands in beliefs:
-        best = max(cands, key=lambda c: raw_score(weights, c))
+        best = max(_lead(cands), key=lambda c: raw_score(weights, c))
         results.append(best["ex"])
     n = len(results)
     return {"fitness": sum(results) / n if n else 0.0, "beat_rate": sum(1 for x in results if x > 0) / n if n else 0.0, "n": n}
