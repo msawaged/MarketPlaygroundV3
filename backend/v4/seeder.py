@@ -121,6 +121,21 @@ def _lower_first(sentence: str, context: str = "") -> str:
     return w[0].lower() + sentence[len(w[0]):] if w[0].isupper() else sentence
 
 
+_COMPOUND = re.compile(
+    r",\s*(and|but|while|so|yet)\b|\b(but|while|whereas)\b|\band\s+(could|may|might|will|would|can|should|then)\b"
+    r"|;", re.I)
+_NEGATED = re.compile(r"\b(not|no|never|won't|can't|cannot|don't|doesn't|isn't|aren't|wasn't|weren't|shouldn't|wouldn't)\b"
+                      r"|n['’]t\b", re.I)
+
+
+def _negatable(hunch: str) -> bool:
+    """True when "I don't think <hunch>" reads as one clean opposite. Two linked claims ("X will face scrutiny and
+    could drag on Tesla", "outages will fade slowly, and customers may spread workloads") or a hunch that already has
+    a negation ("... won't change ...") give an ambiguous or double-negative opposite, which the interpreter can read
+    as the same side, so the brain would learn both sides of the story as one."""
+    return not (_COMPOUND.search(hunch) or _NEGATED.search(hunch))
+
+
 def news_beliefs(limit: int) -> list[str]:
     """Today's real headlines as hunches (from the Moving now feed), each paired with its opposite so the
     network sees both sides of real news. Only ones not seeded before."""
@@ -137,7 +152,8 @@ def news_beliefs(limit: int) -> list[str]:
         if not h or h == it.get("headline"):
             continue  # no AI rewrite: a raw headline isn't a belief
         context = " ".join([it.get("summary") or "", it.get("why") or ""] + [c.get("why") or "" for c in it.get("companies", [])])
-        for b in (h, f"I don't think {_lower_first(h, context)}"):
+        sides = [h] + ([f"I don't think {_lower_first(h, context)}"] if _negatable(h) else [])
+        for b in sides:
             if b.lower() not in used and b not in out:
                 out.append(b)
     return out[:limit]

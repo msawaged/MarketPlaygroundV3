@@ -227,3 +227,32 @@ Changed:
 - Tests: breakeven, and YES + NO add up when call and put IVs differ.
 
 Checks: vite build passes, backend tests 135 passed.
+
+## 2026-11-13
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~21:25
+UTC: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). Walked a
+signed-in DAL Bull Call Spread locally (offline server): $58/$64, $218 per contract, 4 for $872, max gain $1,528,
+breakeven $60.18, +175% on a 20% rise; all add up. Live /v4/yesno/quote NVDA $190 Nov 20: YES $21 + NO $228 = $249 for
+$250 (rounding), breakevens consistent.
+
+Found:
+- Brain page "Just learned" showed "I don't think a Tesla-SpaceX merger would face heavy scrutiny and could drag on
+  Tesla → TSLA ▼": the opposite side reads as the same bet. DB: both the hunch and its "I don't think" opposite were
+  interpreted bearish on TSLA; "Cloud outages will fade slowly, and customers may spread workloads ..." got an opposite
+  with a stray capital ("I don't think Cloud outages ...") whose meaning is unclear. Negating two linked claims (", and", "and could", "but", "while", ", so") or an
+  already-negative hunch ("... won't change ...", giving "I don't think ... won't") is ambiguous, so the brain learned
+  the same side twice. Since Oct 30: 9 such compound pairs, 5 with the same direction on both sides.
+- Close Call said "We couldn't find listed options on SPY right now. Try a bigger company." when the chain failed to
+  load: SPY is the biggest there is.
+
+Changed:
+- backend/v4/seeder.py: news_beliefs adds the "I don't think" opposite only for single, un-negated claims
+  (`_negatable`); the hunch itself is still learned. Test: test_news_opposite_side_only_for_single_claims.
+- backend/v4/yesno.py: "We couldn't load options on X expiring in the next few weeks. The quote feed may be busy: try
+  again in a minute. (Not every company has listed options.)"
+
+Not changed (noted): Moving now showed 1 story at Friday 21:20 UTC (Claude kept 1 of 30 headlines, mostly
+press releases after the close); not a bug.
+
+Checks: vite build passes, backend tests 138 passed.

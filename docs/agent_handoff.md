@@ -284,3 +284,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Health ok; NN retrains are frozen at n_train 11,408 because 90-day labels only exist for practice calls until
   real-time calls reach 90 days (~late Jan); identical shadow results day to day are expected.
 - Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md.
+
+## 2026-11-13 evening (daily polish walk)
+- Seeder news beliefs: the "I don't think ..." opposite is now made only for single, un-negated hunches
+  (`seeder._negatable`): compound ("X and could Y", ", and", "but", "while", ", so") or already-negative hunches gave
+  ambiguous opposites that were learned as the same side (e.g. both Tesla-SpaceX sides bearish TSLA). Fewer seed_news
+  beliefs per hour (~5%); no gate or ranker change.
+- Close Call: clearer "couldn't load options" message (was "Try a bigger company" even for SPY).
+- Files: backend/v4/seeder.py, backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md.

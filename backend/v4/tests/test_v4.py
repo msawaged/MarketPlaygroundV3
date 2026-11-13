@@ -1092,6 +1092,21 @@ def test_brain_learns_from_real_news_both_sides(monkeypatch):
     assert r["ok"] == 2 and {s for _, s in seen} == {"seed_news"} and {t for t, _ in seen} == set(got)
 
 
+def test_news_opposite_side_only_for_single_claims(monkeypatch):
+    """A compound or already-negated hunch has no clean opposite ("I don't think a merger would face scrutiny and could
+    drag on Tesla" was read as bearish TSLA, like the original), so only the hunch itself is learned."""
+    from backend.v4 import movers, seeder
+    hunches = ["A Tesla-SpaceX merger would face heavy scrutiny and could drag on Tesla",
+               "Cloud outages will fade slowly, and customers may spread workloads across providers",
+               "Democratic midterm wins won't change economic policy for a while",
+               "Peloton's refinancing will ease debt pressure but dilute future shareholder returns",
+               "A 90-day shipping waiver will ease oil and fertilizer supply worries"]
+    feed = {"items": [{"headline": f"h{i}", "hunch": h} for i, h in enumerate(hunches)]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: feed)
+    got = seeder.news_beliefs(20)
+    assert got == hunches + ["I don't think a 90-day shipping waiver will ease oil and fertilizer supply worries"]
+
+
 def test_opposite_side_keeps_names_and_acronyms_capitalised():
     f = seeder._lower_first
     assert f("AI demand will keep lifting chips") == "AI demand will keep lifting chips"

@@ -112,7 +112,8 @@ def expirations(ticker: str) -> dict:
     chain = market.option_chain_near(u, spot, t + timedelta(days=MAX_DAYS // 2), days=MAX_DAYS // 2 + 1, band=0.03)
     exps = sorted({r["expiration"] for r in chain if t < r["expiration"] <= t + timedelta(days=MAX_DAYS)})
     if not exps:
-        raise YesNoError(f"We couldn't find listed options on {u} right now. Try a bigger company.")
+        raise YesNoError(f"We couldn't load options on {u} expiring in the next few weeks. The quote feed may be busy: "
+                         "try again in a minute. (Not every company has listed options.)")
     step = _nice_step(spot)
     base = round(spot / step) * step
     lines = sorted({round(base + i * step, 2) for i in (-2, -1, 0, 1, 2)})
