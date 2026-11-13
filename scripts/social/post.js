@@ -5,6 +5,10 @@
 //   node scripts/social/post.js --type story # force a type: story | scorecard | pitch
 //   node scripts/social/post.js --dry-run    # never posts, even if live
 //
+// Queue (2026-11-13): a folder in scripts/social/queue/<id>/ with video.mp4 + caption.txt is posted before any
+// auto-made post, oldest id first, once each (state.queue_done). The bot pulls the repo first so new queue items
+// arrive without anyone touching the Mac. Murad approves what goes in the queue; the CTO session adds it.
+//
 // Config and state live in ~/.mp_social/ (never in the repo): config.json holds the tokens, state.json what was posted.
 const fs = require('fs');
 const os = require('os');
@@ -31,9 +35,18 @@ const write = (f, v) => { fs.mkdirSync(path.dirname(f), { recursive: true }); fs
   const today = (state.posted || []).filter((p) => p.at.startsWith(day)).length;
   if (live && today >= (cfg.max_per_day || 2)) { console.log(`Already posted ${today} today; skipping.`); return; }
 
+  try {  // pick up newly approved queue items
+    require('child_process').execSync('git pull --ff-only -q', { cwd: path.join(__dirname, '..', '..'), stdio: 'ignore', timeout: 60000 });
+  } catch { /* offline or local changes: use what's here */ }
   const outDir = path.join(HOME, 'out', new Date().toISOString().replace(/[:.]/g, '-'));
   fs.mkdirSync(outDir, { recursive: true });
-  const post = await make(outDir, state, opt('--type'));
+  const qdir = path.join(__dirname, 'queue');
+  const done = new Set(state.queue_done || []);
+  const qid = opt('--type') ? null : (fs.existsSync(qdir) ? fs.readdirSync(qdir).sort() : [])
+    .find((d) => !done.has(d) && fs.existsSync(path.join(qdir, d, 'video.mp4')) && fs.existsSync(path.join(qdir, d, 'caption.txt')));
+  const post = qid
+    ? { type: 'queued', video: path.join(qdir, qid, 'video.mp4'), caption: fs.readFileSync(path.join(qdir, qid, 'caption.txt'), 'utf8').trim(), headline: qid }
+    : await make(outDir, state, opt('--type'));
   fs.writeFileSync(path.join(outDir, 'caption.txt'), post.caption);
   console.log(`\n[${post.type}] ${post.video}\n---\n${post.caption}\n---`);
 
@@ -54,7 +67,8 @@ const write = (f, v) => { fs.mkdirSync(path.dirname(f), { recursive: true }); fs
       console.log(`TikTok: posted ${rec.tiktok}`);
     } catch (e) { rec.tiktok_error = e.message; console.error(`TikTok failed: ${e.message}`); }
   }
-  state.last_type = post.type;
+  if (qid && (rec.instagram || rec.tiktok)) state.queue_done = [...done, qid];
+  if (!qid) state.last_type = post.type;
   state.posted = [...(state.posted || []), rec].slice(-200);
   write(STATE, state);
   if (rec.instagram_error && rec.tiktok_error) process.exit(1);

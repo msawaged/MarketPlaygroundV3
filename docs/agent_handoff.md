@@ -235,3 +235,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Murad asked for a name: **Close Call** (every question is about where a stock closes). Page title, Home card,
   Practice link, What's new and practice-trade label renamed; route /close-call added (/yes-no still works).
   Backend module/table/endpoints keep the yesno name (internal). Marketing: call the feature "Close Call".
+
+## 2026-11-12 night (build chat, CTO): social bot queue + first queued post
+- Murad approved "Close Call vs Polymarket" (78s, voiceover) and asked to hand it to the posting agent.
+- scripts/social/post.js now: git pull --ff-only before each run; posts the oldest item in scripts/social/queue/<id>/
+  (video.mp4 + caption.txt) before any auto-made post; marks it done in ~/.mp_social/state.json only after a
+  successful post. Queued: 2026-11-13-close-call. Only Murad-approved posts go in the queue.

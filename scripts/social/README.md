@@ -37,3 +37,9 @@ Notes:
 - If the Mac is asleep at a scheduled time, the post goes out when it wakes.
 - Bot videos are silent; adding a trending sound in the app is fine. The daily "Market's open" reel (scripts/make_reel.js) has a voiceover (scripts/reel_voice.py) and no music, so a trending sound can go under it at low volume.
 - Tokens stay in `~/.mp_social` (chmod 600), never in the repo.
+
+## Queue (approved one-off posts)
+
+Put `video.mp4` + `caption.txt` in `scripts/social/queue/<yyyy-mm-dd-name>/`. The next run posts the oldest unposted
+item instead of an auto-made one (once; tracked in `state.json` `queue_done`). Each run does a `git pull --ff-only`
+first, so items pushed to `v4-polish` reach the Mac on their own. Only Murad-approved posts go in the queue.
