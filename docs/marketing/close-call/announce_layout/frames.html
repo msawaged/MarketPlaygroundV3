@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:540px;height:960px;overflow:hidden;background:#020617;color:#fff;font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.05) 1px,transparent 1px);background-size:36px 36px}
+body::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,rgba(77,163,255,.20),transparent 62%)}
+.scene{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 40px;gap:26px}
+.top{position:absolute;top:70px;left:0;right:0;z-index:2;display:flex;justify-content:center;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#94a3b8;letter-spacing:.04em}
+.top img{width:30px;height:30px;border-radius:8px}
+.kicker{font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:#4DA3FF;font-weight:800}
+.huge{font-family:'Inter Display',Inter;font-weight:900;font-size:104px;line-height:.92;letter-spacing:-.035em}
+.big{font-family:'Inter Display',Inter;font-weight:800;font-size:48px;line-height:1.06;letter-spacing:-.025em}
+.mid{font-size:22px;font-weight:600;line-height:1.35;color:#cbd5e1}
+.blue{color:#4DA3FF}.yes{color:#4ade80}.no{color:#f87171}
+.card{width:100%;border-radius:28px;background:rgba(15,23,42,.88);border:1px solid rgba(148,163,184,.22);padding:26px;text-align:left;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+.lbl{font-size:14px;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;font-weight:700}
+.q{font-size:30px;font-weight:800;line-height:1.2;margin-top:10px}
+.chips{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.chip{padding:11px 18px;border-radius:14px;border:1px solid #334155;background:rgba(30,41,59,.7);font-weight:800;font-size:18px;color:#cbd5e1}
+.chip.on{border-color:#4DA3FF;background:rgba(77,163,255,.2);color:#fff}
+.ph{display:inline-block;width:54px;height:12px;border-radius:6px;background:#475569;vertical-align:middle}
+.row{display:flex;justify-content:space-between;font-size:18px;color:#cbd5e1;margin-top:20px}
+.bar{height:18px;border-radius:99px;background:#1e293b;overflow:hidden;margin-top:10px}
+.bar>div{height:100%;border-radius:99px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%}
+.tile{border-radius:24px;padding:30px 20px;text-align:center}
+.tile b{font-size:54px;font-weight:900;display:block}
+.tile span{font-size:16px;color:#cbd5e1}
+.y{border:2px solid rgba(74,222,128,.5);background:rgba(34,197,94,.09)}
+.n{border:2px solid rgba(248,113,113,.5);background:rgba(239,68,68,.09)}
+.list{width:100%;display:flex;flex-direction:column;gap:12px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-radius:18px;background:rgba(15,23,42,.88);border:1px solid rgba(148,163,184,.2);font-size:19px;font-weight:700}
+.pill{font-size:15px;padding:6px 14px;border-radius:99px;font-weight:800}
+.pr{background:rgba(34,197,94,.2);color:#bbf7d0}.pw{background:rgba(239,68,68,.2);color:#fecaca}.pp{background:#334155;color:#cbd5e1}
+.foot{position:absolute;left:30px;right:30px;bottom:150px;z-index:2;font-size:14px;color:#64748b;text-align:center;font-weight:600}
+.logo{width:150px;height:150px;border-radius:36px;box-shadow:0 0 80px rgba(77,163,255,.35)}
+.cta{font-size:26px;font-weight:800;padding:18px 30px;border-radius:20px;background:#4DA3FF;color:#020617}
+</style></head><body>
+<div class="top"><img src="icon.png">MarketPlayground</div>
+
+<section class="scene" id="s1">
+  <div class="kicker">New feature</div>
+  <div class="huge">Close<br><span class="blue">Call</span></div>
+  <div class="mid">One question. <span class="yes">Yes</span> or <span class="no">no</span>.</div>
+</section>
+
+<section class="scene" id="s2">
+  <div class="big">Pick a stock.<br>Ask one question.</div>
+  <div class="card">
+    <div class="lbl">Close Call</div>
+    <div class="q">Will it close above <span class="blue">this price</span>?</div>
+    <div class="chips"><div class="chip"><span class="ph"></span></div><div class="chip on">this price</div><div class="chip"><span class="ph"></span></div><div class="chip"><span class="ph"></span></div></div>
+  </div>
+</section>
+
+<section class="scene" id="s3">
+  <div class="big">The market's odds.<br><span class="blue">The brain's odds.</span></div>
+  <div class="card">
+    <div class="row" style="margin-top:0"><span>Market's odds</span><span class="lbl">from option prices</span></div>
+    <div class="bar"><div style="width:46%;background:linear-gradient(90deg,#64748b,#cbd5e1)"></div></div>
+    <div class="row"><span>Brain's lean</span><span class="lbl">record: brand new</span></div>
+    <div class="bar"><div style="width:52%;background:linear-gradient(90deg,#1d4ed8,#4DA3FF)"></div></div>
+  </div>
+  <div class="mid">Side by side. You decide.</div>
+</section>
+
+<section class="scene" id="s4">
+  <div class="big">Got an idea?<br>Answer it.</div>
+  <div class="tiles">
+    <div class="tile y"><b class="yes">YES</b><span>practice money</span></div>
+    <div class="tile n"><b class="no">NO</b><span>practice money</span></div>
+  </div>
+</section>
+
+<section class="scene" id="s5">
+  <div class="big">Every answer<br>gets <span class="blue">graded.</span></div>
+  <div class="list">
+    <div class="li"><span>Your answer</span><span class="pill pr">right</span></div>
+    <div class="li"><span>Your answer</span><span class="pill pw">wrong</span></div>
+    <div class="li"><span>The brain's answer</span><span class="pill pp">waiting</span></div>
+  </div>
+  <div class="mid">Yours and the brain's.</div>
+</section>
+
+<section class="scene" id="s6">
+  <img class="logo" src="icon.png">
+  <div class="big">Close <span class="blue">Call</span></div>
+  <div class="mid">Coming soon.</div>
+  <div class="cta">Got an invite? Jump in.</div>
+</section>
+
+<div class="foot">Practice money. Not investment advice.</div>
+<script>const s=new URLSearchParams(location.search).get('s')||'s1';document.getElementById(s).style.display='flex';if(s==='s6')document.querySelector('.top').style.display='none';</script>
+</body></html>

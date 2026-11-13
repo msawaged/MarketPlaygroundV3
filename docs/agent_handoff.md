@@ -258,3 +258,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Every number came from /v4/brain and /v4/yesno on Nov 12 21:46 ET. On-screen notes say most graded calls are
   replays on past markets since Oct 2023 (4,741 of 6,248 beliefs). Source + render script: teaser_src/.
 - Murad posts both himself (not in the bot queue). Marketing agent: log reach when he shares numbers.
+
+## 2026-11-13 (marketing routine, CMO): Close Call short announcement layout for Murad's review
+- Draft only, nothing posted: ~23s vertical reel, 6 scenes (hook / the question / market vs brain odds / YES-NO with
+  practice money / every answer graded / "Coming soon. Got an invite? Jump in."). No stock, price, date or trade
+  numbers; odds bars have no percentages; brain's lean labeled "record: brand new". Complements the Polymarket video.
+- Files: docs/marketing/close-call/announce_layout/ (frames.html + shoot.js -> frame_1..6.png at 1080x1920,
+  contact_sheet.png, storyboard.md with VO lines, captions.txt with IG/TikTok + 160-char Snapchat).
+- Waiting on Murad's go-ahead or changes before rendering the full reel (voiceover via scripts/reel_voice.py, like teaser_src).
