@@ -3031,3 +3031,27 @@ def test_yesno_sides_add_up_when_call_and_put_ivs_differ(monkeypatch):
     e = yesno.expirations("WINR")
     q = yesno.quote("WINR", float(int(market.latest_price("WINR"))), e["expirations"][0])
     assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.5
+
+
+def test_hq_board_and_messages(monkeypatch, tmp_path):
+    from backend.v4 import hq
+    (tmp_path / "status").mkdir()
+    (tmp_path / "agents.json").write_text(json.dumps([{"key": "reel", "name": "Reel", "role": "r", "schedule": "s", "trigger": None},
+                                                      {"key": "polish", "name": "Polish", "role": "p", "schedule": "s", "trigger": None}]))
+    (tmp_path / "status" / "reel.json").write_text(json.dumps({"updated_at": "2026-11-13T15:00:00Z", "last_run": "Made the reel.",
+        "needs_from_murad": ["Post today's reel"], "read_up_to": 1, "replies": [{"re": 1, "body": "On it.", "at": "2026-11-13T15:01:00Z"}]}))
+    monkeypatch.setattr(hq, "ROOT", tmp_path)
+    monkeypatch.setattr(hq, "RAW", "http://127.0.0.1:9/")   # unreachable -> deployed copy
+    hq._cache.clear()
+    assert hq.post("Everyone: focus on Close Call", "all")["id"] == 1
+    assert hq.post("Reel: shorter please", "reel")["id"] == 2
+    assert hq.post("x", "nobody")["to"] == "all"
+    with pytest.raises(hq.HQError):
+        hq.post("  ")
+    b = hq.board()
+    reel = next(a for a in b["agents"] if a["key"] == "reel")
+    pol = next(a for a in b["agents"] if a["key"] == "polish")
+    assert reel["unread"] == 2 and pol["unread"] == 2       # reel read #1; #2 (to reel) and #3 (all) are new
+    assert b["needs"] == [{"agent": "reel", "name": "Reel", "need": "Post today's reel"}]
+    kinds = [t["kind"] for t in b["thread"]]
+    assert "agent" in kinds and "status" in kinds and kinds.count("murad") == 3

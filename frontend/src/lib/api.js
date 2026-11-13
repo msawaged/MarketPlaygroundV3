@@ -180,3 +180,11 @@ export function yesnoMine() {
 export function yesnoScorecard() {
   return request("/v4/yesno/scorecard");
 }
+
+/** Agent HQ (owner only, 2026-11-13). */
+export function hqBoard() {
+  return request("/v4/hq");
+}
+export function hqPost(body, to = "all") {
+  return request("/v4/hq/message", { method: "POST", body: { body, to } });
+}

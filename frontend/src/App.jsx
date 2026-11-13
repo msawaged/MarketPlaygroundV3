@@ -15,6 +15,7 @@ import ReelPage from './components/ReelPage';
 import StoryPage from './components/StoryPage';
 import JourneyPage from './components/JourneyPage';
 import YesNoPage from './components/YesNoPage';
+import HQPage from './components/HQPage';
 import { useAccount } from './lib/auth';
 
 // Heavier, less-used screens load on demand.
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/portfolio" element={g(<PracticePage />)} />
           <Route path="/yes-no" element={g(<YesNoPage />)} />
           <Route path="/close-call" element={g(<YesNoPage />)} />
+          <Route path="/hq" element={g(<HQPage />)} />
           <Route path="*" element={<Navigate to="/select-tool" replace />} />
         </Routes>
       </Suspense>

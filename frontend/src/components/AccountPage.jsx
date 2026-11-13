@@ -328,6 +328,13 @@ function Brokerage() {
   else status = 'OFF: practice mode only. You can still sell what you hold, and take-profit / max-loss exits keep working.';
 
   return (
+    <>
+    {b.owner && (
+      <a href="/hq" className="mt-3 flex items-center justify-between rounded-2xl border border-blue-400/40 bg-blue-500/[0.07] px-4 py-3">
+        <span><span className="block text-sm font-bold">Agent HQ</span><span className="block text-xs text-slate-400">All your agents at one table. Talk to them, see what they need.</span></span>
+        <span className="text-blue-300" aria-hidden>→</span>
+      </a>
+    )}
     <Card className={`mt-3 ${b.on ? 'border-green-400/50 bg-green-500/5' : 'border-amber-300/30 bg-amber-400/5'}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
@@ -393,6 +400,7 @@ function Brokerage() {
         </>
       )}
     </Card>
+    </>
   );
 }
 

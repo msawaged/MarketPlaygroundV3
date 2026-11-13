@@ -402,6 +402,36 @@ async def price_check(underlying: str, option_type: str, strike: float, expirati
     return await run_in_threadpool(pricecheck.check, underlying[:10], option_type, strike, expiration, pick_id)
 
 
+class HQMessage(BaseModel):
+    body: str
+    to: str = "all"
+
+
+def _hq_owner(authorization):
+    from backend.v4 import auth, brokerage
+    acc = auth.account_for_token(_token(authorization))
+    if not brokerage.is_owner(acc):
+        raise HTTPException(status_code=403, detail="Agent HQ is for the owner only.")
+
+
+@router.get("/hq")
+async def hq_board(authorization: Optional[str] = Header(None)):
+    """Owner only: every agent's role, schedule, status and needs, plus the meeting thread."""
+    from backend.v4 import hq
+    await run_in_threadpool(_hq_owner, authorization)
+    return await run_in_threadpool(hq.board)
+
+
+@router.post("/hq/message")
+async def hq_message(body: HQMessage, authorization: Optional[str] = Header(None)):
+    from backend.v4 import hq
+    await run_in_threadpool(_hq_owner, authorization)
+    try:
+        return await run_in_threadpool(hq.post, body.body, body.to)
+    except hq.HQError as e:
+        return {"ok": False, "message": str(e)}
+
+
 class YesNoCall(BaseModel):
     user_id: str = "anonymous"
     ticker: str

@@ -336,6 +336,13 @@ def _schema() -> list[str]:
             created_at TEXT NOT NULL,
             PRIMARY KEY (day, underlying)
         )""",
+        """CREATE TABLE IF NOT EXISTS hq_messages (
+            id INTEGER PRIMARY KEY,
+            author TEXT NOT NULL,
+            to_agent TEXT NOT NULL,
+            body TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )""",
         """CREATE TABLE IF NOT EXISTS yesno_calls (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,

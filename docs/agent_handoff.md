@@ -292,3 +292,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   beliefs per hour (~5%); no gate or ranker change.
 - Close Call: clearer "couldn't load options" message (was "Try a bigger company" even for SPY).
 - Files: backend/v4/seeder.py, backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md.
+
+## 2026-11-13 evening (build chat, CTO): Agent HQ — every agent at one table with Murad
+- Murad wanted one place to talk to all agents and see what they need. Page: /hq (owner only via
+  brokerage.is_owner; link on Account for the owner). Endpoints GET /v4/hq, POST /v4/hq/message (owner session).
+- Murad's messages: table hq_messages (id, author, to_agent, body, created_at). Agent status + replies:
+  docs/hq/status/<key>.json, read by the backend from GitHub raw (2-min cache; falls back to the deployed copy).
+- EVERY agent: follow docs/hq/README.md — read your messages at the start of a run (read-only SQL), write your
+  status file at the end (status-only commits use "[skip render]"). Keys: cto, health, reel, scout, brain, polish, growth.
+- Files: backend/v4/hq.py (new), db.py, router.py, tests; frontend HQPage.jsx (new), App.jsx, AccountPage.jsx,
+  lib/api.js; docs/hq/ (agents.json, README.md, status/*.json seeded by the CTO).
