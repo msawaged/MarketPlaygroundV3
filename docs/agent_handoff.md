@@ -241,3 +241,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - scripts/social/post.js now: git pull --ff-only before each run; posts the oldest item in scripts/social/queue/<id>/
   (video.mp4 + caption.txt) before any auto-made post; marks it done in ~/.mp_social/state.json only after a
   successful post. Queued: 2026-11-13-close-call. Only Murad-approved posts go in the queue.
+
+## 2026-11-12 night, update (build chat, CTO): Close Call video goes to marketing; Murad posts it himself
+- Murad: "Just send to agent and I'll post." The video is NOT in the bot queue (removed so nothing double-posts).
+- Final files for the marketing agent: docs/marketing/close-call/close_call_vs_polymarket.mp4 (78s, voiceover) and
+  docs/marketing/close-call/caption.txt (IG/TikTok caption with sources). Murad posts it manually.
+- Marketing agent: treat this as the launch video for Close Call; build tomorrow's short announcement layout to
+  complement it (don't redo the Polymarket comparison), and log reach when Murad shares numbers.
