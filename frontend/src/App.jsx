@@ -57,6 +57,7 @@ export default function App() {
           <Route path="/basket-builder" element={g(<BasketBuilderPage />)} />
           <Route path="/portfolio" element={g(<PracticePage />)} />
           <Route path="/yes-no" element={g(<YesNoPage />)} />
+          <Route path="/close-call" element={g(<YesNoPage />)} />
           <Route path="*" element={<Navigate to="/select-tool" replace />} />
         </Routes>
       </Suspense>

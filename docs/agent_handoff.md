@@ -230,3 +230,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   1-day questions.
 - Files: backend/v4/yesno.py, practice_options.py, tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   docs/polish_log.md.
+
+## 2026-11-12 evening (build chat, CTO): Yes / No is now named "Close Call"
+- Murad asked for a name: **Close Call** (every question is about where a stock closes). Page title, Home card,
+  Practice link, What's new and practice-trade label renamed; route /close-call added (/yes-no still works).
+  Backend module/table/endpoints keep the yesno name (internal). Marketing: call the feature "Close Call".

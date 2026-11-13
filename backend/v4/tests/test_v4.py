@@ -2877,7 +2877,7 @@ def test_yesno_practice_trade(monkeypatch, tmp_path):
     e = yesno.expirations("WINR")
     lvl = float(int(market.latest_price("WINR")))
     r = yesno.make_call("u2", "WINR", lvl, e["expirations"][0], "no", trade=True, contracts=3)
-    assert r["position_id"] == "opt-x" and seen["n"] == 3 and seen["structure"].startswith("Yes/No: NO")
+    assert r["position_id"] == "opt-x" and seen["n"] == 3 and seen["structure"].startswith("Close Call: NO")
     assert [l["option_type"] for l in seen["legs"]] == ["Put", "Put"] and seen["legs"][0]["strike_price"] == lvl + 1
 
 

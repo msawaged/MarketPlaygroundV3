@@ -1,5 +1,5 @@
 """
-Yes / No (2026-11-12): "Will NVDA close above $150 on Fri Nov 21?" answered with real option prices.
+Close Call (Yes / No, 2026-11-12): "Will NVDA close above $150 on Fri Nov 21?" answered with real option prices.
 
 A Nadex-style question without Nadex. Three numbers, in this order:
   1. The market's odds: the chance option prices imply that the stock finishes above the line on that expiration
@@ -263,7 +263,7 @@ def make_call(user_id: str, ticker: str, level: float, expiration: str, side: st
     if trade:
         from . import practice_options
         try:
-            r = practice_options.open_trade(user_id, q["ticker"], f"Yes/No: {side.upper()} {q['ticker']} > ${q['level']:,.2f}"[:40],
+            r = practice_options.open_trade(user_id, q["ticker"], f"Close Call: {side.upper()} {q['ticker']} > ${q['level']:,.2f}"[:40],
                                             q[side]["legs"], contracts, q["question"],
                                             vol_override=q["vol"] if q["vol_source"] == "market" else None)
         except practice_options.PracticeError as e:

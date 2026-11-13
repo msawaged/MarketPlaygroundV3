@@ -171,8 +171,8 @@ export default function ToolSelectorPage() {
           </div>
         )}
 
-        <button onClick={() => navigate('/yes-no')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-blue-400/30 bg-blue-500/[0.07] px-4 py-3 text-left hover:border-blue-300/60">
-          <span><span className="block text-sm font-bold"><span className="text-green-300">YES</span> / <span className="text-red-300">NO</span> · New</span><span className="block text-xs text-slate-400">Will it close above the line? Real option odds vs the brain.</span></span>
+        <button onClick={() => navigate('/close-call')} className="mt-6 w-full flex items-center justify-between rounded-2xl border border-blue-400/30 bg-blue-500/[0.07] px-4 py-3 text-left hover:border-blue-300/60">
+          <span><span className="block text-sm font-bold">Close Call <span className="text-green-300">YES</span>/<span className="text-red-300">NO</span> · New</span><span className="block text-xs text-slate-400">Will it close above the line? Real option odds vs the brain.</span></span>
           <span className="text-blue-300 text-lg" aria-hidden>→</span>
         </button>
 

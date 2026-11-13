@@ -4,7 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 12';
 export const UPDATES = [
-  'New: Yes / No. Will a stock close above a price by a date? Real option odds, the brain\'s lean, fixed-risk practice trades',
+  'New: Close Call. Yes or no: will a stock close above a price by a date? Real option odds, the brain\'s lean, fixed-risk practice trades',
   'New: Price check on option ideas: cheap or expensive vs how much the stock moves',
   'New: a confidence badge on the #1 pick, checked on past calls the AI never saw',
   'New: MuLine, our own trend line, on every pick: uptrend or downtrend at a glance',

@@ -75,7 +75,7 @@ export default function YesNoPage() {
   const go = (e) => { e.preventDefault(); const t = typed.trim().toUpperCase(); if (t) { setTicker(t); setTyped(''); } };
 
   return (
-    <Page title="Yes / No" subtitle="Will it close above the line? Real option odds, the brain's lean, practice money.">
+    <Page title="Close Call" subtitle="Yes or no: will it close above the line? Real option odds, the brain's lean, practice money.">
       <Card className="mt-6">
         <form onSubmit={go} className="flex gap-2">
           <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={`Stock or ETF (now ${ticker})`}
@@ -184,7 +184,7 @@ export default function YesNoPage() {
 
       {score && (
         <Card className="mt-4 text-sm">
-          <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">The brain's yes/no record</div>
+          <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">The brain's Close Call record</div>
           {score.graded ? (
             <p className="mt-2 text-slate-300">{score.graded.toLocaleString()} questions graded. The brain's lean picked the right side {pc(score.brain_side_right)} of the time,
               and its odds were {score.brain_better ? 'closer to what happened than' : 'not yet better than'} the market's (Brier {score.brier_brain} vs {score.brier_market}; lower is better).</p>
