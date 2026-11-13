@@ -1,9 +1,58 @@
 [
-  {"key": "cto", "name": "CTO (build chat)", "role": "Builds what Murad asks for, live with him. Sets direction for everyone.", "schedule": "When Murad chats", "trigger": null},
-  {"key": "health", "name": "Inbox & health watch", "role": "Reads the inbox and Render alerts, keeps the site and jobs healthy, fixes small breaks.", "schedule": "Daily 10:11 am and 7:11 pm", "trigger": "trig_0121DvxrDqcSkKepy7Qony31"},
-  {"key": "reel", "name": "Marketing: daily reel", "role": "Makes the \"Market's open\" reel and captions for Murad to post.", "schedule": "Weekdays 7:47 am", "trigger": "trig_01L9denk6Nsu7FjgpRMdgQRM"},
-  {"key": "scout", "name": "Brain idea scout", "role": "Finds one tested trading idea and one feature proposal each weekday.", "schedule": "Weekdays 11:37 am", "trigger": "trig_013hXC7LR9JxuVGWaLJBr8WJ"},
-  {"key": "brain", "name": "Brain upgrade", "role": "Ships the one change with the most leverage on the brain's real results.", "schedule": "Mon, Wed, Fri 1:39 pm", "trigger": "trig_017fWdn4BmPbv5JzjcuJxxaQ"},
-  {"key": "polish", "name": "App polish", "role": "Walks the app like a new user and fixes the top rough edges.", "schedule": "Daily 2:23 pm", "trigger": "trig_01XVtbmdGFL7Tg6QFYTojSUX"},
-  {"key": "growth", "name": "Growth report", "role": "Weekly numbers: users, engagement, the brain, and the next growth move.", "schedule": "Sundays 6:23 pm", "trigger": "trig_013ux6TFGVyPMFWYeQgXV2XJ"}
+ {
+  "key": "cto",
+  "name": "CTO (build chat)",
+  "role": "Builds what Murad asks for, live with him. Sets direction for everyone.",
+  "schedule": "When Murad chats",
+  "trigger": null
+ },
+ {
+  "key": "chair",
+  "name": "Meeting chair",
+  "role": "Runs the round table: answers you within the hour and wakes the agents who need to act.",
+  "schedule": "Every hour, 7 am to 10 pm",
+  "trigger": "trig_01LbDZWb1Jx5Tux2Y1fuhi9T"
+ },
+ {
+  "key": "health",
+  "name": "Inbox & health watch",
+  "role": "Reads the inbox and Render alerts, keeps the site and jobs healthy, fixes small breaks.",
+  "schedule": "Daily 10:11 am and 7:11 pm",
+  "trigger": "trig_0121DvxrDqcSkKepy7Qony31"
+ },
+ {
+  "key": "reel",
+  "name": "Marketing: daily reel",
+  "role": "Makes the \"Market's open\" reel and captions for Murad to post.",
+  "schedule": "Weekdays 7:47 am",
+  "trigger": "trig_01L9denk6Nsu7FjgpRMdgQRM"
+ },
+ {
+  "key": "scout",
+  "name": "Brain idea scout",
+  "role": "Finds one tested trading idea and one feature proposal each weekday.",
+  "schedule": "Weekdays 11:37 am",
+  "trigger": "trig_013hXC7LR9JxuVGWaLJBr8WJ"
+ },
+ {
+  "key": "brain",
+  "name": "Brain upgrade",
+  "role": "Ships the one change with the most leverage on the brain's real results.",
+  "schedule": "Mon, Wed, Fri 1:39 pm",
+  "trigger": "trig_017fWdn4BmPbv5JzjcuJxxaQ"
+ },
+ {
+  "key": "polish",
+  "name": "App polish",
+  "role": "Walks the app like a new user and fixes the top rough edges.",
+  "schedule": "Daily 2:23 pm",
+  "trigger": "trig_01XVtbmdGFL7Tg6QFYTojSUX"
+ },
+ {
+  "key": "growth",
+  "name": "Growth report",
+  "role": "Weekly numbers: users, engagement, the brain, and the next growth move.",
+  "schedule": "Sundays 6:23 pm",
+  "trigger": "trig_013ux6TFGVyPMFWYeQgXV2XJ"
+ }
 ]
