@@ -88,3 +88,48 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   (date-clustered or Newey-West errors would fix it). Must not be read as loosening anything; it only adds a
   stricter lens.
 
+
+---
+
+## 2026-11-13 — Honest t-stats: count overlapping 90-day windows once (date-clustered / Newey-West errors)
+- **Area:** brain (research honesty); feeds the luck bar and the brain page.
+- **Status:** proposed
+- **Problem:** every t-stat in `research:ranker` (`_metrics.tstat`) treats each test belief as an independent draw:
+  se = std / sqrt(n) with n = 2,703. But those 2,703 beliefs sit on only 429 distinct dates (2024-12-03 to
+  2026-07-24, prod query 2026-11-13), about 6 per date, and each is graded on a 90-day window, so calls made the same
+  week share most of their market path. Beliefs on the same date are not independent (same market, often the same
+  tickers: e.g. NVDA was an idea in 666 beliefs in 14 days, polish log 2026-11-12), and consecutive dates overlap by
+  ~60 of 63 sessions. So the effective sample is far smaller than 2,703 and every t is too big, including the app's
+  own 4.54, the Amihud rule's 4.04 and the luck bar's `clear` list. The luck bar (built 2026-11-12) fixed "how many
+  tries"; this fixes "how many independent observations", the other half flagged in that entry and in
+  docs/brain_upgrades.md ("overlapping 90-day windows likely also inflate the plain t-stats, not addressed").
+- **Evidence / sources:**
+  - Petersen (2009), "Estimating Standard Errors in Finance Panel Data Sets: Comparing Approaches", Review of
+    Financial Studies 22(1), 435-480: with a time effect (observations on the same date correlated), OLS standard
+    errors are biased down, often badly; clustering by time fixes it:
+    https://econpapers.repec.org/RePEc:oup:rfinst:v:22:y:2009:i:1:p:435-480 ; author's page with code and test data:
+    https://www.kellogg.northwestern.edu/faculty/petersen/htm/papers/standarderror.html
+  - Newey & West (1987), Econometrica 55(3): autocorrelation-consistent standard errors, the standard fix for
+    overlapping-horizon returns (lag = horizon - 1). Practitioner summary of why overlapping long-horizon tests
+    overstate significance: https://quantpedia.com/problems-with-a-long-horizon-predictability/
+- **Build sketch (size S):**
+  - `backend/v4/research.py`: `_metrics` takes each pick's belief date (already in `b["date"]`; pass it through
+    `_pick`/`_choose` as a 5th tuple element). Add `lift_t_nw` / `lift_adj_t_nw`: average the lift per date
+    (one number per day), then a Newey-West t on that daily series with lag = 63 sessions (~the 90-day window),
+    Bartlett weights; plain numpy, no new dependency. Also report `dates` (distinct test dates) and
+    `n_eff` ≈ n · (se_plain / se_nw)². Keep the old `lift_t` / `lift_adj_t` exactly as they are.
+  - `research.luck`: add `clear_nw` / `clear_adj_nw` (same Holm step-down, on the NW t's) next to the existing lists.
+    Reporting only: `_passes`, `fit_production` and ranker v2's activation rules don't read any of it (tightening
+    the gate with it would be Murad's separate, deliberate decision, written up in docs/brain_upgrades.md).
+  - `/v4/brain` `skill.luck` + BrainPage scorecard line: "The 2,703 test calls were made on 429 days with overlapping
+    90-day windows; counted honestly that's worth about N independent calls." Numbers from the kv, never typed.
+  - `docs/research_ideas.md`: the daily routine quotes the NW t beside the plain t.
+  - Test: synthetic run where every belief on a date shares one big random market shock → plain t large, NW t near
+    noise level, and `n_eff` well below n; a planted real per-pick edge still shows up under NW.
+- **How we'd know it worked:** every research run shows both t's and `n_eff`; rules whose NW t clears the bar keep
+  their edge on the next 30-60 days of newly graded calls more often than rules that clear only on the plain t
+  (track it in the log). The brain page and marketing "receipts" stop quoting t-stats that overstate certainty.
+- **Risks:** NW with a 63-session lag on ~430 dates is itself noisy and can be unstable for short series — show it
+  with the date count, and fall back to date-clustered (Petersen) errors if the two disagree wildly. It will make
+  most current "wins" look weaker, likely including the app's #1; that's the point, but the campaign copy that
+  quotes t's must be updated the same day. Must not be read as loosening anything; it only adds a stricter lens.

@@ -702,6 +702,37 @@ def co_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"co": co(closes, vols, i) if i >= 0 else 0.0}
 
 
+def seas(dates: list[str], closes: list[float], i: int, years: int = 4, window: int = 63) -> float:
+    """Return seasonality (Heston & Sadka 2008; Keloharju, Linnainmaa & Nyberg 2016): stocks that did well in the
+    same season of past years tend to do well in that season again. For each of the last `years` years with data,
+    the stock's return over the ~3 months (`window` sessions, about our 90-day hold) that started one, two, ...
+    years before the pick's date; the average of those. Every window ends at least ~9 months before index i, so
+    only data up to i is used. 0.0 without at least one past-year window."""
+    if i < window or i >= len(dates) or len(dates) != len(closes):
+        return 0.0
+    d = date.fromisoformat(dates[i])
+    rets = []
+    for y in range(1, years + 1):
+        start = (d - timedelta(days=365 * y)).isoformat()
+        a = _index_on_or_before(dates, start)
+        b = a + window
+        if a < 0 or b > i or closes[a] <= 0:
+            continue
+        if (date.fromisoformat(start) - date.fromisoformat(dates[a])).days > 7:  # a gap in the data: skip that year
+            continue
+        rets.append(closes[b] / closes[a] - 1.0)
+    if not rets:
+        return 0.0
+    return max(-0.9, min(3.0, sum(rets) / len(rets)))
+
+
+def seas_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"seas": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"seas": seas(dates, closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -806,6 +837,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "mad": mad(closes, i),
         "amihud": amihud(closes, daily_volumes(symbol), i),
         "co": co(closes, daily_volumes(symbol), i),
+        "seas": seas(dates, closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

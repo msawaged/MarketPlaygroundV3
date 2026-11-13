@@ -300,4 +300,42 @@ the app's (52.9%).
   `continuing overreaction (z_co)`; `z_co` is also available to the learned ridge/gbm/net.
 - **Note:** until enrich finishes backfilling older picks they read `co = 0`; trust the result once every graded pick
   has `co`.
+- **Result (run 2026-11-13 18:02 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; checked 2026-11-13: no graded
+  pick is missing `co`):** lift **+0.09%**, beat **50.6%**, t **0.32**; risk-matched lift **+0.29%**, beat_adj
+  **52.7%**, t **1.05**. No edge: weighting past moves by their volume adds nothing over plain 12-1 momentum in the
+  same run (+0.66% / 50.5% / t 1.94; adj +0.45%, t 1.37), and the learned ridge gives z_co a small negative weight
+  (-0.0027). Does not clear the luck bar (|t| ≥ 3.21 for 38 tries; `luck.clear` lists only the app's #1, the Amihud
+  rule, the plain neural net and the "+ app (25%)" mixes). Not a ranker v2 candidate. Same run: app +1.49% / 53.4% /
+  t 4.54 (adj +1.24% / 54.2% / t 3.87); illiquidity premium +1.21% / 53.1% / t 4.04 (adj +1.00% / 54.5% / t 3.44,
+  clears the bar both ways); neural net (learned) +1.25% / 52.1% / t 3.82; MAD now +0.12% / 49.5% / t 0.36 (was
+  -0.73%, t -2.41 before the `lead_only` change); gbm (risk-adjusted, + shifted) + app (25%) +1.70% / 53.4% / t 5.40
+  (adj +1.53% / 54.9% / t 5.00); random beat 51.0%.
+
+### 10. Return seasonality: the same season in past years (Heston & Sadka)
+- **Added:** 2026-11-13
+- **Source:** Heston & Sadka (2008), "Seasonality in the Cross-Section of Stock Returns", Journal of Financial
+  Economics 87(2), 418-445: https://econpapers.repec.org/RePEc:eee:jfinec:v:87:y:2008:i:2:p:418-445 ; follow-up
+  across asset classes and factors: Keloharju, Linnainmaa & Nyberg (2016), "Return Seasonalities", Journal of
+  Finance 71(4), 1557-1590: https://econpapers.repec.org/RePEc:bla:jfinan:v:71:y:2016:i:4:p:1557-1590 ; practitioner
+  summary: https://hedgefundalpha.com/strategies/return-seasonalities-a-stock-selection-strategy/
+- **Why:** a stock's return in a given calendar month predicts its return in the same month of later years (the
+  effect shows up at annual lags for up to ~20 years and is not explained by size, industry, earnings timing or
+  dividends); Keloharju et al. find the same pattern in industries, countries and factors and argue it comes from
+  seasonal swings in risk premia. A new family for the log: not momentum (ideas 1-3, 6, 7, 9), risk (4, 5) or
+  liquidity (8), and it uses only the calendar, which nothing in FEATS captures.
+- **Computed as:** for each of up to 4 past years y, the stock's return over the 63 sessions (~3 months, our hold)
+  starting on the last session on or before (pick date - 365*y days); `seas` = the average of those returns,
+  clipped to [-0.9, 3]; a year is skipped if the data has a >7-day gap at its start or doesn't reach that far; 0
+  without any past-year window. Every window ends at least ~9 months before the pick's date, so no look-ahead. The
+  papers use the same single calendar month over many years of monthly data; with 5 years of daily bars and a
+  90-day hold, the same ~3-month season over up to 4 years is the closest faithful version (older picks from
+  2023-24 have only 1-2 past years, so the signal is noisier for them). `market.seas` / `market.seas_features`;
+  stored for new picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks
+  by `research.enrich` using closes up to each pick's own date only (other features untouched). Directional (bearish
+  calls flip it, so the rule shorts the stock with the worst past seasons). Research rule:
+  `same season, past years (z_seas)`; `z_seas` is also available to the learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift, and whether it clears the luck bar (`luck.clear` / `clear_adj`,
+  now 39 tries). Expect a weak effect: the papers' edge is monthly and small, and ours is averaged over 3 months.
+- **Note:** until enrich finishes backfilling older picks they read `seas = 0`; trust the result once every graded
+  pick has `seas`.
 - **Result:** pending.

@@ -266,3 +266,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: docs/marketing/close-call/announce_layout/ (frames.html + shoot.js -> frame_1..6.png at 1080x1920,
   contact_sheet.png, storyboard.md with VO lines, captions.txt with IG/TikTok + 160-char Snapchat).
 - Waiting on Murad's go-ahead or changes before rendering the full reel (voiceover via scripts/reel_voice.py, like teaser_src).
+
+## 2026-11-13 (daily ranker research + feature scout routine)
+- Idea 9 (continuing overreaction `co`) result logged: lift +0.09%, beat 50.6%, t 0.32 (adj +0.29% / 52.7% / t 1.05);
+  no edge, doesn't clear the luck bar. Idea 10 added: return seasonality `seas` (Heston & Sadka 2008) = average
+  return over the same ~3 months (63 sessions) starting 1-4 years before the pick's date; new feature in
+  market.features/seas_features, nn.make_features num, research.FEATS + DIRECTIONAL, enrich backfill (as of each
+  pick's date), rule `same season, past years (z_seas)`. Gate untouched.
+- feature_ideas.md: "Honest t-stats" proposal (Newey-West / date-clustered t's: 2,703 test beliefs sit on 429 dates
+  with overlapping 90-day windows; reporting only).
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md.

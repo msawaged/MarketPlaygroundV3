@@ -43,13 +43,15 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "amihud",
          # continuing overreaction (Byun, Lim & Yun 2016): weighted signed volume over 12 months, -1 (down) to +1 (up)
          "co",
+         # return seasonality (Heston & Sadka 2008): average return over the same ~3 months in up to 4 past years
+         "seas",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "amihud", "co", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "co", "seas", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -84,13 +86,14 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%resid_mom%' OR p.features NOT LIKE '%"beta"%'
                   OR p.features NOT LIKE '%"max5"%' OR p.features NOT LIKE '%"mom_12_7"%'
                   OR p.features NOT LIKE '%"mad"%' OR p.features NOT LIKE '%"amihud"%'
-                  OR p.features NOT LIKE '%"co"%')
+                  OR p.features NOT LIKE '%"co"%' OR p.features NOT LIKE '%"seas"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
         return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num \
             or "resid_mom" not in num or "beta" not in num or "max5" not in num \
-            or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num
+            or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num \
+            or "seas" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -118,6 +121,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.amihud_features(r["ticker"], d0))
             if "co" not in have:
                 vp.update(market.co_features(r["ticker"], d0))
+            if "seas" not in have:
+                vp.update(market.seas_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -520,6 +525,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         "illiquidity premium (z_amihud)": lambda f: f["z_amihud"],
         # idea log, added 2026-11-12: continuing overreaction — heavy volume on up months for a long (down, for a short)
         "continuing overreaction (z_co)": lambda f: f["z_co"],
+        # idea log, added 2026-11-13: return seasonality — the stock that did best in the same ~3 months of past years
+        # (worst, for a short)
+        "same season, past years (z_seas)": lambda f: f["z_seas"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
