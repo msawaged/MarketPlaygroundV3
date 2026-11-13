@@ -248,3 +248,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   docs/marketing/close-call/caption.txt (IG/TikTok caption with sources). Murad posts it manually.
 - Marketing agent: treat this as the launch video for Close Call; build tomorrow's short announcement layout to
   complement it (don't redo the Polymarket comparison), and log reach when Murad shares numbers.
+
+## 2026-11-12 night (build chat, CTO/CMO): two Close Call teasers for Murad to post
+- docs/marketing/close-call/close_call_teaser_tonight.mp4 (26s) + caption_teaser_tonight.txt: "Yes or no" hook,
+  live NVDA $170 Fri Nov 20 question (market odds 42%, YES risk $100 to make $150), brain's 112,595 graded calls.
+- close_call_teaser_tomorrow.mp4 (37s) + caption_teaser_tomorrow.txt: how the brain grew (3 beliefs Oct 28 -> 6,248;
+  112,595 graded; Gen 10, 16 retired; 38 ways tested; learned ranker switched off 53.1% vs 54.2% risk-adjusted) and
+  "Close Call record 0-0, starts today, 15 questions a day". Says "16 days ago", so it's for Nov 13.
+- Every number came from /v4/brain and /v4/yesno on Nov 12 21:46 ET. On-screen notes say most graded calls are
+  replays on past markets since Oct 2023 (4,741 of 6,248 beliefs). Source + render script: teaser_src/.
+- Murad posts both himself (not in the bot queue). Marketing agent: log reach when he shares numbers.

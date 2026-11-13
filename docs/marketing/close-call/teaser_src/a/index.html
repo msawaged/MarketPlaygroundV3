@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../style.css">
+<style>.note{position:absolute;left:26px;right:26px;bottom:142px;font-size:10.5px;color:#94a3b8;text-align:center;line-height:1.4}</style>
+</head><body>
+
+<div class="scene">
+  <div class="huge" data-in="0" data-pop="1"><span class="yes">YES</span></div>
+  <div class="huge" data-in="0.35" data-pop="1" style="margin:8px 0;color:#475569;font-size:40px">or</div>
+  <div class="huge" data-in="0.6" data-pop="1"><span class="no">NO</span></div>
+</div>
+
+<div class="scene">
+  <div class="kicker" data-in="0">NVDA is at $167.10</div>
+  <div class="big" style="margin-top:16px;min-height:150px" data-in="0"><span data-type="Will NVDA close above $170 on Friday, Nov 20?" data-at="0.1" data-dur="2.2"></span></div>
+  <div class="chip" data-in="2.4">graded on the official close</div>
+</div>
+
+<div class="scene">
+  <div class="card" data-in="0">
+    <div class="small" style="font-weight:700;letter-spacing:.1em;text-transform:uppercase">Will NVDA close above $170 on Fri Nov 20?</div>
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-top:18px">
+      <div class="mid" style="font-size:15px">Market's odds<br><span class="small">from real option prices</span></div>
+      <div class="big"><span data-count="42" data-at="0.3" data-dur="1.4" data-fmt="pct">0%</span> <span style="font-size:18px">YES</span></div>
+    </div>
+    <div class="bar"><div data-bar="0.42" data-at="0.3" data-dur="1.4"></div></div>
+  </div>
+  <div class="mid" style="margin-top:26px" data-in="1.6">What do <b style="color:#fff">you</b> say?</div>
+  <div class="note">Odds and prices as of the Nov 12 close. They move with the market.</div>
+</div>
+
+<div class="scene">
+  <div class="tiles">
+    <div class="tile y" data-in="0"><b class="yes">YES</b><div class="mid" style="font-size:15px;margin-top:6px;color:#e2e8f0">Risk <b style="font-size:15px">$100</b><br>to make <b style="font-size:15px">$150</b></div></div>
+    <div class="tile n" data-in="0.25"><b class="no">NO</b><div class="mid" style="font-size:15px;margin-top:6px;color:#e2e8f0">Risk <b style="font-size:15px">$150</b><br>to make <b style="font-size:15px">$100</b></div></div>
+  </div>
+  <div class="big" style="margin-top:30px;font-size:28px" data-in="1.6">Fixed risk.<br><span class="blue">Before you tap.</span></div>
+  <div class="note">Per contract, practice money. Built from two real listed NVDA options (a $170/$172.50 spread): full payout at $172.50 or higher, part of it in between. Breakeven $171.</div>
+</div>
+
+<div class="scene">
+  <div class="kicker" data-in="0">The brain behind it</div>
+  <div class="huge" style="font-size:66px;margin-top:14px" data-in="0"><span data-count="112595" data-from="0" data-at="0.2" data-dur="2.2">0</span></div>
+  <div class="mid" data-in="0.3">calls graded against the S&amp;P 500</div>
+  <div style="margin-top:22px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center" data-in="1.4">
+    <span class="chip">6,248 beliefs</span><span class="chip">10 generations</span><span class="chip">38 ways tested</span>
+  </div>
+  <div class="note">Most graded calls are replays on past markets since Oct 2023, made without seeing what came next. Brain page, Nov 12.</div>
+</div>
+
+<div class="scene">
+  <svg class="logo" data-in="0" data-pop="1" viewBox="0 0 120 120"><rect width="120" height="120" rx="30" fill="#fff"/><path d="M26 92V30l46 42.5L94 30v62" fill="none" stroke="#2563eb" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="72.5" r="15" fill="#2563eb"/></svg>
+  <div class="mid" style="margin-top:14px;color:#94a3b8;font-weight:700" data-in="0.1">MarketPlayground</div>
+  <div class="huge blue" style="font-size:56px;margin-top:6px" data-in="0.2">Close Call</div>
+  <div class="mid" style="margin-top:8px" data-in="0.35"><span class="yes">YES</span> / <span class="no">NO</span> on where stocks close</div>
+  <div class="big" style="font-size:26px;margin-top:34px" data-in="0.8"><span class="blue">Coming soon.</span><br>Got an invite? Jump in.</div>
+</div>
+
+<div class="foot">Practice money. Not investment advice.</div>
+<script src="../engine.js"></script>
+</body></html>

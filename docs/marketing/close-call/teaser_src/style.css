@@ -1,0 +1,29 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 405px; height: 720px; overflow: hidden; background: #060a14; color: #fff;
+  font-family: Inter, sans-serif; -webkit-font-smoothing: antialiased; }
+body::before { content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px);
+  background-size: 27px 27px; }
+body::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 35%, rgba(37,99,235,.18), transparent 60%); }
+.scene { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; padding: 0 28px; opacity: 0; }
+.kicker { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #94a3b8; font-weight: 700; }
+.huge { font-family: 'Inter Display', Inter; font-weight: 900; font-size: 74px; line-height: .95; letter-spacing: -.03em; }
+.big { font-family: 'Inter Display', Inter; font-weight: 800; font-size: 34px; line-height: 1.08; letter-spacing: -.02em; }
+.mid { font-size: 19px; font-weight: 600; line-height: 1.35; color: #cbd5e1; }
+.small { font-size: 12px; color: #94a3b8; line-height: 1.4; }
+.yes { color: #4ade80; } .no { color: #f87171; } .blue { color: #60a5fa; }
+.card { width: 100%; border-radius: 22px; background: rgba(15,23,42,.85); border: 1px solid rgba(148,163,184,.22);
+  padding: 20px; text-align: left; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.bar { height: 14px; border-radius: 99px; background: #1e293b; overflow: hidden; margin-top: 10px; }
+.bar > div { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #64748b, #cbd5e1); width: 0; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.tile { border-radius: 18px; padding: 16px 14px; text-align: left; }
+.tile.y { border: 1px solid rgba(74,222,128,.45); background: rgba(34,197,94,.08); }
+.tile.n { border: 1px solid rgba(248,113,113,.45); background: rgba(239,68,68,.08); }
+.tile b { font-size: 30px; font-weight: 900; }
+.foot { position: absolute; left: 22px; right: 22px; bottom: 122px; z-index: 2; font-size: 9.5px; color: #64748b;
+  text-align: center; line-height: 1.4; }
+.logo { width: 76px; height: 76px; border-radius: 20px; }
+.chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 99px;
+  background: rgba(37,99,235,.18); color: #93c5fd; border: 1px solid rgba(96,165,250,.35); }
