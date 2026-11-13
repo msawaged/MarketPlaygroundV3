@@ -45,7 +45,8 @@ export default function YesNoPage() {
     yesnoExpirations(ticker).then((r) => {
       if (r?.status === 'error') { setErr(r.message); return; }
       setSetup(r);
-      setExp(r.expirations[0]);
+      const t0 = Date.now();
+      setExp(r.expirations.find((e) => (new Date(`${e}T21:00:00Z`) - t0) / 86400000 >= 5) || r.expirations[0]);
       setLevel(String(r.lines[Math.floor(r.lines.length / 2)]));
     }).catch((e) => setErr(e.message));
   }, [ticker]);
@@ -99,8 +100,10 @@ export default function YesNoPage() {
             {setup.lines.map((l) => (
               <button key={l} onClick={() => setLevel(String(l))} className={`px-3 py-2 rounded-xl border text-sm font-bold tabular-nums ${String(l) === String(level) ? 'border-blue-400 bg-blue-500/20' : 'border-slate-700 bg-slate-800/70'}`}>{usd(l, l % 1 ? 2 : 0)}</button>
             ))}
-            <input inputMode="decimal" value={level} onChange={(e) => setLevel(e.target.value.replace(/[^0-9.]/g, ''))} aria-label="Your own price"
-              className="w-24 rounded-xl bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm tabular-nums" />
+            <input inputMode="decimal" placeholder="Other $" aria-label="Your own price"
+              value={setup.lines.some((l) => String(l) === String(level)) ? '' : level}
+              onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, ''); if (v) setLevel(v); }}
+              className="w-24 rounded-xl bg-slate-900/60 border border-dashed border-slate-600 px-3 py-2 text-sm tabular-nums placeholder-slate-500" />
           </div>
           <div className="mt-4 text-sm text-slate-300">On</div>
           <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
