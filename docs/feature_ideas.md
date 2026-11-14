@@ -9,7 +9,11 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-11 — "How sure are you?": user-stated probability and a personal calibration score
 - **Area:** app (learning loop), with a small brain benefit.
-- **Status:** proposed
+- **Status:** built 2026-11-14, commit COMMIT (Builder): one-tap 55/65/75/90% under the picks in chat and on
+  My beliefs (settable until the day after the call, then locked), scored at the checkpoint matching the call's
+  horizon; "How well-calibrated are you?" card on My beliefs (Brier, said-vs-right table, 10-call minimum, "leaning"
+  until the gap is beyond 2 standard errors). Not built yet: brain's own label on the same scale, `user_prob` in
+  pick features for research.
 - **Problem:** the only confidence the app records for a call is `beliefs.conviction`, which Claude infers from the
   wording, and it carries almost no information: since Oct 1, 33 of 34 real user calls and 5,801 of 6,039 seeded
   calls are "medium" (prod query, 2026-11-11). So the app grades *whether* a call beat the S&P 500 but never teaches

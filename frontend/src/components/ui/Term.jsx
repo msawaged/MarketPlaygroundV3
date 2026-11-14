@@ -18,6 +18,7 @@ export const GLOSSARY = {
   'fit': ['Fit with your belief', "How directly this company or fund is tied to what you believe, according to the AI. It's not a prediction of returns."],
   'track record': ['Track record', 'How past picks for similar beliefs actually did against the S&P 500, graded automatically 90 days (about 3 months) after each pick.'],
   'vs s&p': ['vs S&P 500', 'How much better or worse a pick did than simply owning the S&P 500, in the direction the belief expected.'],
+  'brier': ['Brier score', 'The average of (what you said − what happened)², where what happened is 1 if the call played out and 0 if not. 0 is perfect; saying 50% every time scores 0.25.'],
   'risk level': ['Careful · Balanced · Bold', 'Careful leans on shares, funds and capped-risk trades. Balanced mixes shares and spreads. Bold allows options that can move a lot, both ways. You can switch any time, or tap Safer/Bolder on a result.'],
   'straddle': ['Straddle', 'Buying a call and a put at the same strike. It pays when the stock makes a big move in either direction, and loses when it sits still.'],
   'strangle': ['Strangle', 'Like a straddle, but the call is above and the put below today\'s price. It costs less, and needs a bigger move to pay off.'],

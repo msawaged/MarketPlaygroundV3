@@ -473,6 +473,8 @@ def _migrations() -> list[str]:
         "ALTER TABLE beliefs ADD COLUMN wrong_if TEXT",
         "ALTER TABLE beliefs ADD COLUMN wrong_if_px REAL",
         "ALTER TABLE beliefs ADD COLUMN wrong_if_ticker TEXT",
+        # "How sure are you?": the user's own probability that their call plays out (calibration.py)
+        "ALTER TABLE beliefs ADD COLUMN user_prob REAL",
     ]
 
 

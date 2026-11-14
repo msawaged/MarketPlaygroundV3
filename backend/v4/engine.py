@@ -22,7 +22,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from . import db, interpreter, learning, lineages, market, nn, research, strategy
+from . import calibration, db, interpreter, learning, lineages, market, nn, research, strategy
 
 SHOW_TOP = 3
 
@@ -693,7 +693,7 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
         return {"beliefs": [], "summary": None}
     rows = db.query(
         "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation, wrong_if, wrong_if_px, "
-        "wrong_if_ticker FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
+        "wrong_if_ticker, user_prob FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
         (user_id, int(limit)),
     )
     if not rows:
@@ -772,11 +772,42 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
         out.append({"belief_id": r["id"], "text": r["text"], "created_at": r["created_at"],
                     "summary": interp.get("summary"), "direction": r["direction"],
                     "horizon_days": r["horizon_days"], "picks": items, "call": call,
-                    "wrong_if": _wrong_if_view(r, [p for p in by_belief.get(r["id"], []) if p["shown"]])})
+                    "wrong_if": _wrong_if_view(r, [p for p in by_belief.get(r["id"], []) if p["shown"]]),
+                    "sure": _sure_view(r)})
     summary = None
     if tracked or calls_tracked:
         summary = {"tracked": tracked, "ahead": ahead, "calls": calls_tracked, "calls_playing_out": calls_right}
-    return {"beliefs": out, "summary": summary, "as_of": today_s}
+    return {"beliefs": out, "summary": summary, "as_of": today_s, "calibration": calibration.for_user(user_id)}
+
+
+# ---------------- "How sure are you?" (the user's own probability, scored later) ----------------
+
+def _sure_view(r: dict) -> Optional[dict]:
+    if r.get("direction") not in ("bullish", "bearish", "volatile"):
+        return None
+    p = r.get("user_prob")
+    return {"prob": float(p) if p is not None else None, "checkpoint_days": calibration.checkpoint_for(r.get("horizon_days")),
+            "can_set": calibration.can_set(r.get("as_of_date") or "")}
+
+
+def set_user_prob(belief_id: str, user_id: str, prob) -> dict:
+    """Store how sure the user is that their own call plays out (one of calibration.CHOICES). Only the person
+    who made the call, only for up/down/volatile calls, and only until the day after the call, so it's said
+    before the result is known."""
+    if not user_id or user_id == "anonymous":
+        raise BeliefError("sign in or use this device's calls to add this")
+    b = db.query_one("SELECT id, user_id, source, direction, as_of_date, horizon_days FROM beliefs WHERE id = ?", (belief_id,))
+    if not b or b["user_id"] != user_id or b["source"] != "user":
+        raise BeliefError("unknown belief_id")
+    if b["direction"] not in ("bullish", "bearish", "volatile"):
+        raise BeliefError("this call has no direction to score")
+    if not calibration.can_set(b["as_of_date"]):
+        raise BeliefError("how sure you were can only be set until the day after the call")
+    p = calibration.normalize(prob)
+    if p is None:
+        raise BeliefError("pick 55, 65, 75 or 90%")
+    db.execute("UPDATE beliefs SET user_prob = ? WHERE id = ?", (p, belief_id))
+    return {"status": "ok", "sure": {"prob": p, "checkpoint_days": calibration.checkpoint_for(b["horizon_days"]), "can_set": True}}
 
 
 # ---------------- "I'm wrong if..." (the user's own pre-mortem) ----------------

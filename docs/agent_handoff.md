@@ -424,3 +424,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Every normal push to v4-polish builds backend + web (+ crons), so please batch code changes into fewer pushes and
   keep docs-only pushes on "[skip render]" (alone in their push, per the deploy note above). No code changed.
 - Files: docs/agent_handoff.md, docs/hq/status/health.json.
+
+## 2026-11-14 evening (Builder routine): "How sure are you?" calibration
+- Built the 2026-11-11 proposal from docs/feature_ideas.md (size M). Under the picks in chat (above "I'm wrong if...")
+  and on each call on My beliefs: one tap 55 / 65 / 75 / 90% that the idea beats the S&P 500 (bearish: does worse;
+  volatile: moves more) at the check matching its horizon (`calibration.checkpoint_for`: first of 7/30/90/180/365 at or
+  after horizon_days). Settable/changeable only until the day after the call (`calibration.can_set`), then locked.
+- `beliefs.user_prob` (additive migration). `engine.set_user_prob` (owner only, user calls with a direction),
+  route `POST /v4/user_prob`. `my_beliefs` adds `sure` per call and top-level `calibration` (`calibration.for_user`:
+  uses grader's existing `belief_right` at that checkpoint; Brier, avg said vs hit rate, per-choice table).
+  Shown with 10+ graded calls only (countdown before); buckets need 3+; verdict "about right" within 10 pts, else
+  "leaning over/underconfident" unless the gap is beyond 2 binomial SEs. Claude's `conviction` untouched.
+- Information only: not used by ranking or research; nothing trades. Glossary term "brier" added.
+- Files: backend/v4/calibration.py (new), db.py, engine.py, router.py, tests/test_v4.py
+  (test_how_sure_calibration_scores_stated_probabilities, fuzz list), frontend chat/HowSure.jsx (new),
+  ChatInterface.jsx, MyCallsPage.jsx, ui/Term.jsx, lib/api.js, docs/feature_ideas.md, docs/hq/status/builder.json.

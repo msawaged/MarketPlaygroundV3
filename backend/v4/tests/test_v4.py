@@ -917,6 +917,71 @@ def test_wrong_if_pre_mortem_is_stored_owner_only_and_tripwire_reads_closes():
     assert c.post("/v4/wrong_if", json={"belief_id": bid, "user_id": "u-x", "text": "nope"}).status_code == 400
     assert engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]["text"] == "margins shrink"
 
+def test_how_sure_calibration_scores_stated_probabilities():
+    from datetime import date
+    from backend.v4 import calibration
+    # pure pieces
+    assert [calibration.checkpoint_for(h) for h in (None, 5, 30, 60, 90, 120, 365, 900)] == [7, 7, 30, 90, 90, 180, 365, 365]
+    assert calibration.normalize(75) == 0.75 and calibration.normalize("0.9") == 0.9
+    assert calibration.normalize(0.7) is None and calibration.normalize(float("nan")) is None and calibration.normalize("x") is None
+    assert calibration.can_set("2026-11-13", today=date(2026, 11, 14)) and not calibration.can_set("2026-11-12", today=date(2026, 11, 14))
+    assert calibration.score([]) == {"graded": 0, "pending": 0, "min_graded": 10, "ready": False}
+    pairs = [(0.9, 1)] * 2 + [(0.9, 0)] * 2 + [(0.55, 1)] * 6     # said 90% -> right half the time; said 55% -> always
+    sc = calibration.score(pairs, pending=3)
+    assert sc["graded"] == 10 and sc["ready"] and sc["pending"] == 3
+    assert abs(sc["brier"] - (2 * 0.01 + 2 * 0.81 + 6 * 0.2025) / 10) < 1e-4
+    rows = {b["said"]: b for b in sc["buckets"]}
+    assert rows[0.9]["actual"] == 0.5 and rows[0.9]["verdict"] == "overconfident" and rows[0.9]["n"] == 4
+    assert rows[0.55]["verdict"] == "underconfident" and rows[0.55]["right"] == 6
+    assert calibration.score([(0.75, 1), (0.75, 0)])["buckets"][0]["verdict"] == "too few to say"
+    assert calibration.score([(0.75, 1)] * 7 + [(0.75, 0)] * 4)["overall"] == "leaning overconfident"   # 64% of 11: could be luck
+    assert calibration.score([(0.75, 1)] * 8 + [(0.75, 0)] * 2)["overall"] == "about right"
+
+    # stored on the user's own call, inside the window, one of the choices only
+    r = engine.process_belief("plumbing demand is going to be high", "u-sure", "moderate", claude_client=FakeClaude())
+    bid = r["belief_id"]
+    with pytest.raises(engine.BeliefError):
+        engine.set_user_prob(bid, "u-other", 75)
+    with pytest.raises(engine.BeliefError):
+        engine.set_user_prob(bid, "anonymous", 75)
+    with pytest.raises(engine.BeliefError):
+        engine.set_user_prob(bid, "u-sure", 70)
+    out = engine.set_user_prob(bid, "u-sure", 75)
+    assert out["sure"]["prob"] == 0.75
+    mb = engine.my_beliefs("u-sure")
+    b0 = mb["beliefs"][0]
+    assert b0["sure"]["prob"] == 0.75 and b0["sure"]["can_set"] is True
+    assert b0["sure"]["checkpoint_days"] == calibration.checkpoint_for(b0["horizon_days"])
+    assert mb["calibration"] == {"graded": 0, "pending": 1, "min_graded": 10, "ready": False}
+
+    # graded at its checkpoint: other checkpoints don't count
+    cp = b0["sure"]["checkpoint_days"]
+    pids = [x["id"] for x in db.query("SELECT id FROM picks WHERE belief_id = ?", (bid,))]
+    other = 7 if cp != 7 else 30
+    for pid in pids:
+        for c, right in ((cp, 1), (other, 0)):
+            db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at, belief_right)
+                          VALUES (?, ?, '2026-01-01', 1, 0.1, 0.0, 0.1, '2026-01-01', ?)""", (pid, c, right))
+    cal = engine.my_beliefs("u-sure")["calibration"]
+    assert cal["graded"] == 1 and cal["pending"] == 0 and cal["hit_rate"] == 1.0 and abs(cal["brier"] - 0.0625) < 1e-9
+
+    # locked once the day after the call has passed
+    db.execute("UPDATE beliefs SET as_of_date = '2020-01-02' WHERE id = ?", (bid,))
+    with pytest.raises(engine.BeliefError):
+        engine.set_user_prob(bid, "u-sure", 90)
+    assert engine.my_beliefs("u-sure")["beliefs"][0]["sure"]["can_set"] is False
+    assert engine.my_beliefs("u-nobody")["beliefs"] == []
+
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    c = TestClient(app)
+    r2 = engine.process_belief("airlines will struggle this year", "u-sure", "moderate", claude_client=FakeClaude())
+    assert c.post("/v4/user_prob", json={"belief_id": r2["belief_id"], "user_id": "u-sure", "prob": 0.55}).status_code == 200
+    assert c.post("/v4/user_prob", json={"belief_id": r2["belief_id"], "user_id": "u-sure", "prob": 0.6}).status_code == 400
+
+
 # ---------------- fuzz: hostile and random input never crashes the server ----------------
 
 _NASTY = ["", " ", "\n\t", "a", "x" * 5000, "🚀📉💸" * 50, "'; DROP TABLE beliefs; --", "<script>alert(1)</script>",
@@ -979,6 +1044,7 @@ def test_fuzz_api_never_500s(monkeypatch):
         "/v4/broker/order": ["preview_id", "confirm"],
         "/v4/broker/disconnect": [],
         "/v4/wrong_if": ["belief_id", "user_id", "text", "price", "ticker"],
+        "/v4/user_prob": ["belief_id", "user_id", "prob"],
         "/v4/admin/reset_password": ["email"],
     }
     gets = ["/v4/belief/{x}", "/v4/trending?days={x}", "/v4/stats", "/v4/headlines?limit={x}",

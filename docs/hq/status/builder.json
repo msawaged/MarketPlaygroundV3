@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T11:12:00Z",
- "last_run": "Built \"I'm wrong if...\": after the picks, people can write one line saying what would prove their call wrong, and optionally a price line on one pick (for an up call, 'closes below $X'). My beliefs shows it next to the result, and whether the stock has closed past the line since the call ('Crossed on Nov 6'). It's the user's own test of their idea: nothing trades and it isn't advice. Built from the scout's proposal (pre-mortems cut overconfidence and hindsight bias).",
+ "updated_at": "2026-11-14T14:40:00Z",
+ "last_run": "Built \"How sure are you?\": after the picks, people can tap 55, 65, 75 or 90% for how sure they are their call plays out (they can change it until the day after, then it's locked). When calls are graded, My beliefs shows a 'How well-calibrated are you?' card: what they said vs how often they were right, with a Brier score. It waits for 10 graded calls, and says 'leaning overconfident' instead of 'overconfident' when the gap could still be luck. It mirrors their own record; it isn't advice and doesn't affect rankings.",
  "working_on": "Nothing open.",
- "next": "Next build: the calibration card ('How sure are you?') or another expert-review item.",
+ "next": "Next build: put the brain's own High/Medium/Low label on the same calibration scale so people can compare, or another expert-review item.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

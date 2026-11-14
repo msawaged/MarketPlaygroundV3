@@ -126,6 +126,11 @@ export function saveWrongIf(beliefId, { text = null, price = null, ticker = null
   return request("/v4/wrong_if", { method: "POST", body: { belief_id: beliefId, user_id: userId(), text, price, ticker } });
 }
 
+/** "How sure are you?": the user's own probability (0.55 / 0.65 / 0.75 / 0.9) that their call plays out. */
+export function saveUserProb(beliefId, prob) {
+  return request("/v4/user_prob", { method: "POST", body: { belief_id: beliefId, user_id: userId(), prob } });
+}
+
 export function getPortfolio() {
   return request(`/api/paper-trading/portfolio/${encodeURIComponent(userId())}?ts=${Date.now()}`);
 }

@@ -9,6 +9,7 @@ import { getMyBeliefs } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { shareCard } from '../lib/shareCard';
 import WrongIf from './chat/WrongIf';
+import HowSure from './chat/HowSure';
 
 function ago(iso) {
   const d = (Date.now() - new Date(iso).getTime()) / 86400000;
@@ -66,6 +67,48 @@ function WrongIfStatus({ w, onEdit }) {
           : w.text ? 'Has that happened yet? Check it against the result above.' : 'By your own test, the idea still stands.'}
       </div>
     </div>
+  );
+}
+
+// "How well-calibrated are you?": what the user said ("75% sure") vs how often those calls actually played out.
+function CalibrationCard({ c }) {
+  const p = (x) => `${Math.round(x * 100)}%`;
+  const tone = (v) => (/overconfident/.test(v) ? 'text-amber-200' : /underconfident/.test(v) ? 'text-blue-200' : v === 'about right' ? 'text-green-300' : 'text-slate-500');
+  const left = Math.max(0, c.min_graded - c.graded);
+  return (
+    <Card className="mt-4">
+      <div className="font-bold">How well-calibrated are you?</div>
+      {!c.ready ? (
+        <p className="mt-1 text-sm text-slate-300">
+          {c.graded} of {c.min_graded} calls with a “How sure” are graded so far{c.pending ? ` (${c.pending} waiting for their check)` : ''}.
+          {' '}{left} more graded call{left === 1 ? '' : 's'} until your score: fewer than that would look more precise than it is.
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-slate-300">
+            On average you said <b className="text-white">{p(c.avg_said)}</b> sure and were right <b className="text-white">{p(c.hit_rate)}</b> of the time
+            {' '}({c.graded} graded calls): <span className={`font-semibold ${tone(c.overall)}`}>{c.overall}</span>.
+          </p>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-slate-700 text-sm">
+            <div className="grid grid-cols-[1fr_1fr_1.6fr] bg-slate-800/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <span>You said</span><span>Right</span><span className="text-right">So</span>
+            </div>
+            {c.buckets.map((b) => (
+              <div key={b.said} className="grid grid-cols-[1fr_1fr_1.6fr] items-center border-t border-slate-800 px-3 py-2">
+                <span className="font-bold">{p(b.said)}</span>
+                <span>{p(b.actual)} <span className="text-[11px] text-slate-500">({b.right}/{b.n})</span></span>
+                <span className={`text-right text-xs font-semibold ${tone(b.verdict)}`}>{b.verdict}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            <Term k="brier">Brier score</Term> {c.brier.toFixed(3)}: 0 is perfect, and always saying 50% scores 0.250. Lower is better.
+            {c.pending ? ` ${c.pending} more call${c.pending === 1 ? '' : 's'} still waiting for their check.` : ''}
+          </p>
+        </>
+      )}
+      <p className="mt-2 text-[11px] text-slate-500">“Leaning” means the gap could still be luck with this many calls. Each call counts as right if your idea did what you called vs the S&amp;P 500 at the check that matches its horizon. This mirrors your own record; it isn't advice.</p>
+    </Card>
   );
 }
 
@@ -133,6 +176,8 @@ export default function MyCallsPage() {
         </Card>
       )}
 
+      {s.data?.calibration && <CalibrationCard c={s.data.calibration} />}
+
       {!acc && beliefs.length > 0 && (
         <button onClick={() => navigate('/account?next=/my')} className="mt-4 w-full text-left rounded-3xl border border-blue-400/40 bg-blue-500/10 p-4 hover:border-blue-300">
           <div className="font-bold">Keep these on every device</div>
@@ -184,6 +229,9 @@ export default function MyCallsPage() {
                     );
                   })}
                 </div>
+              )}
+              {b.sure && (b.sure.can_set || b.sure.prob != null) && (
+                <HowSure beliefId={b.belief_id} direction={b.direction} checkpointDays={b.sure.checkpoint_days} initial={b.sure.prob} canSet={b.sure.can_set} onSaved={reload} />
               )}
               {editing === b.belief_id ? (
                 <WrongIf beliefId={b.belief_id} picks={b.picks} horizonDays={b.horizon_days} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
