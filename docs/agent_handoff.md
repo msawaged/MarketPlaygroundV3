@@ -511,3 +511,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (look-ahead) numbers; it shows `old_pit` (old way without look-ahead) beside them. Luck card names the old app score
   "the old way" while the ranker is active and adds the ranker's `oos.lift_t_nw`. Gate/ranking untouched.
 - Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 late night (Builder routine): feature coverage, "provisional" rules
+- Built the 2026-11-14 extra-run proposal from docs/feature_ideas.md (size S). `research.load` keeps two small
+  bitmasks per candidate (`miss`: key never stored, `zero`: stored as exactly 0) over `COV_KEYS` (FEATS + REG_KEYS).
+  `research.run` adds `coverage` ({n, share, zero_share} on the test-period calls), `provisional` ({rule: {feature:
+  share}} for fixed rules reading a feature under `COVERAGE_OK` 0.99) and `low_coverage`. A rule's inputs are traced
+  from its own lambda (`rule_inputs`), so nothing to keep in sync when the scout adds rules.
+- `/v4/brain` passes `provisional` / `low_coverage` in `skill.luck`; Brain page luck card adds "Still filling in" (which
+  ways read half-filled data, % filled, and how many of the cleared ones are among them). Hidden when nothing is short.
+- Reporting only: `_passes`, `fit_production`, MIN_T, RISK_COVERAGE and the ranker don't read it. Numbers appear after
+  the next research run. Research routine: read coverage from kv `research:ranker`, not a LIKE scan (docs/research_ideas.md).
+- Files: backend/v4/research.py, brain.py, tests/test_v4.py (test_feature_coverage_marks_rules_on_half_filled_data_provisional),
+  frontend BrainPage.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/hq/status/builder.json.

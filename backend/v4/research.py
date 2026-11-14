@@ -65,6 +65,12 @@ INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_
 XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
 NEUTRAL = {"rvol": 1.0, "beta": 1.0, "ivol": 0.30}  # value for a feature a pick never stored (anything else: 0)
+# Feature coverage (docs/feature_ideas.md 2026-11-14 extra run): every input a rule can read, with one bit per key
+# on each candidate saying whether the pick stored it. A rule scored while one of its inputs is under COVERAGE_OK
+# is reported "provisional": part of its score comes from placeholder values, not data. Reporting only.
+COV_KEYS = FEATS + REG_KEYS
+COV_BIT = {k: 1 << i for i, k in enumerate(COV_KEYS)}
+COVERAGE_OK = 0.99
 
 
 def _with_derived(num: dict) -> dict:
@@ -295,8 +301,16 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
             sign * (float(r["ret"]) - float(beta) * float(r["spy_ret"]))
         top = r["final_rank"] == 0
         app = float(r.get("final_score") or 0.0)
+        miss = zero = 0  # bitmasks over COV_KEYS: never stored / stored as exactly 0 (a heuristic: some can be 0)
+        for k, bit in COV_BIT.items():
+            v = num.get(k)
+            if v is None:
+                miss |= bit
+            elif v == 0:
+                zero |= bit
         core = str(r.get("bdir") or "").lower()
         b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": top,  # 0 is the #1 shown
+                           "miss": miss, "zero": zero,
                            "app": app, "pit": _pit_score(pit, r, top, app),
                            # the app score a mix is tested with: point-in-time, as a live mix would get it
                            "pit_app": _pit_app(pit, r, app),
@@ -573,6 +587,63 @@ def _tries(names) -> int:
     return len(seen)
 
 
+class _Reads:
+    """Stands in for a candidate row and records which keys a rule reads (so each rule's inputs are never
+    listed by hand and can't drift from its code)."""
+    def __init__(self):
+        self.keys: set[str] = set()
+
+    def __getitem__(self, k: str) -> float:
+        self.keys.add(k)
+        return 0.0
+
+    def get(self, k: str, default: float = 0.0) -> float:
+        return self[k]
+
+
+def rule_inputs(fn) -> list[str]:
+    """The stored features a fixed rule reads ("z_seas" -> "seas"), limited to COV_KEYS."""
+    r = _Reads()
+    try:
+        fn(r)
+    except Exception:
+        return []
+    out = {k[2:] if k.startswith("z_") else k for k in r.keys}
+    return sorted(k for k in out if k in COV_BIT)
+
+
+def coverage(beliefs: list[dict]) -> dict:
+    """Share of candidates that stored each feature, and the share of those that stored exactly 0. Counts only."""
+    n, miss, zero = 0, dict.fromkeys(COV_KEYS, 0), dict.fromkeys(COV_KEYS, 0)
+    for b in beliefs:
+        for c in b["cands"]:
+            n += 1
+            m, z = int(c.get("miss", 0)), int(c.get("zero", 0))
+            if m or z:
+                for k, bit in COV_BIT.items():
+                    if m & bit:
+                        miss[k] += 1
+                    elif z & bit:
+                        zero[k] += 1
+    if not n:
+        return {"n": 0, "share": {}, "zero_share": {}}
+    return {"n": n, "share": {k: round(1 - miss[k] / n, 4) for k in COV_KEYS},
+            "zero_share": {k: round(zero[k] / max(1, n - miss[k]), 4) for k in COV_KEYS}}
+
+
+def provisional(fixed: dict, cov: dict, ok: float = COVERAGE_OK) -> dict:
+    """{rule: {feature: coverage}} for each fixed rule that reads a feature still under `ok` (still filling in)."""
+    share = cov.get("share") or {}
+    out = {}
+    for name, fn in fixed.items():
+        if fn is None:
+            continue
+        low = {k: share[k] for k in rule_inputs(fn) if k in share and share[k] < ok}
+        if low:
+            out[name] = low
+    return out
+
+
 def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     data = load(include_aug=True) if data is None else data
     aug = [b for b in data if b.get("aug")]
@@ -709,6 +780,11 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
+    # feature coverage on the test-period calls (the ones every result is scored on); reporting only
+    cov = coverage([b for b in data if b["date"] >= dates[start]])
+    out["coverage"] = cov
+    out["provisional"] = provisional(fixed, cov)
+    out["low_coverage"] = {k: v for k, v in (cov.get("share") or {}).items() if v < COVERAGE_OK}
     db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (KEY, json.dumps(out), out["at"]))
     return out

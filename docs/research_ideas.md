@@ -10,6 +10,10 @@ Since 2026-11-14 each result also has **t_nw** (`lift_t_nw`): the same lift's t 
 the same or nearby dates share most of their 90-day market path; see `research._se_overlap`), plus `dates` and `n_eff`
 (about how many independent calls the n is worth), and `luck.clear_nw`. Quote t_nw beside t in new results. Reporting
 only: `_passes` / `fit_production` still read the plain t (changing that is Murad's call, see docs/brain_upgrades.md).
+Since 2026-11-14 (late) each run also stores **coverage** (`coverage.share` / `zero_share` per feature on the test-period calls),
+`provisional` ({rule: {feature: share}} for each fixed rule reading a feature under 99% filled) and `low_coverage`.
+Read completeness from the kv instead of a `LIKE` scan over `picks`, quote coverage with each result, and don't record
+a result as final while its rule is in `provisional`. Reporting only: gates unchanged.
 
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 

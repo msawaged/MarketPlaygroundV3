@@ -352,6 +352,24 @@ export default function BrainPage({ viewOnly = false }) {
                       : (sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet")}
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>
+                  {(() => {
+                    const pv = Object.entries(sk.luck.provisional || {})
+                      .map(([name, low]) => [name, Math.min(...Object.values(low || {}).map(Number))])
+                      .filter(([, c]) => Number.isFinite(c))
+                      .sort((a, b) => b[1] - a[1]);
+                    if (!pv.length) return null;
+                    const label = (name) => name.replace(/\s*\((?:-?z_|vp|rvol|frog)[^)]*\)\s*$/, '');
+                    const clearedPv = pv.filter(([name]) => (sk.luck.clear || []).includes(name)).length;
+                    const shown = pv.slice(0, 3).map(([name, c]) => `${label(name)}: ${Math.floor(c * 100)}% filled`).join('; ');
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-amber-300">Still filling in.</span>
+                        {' '}{pv.length === 1 ? '1 of these ways reads' : `${pv.length} of these ways read`} numbers we're still adding to older calls
+                        {' '}({shown}{pv.length > 3 ? '; …' : ''}). Until that's done, part of {pv.length === 1 ? 'its' : 'their'} score comes from placeholder values, so {pv.length === 1 ? 'it' : 'they'} can still move
+                        {clearedPv > 0 ? `; ${clearedPv} of the ones that cleared the bar ${clearedPv === 1 ? 'is' : 'are'} among them.` : '.'}
+                      </div>
+                    );
+                  })()}
                   {sk.luck.app_t_nw != null && sk.luck.app_dates > 0 && (
                     <div className="mt-2 text-xs text-slate-300">
                       <span className="font-semibold text-slate-200">Counting overlap honestly.</span>

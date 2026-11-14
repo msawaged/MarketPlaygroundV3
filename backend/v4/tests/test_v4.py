@@ -2626,6 +2626,49 @@ def test_overlap_honest_t_counts_shared_market_paths_once():
     assert research._passes(m, app) == research._passes({k: v for k, v in m.items() if not k.endswith("_nw")}, app)
 
 
+def test_feature_coverage_marks_rules_on_half_filled_data_provisional():
+    """A rule scored while older calls still lack its input is partly scored on placeholders: research reports each
+    feature's coverage on the test-period calls and flags the rules that read one under 99% ("still filling in")."""
+    from backend.v4 import research, brain
+    import datetime as _dt, random as _r
+    rng = _r.Random(11)
+    assert research.rule_inputs(lambda f: f["z_mom_12_1"] - f["z_fip_id"]) == ["fip_id", "mom_12_1"]
+    assert research.rule_inputs(lambda f: -abs(f["z_vp_poc_dist"]) + f["reg_trend"] + f["bearish"]) == ["reg_trend", "vp_poc_dist"]
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof = f"b-cov-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            num = {"mom60": rng.gauss(0, 0.1), "ivol": rng.uniform(0.1, 0.9)}
+            if q % 2 == 0:                        # half the ideas never got "seas" (not backfilled yet)
+                num["seas"] = 0.0 if q == 0 else rng.gauss(0, 0.05)   # and half of those that did store exactly 0
+            pid = f"p-cov-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bullish", asof, 10.0, db.dumps({"num": num}), q))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, rng.gauss(0, 0.05), asof))
+    out = research.run(data=research.load())
+    cov = out["coverage"]
+    assert cov["n"] > 500 and cov["share"]["mom60"] == 1.0 and cov["share"]["ivol"] == 1.0
+    assert cov["share"]["seas"] == 0.5 and cov["zero_share"]["seas"] == 0.5 and cov["share"]["dbeta"] == 0.0
+    pv = out["provisional"]
+    assert pv["same season, past years (z_seas)"] == {"seas": 0.5}
+    assert "momentum (z_mom60)" not in pv and "low idiosyncratic vol (-z_ivol)" not in pv
+    assert "app (current #1)" not in pv and pv["downside beta premium (z_dbeta)"] == {"dbeta": 0.0}
+    assert out["low_coverage"]["seas"] == 0.5 and "mom60" not in out["low_coverage"]
+    assert len(json.dumps({k: out[k] for k in ("coverage", "provisional", "low_coverage")})) < 8000  # small kv payload
+    # reporting only: the gate sees the same result with or without it, and the brain page gets it from the kv
+    m = out["results"]["momentum (z_mom60)"]
+    assert research._passes(m, out["results"]["app (current #1)"]) == research._passes(dict(m), out["results"]["app (current #1)"])
+    sk = brain._skill()
+    assert sk["luck"]["provisional"]["same season, past years (z_seas)"] == {"seas": 0.5}
+    # full data: nothing provisional
+    full = [{"date": "2025-01-01", "cands": [{"miss": 0, "zero": 0}, {"miss": 0, "zero": 0}]}]
+    c2 = research.coverage(full)
+    assert all(v == 1.0 for v in c2["share"].values()) and research.provisional({"x": lambda f: f["z_seas"]}, c2) == {}
+
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""

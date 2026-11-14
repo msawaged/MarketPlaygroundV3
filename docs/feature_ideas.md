@@ -194,7 +194,10 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-14 (extra run) — Feature coverage in every research run: mark a result "provisional" until its data is filled in
 - **Area:** brain (research honesty, data quality).
-- **Status:** proposed
+- **Status:** built 2026-11-14 late night, commit "Feature coverage..." (Builder): `research.coverage` / `provisional` / `rule_inputs`
+  (a rule's inputs are traced from its own code), kv `research:ranker` keys `coverage`, `provisional`, `low_coverage`;
+  brain page luck card "Still filling in". Not built: per-feature `remaining` from `research.enrich` (its batch query
+  only sees a few hundred rows, so it can't give a true total; the run's coverage replaces it).
 - **Problem:** when a new feature is added, older graded picks read it as 0 until `research.enrich` backfills them
   (`research.load` falls back to `NEUTRAL` or 0.0 for a key the pick never stored), so a rule scored on half-filled
   data is scored partly on placeholders. Today 5,279 graded picks still lack `seas` (prod query 2026-11-14), yet the

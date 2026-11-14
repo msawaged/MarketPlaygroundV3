@@ -151,7 +151,9 @@ def _skill() -> dict:
         row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (research.KEY,))
         rr = json.loads(row["v"]) if row and row.get("v") else {}
         if rr.get("luck"):
-            out["luck"] = {**rr["luck"], "at": rr.get("at"), "n": (rr.get("results", {}).get("app (current #1)") or {}).get("n")}
+            out["luck"] = {**rr["luck"], "at": rr.get("at"), "n": (rr.get("results", {}).get("app (current #1)") or {}).get("n"),
+                           # rules scored while an input is still being filled in on older calls (reporting only)
+                           "provisional": rr.get("provisional") or {}, "low_coverage": rr.get("low_coverage") or {}}
     except Exception:
         pass
     for r in rows:
