@@ -14,6 +14,7 @@ import Term from './ui/Term';
 import { recentBeliefs, rememberBelief, seen, markSeen } from '../lib/recent';
 import { getPrefs, setPrefs } from '../lib/prefs';
 import HowToTrade from './chat/HowToTrade';
+import WrongIf from './chat/WrongIf';
 
 const EXAMPLES = [
   'Plumbing demand is about to boom',
@@ -347,6 +348,9 @@ export default function ChatInterface() {
                     {m.data && (
                       <StrategyCard data={m.data} belief={m.belief} riskProfile={m.risk || risk} onRerun={(r) => send(m.belief, r)} onRefine={(o) => send(`${m.belief} (${o})`, m.risk || undefined)}
                         prefs={m.prefs} onTune={(p) => send(m.belief, m.risk || undefined, { ...p, budget_usd: m.prefs?.budget_usd || 0, horizon_days: m.prefs?.horizon_days || 0 })} />
+                    )}
+                    {m.data?.belief_id && (m.data.picks || []).some((p) => p.shown) && (
+                      <WrongIf key={m.data.belief_id} beliefId={m.data.belief_id} picks={(m.data.picks || []).filter((p) => p.shown).slice(0, 3)} compact inChat />
                     )}
                   </div>
                 )}

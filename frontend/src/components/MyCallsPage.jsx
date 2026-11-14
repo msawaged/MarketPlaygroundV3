@@ -8,6 +8,7 @@ import Term from './ui/Term';
 import { getMyBeliefs } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { shareCard } from '../lib/shareCard';
+import WrongIf from './chat/WrongIf';
 
 function ago(iso) {
   const d = (Date.now() - new Date(iso).getTime()) / 86400000;
@@ -31,6 +32,43 @@ async function shareCall(b) {
   }, `My call on MarketPlayground: "${b.text}"`);
 }
 
+function shortDate(d) {
+  if (!d) return '';
+  return new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+// The user's own "I'm wrong if..." shown back next to the result, with the price line checked against daily closes.
+function WrongIfStatus({ w, onEdit }) {
+  const side = w.direction === 'bearish' ? 'above' : 'below';
+  const hasLine = w.price != null && w.ticker;
+  return (
+    <div className={`mt-3 rounded-2xl border px-3 py-2.5 text-sm ${w.crossed_on ? 'border-amber-400/50 bg-amber-500/10' : 'border-slate-700 bg-slate-800/50'}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-200">You said you'd be wrong if</div>
+        <button onClick={onEdit} className="shrink-0 text-xs font-semibold text-slate-300 hover:text-white">Edit</button>
+      </div>
+      {w.text && <div className="text-slate-100 break-words">{w.text}</div>}
+      {hasLine && (
+        <div className="mt-1 text-slate-200">
+          {w.text ? 'Price line: ' : ''}{w.ticker} closes {side} ${Number(w.price).toFixed(2)}
+          <span className="block text-xs mt-0.5">
+            {w.crossed_on
+              ? <span className="text-amber-200 font-semibold">Crossed on {shortDate(w.crossed_on)} (closed at ${Number(w.crossed_close).toFixed(2)}){w.past_now ? ', and still past it now' : ', back on the other side now'}.</span>
+              : w.checked_through
+                ? <span className="text-slate-400">Not crossed (daily closes checked through {shortDate(w.checked_through)}){w.past_now ? `, but it's ${side} the line right now` : ''}.</span>
+                : <span className="text-slate-400">Checked from the first close after your call.</span>}
+          </span>
+        </div>
+      )}
+      <div className="mt-1 text-[11px] text-slate-400">
+        {w.crossed_on
+          ? 'By your own test, this idea failed. Did that happen for the reason you expected? Worth a look before you add to it.'
+          : w.text ? 'Has that happened yet? Check it against the result above.' : 'By your own test, the idea still stands.'}
+      </div>
+    </div>
+  );
+}
+
 function Ring({ ahead, total }) {
   const r = 34, c = 2 * Math.PI * r, f = total ? ahead / total : 0;
   return (
@@ -46,12 +84,14 @@ export default function MyCallsPage() {
   const navigate = useNavigate();
   const [s, setS] = useState({ loading: true });
   const acc = useAccount();
+  const [editing, setEditing] = useState(null);
 
   useEffect(() => {
     let alive = true;
     getMyBeliefs().then((d) => alive && setS({ data: d })).catch((e) => alive && setS({ error: e.message }));
     return () => { alive = false; };
   }, []);
+  const reload = () => getMyBeliefs().then((d) => setS({ data: d })).catch(() => {});
 
   const beliefs = s.data?.beliefs || [];
   const sum = s.data?.summary;
@@ -144,6 +184,13 @@ export default function MyCallsPage() {
                     );
                   })}
                 </div>
+              )}
+              {editing === b.belief_id ? (
+                <WrongIf beliefId={b.belief_id} picks={b.picks} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
+              ) : b.wrong_if ? (
+                <WrongIfStatus w={b.wrong_if} onEdit={() => setEditing(b.belief_id)} />
+              ) : (
+                <button onClick={() => setEditing(b.belief_id)} className="mt-3 text-xs font-semibold text-amber-200 hover:text-white">+ I'm wrong if…</button>
               )}
             </Card>
           </motion.div>

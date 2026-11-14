@@ -469,6 +469,10 @@ def _migrations() -> list[str]:
         "ALTER TABLE outcomes ADD COLUMN bench_kind TEXT",
         # "You called it" emails (notify.py); people can unsubscribe
         "ALTER TABLE accounts ADD COLUMN notify_calls INTEGER NOT NULL DEFAULT 1",
+        # "I'm wrong if...": the user's own one-line test of their call, with an optional price line on one pick
+        "ALTER TABLE beliefs ADD COLUMN wrong_if TEXT",
+        "ALTER TABLE beliefs ADD COLUMN wrong_if_px REAL",
+        "ALTER TABLE beliefs ADD COLUMN wrong_if_ticker TEXT",
     ]
 
 

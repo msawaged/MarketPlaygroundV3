@@ -39,6 +39,14 @@ class FeedbackIn(BaseModel):
     pick_id: Optional[str] = None
 
 
+class WrongIfIn(BaseModel):
+    belief_id: str
+    user_id: str = "anonymous"
+    text: Optional[str] = None
+    price: Optional[float] = None
+    ticker: Optional[str] = None
+
+
 def _check_admin(token: Optional[str]) -> None:
     expected = os.getenv("MP_ADMIN_TOKEN")
     if not expected or token != expected:
@@ -69,6 +77,14 @@ async def post_belief(body: BeliefIn):
 async def post_feedback(body: FeedbackIn):
     try:
         return await run_in_threadpool(engine.record_feedback, body.belief_id, body.kind, body.user_id, body.pick_id)
+    except engine.BeliefError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/wrong_if")
+async def post_wrong_if(body: WrongIfIn):
+    try:
+        return await run_in_threadpool(engine.set_wrong_if, body.belief_id, body.user_id, body.text, body.price, body.ticker)
     except engine.BeliefError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

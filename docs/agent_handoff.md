@@ -396,3 +396,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Greeks panel (Builder's 57e5cc2): numbers verified; only wording changed for near-zero delta (no "−0 sh").
 - Files: backend/v4/practice_options.py, backend/v4/tests/test_paper.py, frontend PracticePage.jsx, StrategyCard.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 afternoon (Builder routine): "I'm wrong if..." pre-mortem on calls
+- Built the 2026-11-14 proposal from docs/feature_ideas.md (size S-M). After the picks in chat, an optional
+  "+ I'm wrong if..." row: one line (140 chars) and/or a price line on one shown pick (bullish: closes below, must be
+  under the entry; bearish: closes above, must be over it). Also addable/editable later on My beliefs.
+- `beliefs` gets `wrong_if`, `wrong_if_px`, `wrong_if_ticker` (additive migrations). `engine.set_wrong_if` (owner
+  only, user calls only), `engine.tripwire` (first daily close strictly after the call date at/past the line; the live
+  price only says where it is now), `my_beliefs` returns `wrong_if` per call. Route `POST /v4/wrong_if`.
+- Information only: nothing trades, no alerts yet, not used by research or ranking. Seeded calls never get one.
+- Files: backend/v4/db.py, engine.py, router.py, tests/test_v4.py (test_wrong_if_pre_mortem_..., fuzz list),
+  frontend chat/WrongIf.jsx (new), ChatInterface.jsx, MyCallsPage.jsx, lib/api.js, docs/feature_ideas.md,
+  docs/hq/status/builder.json.

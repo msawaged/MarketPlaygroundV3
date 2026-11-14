@@ -138,7 +138,9 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-14 — "I'm wrong if...": a one-line pre-mortem on each call, shown back at every checkpoint
 - **Area:** app (learning loop); a small, later brain benefit.
-- **Status:** proposed
+- **Status:** built 2026-11-14, commit COMMIT (Builder): optional line + price line on one shown pick, set in chat
+  under the picks or later on My beliefs; My beliefs shows it with "crossed on <date>" from daily closes after the
+  call. Not built yet: the "Did that happen?" answer, push alerts on a crossing, research use.
 - **Problem:** the app records *what* a user believes but not *why* or *what would prove it wrong*. Since Oct 1 the 34
   real user calls (7 users) average 43 characters (prod query 2026-11-14, `beliefs.source = 'user'`), e.g. a ticker
   and a direction. When the call is graded at 7/30/90/180/365 days (`grader.CHECKPOINTS`), the user sees a number but

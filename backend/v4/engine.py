@@ -692,8 +692,8 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
     if not user_id or user_id == "anonymous":
         return {"beliefs": [], "summary": None}
     rows = db.query(
-        "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation FROM beliefs "
-        "WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
+        "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation, wrong_if, wrong_if_px, "
+        "wrong_if_ticker FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
         (user_id, int(limit)),
     )
     if not rows:
@@ -771,11 +771,91 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
             calls_right += v > 0
         out.append({"belief_id": r["id"], "text": r["text"], "created_at": r["created_at"],
                     "summary": interp.get("summary"), "direction": r["direction"],
-                    "horizon_days": r["horizon_days"], "picks": items, "call": call})
+                    "horizon_days": r["horizon_days"], "picks": items, "call": call,
+                    "wrong_if": _wrong_if_view(r, [p for p in by_belief.get(r["id"], []) if p["shown"]])})
     summary = None
     if tracked or calls_tracked:
         summary = {"tracked": tracked, "ahead": ahead, "calls": calls_tracked, "calls_playing_out": calls_right}
     return {"beliefs": out, "summary": summary, "as_of": today_s}
+
+
+# ---------------- "I'm wrong if..." (the user's own pre-mortem) ----------------
+
+WRONG_IF_MAX = 140
+
+
+def set_wrong_if(belief_id: str, user_id: str, text: Optional[str], price: Optional[float] = None,
+                 ticker: Optional[str] = None) -> dict:
+    """Store the user's one-line 'I'm wrong if...' for their own call, with an optional price line on one of the
+    picks they were shown. A bullish line must sit below that pick's entry price, a bearish one above it (it marks
+    where the idea fails). Information only: nothing trades when it's crossed."""
+    if not user_id or user_id == "anonymous":
+        raise BeliefError("sign in or use this device's calls to add this")
+    b = db.query_one("SELECT id, user_id, source FROM beliefs WHERE id = ?", (belief_id,))
+    if not b or b["user_id"] != user_id or b["source"] != "user":
+        raise BeliefError("unknown belief_id")
+    text = " ".join((text or "").split())[:WRONG_IF_MAX] or None
+    px = tk = None
+    if price is not None:
+        try:
+            px = float(price)
+        except (TypeError, ValueError):
+            raise BeliefError("price must be a number")
+        if not (px > 0) or px != px or px > 1e7:
+            raise BeliefError("price must be above $0")
+        q = "SELECT ticker, direction, entry_price FROM picks WHERE belief_id = ? AND shown = 1"
+        args: tuple = (belief_id,)
+        if ticker:
+            q += " AND ticker = ?"
+            args = (belief_id, str(ticker).upper()[:10])
+        pk = db.query_one(q + " ORDER BY final_rank LIMIT 1", args)
+        if not pk:
+            raise BeliefError("that ticker isn't one of this call's picks")
+        entry = float(pk["entry_price"] or 0)
+        if pk["direction"] == "bullish" and not px < entry:
+            raise BeliefError(f"for a bullish call, pick a price below where {pk['ticker']} was (${entry:.2f})")
+        if pk["direction"] == "bearish" and not px > entry:
+            raise BeliefError(f"for a bearish call, pick a price above where {pk['ticker']} was (${entry:.2f})")
+        if pk["direction"] not in ("bullish", "bearish"):
+            raise BeliefError("a price line only works for an up or down call")
+        px, tk = round(px, 2), pk["ticker"]
+    if text is None and px is None:
+        raise BeliefError("write a line or pick a price")
+    db.execute("UPDATE beliefs SET wrong_if = ?, wrong_if_px = ?, wrong_if_ticker = ? WHERE id = ?",
+               (text, px, tk, belief_id))
+    return {"status": "ok", "wrong_if": {"text": text, "price": px, "ticker": tk}}
+
+
+def tripwire(direction: str, price: float, dates: list[str], closes: list[float], after: str,
+             now: Optional[float] = None) -> dict:
+    """Has the pick closed past the user's price line on any day after the call (`after`, exclusive)?
+    Bullish lines are crossed by a close at or below, bearish by a close at or above. `now` (live price) only
+    says where it is right now; it doesn't count as a close."""
+    import bisect
+    hit = (lambda c: c <= price) if direction == "bullish" else (lambda c: c >= price)
+    i = bisect.bisect_right(dates, after)
+    for d, c in zip(dates[i:], closes[i:]):
+        if hit(c):
+            return {"crossed_on": d, "crossed_close": round(c, 2), "past_now": bool(now is not None and hit(now))}
+    return {"crossed_on": None, "crossed_close": None, "past_now": bool(now is not None and hit(now)),
+            "checked_through": dates[-1] if len(dates) > i else None}
+
+
+def _wrong_if_view(r: dict, picks: list[dict]) -> Optional[dict]:
+    text, px, tk = r.get("wrong_if"), r.get("wrong_if_px"), r.get("wrong_if_ticker")
+    if not text and px is None:
+        return None
+    out: dict = {"text": text, "price": px, "ticker": tk}
+    if px is not None and tk:
+        p = next((p for p in picks if p["ticker"] == tk), None)
+        if p and p["direction"] in ("bullish", "bearish"):
+            out["direction"] = p["direction"]
+            try:
+                dates, closes = market.daily_closes(tk)
+                out.update(tripwire(p["direction"], float(px), dates, closes, r["as_of_date"], p.get("now")))
+            except Exception:
+                pass
+    return out
 
 
 # ---------------- one-year replay ----------------

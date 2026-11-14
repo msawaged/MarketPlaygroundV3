@@ -121,6 +121,11 @@ export function getMyBeliefs() {
   return request(`/v4/my_beliefs?user_id=${encodeURIComponent(userId())}`);
 }
 
+/** "I'm wrong if...": the user's own one-line test of their call (optional price line on one pick). */
+export function saveWrongIf(beliefId, { text = null, price = null, ticker = null } = {}) {
+  return request("/v4/wrong_if", { method: "POST", body: { belief_id: beliefId, user_id: userId(), text, price, ticker } });
+}
+
 export function getPortfolio() {
   return request(`/api/paper-trading/portfolio/${encodeURIComponent(userId())}?ts=${Date.now()}`);
 }

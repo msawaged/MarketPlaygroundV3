@@ -868,6 +868,55 @@ def test_my_calls_compares_picks_with_the_sector_fund():
     assert all(p["ticker"] != "XLI" or p["vs_simple"] is None for p in b["picks"])
 
 
+
+def test_wrong_if_pre_mortem_is_stored_owner_only_and_tripwire_reads_closes():
+    # the pure check: closes strictly after the call date; bullish crossed at/below, bearish at/above
+    dates, closes = ["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05"], [100.0, 96.0, 89.0, 95.0]
+    t = engine.tripwire("bullish", 90.0, dates, closes, "2026-11-02", now=95.0)
+    assert t["crossed_on"] == "2026-11-04" and t["crossed_close"] == 89.0 and t["past_now"] is False
+    t = engine.tripwire("bullish", 80.0, dates, closes, "2026-11-02", now=79.0)
+    assert t["crossed_on"] is None and t["past_now"] is True and t["checked_through"] == "2026-11-05"
+    assert engine.tripwire("bullish", 101.0, dates, closes, "2026-11-02")["crossed_on"] == "2026-11-03"  # call day itself doesn't count
+    assert engine.tripwire("bearish", 96.0, dates, closes, "2026-11-01")["crossed_on"] == "2026-11-02"
+    assert engine.tripwire("bullish", 90.0, dates, closes, "2026-11-05")["checked_through"] is None   # nothing after the call yet
+
+    r = engine.process_belief("plumbing demand is going to be high", "u-pm", "moderate", claude_client=FakeClaude())
+    bid = r["belief_id"]
+    top = db.query_one("SELECT ticker, direction, entry_price FROM picks WHERE belief_id = ? AND shown = 1 ORDER BY final_rank LIMIT 1", (bid,))
+    assert top["direction"] == "bullish"
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "u-someone-else", "housing starts fall")      # only the person who made the call
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "anonymous", "housing starts fall")
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "u-pm", "   ")                                  # nothing to store
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "u-pm", None, price=top["entry_price"] * 1.1)   # bullish line must sit below entry
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "u-pm", None, price=50.0, ticker="NOTAPICK")
+    with pytest.raises(engine.BeliefError):
+        engine.set_wrong_if(bid, "u-pm", None, price=float("nan"))
+    line = round(top["entry_price"] * 0.9, 2)
+    out = engine.set_wrong_if(bid, "u-pm", "  housing   starts fall " + "x" * 300, price=line)
+    assert out["wrong_if"]["ticker"] == top["ticker"] and out["wrong_if"]["price"] == line
+    assert len(out["wrong_if"]["text"]) == engine.WRONG_IF_MAX and out["wrong_if"]["text"].startswith("housing starts fall x")
+    w = engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]
+    assert w["ticker"] == top["ticker"] and w["price"] == line and w["direction"] == "bullish"
+    assert "crossed_on" in w and "past_now" in w
+    engine.set_wrong_if(bid, "u-pm", "rates jump")                              # text only clears the price line
+    w = engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]
+    assert w == {"text": "rates jump", "price": None, "ticker": None}
+    assert engine.my_beliefs("u-fund-none")["beliefs"] == []
+
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    c = TestClient(app)
+    assert c.post("/v4/wrong_if", json={"belief_id": bid, "user_id": "u-pm", "text": "margins shrink"}).status_code == 200
+    assert c.post("/v4/wrong_if", json={"belief_id": bid, "user_id": "u-x", "text": "nope"}).status_code == 400
+    assert engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]["text"] == "margins shrink"
+
 # ---------------- fuzz: hostile and random input never crashes the server ----------------
 
 _NASTY = ["", " ", "\n\t", "a", "x" * 5000, "🚀📉💸" * 50, "'; DROP TABLE beliefs; --", "<script>alert(1)</script>",
@@ -929,6 +978,7 @@ def test_fuzz_api_never_500s(monkeypatch):
         "/v4/broker/preview": ["ticker", "side", "amount_usd", "belief_id", "pick_id"],
         "/v4/broker/order": ["preview_id", "confirm"],
         "/v4/broker/disconnect": [],
+        "/v4/wrong_if": ["belief_id", "user_id", "text", "price", "ticker"],
         "/v4/admin/reset_password": ["email"],
     }
     gets = ["/v4/belief/{x}", "/v4/trending?days={x}", "/v4/stats", "/v4/headlines?limit={x}",
