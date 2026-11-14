@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Page, { Card } from './ui/Page';
 import { hqBoard, hqPost } from '../lib/api';
 
-const COLORS = { cto: 'bg-blue-500', chair: 'bg-white', health: 'bg-emerald-500', reel: 'bg-pink-500', scout: 'bg-amber-500', brain: 'bg-violet-500', polish: 'bg-cyan-500', growth: 'bg-lime-500' };
+const COLORS = { cto: 'bg-blue-500', chair: 'bg-white', builder: 'bg-orange-500', health: 'bg-emerald-500', reel: 'bg-pink-500', scout: 'bg-amber-500', brain: 'bg-violet-500', polish: 'bg-cyan-500', growth: 'bg-lime-500' };
 const ago = (iso) => {
   if (!iso) return 'not yet';
   const m = Math.round((Date.now() - new Date(iso)) / 60000);

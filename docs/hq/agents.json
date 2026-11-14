@@ -10,14 +10,21 @@
   "key": "chair",
   "name": "Meeting chair",
   "role": "Runs the round table: answers you within the hour and wakes the agents who need to act.",
-  "schedule": "Every hour, 7 am to 10 pm",
+  "schedule": "Every hour, around the clock",
   "trigger": "trig_01LbDZWb1Jx5Tux2Y1fuhi9T"
+ },
+ {
+  "key": "builder",
+  "name": "Builder",
+  "role": "Ships one finished improvement every 3 hours: backlog features and prep for Prof Brown's review.",
+  "schedule": "Every 3 hours (9:51am-9:51pm)",
+  "trigger": "trig_01UURmRJRJUSHNwU1nC2QxvC"
  },
  {
   "key": "health",
   "name": "Inbox & health watch",
   "role": "Reads the inbox and Render alerts, keeps the site and jobs healthy, fixes small breaks.",
-  "schedule": "Daily 10:11 am and 7:11 pm",
+  "schedule": "Every 4 hours (6am-10pm)",
   "trigger": "trig_0121DvxrDqcSkKepy7Qony31"
  },
  {
@@ -31,21 +38,21 @@
   "key": "scout",
   "name": "Brain idea scout",
   "role": "Finds one tested trading idea and one feature proposal each weekday.",
-  "schedule": "Weekdays 11:37 am",
+  "schedule": "Daily 11:37 am",
   "trigger": "trig_013hXC7LR9JxuVGWaLJBr8WJ"
  },
  {
   "key": "brain",
   "name": "Brain upgrade",
   "role": "Ships the one change with the most leverage on the brain's real results.",
-  "schedule": "Mon, Wed, Fri 1:39 pm",
+  "schedule": "Daily 1:39 pm",
   "trigger": "trig_017fWdn4BmPbv5JzjcuJxxaQ"
  },
  {
   "key": "polish",
   "name": "App polish",
   "role": "Walks the app like a new user and fixes the top rough edges.",
-  "schedule": "Daily 2:23 pm",
+  "schedule": "Every 3 hours (8:23am-11:23pm)",
   "trigger": "trig_01XVtbmdGFL7Tg6QFYTojSUX"
  },
  {
