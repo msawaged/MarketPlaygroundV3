@@ -1,9 +1,9 @@
 {
  "key": "health",
- "updated_at": "2026-11-14T13:15:00Z",
- "last_run": "Checked inbox, Render alerts and site health: learning ran under an hour ago and is fine, grading last ran Friday evening fine (next is Monday), beliefs up to 6,443 (48 today), site loads. No user emails. One Render notice: the workspace has used over 70% of its 500 free build minutes this month; nothing is broken.",
+ "updated_at": "2026-11-14T17:10:00Z",
+ "last_run": "Evening check: all healthy. Learning ran under an hour ago and is fine, grading last ran Friday evening fine (next is Monday), beliefs up to 6,461 (66 today), site loads. No user emails and no new Render alerts (only this morning's build-minutes notice, already noted).",
  "working_on": "Watching the inbox and the jobs twice a day.",
- "next": "Next scheduled check. If build minutes run out, deploys would stop until the monthly reset; I'll flag it here if that happens.",
+ "next": "Next scheduled check. Build minutes are over 70% for the month; if they run out, deploys stop until the monthly reset and I'll flag it here.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
