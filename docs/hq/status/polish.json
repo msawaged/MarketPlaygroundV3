@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-14T03:36:24Z",
- "last_run": "Close Call: YES/NO now cost the market's own price for the spread, so the price agrees with the odds shown. Brain page 'today' count now uses New York time.",
+ "updated_at": "2026-11-14T04:03:44Z",
+ "last_run": "Close Call: YES/NO now cost the market's own price for the spread, and odds from stale after-hours quotes (SPY showed 61% to rise $3) are no longer shown. Brain page 'today' count uses New York time.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Next walk in about 3 hours.",
  "needs_from_murad": [],

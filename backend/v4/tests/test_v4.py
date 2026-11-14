@@ -3126,3 +3126,24 @@ def test_card_vol_prefers_implied(monkeypatch):
     assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=False) == (0.31, "historical")   # backfill / unshown
     monkeypatch.setattr(market, "option_iv", lambda u, k, s, e: None)
     assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=True) == (0.31, "historical")
+
+
+def test_yesno_stale_spread_quotes_fall_back_to_one_vol(monkeypatch):
+    # After hours the call-spread mids can lag the stock (live: SPY $752, "61% above $755"). A spread-implied
+    # digital more than 10 points from the one-vol answer is not shown as the market's odds.
+    yesno = _fake_chain(monkeypatch)
+    spot = market.latest_price("WINR")
+    real = market.option_chain_near
+
+    def steep(u, strike, exp, days=21, band=0.15):
+        out = []
+        for r in real(u, strike, exp, days, band):
+            if r["type"] == "call":
+                mid = max(0.05, 0.9 * (spot * 1.2 - r["strike"]))    # 0.90 per $1 strike: a 90% digital everywhere
+                r = dict(r, bid=round(mid - 0.02, 2), ask=round(mid + 0.02, 2))
+            out.append(r)
+        return out
+    monkeypatch.setattr(market, "option_chain_near", steep)
+    exp = (TODAY + timedelta(days=9)).isoformat()
+    q = yesno.quote("WINR", round(spot) + 0.5, exp)
+    assert "out of date" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]

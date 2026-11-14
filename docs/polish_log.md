@@ -280,6 +280,10 @@ Changed:
   `price_source`. A fit more than 20% away from the line IV is treated as noisy quotes and ignored (first deploy:
   NVDA $185 Dec 18 fitted 0.41 vs line IV 0.58 on thin $1 strikes after hours, YES $13 vs odds 21%). Brain features still use the line IV (unchanged inputs). Test:
   test_yesno_spread_vol_prices_yes_at_the_listed_spread_mid.
+- Odds sanity check: live after hours SPY (spot $752) showed "61% to close above $755" (one-vol 46%) and 53% above
+  $760 (35%) from the $1-strike spread mids, which lag the stock after the close. A spread digital more than 10
+  points from the one-vol answer is now not shown; the screen says "From one implied volatility (the spread quotes
+  looked out of date)". Test: test_yesno_stale_spread_quotes_fall_back_to_one_vol.
 - YesNoPage note says which price the practice trade used ("listed mid price of the same $X/$Y spreads").
 - backend/v4/brain.py: beliefs_today counts from New York midnight. BrainPage: "Both sides of most stories".
 

@@ -321,6 +321,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Close Call: YES / NO practice prices now come from the listed mid of the trade's own k1/k2 call spread
   (`yesno.spread_vol`, a flat vol fitted to that mid), so cost agrees with last night's spread-based odds; line IV is
   the fallback (also when the fit is >20% off the line IV: noisy quotes). Quote adds `price_vol`, `price_source`; make_call opens trades with `price_vol`. Features unchanged.
+- Close Call odds guard (on top of the build chat's `digital_from_spread`, not replacing it): a spread digital >10
+  pts from the one-vol N(d2) is treated as stale quotes (live SPY after hours: 61% above $755 with spot $752) and
+  the labelled one-vol fallback is shown.
 - Brain page "N today" is the New York day now (was UTC). "Both sides of most stories" wording.
 - Files: backend/v4/yesno.py, backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend YesNoPage.jsx, BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.

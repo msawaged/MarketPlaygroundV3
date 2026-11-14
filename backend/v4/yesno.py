@@ -273,10 +273,15 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     years = max(1, (exp - t).days) / 365.0
     m_p_flat = prob_above(spot, level, years, vol)
     dig = digital_from_spread([r for r in chain if r["type"] == "call"], level)
-    if dig:
+    # Option-implied odds carry skew, but skew moves a near-dated digital only a few points off the one-vol
+    # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
+    # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
+    stale = bool(dig) and abs(dig[0] - m_p_flat) > 0.10
+    if dig and not stale:
         m_p, odds_source = dig[0], f"the ${dig[1]:g}/${dig[2]:g} call spread (skew included)"
     else:
-        m_p, odds_source = m_p_flat, "one implied volatility (no tight spread quoted)"
+        m_p, odds_source = m_p_flat, ("one implied volatility (the spread quotes looked out of date)" if stale
+                                      else "one implied volatility (no tight spread quoted)")
     calls = [r for r in chain if r["type"] == "call"]
     sv = spread_vol(calls, k1, k2, spot, years, vol)
     # Skew moves IV only a little across one strike gap, so a fit far from the line IV means stale or noisy
