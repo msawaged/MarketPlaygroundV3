@@ -35,11 +35,21 @@ const lower = (s) => s.charAt(0).toLowerCase() + s.slice(1);
 export const believeUrl = (hunch) => `/chat?b=${encodeURIComponent(hunch)}&go=1`;
 export const doubtUrl = (hunch) => `/chat?b=${encodeURIComponent(`I don't think ${lower(hunch).replace(/\.$/, '')}`)}&go=1`;
 
-function Pct({ v }) {
+// "today" only when the move is from today's New York session; on a weekend or before the open it's "on Fri".
+export function sessionLabel(day) {
+  if (!day) return 'today';
+  const nyToday = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  if (day >= nyToday) return 'today';
+  const d = new Date(`${day}T12:00:00Z`);
+  const days = (Date.parse(`${nyToday}T12:00:00Z`) - d.getTime()) / 86400000;
+  return 'on ' + d.toLocaleDateString('en-US', days < 6 ? { weekday: 'short', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+export function Pct({ v, day }) {
   if (v == null) return null;
   return (
     <span className="block text-[11px] text-slate-500 tabular-nums">
-      stock <span className={`font-semibold ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span> today
+      stock <span className={`font-semibold ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span> {sessionLabel(day)}
     </span>
   );
 }
@@ -72,7 +82,7 @@ export function MoverCard({ item, i = 0 }) {
                   {c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}
                 </span>
               )}
-              <Pct v={c.change} />
+              <Pct v={c.change} day={c.change_day} />
             </span>
           </li>
         ))}

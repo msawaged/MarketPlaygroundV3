@@ -288,3 +288,26 @@ Changed:
 - backend/v4/brain.py: beliefs_today counts from New York midnight. BrainPage: "Both sides of most stories".
 
 Checks: vite build passes, backend tests 142 passed.
+
+## 2026-11-14 (morning run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~06:25
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+No new HQ messages from Murad.
+
+Found:
+- "Moving now" cards said "AMD stock -8.8% today", "ARM -5.9% today" on a Saturday: the move is Friday's session
+  (feed: market closed, next open Mon 9:30 ET; snapshot dailyBar Fri, prevDailyBar Thu). Same in the 30-second story
+  ("stock today"). An expert reading on a weekend or before the open sees a "today" that never happened.
+- Close Call cross-check (live /v4/yesno/quote, Saturday stale quotes): AAPL $360 Nov 20 shows 42.7% odds from the
+  $357.5/$362.5 spread while YES costs $83 for $250 (33%) priced at the line IV, because the trade's own $360/$362.5
+  mid fit a vol >20% from the line IV and was rejected as noisy. Part of the gap is structural (the YES spread sits
+  above the line, breakeven $360.83). AAPL $370: odds 7.3%, YES $22/$500 (4.4%) from the spread fit. Not changed;
+  re-check on a weekday with live quotes before touching the 20% / 10-pt guards.
+
+Changed:
+- backend/v4/movers.py: snapshots carry `change_day` (the session date of the move; None when the move is untrusted).
+- frontend MoversFeed.jsx: `sessionLabel` says "today" only for today's New York session, otherwise "on Fri" (or
+  "on Nov 2" if older); StoryViewer uses it too. Test: test_movers_snapshot_says_which_session_the_move_is_from.
+
+Checks: vite build passes, backend tests 147 passed.

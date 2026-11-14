@@ -101,7 +101,8 @@ def _today_change(price: float, prev: float, snap: dict) -> Optional[float]:
 
 
 def _snapshots(symbols: list[str]) -> dict[str, dict]:
-    """{sym: {"price", "change"}} where change is today's move vs the last close (fraction)."""
+    """{sym: {"price", "change", "change_day"}}: change is the latest session's move vs the close before it
+    (fraction); change_day is that session's date (YYYY-MM-DD)."""
     if not symbols:
         return {}
     try:
@@ -118,7 +119,10 @@ def _snapshots(symbols: list[str]) -> dict[str, dict]:
             price = float((s.get("latestTrade") or {}).get("p") or (s.get("dailyBar") or {}).get("c") or 0)
             prev = float((s.get("prevDailyBar") or {}).get("c") or 0)
             if price > 0:
-                out[sym] = {"price": round(price, 2), "change": _today_change(price, prev, s)}
+                ch = _today_change(price, prev, s)
+                out[sym] = {"price": round(price, 2), "change": ch,
+                            # the session the move belongs to, so a weekend screen says "Fri", not "today"
+                            "change_day": (str((s.get("dailyBar") or {}).get("t") or "")[:10] or None) if ch is not None else None}
         except (TypeError, ValueError):
             continue
     return out

@@ -345,3 +345,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   long-only) under the scenarios on option cards. Cards cached before today just don't show it. Pricing/grading unchanged.
 - Files: backend/v4/library.py, strategy.py, tests/test_v4.py (test_exercise_notes_american_style),
   frontend StrategyCard.jsx, docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-14 morning (daily polish walk)
+- Moving now / story cards: the stock move label is "today" only for today's NY session; on weekends / before the
+  open it reads "on Fri". movers._snapshots adds `change_day` (dailyBar date); frontend `sessionLabel` in MoversFeed.jsx.
+- Noted, not changed: weekend Close Call AAPL $360 odds 42.7% vs YES cost 33% (trade-spread fit rejected as noisy);
+  re-check on a weekday.
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend MoversFeed.jsx, StoryViewer.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

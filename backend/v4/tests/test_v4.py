@@ -476,6 +476,22 @@ def _client():
     return TestClient(app)
 
 
+def test_movers_snapshot_says_which_session_the_move_is_from(monkeypatch):
+    from backend.v4 import movers
+    # On a Saturday the move is Friday's: the feed must carry the session date so the card doesn't say "today".
+    class R:
+        def raise_for_status(self): pass
+        def json(self):
+            return {"AMD": {"latestTrade": {"p": 91.2}, "dailyBar": {"t": "2026-11-13T05:00:00Z", "c": 91.2},
+                            "prevDailyBar": {"t": "2026-11-12T05:00:00Z", "c": 100.0}},
+                    "OLD": {"latestTrade": {"p": 50.0}, "dailyBar": {"t": "2026-11-13T05:00:00Z"},
+                            "prevDailyBar": {"t": "2026-10-20T05:00:00Z", "c": 40.0}}}
+    monkeypatch.setattr(movers.market._session, "get", lambda *a, **k: R())
+    out = movers._snapshots(["AMD", "OLD"])
+    assert out["AMD"] == {"price": 91.2, "change": -0.088, "change_day": "2026-11-13"}
+    assert out["OLD"]["change"] is None and out["OLD"]["change_day"] is None
+
+
 def test_movers_today_change_only_trusts_the_previous_session():
     from backend.v4 import movers
     snap = lambda a, b: {"dailyBar": {"t": a + "T04:00:00Z"}, "prevDailyBar": {"t": b + "T04:00:00Z"}}

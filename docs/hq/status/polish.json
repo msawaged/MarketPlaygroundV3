@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-14T04:03:44Z",
- "last_run": "Close Call: YES/NO now cost the market's own price for the spread, and odds from stale after-hours quotes (SPY showed 61% to rise $3) are no longer shown. Brain page 'today' count uses New York time.",
+ "updated_at": "2026-11-14T07:10:00Z",
+ "last_run": "News cards said a stock moved 'today' on a Saturday; they now say 'on Fri' when the move is from an earlier session.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
- "next": "Next walk in about 3 hours.",
+ "next": "Re-check Close Call odds vs YES price on a weekday with live quotes (weekend quotes made AAPL $360 show 43% odds but a 33% price).",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

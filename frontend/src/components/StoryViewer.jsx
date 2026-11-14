@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { getStory } from '../lib/api';
-import { ago, believeUrl, doubtUrl } from './MoversFeed';
+import { ago, believeUrl, doubtUrl, sessionLabel } from './MoversFeed';
 import { amount, change, barWidths } from '../lib/figures';
 import { LogoMark, Wordmark } from './ui/Logo';
 
@@ -115,7 +115,7 @@ function cards(data, navigate, reel = false, launched = false) {
               </div>
               <div className="text-right leading-tight">
                 {c.direction && <div className={`text-xs font-bold ${c.direction === 'up' ? 'text-green-300' : 'text-red-300'}`}>{c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}</div>}
-                {c.change != null && <div className="text-[10px] text-slate-500">stock today</div>}
+                {c.change != null && <div className="text-[10px] text-slate-500">stock {sessionLabel(c.change_day)}</div>}
                 <Pct v={c.change} />
               </div>
             </motion.li>
