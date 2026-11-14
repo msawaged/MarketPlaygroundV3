@@ -517,3 +517,5 @@ their 90-day windows overlap, 1 - gap/90 in calendar days; PSD, same-day weight 
 `app_n_eff`. **Not read by `_passes`, `fit_production`, MIN_T or the ranker** — whether the gate should use the honest t
 is Murad's decision. Expect most current "clears" (incl. the app's #1) to look much weaker on this lens once the next
 research run lands. Test: `test_overlap_honest_t_counts_shared_market_paths_once`.
+First live numbers (research run 2026-11-14 17:19 UTC): app (current #1) lift_t 4.52 → lift_t_nw 1.91 (adj 3.86 → 1.76),
+2,703 calls on 429 dates, n_eff 482. `clear_nw` and `clear_adj_nw` are empty (plain `clear`: app + Amihud).

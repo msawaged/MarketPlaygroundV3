@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T22:30:00Z",
- "last_run": "Built honest t-stats. Calls made on the same or nearby days ride the same market for most of their 90 days, so they aren't independent, and the plain t-stat overstated how sure we can be. Research now also reports the t counted honestly (overlap-weighted errors, the standard fix a finance professor would expect), how many independent calls the sample is really worth, and which methods still clear the luck bar that way. The Brain page's luck check says it in plain words. Reporting only: nothing about how picks are chosen changed.",
+ "updated_at": "2026-11-14T17:35:00Z",
+ "last_run": "Built honest t-stats. Calls made on the same or nearby days ride the same market for most of their 90 days, so they aren't independent, and the plain t-stat overstated how sure we can be. Research now also reports the t counted honestly (overlap-weighted errors, the standard fix a finance professor would expect), how many independent calls the sample is really worth, and which methods still clear the luck bar that way. The Brain page's luck check says it in plain words. Reporting only: nothing about how picks are chosen changed. Live result (17:19 UTC run): the #1 pick's plain t of 4.5 becomes 1.9 counted honestly; the 2,703 test calls were made on 429 days and are worth about 482 independent calls; on that lens no method clears the luck bar yet (the app's #1 and the illiquidity rule both did on the plain t). The Brain page now says this.",
  "working_on": "Nothing open.",
- "next": "After the next research run, check the live numbers on the Brain page read right. Then: feature coverage ('provisional' results) proposal, or the brain's own High/Medium/Low on the calibration scale.",
+ "next": "Feature coverage ('provisional' results) proposal, or the brain's own High/Medium/Low on the calibration scale. Your call if the ranker gate should ever use the honest t (it doesn't now).",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
