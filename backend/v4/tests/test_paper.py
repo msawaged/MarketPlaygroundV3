@@ -161,6 +161,8 @@ def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
     monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
     monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
     monkeypatch.setattr(market, "today", lambda: today["d"])
+    clk = {"is_open": True}
+    monkeypatch.setattr(market, "clock", lambda: clk)
     exp = (date(2026, 6, 1) + timedelta(days=90)).isoformat()
     legs = [{"action": "Buy", "option_type": "Call", "strike_price": 100, "expiration": exp, "quantity": 1, "instrument": "option"},
             {"action": "Sell", "option_type": "Call", "strike_price": 110, "expiration": exp, "quantity": 1, "instrument": "option",
@@ -168,6 +170,7 @@ def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
     cash0 = 100000.0
     r = po.open_trade("u9", "XYZ", "Bull Call Spread", legs, 2, "it'll rise")
     assert r["status"] == "success" and 100 < r["set_aside"] < 2000  # a 10-wide spread costs < $1,000 a contract
+    assert r["market_closed"] is False and "closed" not in r["message"]
     pos = po.positions("u9")
     assert len(pos) == 1 and abs(pos[0]["pnl"]) < 1e-6
     spot["v"] = 115.0
@@ -181,7 +184,9 @@ def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
     # a credit trade sets aside its worst case, and settles at expiration on its own
     put_credit = [{"action": "Sell", "option_type": "Put", "strike_price": 95, "expiration": exp, "quantity": 1, "instrument": "option"},
                   {"action": "Buy", "option_type": "Put", "strike_price": 90, "expiration": exp, "quantity": 1, "instrument": "option"}]
+    clk["is_open"] = False  # weekend: options still open right away (unlike shares), and the message says so
     r2 = po.open_trade("u9", "XYZ", "Bull Put Spread", put_credit, 1)
+    assert r2["market_closed"] is True and "doesn't wait for the open" in r2["message"]
     assert 300 < r2["set_aside"] <= 500  # worst case of a 5-wide spread, less the credit
     today["d"] = date(2026, 6, 1) + timedelta(days=91)
     spot["v"] = 120.0  # puts expire worthless: keep the credit

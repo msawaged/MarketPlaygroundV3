@@ -689,12 +689,15 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 // Position Greeks today (backend strategy.position_greeks: Black-Scholes at the card's own vol and expiry), scaled to
 // the chosen contract count. Plain words for each, so a beginner and a desk read the same numbers.
 function GreeksPanel({ g, n, ticker }) {
-  const sgn = (x, d = 0) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
+  const sgn = (x, d = 0) => { const r = Number(x.toFixed(d)); return `${r > 0 ? '+' : r < 0 ? '−' : ''}${Math.abs(r).toFixed(d)}`; }; // no "−0"
   const usd = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}$${Math.abs(x) >= 100 ? Math.round(Math.abs(x)).toLocaleString() : Math.abs(x).toFixed(2)}`;
   const d = g.delta * n, ga = g.gamma * n, th = g.theta * n, ve = g.vega * n;
+  const sh = Math.abs(Math.round(d));
   const gd = Math.abs(ga) >= 10 ? 0 : Math.abs(ga) >= 1 ? 1 : 2;
   const rows = [
-    { k: 'Delta', v: `${sgn(d)} sh`, t: `Moves like ${d < 0 ? 'being short' : 'owning'} ${Math.abs(Math.round(d))} share${Math.abs(Math.round(d)) === 1 ? '' : 's'}: about ${usd(Math.round(d)).replace('.00', '')} if ${ticker} rises $1.` },
+    { k: 'Delta', v: `${sgn(d)} sh`, t: sh === 0
+      ? `About neutral today: a $1 move in ${ticker} changes it by less than 50 cents.`
+      : `Moves like ${d < 0 ? 'being short' : 'owning'} ${sh} share${sh === 1 ? '' : 's'}: about ${usd(Math.round(d)).replace('.00', '')} if ${ticker} rises $1.` },
     { k: 'Gamma', v: sgn(ga, gd), t: `Delta changes by about ${Math.abs(ga).toFixed(gd)} shares for each $1 ${ticker} moves${ga < 0 ? ', against you' : ''}.` },
     { k: 'Theta', v: `${usd(th)}/day`, t: th < 0 ? `Time decay: about ${usd(th)} a day if nothing else changes.` : `Time works for you: about ${usd(th)} a day if nothing else changes.` },
     { k: 'Vega', v: usd(ve), t: `About ${usd(ve)} if implied volatility rises 1 point${ve < 0 ? ' (you gain if it falls)' : ''}.` },

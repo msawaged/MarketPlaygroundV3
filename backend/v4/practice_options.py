@@ -170,10 +170,16 @@ def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contrac
                          (pid, user_id, q["ticker"], (structure or "Options")[:40], json.dumps(q["legs"]), contracts,
                           q["unit_value"], q["unit_set_aside"], q["vol"], (belief or "")[:300], "open",
                           datetime.now().isoformat()))
-    return {"status": "success", "position_id": pid, "set_aside": round(need, 2),
+    try:  # practice options open right away, even when the market is closed (unlike practice shares): say so
+        closed = not market.clock().get("is_open", True)
+    except Exception:
+        closed = False
+    return {"status": "success", "position_id": pid, "set_aside": round(need, 2), "market_closed": closed,
             "message": f"Opened {contracts} {q['ticker']} {structure or 'options'} contract{'s' if contracts > 1 else ''} "
                        f"with practice money (about ${need:,.0f} set aside). "
-                       + ("Priced with the market's implied volatility." if q.get("vol_source") == "market" else "Prices are estimates.")}
+                       + ("Priced with the market's implied volatility." if q.get("vol_source") == "market" else "Prices are estimates.")
+                       + (" The market is closed, so it opened now at an estimate from the last prices; it doesn't wait for the open."
+                          if closed else "")}
 
 
 def _settle(conn, row, value_now: float, when: Optional[str] = None) -> float:

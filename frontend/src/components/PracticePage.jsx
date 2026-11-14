@@ -117,7 +117,7 @@ export default function PracticePage() {
 
       {mkt && !mkt.is_open && (
         <div className="mt-4 rounded-2xl bg-amber-400/10 border border-amber-300/30 px-4 py-3 text-sm text-amber-100" role="status">
-          <b>The market is closed.</b> New trades wait and fill at the opening price ({mkt.next_open_text}), just like a real broker. Prices can jump overnight.
+          <b>The market is closed.</b> New share trades wait and fill at the opening price ({mkt.next_open_text}), just like a real broker. Prices can jump overnight. Practice options and Close Calls open right away at an estimate from the last prices.
         </div>
       )}
 

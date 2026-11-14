@@ -311,3 +311,32 @@ Changed:
   "on Nov 2" if older); StoryViewer uses it too. Test: test_movers_snapshot_says_which_session_the_move_is_from.
 
 Checks: vite build passes, backend tests 147 passed.
+
+## 2026-11-14 (late-morning run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~09:30
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+Signed-in screens locally (offline server, throwaway SQLite): chat -> options cards -> paper trade -> Portfolio,
+My beliefs, Close Call. No new HQ messages from Murad. Focus: the Builder's new "Greeks today" panel (57e5cc2).
+
+Found:
+- Greeks check out: NVDA $185/$202.5 Bull Call Spread, 25% vol, 97 days: panel delta +27 sh, gamma +0.22, theta
+  -$1.12/day, vega +$5.03; finite differences of the card's own bs_price give 26.9 / -1.13 per day / ~+4.8 to +5.0
+  per vol point, cost $641 = card. Every library structure gives sensible signs (credit spreads short gamma/vega,
+  straddle long both).
+- Delta-neutral cards read oddly: an Iron Condor (delta -1.1) or Iron Butterfly (+0.5) would say "Moves like being
+  short 1 share" / "+1 sh", and a delta under 0.5 printed "−0 sh" and "Moves like owning 0 shares: about $0".
+- Practice options contradicted the Portfolio banner: on Saturday the banner said "New trades wait and fill at the
+  opening price (Monday 9:30am ET)", but the NVDA spread opened at once ($641 set aside, position live). Shares do
+  queue (paper_trading), options (practice_options.open_trade, also used by Close Call) never did.
+
+Changed:
+- backend/v4/practice_options.py: open_trade returns `market_closed` and, when closed, the message adds "The market is
+  closed, so it opened now at an estimate from the last prices; it doesn't wait for the open." Fill behaviour unchanged.
+- PracticePage banner: "New share trades wait and fill at the opening price ... Practice options and Close Calls open
+  right away at an estimate from the last prices."
+- StrategyCard GreeksPanel: no "−0"; a delta that rounds to 0 shares reads "About neutral today: a $1 move in X
+  changes it by less than 50 cents."
+- Test: test_practice_options_open_value_close_and_expire checks the open/closed message.
+
+Checks: vite build passes, backend tests 151 passed.

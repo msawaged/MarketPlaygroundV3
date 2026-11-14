@@ -388,3 +388,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_position_greeks_match_card_pricing (finite differences of bs_price; straddle/condor/covered-call signs).
 - Files: backend/v4/strategy.py, backend/v4/tests/test_v4.py, frontend/src/components/chat/StrategyCard.jsx,
   docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-14 late morning (daily polish walk)
+- Practice options (and Close Call trades) open immediately even when the market is closed; that's unchanged, but
+  `practice_options.open_trade` now returns `market_closed` and says so in its message, and the Portfolio closed-market
+  banner now says only share trades wait for the open. If someone later makes options queue too, update both texts.
+- Greeks panel (Builder's 57e5cc2): numbers verified; only wording changed for near-zero delta (no "−0 sh").
+- Files: backend/v4/practice_options.py, backend/v4/tests/test_paper.py, frontend PracticePage.jsx, StrategyCard.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.
