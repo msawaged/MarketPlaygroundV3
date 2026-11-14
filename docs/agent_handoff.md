@@ -316,3 +316,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   $2,372 actually paid; butterfly max gain understated). Now evaluated exactly at 0, every strike and a far point,
   breakevens solved per segment. Independent audit of 22 structures x 45 price/vol/horizon cases: 0 mismatches
   (was 36). Test: test_economics_exact_at_strikes.
+
+## 2026-11-14 early (daily polish walk)
+- Close Call: YES / NO practice prices now come from the listed mid of the trade's own k1/k2 call spread
+  (`yesno.spread_vol`, a flat vol fitted to that mid), so cost agrees with last night's spread-based odds; line IV is
+  the fallback. Quote adds `price_vol`, `price_source`; make_call opens trades with `price_vol`. Features unchanged.
+- Brain page "N today" is the New York day now (was UTC). "Both sides of most stories" wording.
+- Files: backend/v4/yesno.py, backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend YesNoPage.jsx, BrainPage.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

@@ -3099,3 +3099,18 @@ def test_economics_exact_at_strikes():
     e = library.economics(fly, 93.0)
     debit = 6.0 - 6.4 + 1.6
     assert e["max_profit"] == pytest.approx((5 - debit) * 100) and e["max_loss"] == pytest.approx(debit * 100)
+
+def test_yesno_spread_vol_prices_yes_at_the_listed_spread_mid():
+    # Close Call's YES / NO cost must match the market's own price for the k1/k2 call spread (skew included),
+    # not one strike's IV, or the cost disagrees with the market odds shown above it.
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price
+    spot, yrs = 100.0, 7 / 365
+    calls = [{"strike": 100, "bid": 2.00, "ask": 2.10}, {"strike": 102.5, "bid": 1.00, "ask": 1.06}]
+    v = yesno.spread_vol(calls, 100, 102.5, spot, yrs, near=0.4)
+    assert v is not None
+    model = bs_price(spot, 100, yrs, v, "call") - bs_price(spot, 102.5, yrs, v, "call")
+    assert model == pytest.approx(2.05 - 1.03, abs=1e-4)
+    assert yesno.spread_vol(calls, 100, 105, spot, yrs, 0.4) is None                 # no quote on 105
+    bad = [{"strike": 100, "bid": 1.0, "ask": 1.1}, {"strike": 102.5, "bid": 2.0, "ask": 2.1}]
+    assert yesno.spread_vol(bad, 100, 102.5, spot, yrs, 0.4) is None                 # spread can't be negative

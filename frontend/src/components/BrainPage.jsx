@@ -161,7 +161,7 @@ function groupActivity(list) {
 function eventText(e) {
   if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
   const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds` : '';
-  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: `Both sides of each story${rounds}` };
+  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
   if (e.kind === 'trained') return { title: 'Trained a new brain', sub: (STATUS[e.status] || STATUS.retired).label };

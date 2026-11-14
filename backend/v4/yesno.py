@@ -42,16 +42,54 @@ class YesNoError(Exception):
 
 # ----------------------------------------------------------------------------- math (pure)
 
-def digital_from_spread(calls: list[dict], level: float) -> Optional[tuple[float, float, float]]:
-    """Market-implied P(close > level) from the price of a tight call spread around the line:
-    (C(Ka) - C(Kb)) / (Kb - Ka) with Ka < level <= Kb as close as listed (or the neighbours of a listed strike).
-    Uses quoted mids, so the volatility skew is already in the price (a single-vol N(d2) ignores the
-    -vega * dsigma/dK term a digital carries). Returns (p, Ka, Kb), or None if quotes are missing or don't make sense."""
+def _mids(calls: list[dict]) -> dict:
+    """{strike: mid} for calls with a sensible two-sided quote (tight enough to trust)."""
     q = {}
     for r in calls:
         b, a = float(r.get("bid") or 0), float(r.get("ask") or 0)
         if a > 0 and b >= 0 and a >= b and (a - b) <= max(0.25, 0.5 * a):
             q[float(r["strike"])] = (a + b) / 2
+    return q
+
+
+def spread_vol(calls: list[dict], k1: float, k2: float, spot: float, years: float, near: float) -> Optional[float]:
+    """The one volatility at which the model prices the k1/k2 call spread at its listed mid. YES and NO are then
+    priced off the market's own price for the spread (skew included), not off one strike's IV, and still add up to
+    the payout. Several vols can fit (a spread's value isn't monotone in vol near the money): take the one closest
+    to `near` (the line's IV). None if either strike lacks a sensible quote or no vol fits."""
+    from .strategy import bs_price
+    q = _mids(calls)
+    if k1 not in q or k2 not in q or years <= 0:
+        return None
+    target = q[k1] - q[k2]
+    if not (0.0 < target < k2 - k1):
+        return None
+    f = lambda v: bs_price(spot, k1, years, v, "call") - bs_price(spot, k2, years, v, "call") - target
+    grid = [0.05 + i * 0.025 for i in range(59)]          # 0.05 .. 1.50
+    roots = []
+    for a, b in zip(grid, grid[1:]):
+        fa, fb = f(a), f(b)
+        if fa == 0:
+            roots.append(a)
+        elif fa * fb < 0:
+            for _ in range(40):
+                m = (a + b) / 2
+                if f(a) * f(m) <= 0:
+                    b = m
+                else:
+                    a = m
+            roots.append((a + b) / 2)
+    if not roots:
+        return None
+    return min(roots, key=lambda v: abs(v - near))
+
+
+def digital_from_spread(calls: list[dict], level: float) -> Optional[tuple[float, float, float]]:
+    """Market-implied P(close > level) from the price of a tight call spread around the line:
+    (C(Ka) - C(Kb)) / (Kb - Ka) with Ka < level <= Kb as close as listed (or the neighbours of a listed strike).
+    Uses quoted mids, so the volatility skew is already in the price (a single-vol N(d2) ignores the
+    -vega * dsigma/dK term a digital carries). Returns (p, Ka, Kb), or None if quotes are missing or don't make sense."""
+    q = _mids(calls)
     ks = sorted(q)
     below = [k for k in ks if k < level - 1e-9]
     above = [k for k in ks if k > level + 1e-9]
@@ -239,6 +277,10 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         m_p, odds_source = dig[0], f"the ${dig[1]:g}/${dig[2]:g} call spread (skew included)"
     else:
         m_p, odds_source = m_p_flat, "one implied volatility (no tight spread quoted)"
+    calls = [r for r in chain if r["type"] == "call"]
+    sv = spread_vol(calls, k1, k2, spot, years, vol)
+    sv = round(sv, 4) if sv else None
+    price_vol, price_source = (sv, "spread") if sv else ((vol, "line_iv") if vol_source == "market" else (None, "estimate"))
     sig = _signals(u)
     feats = make_features(m_p, sig, spot, level, vol, years)
     model = active_model()
@@ -257,7 +299,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     sides = {}
     for side, legs in (("yes", yes_legs), ("no", no_legs)):
         try:
-            q = practice_options.quote(u, legs, vol if vol_source == "market" else None)
+            q = practice_options.quote(u, legs, price_vol)
             cost = round(max(1.0, min(width - 1.0, q["unit_value"])), 2)
         except Exception:
             cost = None
@@ -271,6 +313,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "market_p": round(m_p, 4), "brain_p": round(b_p, 4), "tilt": round(tilt, 3),
             "vol": round(vol, 4), "vol_source": vol_source, "strikes": [k1, k2],
             "odds_source": odds_source, "market_p_flat_vol": round(m_p_flat, 4),
+            "price_vol": price_vol, "price_source": price_source,
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
@@ -297,7 +340,7 @@ def make_call(user_id: str, ticker: str, level: float, expiration: str, side: st
         try:
             r = practice_options.open_trade(user_id, q["ticker"], f"Close Call: {side.upper()} {q['ticker']} > ${q['level']:,.2f}"[:40],
                                             q[side]["legs"], contracts, q["question"],
-                                            vol_override=q["vol"] if q["vol_source"] == "market" else None)
+                                            vol_override=q["price_vol"])
         except practice_options.PracticeError as e:
             raise YesNoError(str(e))
         position_id = r.get("position_id")

@@ -256,3 +256,30 @@ Not changed (noted): Moving now showed 1 story at Friday 21:20 UTC (Claude kept 
 press releases after the close); not a bug.
 
 Checks: vite build passes, backend tests 138 passed.
+
+## 2026-11-14
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~03:30
+UTC: no page errors, no horizontal overflow (only the sandbox-proxy-blocked third-party request). First pass hit 502s
+on /v4/brain and /v4/journey (shown as CORS errors): that was the 03:24 deploy of 6e15329 starting; fine on re-walk.
+Focus: last night's Close Call change (odds now from the call spread around the line), via live /v4/yesno/quote.
+
+Found:
+- Cost no longer matched the odds. Odds now come from the market's call-spread mids (skew included), but YES / NO were
+  still priced off one strike's IV. TSLA $400 Nov 20: market odds 38.8%, YES $84 for a $250 payout (33.6%);
+  NVDA $185 Dec 18: 21.3% vs YES $20/$100. A desk would ask why the price disagrees with the odds above it.
+- Brain page: "Beliefs learned ... 22 today" right under "Learned 24 beliefs from today's news" (6m ago): "today" was
+  the UTC date, which rolls over at 7 PM ET, while every other time on the page is ET. DB: 22 since UTC midnight,
+  129 since New York midnight.
+- "Both sides of each story" stopped being true on Nov 13 (compound hunches get no opposite now).
+
+Changed:
+- backend/v4/yesno.py: `spread_vol` finds the one volatility at which the k1/k2 call spread prices at its listed mid
+  (root closest to the line IV); YES / NO and the practice trade use it, so YES costs the market's own spread price
+  and YES + NO still add up to the payout. Falls back to the line IV, then an estimate. Quote returns `price_vol`,
+  `price_source`. Brain features still use the line IV (unchanged inputs). Test:
+  test_yesno_spread_vol_prices_yes_at_the_listed_spread_mid.
+- YesNoPage note says which price the practice trade used ("listed mid price of the same $X/$Y spreads").
+- backend/v4/brain.py: beliefs_today counts from New York midnight. BrainPage: "Both sides of most stories".
+
+Checks: vite build passes, backend tests 142 passed.

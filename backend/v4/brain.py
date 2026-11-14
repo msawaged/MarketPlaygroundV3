@@ -287,11 +287,14 @@ def _safe_forward() -> dict:
 
 
 def _build() -> dict:
-    today = datetime.now(timezone.utc).date().isoformat()
+    # "Today" is the New York day, like every other time on the page (UTC rolls over at 7 PM ET, so after the
+    # close the count reset and read fewer than one news round). created_at is ISO UTC, so compare from NY midnight.
+    ny = market.now_ny()
+    today = ny.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc).isoformat()
     one = lambda sql, args=(): int((db.query_one(sql, args) or {}).get("n") or 0)  # noqa: E731
     counts = {
         "beliefs": one("SELECT COUNT(*) AS n FROM beliefs"),
-        "beliefs_today": one("SELECT COUNT(*) AS n FROM beliefs WHERE substr(created_at, 1, 10) = ?", (today,)),
+        "beliefs_today": one("SELECT COUNT(*) AS n FROM beliefs WHERE created_at >= ?", (today,)),
         "from_news": one("SELECT COUNT(*) AS n FROM beliefs WHERE source = 'seed_news'"),
         "people": one("SELECT COUNT(DISTINCT user_id) AS n FROM beliefs WHERE source = 'user'"),
         "picks": one("SELECT COUNT(*) AS n FROM picks"),
