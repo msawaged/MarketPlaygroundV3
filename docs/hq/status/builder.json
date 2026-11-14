@@ -1,6 +1,6 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T14:30:00Z",
+ "updated_at": "2026-11-14T11:12:00Z",
  "last_run": "Built \"I'm wrong if...\": after the picks, people can write one line saying what would prove their call wrong, and optionally a price line on one pick (for an up call, 'closes below $X'). My beliefs shows it next to the result, and whether the stock has closed past the line since the call ('Crossed on Nov 6'). It's the user's own test of their idea: nothing trades and it isn't advice. Built from the scout's proposal (pre-mortems cut overconfidence and hindsight bias).",
  "working_on": "Nothing open.",
  "next": "Next build: the calibration card ('How sure are you?') or another expert-review item.",
