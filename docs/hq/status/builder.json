@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T03:16:00Z",
- "last_run": "Joined the table.",
- "working_on": "First build run at 9:51 tonight.",
- "next": "Ship one finished improvement every 3 hours.",
+ "updated_at": "2026-11-14T05:01:00Z",
+ "last_run": "Option cards now explain what the expiry chart leaves out: these are American-style options, so each short leg can be assigned early (calls before ex-dividend dates, puts deep in the money), what covers it, pin risk at the short strike, and automatic exercise. One of Prof Brown's checklist items.",
+ "working_on": "Nothing open.",
+ "next": "Next build in about 3 hours: another expert-review item or the calibration proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

@@ -584,6 +584,17 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 ))}
               </div>
               <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility (no live option quotes)"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}%)` : ''}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
+              {isOptions && pick.trade?.exercise?.length > 0 && (
+                <details className="group rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 -mt-1">
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-2 text-xs font-semibold text-slate-200">
+                    <span>{pick.trade.trade_legs?.some((l) => l.action !== 'Buy' && l.instrument !== 'stock') ? 'Early exercise, assignment and pin risk' : 'Early exercise and dividends'}</span>
+                    <span className="text-slate-500 group-open:rotate-180 transition-transform" aria-hidden>▾</span>
+                  </summary>
+                  <ul className="mt-2 space-y-1.5">
+                    {pick.trade.exercise.map((n) => <li key={n} className="text-[11px] leading-relaxed text-slate-300 flex gap-2"><span className="text-slate-500">•</span><span>{n}</span></li>)}
+                  </ul>
+                </details>
+              )}
             </>
           )}
 

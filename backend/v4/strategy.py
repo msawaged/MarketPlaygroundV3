@@ -256,7 +256,7 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
     return {"type": structure, "expiration": exp.isoformat(), "trade_legs": legs,
             "net_cost": econ["net_cost"], "capital": econ["capital"], "estimated": True, "vol": round(vol, 4),
             "max_loss": econ["max_loss"], "max_profit": econ["max_profit"], "break_even": econ["break_even"],
-            "plain": library.PLAIN.get(structure, "")}
+            "plain": library.PLAIN.get(structure, ""), "exercise": library.exercise_notes(legs, ticker)}
 
 
 def structure_return(trade: dict, entry_price: float, exit_price: float, entry: date, at: date, vol: float) -> Optional[float]:

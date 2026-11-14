@@ -147,6 +147,59 @@ def economics(legs: list[dict], price: float) -> dict:
             "capital": round(max(capital, 1.0), 2), "net_cost": round(net_prem, 2)}
 
 
+def _k(x: float) -> str:
+    return f"${x:,.0f}" if float(x).is_integer() else f"${x:,.2f}"
+
+
+def exercise_notes(legs: list[dict], ticker: str = "") -> list[str]:
+    """Plain-words notes on what the expiry payoff leaves out (2026-11-14, expert-review checklist).
+
+    US stock and ETF options are American-style: a long option can be exercised, and a short one assigned, any day
+    up to expiration. The card's chart is the value AT expiration and the prices are Black-Scholes with no
+    dividends, so we say what that means for each short leg (early assignment, ex-dividend calls, deep in-the-money
+    puts), pin risk at a short strike on the last day, and automatic exercise of in-the-money longs. [] when there
+    are no option legs. Reporting only: pricing and grading are unchanged."""
+    opts = [l for l in legs if l.get("instrument") != "stock" and l.get("strike_price")]
+    if not opts:
+        return []
+    t = ticker or (opts[0].get("ticker") or "the stock")
+    shares = sum(int(l.get("quantity", 100)) for l in legs if l.get("instrument") == "stock")
+    kind = lambda l: str(l.get("option_type", "")).lower()
+    longs = [l for l in opts if l.get("action") == "Buy"]
+    shorts = [l for l in opts if l.get("action") != "Buy"]
+    notes = ["These are American-style options: they can be exercised any day before expiration, not only at the end. "
+             "Max loss, max gain and the scenarios are values at expiration; before then the trade is worth whatever it sells for. "
+             "Prices here assume no dividends, so if " + t + " pays one before expiration, calls read a little high "
+             "and puts a little low."]
+    for l in sorted(shorts, key=lambda x: float(x["strike_price"])):
+        k = float(l["strike_price"]); q = int(l.get("quantity", 1))
+        n = f"{q * 100} shares" if q > 1 else "100 shares"
+        if kind(l) == "call":
+            lo = [x for x in longs if kind(x) == "call" and float(x["strike_price"]) < k]
+            hi = [x for x in longs if kind(x) == "call" and float(x["strike_price"]) > k]
+            cover = (" Your shares cover it." if shares >= 100 * q else
+                     " Your higher call still caps the loss, but you'd be short the shares until you buy them back or exercise it." if hi else
+                     f" Your {_k(float(lo[0]['strike_price']))} call covers it: exercising it delivers the shares." if lo else "")
+            notes.append(f"You're selling the {_k(k)} call. Once it's in the money, its buyer can exercise it early, most "
+                         f"often the day before an ex-dividend date. You'd then sell {n} at {_k(k)}.{cover}")
+        else:
+            lo = [x for x in longs if kind(x) == "put" and float(x["strike_price"]) < k]
+            hi = [x for x in longs if kind(x) == "put" and float(x["strike_price"]) > k]
+            cover = (" Your lower put still caps the loss, but you'd own the shares until you sell them or exercise it." if lo else
+                     f" Your {_k(float(hi[0]['strike_price']))} put covers it: exercising it sells the shares." if hi else
+                     " The cash set aside covers it." if len(opts) == 1 else "")
+            notes.append(f"You're selling the {_k(k)} put. If it goes deep in the money, its buyer can exercise it early. "
+                         f"You'd then buy {n} at {_k(k)}.{cover}")
+    if shorts:
+        ks = sorted({float(l["strike_price"]) for l in shorts})
+        notes.append(f"Pin risk: if {t} closes very near {' or '.join(_k(k) for k in ks)} on the last day, you may not "
+                     "know until the next morning whether you were assigned. Closing the trade before expiration day avoids it.")
+    if longs:
+        notes.append("Options you own that finish at least $0.01 in the money are exercised automatically at expiration, "
+                     "which turns them into shares unless you sell them first.")
+    return notes
+
+
 def build(structure: str, ticker: str, price: float, sd: float, k_round, step: float, leg, target_price: float = 0.0) -> list[dict]:
     """Legs for the library-only structures. `leg(action, kind, strike, qty=1)` adds an option leg."""
     atm = k_round(price)

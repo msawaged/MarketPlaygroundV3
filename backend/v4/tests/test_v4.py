@@ -3147,3 +3147,28 @@ def test_yesno_stale_spread_quotes_fall_back_to_one_vol(monkeypatch):
     exp = (TODAY + timedelta(days=9)).isoformat()
     q = yesno.quote("WINR", round(spot) + 0.5, exp)
     assert "out of date" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
+
+
+def test_exercise_notes_american_style():
+    """Option cards say what the expiry chart leaves out: American exercise, early assignment on each short leg
+    (and what covers it), pin risk at short strikes, automatic exercise of in-the-money longs. Stock-only: none."""
+    from datetime import date
+    from backend.v4 import library, strategy
+    assert library.exercise_notes([library.stock_leg("AAPL", 230.0)]) == []
+    assert strategy.build_trade("Buy Stock", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90).get("exercise", []) == []
+    lc = strategy.build_trade("Long Call", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"]
+    assert "American-style" in lc[0] and "no dividends" in lc[0]
+    assert not any("Pin risk" in n or "You're selling" in n for n in lc)
+    assert any("exercised automatically" in n for n in lc)
+    cc = " ".join(strategy.build_trade("Covered Call", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"])
+    assert "ex-dividend" in cc and "Your shares cover it." in cc and "Pin risk" in cc
+    bcs = strategy.build_trade("Bull Call Spread", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)
+    k_short = next(l["strike_price"] for l in bcs["trade_legs"] if l["action"] == "Sell")
+    assert any(f"selling the {library._k(k_short)} call" in n for n in bcs["exercise"])
+    assert any("covers it: exercising it delivers the shares" in n for n in bcs["exercise"])
+    ic = strategy.build_trade("Iron Condor", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"]
+    assert sum("You're selling" in n for n in ic) == 2 and sum("still caps the loss" in n for n in ic) == 2
+    csp = " ".join(strategy.build_trade("Cash-Secured Put", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"])
+    assert "The cash set aside covers it." in csp
+    fly = " ".join(strategy.build_trade("Long Call Butterfly", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"])
+    assert "200 shares" in fly

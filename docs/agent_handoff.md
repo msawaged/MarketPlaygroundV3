@@ -334,3 +334,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the money (cached 30 min), falling back to vol60; backfill and unshown picks stay on vol60. trade.vol_source =
   "implied" | "historical"; the card says which, with the vol %. Don't switch grading to a different vol: a pick is
   graded with the vol stored on its trade.
+
+## 2026-11-14 (Builder routine): option cards explain American exercise, assignment and pin risk
+- Expert-review checklist item ("American exercise, dividends, early assignment, pin risk ... never claim European
+  payoffs"). `library.exercise_notes(legs, ticker)` returns plain-words notes; `strategy.build_trade` adds them as
+  `trade.exercise` (also on alt trades). Per short leg: early assignment (calls: before ex-dividend; puts: deep ITM),
+  shares delivered/bought, and what covers it (shares, cash, the other leg, or "caps the loss but you'd be short/long
+  shares"); pin risk at short strikes; auto-exercise of longs >= $0.01 ITM; prices assume no dividends.
+- StrategyCard: collapsible "Early exercise, assignment and pin risk" (or "Early exercise and dividends" for
+  long-only) under the scenarios on option cards. Cards cached before today just don't show it. Pricing/grading unchanged.
+- Files: backend/v4/library.py, strategy.py, tests/test_v4.py (test_exercise_notes_american_style),
+  frontend StrategyCard.jsx, docs/expert_review.md, docs/hq/status/builder.json.
