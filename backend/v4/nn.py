@@ -121,6 +121,8 @@ def make_features(
         "co": market.get("co", 0.0),
         # return seasonality, same ~3 months in past years (research + ranker v2 only; not MODEL_NUMERIC)
         "seas": market.get("seas", 0.0),
+        # relative downside beta, beta on below-average market days minus beta (research + ranker v2 only; not MODEL_NUMERIC)
+        "dbeta": market.get("dbeta", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

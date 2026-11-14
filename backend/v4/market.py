@@ -733,6 +733,53 @@ def seas_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"seas": seas(dates, closes, i) if i >= 0 else 0.0}
 
 
+def dbeta(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int,
+          window: int = 252) -> float:
+    """Relative downside beta (Ang, Chen & Xing 2006, "Downside Risk"): the stock's beta to SPY measured only on
+    days the market return was below its own average over the window, minus its ordinary beta. Investors dislike
+    stocks that fall hardest when the market falls and demand a premium to hold them, so high downside beta (beyond
+    plain beta) has earned more. Daily returns over the last `window` sessions up to index i only; clipped to
+    [-3, 3]; 0.0 without ~6 months of matched history including 50 below-average market days."""
+    if i < 2 or not sdates:
+        return 0.0
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    rs: list[float] = []
+    ms: list[float] = []
+    for k in range(max(1, i - window + 1), i + 1):
+        a, b = closes[k - 1], closes[k]
+        sa, sb = spx.get(dates[k - 1]), spx.get(dates[k])
+        if a <= 0 or not sa or not sb or sa <= 0:
+            continue
+        rs.append(b / a - 1.0)
+        ms.append(sb / sa - 1.0)
+    if len(rs) < 120:
+        return 0.0
+
+    def _b(xs, ys):
+        n = len(xs)
+        mx, my = sum(xs) / n, sum(ys) / n
+        vy = sum((y - my) ** 2 for y in ys) / n
+        return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / n / vy if vy > 1e-12 else None
+
+    mm = sum(ms) / len(ms)
+    down = [(x, y) for x, y in zip(rs, ms) if y < mm]
+    if len(down) < 50:
+        return 0.0
+    b_all = _b(rs, ms)
+    b_dn = _b([x for x, _ in down], [y for _, y in down])
+    if b_all is None or b_dn is None:
+        return 0.0
+    return max(-3.0, min(3.0, b_dn - b_all))
+
+
+def dbeta_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"dbeta": ...} using closes (stock and SPY) up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    sdates, scloses = daily_closes("SPY")
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"dbeta": dbeta(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -838,6 +885,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "amihud": amihud(closes, daily_volumes(symbol), i),
         "co": co(closes, daily_volumes(symbol), i),
         "seas": seas(dates, closes, i),
+        "dbeta": dbeta(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

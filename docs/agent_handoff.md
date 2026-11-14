@@ -360,3 +360,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the bar (`old`), `live_check`, embargo and the engine are unchanged. Expect tonight's mix numbers to drop and the
   mixes to stop passing; that's intended (see docs/brain_upgrades.md). Don't switch mixes back to `c["app"]`.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
+
+## 2026-11-14 morning (CTO scout routine)
+- Idea 10 (return seasonality) preliminary result logged: raw +0.89% / t 2.73, risk-matched +0.54% / t 1.73; 5,279
+  graded picks still lack `seas`, so re-check once enrich finishes.
+- Idea 11 added: relative downside beta (Ang, Chen & Xing 2006). New feature `dbeta` (market.dbeta /
+  dbeta_features, market.features, nn.make_features num — not MODEL_NUMERIC), research.FEATS + DIRECTIONAL, enrich
+  backfill as of each pick's date, fixed rule "downside beta premium (z_dbeta)". Gate / fit_production untouched.
+- Proposal (not built): "I'm wrong if..." one-line pre-mortem per call, in docs/feature_ideas.md.
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_downside_beta_rule_and_enrich_backfill),
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

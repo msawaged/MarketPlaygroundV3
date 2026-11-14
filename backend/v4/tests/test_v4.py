@@ -2252,6 +2252,69 @@ def test_seasonality_rule_and_enrich_backfill(monkeypatch):
     assert abs(num["seas"] - sum(want) / 4) < 1e-12 and num["co"] == 0.3 and num["beta"] == 1.2
 
 
+def test_downside_beta_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(31)
+    d0 = _dt.date(2023, 1, 2)
+    n = 400
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    m = [rng.gauss(0.0004, 0.01) for _ in range(n)]
+    spy = [100.0]
+    for r in m[1:]:
+        spy.append(spy[-1] * (1 + r))
+
+    def path(f):
+        out = [50.0]
+        for k in range(1, n):
+            out.append(out[-1] * (1 + f(m[k]) + rng.gauss(0, 0.002)))
+        return out
+    sym = path(lambda r: 1.0 * r)                            # same beta on up and down days -> ~0
+    crash = path(lambda r: 2.0 * r if r < 0 else 0.5 * r)    # falls hard with the market, lags it up -> > 0
+    i = n - 1
+    assert abs(market.dbeta(dates, sym, dates, spy, i)) < 0.15
+    assert market.dbeta(dates, crash, dates, spy, i) > 0.5
+    assert market.dbeta(dates, crash, dates, spy, 100) == 0.0          # under ~6 months of history
+    assert market.dbeta(dates, crash, [], [], i) == 0.0                 # no SPY
+    later = crash[: 300 + 1] + [c * 5 for c in crash[301:]]
+    assert market.dbeta(dates, later, dates, spy, 300) == market.dbeta(dates, crash, dates, spy, 300)  # no look-ahead
+    assert "dbeta" in research.FEATS and "dbeta" in research.DIRECTIONAL
+    # planted: high downside beta longs and low downside beta shorts pay; the rule (z_dbeta, flipped) finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-db-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            dv = rng.uniform(-0.5, 0.5)
+            ex = -dv * 0.04 if bear else dv * 0.04
+            pid = f"p-db-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"dbeta": dv}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["downside beta premium (z_dbeta)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills dbeta as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, spy if s == "SPY" else later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02}
+    asof = dates[300]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-dbx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-dbx", "b-dbx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-dbx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-dbx'")["features"])["num"]
+    assert abs(num["dbeta"] - market.dbeta(dates, crash, dates, spy, 300)) < 1e-12
+    assert num["seas"] == 0.02 and num["beta"] == 1.2
+
+
 def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
     from backend.v4 import research, brain
     import random as _r

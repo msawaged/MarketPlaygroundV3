@@ -133,3 +133,50 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   with the date count, and fall back to date-clustered (Petersen) errors if the two disagree wildly. It will make
   most current "wins" look weaker, likely including the app's #1; that's the point, but the campaign copy that
   quotes t's must be updated the same day. Must not be read as loosening anything; it only adds a stricter lens.
+
+---
+
+## 2026-11-14 — "I'm wrong if...": a one-line pre-mortem on each call, shown back at every checkpoint
+- **Area:** app (learning loop); a small, later brain benefit.
+- **Status:** proposed
+- **Problem:** the app records *what* a user believes but not *why* or *what would prove it wrong*. Since Oct 1 the 34
+  real user calls (7 users) average 43 characters (prod query 2026-11-14, `beliefs.source = 'user'`), e.g. a ticker
+  and a direction. When the call is graded at 7/30/90/180/365 days (`grader.CHECKPOINTS`), the user sees a number but
+  has no record of their own reasoning to compare it with, so the lesson defaults to "I was right/lucky" or "the
+  market was wrong": hindsight bias (people misremember what they expected once they know the outcome) and the
+  disposition effect (holding losers, selling winners: Odean 1998) both feed on having no written exit condition.
+  That's the core skill a practice app should teach, and nothing in the app, docs/feature_ideas.md or the polish /
+  brain logs covers it (the 2026-11-11 calibration idea asks *how sure*, this asks *what would change your mind*).
+- **Evidence / sources:**
+  - Mitchell, Russo & Pennington (1989), "Back to the future: temporal perspective in the explanation of events",
+    Journal of Behavioral Decision Making 2(1): imagining the outcome has already happened ("prospective hindsight")
+    raised the ability to name correct reasons for it by about 30%. Summary with references:
+    https://corporate.jasoncollins.blog/premortem
+  - Klein (2007), "Performing a Project Premortem", Harvard Business Review: https://hbr.org/2007/09/performing-a-project-premortem
+  - Veinott, Klein & Wiggins (2010), "Evaluating the effectiveness of the PreMortem technique on plan confidence",
+    ISCRAM: the pre-mortem lowered overconfidence more than a pro/con review: https://researchr.org/publication/VeinottKW10
+  - Odean (1998), "Are Investors Reluctant to Realize Their Losses?", Journal of Finance 53(5):
+    https://econpapers.repec.org/RePEc:bla:jfinan:v:53:y:1998:i:5:p:1775-1798
+- **Build sketch (size S-M):**
+  - Chat, after the picks are shown: optional "I'm wrong if..." field (one line, 140 chars, skippable, no default),
+    with 3 tap-to-fill starters that only use things the app can check later: "...it falls below $X", "...it trails
+    the S&P by more than N% in 30 days", or free text. Plain-words hint: "Imagine it's 90 days from now and this
+    call lost. Why?"
+  - `backend/v4/db.py`: `ALTER TABLE beliefs ADD COLUMN wrong_if TEXT` and `wrong_if_px REAL` (optional price line;
+    keep the `ALTER TABLE t ADD COLUMN` shape the migration test expects). `router.py` / `engine.py` accept and store
+    them for user calls only (seeded calls never get one).
+  - `grader.py`: at each checkpoint, if `wrong_if_px` is set, record whether the #1 pick's close crossed it (a
+    yes/no from data we already fetch; no new feed). `MyCallsPage.jsx`: each graded call shows "You said you'd be
+    wrong if: ..." next to the result, the tripwire status ("crossed on Nov 3" / "never crossed"), and one question:
+    "Did that happen?" (yes / no / partly). An alert (existing push alerts, `AlertsCard`) when a price tripwire is
+    crossed, worded as information, never "sell".
+  - Later, research only: whether users who wrote a tripwire, or the tripwire crossing itself, says anything about
+    the 90-day outcome goes through the normal walk-forward tests; it never feeds the ranking directly.
+- **How we'd know it worked:** share of new user calls with a "wrong if" (target 30%+ after a month); share of graded
+  calls where the user answers "Did that happen?"; among users with both, fewer repeat calls on the same ticker
+  after a crossed tripwire without a new reason (a simple disposition-effect proxy), and better calibration on the
+  2026-11-11 Brier card if that's built. No ranking metric change is expected or claimed.
+- **Risks:** extra friction at call time (keep it optional, one line, after the picks); a price tripwire can read
+  like a stop-loss instruction, so the copy must say it's the user's own test of their idea, not advice, and nothing
+  trades; free text is user content (length-cap, store as text, render escaped, never send to Claude without the
+  existing moderation path). No real-money, gate or look-ahead impact.

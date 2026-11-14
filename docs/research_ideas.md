@@ -338,4 +338,36 @@ the app's (52.9%).
   now 39 tries). Expect a weak effect: the papers' edge is monthly and small, and ours is averaged over 3 months.
 - **Note:** until enrich finishes backfilling older picks they read `seas = 0`; trust the result once every graded
   pick has `seas`.
+- **Result (preliminary, run 2026-11-14 06:47 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; checked 2026-11-14:
+  5,279 graded picks still missing `seas`, so not final):** lift **+0.89%**, beat **52.7%**, t **2.73**; risk-matched
+  lift **+0.54%**, beat_adj **53.9%**, t **1.73**. Promising raw, weaker risk-matched; does not clear the luck bar
+  (|t| ≥ 3.22 for 39 tries; `luck.clear` lists only the app's #1, the Amihud rule, the plain neural net and the
+  "+ app (25%)" mixes). Learned ridge weight on z_seas +0.0035. Re-check once enrich reports nothing remaining. Same
+  run: app +1.49% / 53.4% / t 4.54 (adj +1.24% / t 3.89); illiquidity premium +1.21% / 53.1% / t 4.04 (adj +1.00% /
+  t 3.44); random beat 51.0%.
+
+### 11. Downside risk premium: relative downside beta (Ang, Chen & Xing)
+- **Added:** 2026-11-14
+- **Source:** Ang, Chen & Xing (2006), "Downside Risk", Review of Financial Studies 19(4), 1191-1239:
+  https://econpapers.repec.org/RePEc:oup:rfinst:v:19:y:2006:i:4:p:1191-1239 ; working paper (NBER w11824):
+  https://econpapers.repec.org/RePEc:nbr:nberwo:11824
+- **Why:** investors care more about losses than gains, so a stock that falls hardest exactly when the market falls
+  is worth less to them and must offer a higher return. The paper finds stocks with high downside beta (beta
+  measured only on days the market is below its average) earned about 6% a year more, and that *relative* downside
+  beta (downside beta minus plain beta) carries the premium on its own, so it isn't just the beta trade (idea 4,
+  which lost raw and was flat risk-matched). A new family for the log: asymmetric risk, from daily returns over a
+  12-month window, which suits our ~90-day hold.
+- **Computed as:** daily returns of the stock and SPY over the last 252 sessions up to the pick's own date; beta on
+  all days, and beta on the days SPY's return was below its window average; `dbeta` = downside beta minus beta,
+  clipped to [-3, 3]; 0 without 120 matched days including 50 below-average market days. `market.dbeta` /
+  `market.dbeta_features`; stored for new picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC);
+  backfilled for older picks by `research.enrich` using closes up to each pick's own date only (other features
+  untouched). Directional (bearish calls flip it, so the rule shorts the stock least exposed to market drops, the
+  weak side of the premium, as with the Amihud rule). Research rule: `downside beta premium (z_dbeta)`; `z_dbeta` is
+  also available to the learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift (the risk-matched benchmark uses plain beta, so `dbeta` is
+  deliberately the part plain beta misses), and whether it clears the luck bar (now 40 tries). Later work finds the
+  premium weaker in recent decades, so expect a small effect.
+- **Note:** until enrich finishes backfilling older picks they read `dbeta = 0`; trust the result once every graded
+  pick has `dbeta`.
 - **Result:** pending.
