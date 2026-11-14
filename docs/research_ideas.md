@@ -346,7 +346,9 @@ the app's (52.9%).
   5,279 graded picks still missing `seas`, so not final):** lift **+0.89%**, beat **52.7%**, t **2.73**; risk-matched
   lift **+0.54%**, beat_adj **53.9%**, t **1.73**. Promising raw, weaker risk-matched; does not clear the luck bar
   (|t| ≥ 3.22 for 39 tries; `luck.clear` lists only the app's #1, the Amihud rule, the plain neural net and the
-  "+ app (25%)" mixes). Learned ridge weight on z_seas +0.0035. Re-check once enrich reports nothing remaining. Same
+  "+ app (25%)" mixes). Learned ridge weight on z_seas +0.0035. Re-check once enrich reports nothing remaining.
+  Update (run 2026-11-14 17:19 UTC, 3,779 graded picks still missing `seas`): lift +0.62% / beat 52.2% / t 1.86
+  (t_nw 0.94); risk-matched +0.26% / 53.5% / t 0.81 (t_nw 0.44). Fading as the backfill fills in. Same
   run: app +1.49% / 53.4% / t 4.54 (adj +1.24% / t 3.89); illiquidity premium +1.21% / 53.1% / t 4.04 (adj +1.00% /
   t 3.44); random beat 51.0%.
 
@@ -374,7 +376,11 @@ the app's (52.9%).
   premium weaker in recent decades, so expect a small effect.
 - **Note:** until enrich finishes backfilling older picks they read `dbeta = 0`; trust the result once every graded
   pick has `dbeta`.
-- **Result:** pending.
+- **Result (preliminary, run 2026-11-14 17:19 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; checked 2026-11-14
+  evening: 6,779 of 23,279 graded picks still missing `dbeta`, so not final):** lift **+0.71%**, beat **52.9%**, t
+  **2.18** (t_nw **2.05**); risk-matched lift **+0.76%**, beat_adj **54.0%**, t **2.44** (t_nw **2.21**). Positive and
+  steadier than most (n_eff 2,371 of 2,703: little overlap), but under the luck bar (3.23 for 41 tries). Learned ridge
+  weight on z_dbeta +0.0020. Re-check once filled.
 
 ### 12. Short-term reversal: last month's losers (Jegadeesh 1990; Lehmann 1990)
 - **Added:** 2026-11-14 (extra run)
@@ -391,5 +397,39 @@ the app's (52.9%).
 - **What to look at:** raw and risk-matched lift and the luck bar (now 41 tries). The effect is about one month and
   our hold is ~90 days, so expect it to be weak; a negative result would say the latest month should not be held
   against an idea in our setting.
-- **Result:** pending (data complete from the first run).
+- **Result (final, run 2026-11-14 17:19 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; `mom20` on every graded
+  pick):** lift **+0.60%**, beat **51.0%**, t **1.96** (t_nw **1.32**); risk-matched lift **+0.66%**, beat_adj
+  **52.8%**, t **2.27** (t_nw **1.99**). Mildly positive: last month's loser was a slightly better #1 than its
+  belief's average idea, so the latest month shouldn't count *for* an idea, but it doesn't clear the luck bar (3.23
+  for 41 tries) and isn't a usable rule on its own. Ridge weight on z_mom20 +0.0001 (≈ none). Same run: app +1.49% /
+  t 4.52 (t_nw 1.91); illiquidity premium +1.21% / t 4.04 (t_nw 2.63); `luck.clear` = app + illiquidity,
+  `clear_nw` = none; random beat 51.0%.
 
+### 13. Idiosyncratic volatility puzzle: the calmest stock beyond the market (Ang, Hodrick, Xing & Zhang)
+- **Added:** 2026-11-14 (evening run)
+- **Source:** Ang, Hodrick, Xing & Zhang (2006), "The Cross-Section of Volatility and Expected Returns", Journal of
+  Finance 61(1), 259-299: https://business.columbia.edu/faculty/research/cross-section-volatility-and-expected-returns
+  (working paper: https://users.nber.org/~confer/2003/apf03/ang.pdf); international and further U.S. evidence, same
+  authors (2009), Journal of Financial Economics 91(1), 1-23:
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:91:y:2009:i:1:p:1-23
+- **Why:** stocks whose daily returns swung the most over the past month *beyond what the market explains* went on
+  to earn strikingly low returns (about 1% a month less for the top fifth in the paper), the "IVOL puzzle"; it holds
+  across 23 developed markets. Different from what we've tried: the vol rules (high/low vol) use total volatility,
+  beta (idea 4) and downside beta (11) use the market part, and MAX (5) uses the 5 biggest days. IVOL is the
+  stock-specific part. Our own "high vol" rule was positive, so this is a real test of which side wins here.
+- **Computed as:** daily returns of the stock and SPY over the last 21 sessions (~1 month, as in the paper) up to
+  the pick's own date; market model fitted on that window; `ivol` = std of residuals x sqrt(252), clipped to [0, 3];
+  0.30 (neutral, also `research.NEUTRAL`) without 15 matched days. The paper uses Fama-French 3-factor residuals; we
+  only have SPY, so this is the market-model (CAPM) version (a common simplification; IVOL against different factor
+  models is highly correlated, but this is a choice, not the paper's exact measure).
+  `market.ivol` / `market.ivol_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes up to each pick's own date only (other
+  features untouched). Directional (bearish calls flip it, so the rule shorts the wildest stock). Research rule:
+  `low idiosyncratic vol (-z_ivol)`; `z_ivol` is also available to the learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift, t and t_nw, and the luck bar (now 42 tries). Later work (Bali &
+  Cakici 2008; Fu 2009) finds the effect sensitive to weighting and breakpoints and partly tied to last month's
+  reversal (idea 12), and it is strongest among small, hard-to-short stocks, so expect it to be small on our mostly
+  large-cap ideas. Overlap with high/low vol is large, so compare it against those rows, not just against zero.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 0.30; trust the result once every
+  graded pick has `ivol` (`p.features LIKE '%"ivol"%'`).
+- **Result:** pending.

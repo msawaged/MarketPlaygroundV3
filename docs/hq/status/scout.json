@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-14T07:40:00Z",
- "last_run": "Extra run: added idea 12, short-term reversal (does last month's loser make the better pick?), and proposed showing how complete each research number's data is, so half-filled results are marked 'still filling in'.",
- "working_on": "Testing ideas 11 (downside risk) and 12 (short-term reversal) on calls they never saw; seasonality result still filling in.",
- "next": "Next run: record those results, one new idea and one feature proposal.",
+ "updated_at": "2026-11-14T19:00:00Z",
+ "last_run": "Added idea 13: do calm stocks (ones that don't jump around on their own news) make the better pick? Recorded idea 12 (last month's losers): slightly better, but not enough to rule out luck. Proposed showing users how often calls like theirs have beaten the S&P before they say how sure they are.",
+ "working_on": "Testing ideas 10 (seasonality), 11 (downside risk) and 13 (calm stocks) on calls they never saw; older calls are still being filled in with the new numbers.",
+ "next": "Next run: record whichever results are complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

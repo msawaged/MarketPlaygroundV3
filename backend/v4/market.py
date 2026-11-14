@@ -780,6 +780,47 @@ def dbeta_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"dbeta": dbeta(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
 
 
+IVOL_NEUTRAL = 0.30  # typical annualized idiosyncratic volatility, used when there isn't enough history
+
+
+def ivol(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int,
+         window: int = 21) -> float:
+    """Idiosyncratic volatility (Ang, Hodrick, Xing & Zhang 2006, "The Cross-Section of Volatility and Expected
+    Returns"): the annualized standard deviation of the stock's daily returns left over after removing what SPY
+    explains (market model fitted on the same window), over the last `window` sessions (~1 month, as in the paper)
+    up to index i only. Stocks with high idiosyncratic volatility have earned strikingly low returns ("the IVOL
+    puzzle"). Clipped to [0, 3]; IVOL_NEUTRAL without 15 matched days."""
+    if i < 2 or not sdates:
+        return IVOL_NEUTRAL
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    rs: list[float] = []
+    ms: list[float] = []
+    for k in range(max(1, i - window + 1), i + 1):
+        a, b = closes[k - 1], closes[k]
+        sa, sb = spx.get(dates[k - 1]), spx.get(dates[k])
+        if a <= 0 or not sa or not sb or sa <= 0:
+            continue
+        rs.append(b / a - 1.0)
+        ms.append(sb / sa - 1.0)
+    n = len(rs)
+    if n < 15:
+        return IVOL_NEUTRAL
+    mr, mm = sum(rs) / n, sum(ms) / n
+    var_m = sum((y - mm) ** 2 for y in ms) / n
+    beta = sum((x - mr) * (y - mm) for x, y in zip(rs, ms)) / n / var_m if var_m > 1e-12 else 0.0
+    e = [(x - mr) - beta * (y - mm) for x, y in zip(rs, ms)]
+    sd = math.sqrt(sum(v * v for v in e) / (n - 2))
+    return max(0.0, min(3.0, sd * math.sqrt(252)))
+
+
+def ivol_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"ivol": ...} using closes (stock and SPY) up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    sdates, scloses = daily_closes("SPY")
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"ivol": ivol(dates, closes, sdates, scloses, i) if i >= 0 else IVOL_NEUTRAL}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -886,6 +927,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "co": co(closes, daily_volumes(symbol), i),
         "seas": seas(dates, closes, i),
         "dbeta": dbeta(dates, closes, sdates, scloses, i),
+        "ivol": ivol(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

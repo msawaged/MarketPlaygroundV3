@@ -228,3 +228,48 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   a data-feed outage) shows up in the next run instead of quietly shifting results.
 - **Risks:** tiny (reporting only); the "exactly 0" share is a heuristic, since some features can truly be 0; keep
   the payload small for the 512Mi jobs (counts only, no per-pick lists).
+
+---
+
+## 2026-11-14 (evening run) — "The outside view": show how often calls like this one have beaten the S&P before the user sets "How sure"
+- **Area:** app (learning loop, honest expectations); no brain or ranking change.
+- **Status:** proposed
+- **Problem:** when a user makes a call, everything on screen is about *this* idea (Claude's picks, payoff chart,
+  "How sure are you?", "I'm wrong if..."). Nothing tells them how often calls of the same kind have worked, which is
+  the single most useful number for a beginner and the one people ignore by default (base-rate neglect). The app
+  already knows it from its own grading: across 23,279 picks graded at 90 days (prod query 2026-11-14,
+  `outcomes.checkpoint_days = 90` joined to `picks.direction`), bullish ideas beat the S&P only **46.8%** of the time
+  (n 14,736, avg +0.58%), bearish ideas **59.0%** (n 7,923, avg +1.65%, a falling-market period), volatile 73.9%
+  (n 620). Overall 7-365-day graded checks are right 51.7% of the time (`/v4/brain` counts: 58,966 of 113,960). A
+  user tapping "90% sure" on a bullish 90-day call is betting against a ~47% base rate without knowing it; the new
+  calibration card (built today) will tell them weeks later that they were overconfident, but never *what they
+  should have started from*.
+- **Evidence / sources:**
+  - Kahneman & Lovallo (1993), "Timid Choices and Bold Forecasts: A Cognitive Perspective on Risk Taking",
+    Management Science 39(1), 17-31: forecasts built from the case at hand ("inside view") are systematically
+    overoptimistic; anchoring on the record of similar cases ("outside view") corrects it:
+    https://econpapers.repec.org/RePEc:inm:ormnsc:v:39:y:1993:i:1:p:17-31 ; practitioner how-to (McKinsey, Lovallo &
+    Sibony): https://www.mckinsey.com/business-functions/strategy-and-corporate-finance/our-insights/how-to-take-the-outside-view
+  - Mellers et al. (2014), "Psychological Strategies for Winning a Geopolitical Forecasting Tournament", Psychological
+    Science 25(5): a ~1-hour training whose core lesson was "start from base rates / reference classes" improved
+    forecast accuracy (Brier) by about 10% over a year: https://escholarship.org/uc/item/4rg4n9vr
+- **Build sketch (size S-M):**
+  - `backend/v4/engine.py` (or a small `backend/v4/baserate.py`): `base_rate(direction, checkpoint)` = share of graded
+    picks in that direction that beat the S&P at the call's checkpoint (`calibration.checkpoint_for(horizon_days)`),
+    plus n and the date range, using the same `dir_excess > 0` definition the grader and calibration use. Computed by
+    the existing hourly/grading job into one small kv row (`baserate:v1`, ~15 numbers: 3 directions x 5 checkpoints),
+    never per request (a GROUP BY over `outcomes` is the kind of scan to keep off the request path). Optional second
+    cut by the belief's top theme only when that cell has n ≥ 300; otherwise direction-only.
+  - `router.py`: include `base_rate` {beat, n, since, checkpoint} with the picks response and in `my_beliefs` per call.
+  - Frontend `chat/HowSure.jsx`: one plain line above the 55/65/75/90 buttons: "Calls like this (bullish, ~90 days)
+    have beaten the S&P 47% of the time (14,736 graded, since <first date>)." With a `Term` for "base rate". On My
+    beliefs, show it beside the user's own "sure" number and the result. No default selection, no nudge.
+  - Copy rules: it's the app's own practice record, past not future; say when n is small; never "you should".
+  - Test: synthetic graded picks → correct share per direction/checkpoint; cells under a minimum n return nothing.
+- **How we'd know it worked:** among users who set "How sure", the average stated probability moves toward the base
+  rate (less 90% on ~47% call types) and the Brier score on the calibration card improves versus users who made
+  calls before the line shipped; share of 90% taps falls. No ranking metric is claimed.
+- **Risks:** the base rate reflects one ~2-year market (bearish ideas did well because the period had drawdowns),
+  so it must be labelled with its date range and can shift; it could discourage users ("why bother?"), so frame it
+  as the bar to beat; mixing practice (seeded/shifted) calls and real user calls must be stated or split (use the
+  same graded population the brain page already reports). No gate, look-ahead, real-money or research change.

@@ -464,3 +464,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
   each call as independent"; feed line "Learned N beliefs from the news" (was "today's news", clashed with "78 today").
   No backend change, gates untouched.
 - Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 evening (CTO scout routine)
+- Research idea 13: idiosyncratic volatility (Ang, Hodrick, Xing & Zhang 2006). New feature `ivol` (1-month residual
+  vol vs SPY, annualized; neutral 0.30 when short of data, also in `research.NEUTRAL`): `market.ivol` /
+  `ivol_features`, `market.features`, `nn.make_features` (not MODEL_NUMERIC), `research.FEATS` + DIRECTIONAL,
+  `research.enrich` backfills it as of each pick's own date. New fixed rule `low idiosyncratic vol (-z_ivol)` (luck bar
+  now 42 tries). Ranker v2 gate untouched. Enrich will take a while to fill `ivol` on ~23k graded picks.
+- Logged results: idea 12 (short-term reversal) final, +0.60% / t 1.96 (t_nw 1.32), doesn't clear; ideas 10, 11
+  still filling in (3,779 picks missing `seas`, 6,779 missing `dbeta`).
+- Proposal (docs/feature_ideas.md): "The outside view": show the base rate (how often calls of this direction and
+  horizon beat the S&P, from our own grading) above the "How sure" buttons.
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_idiosyncratic_vol_rule_and_enrich_backfill),
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

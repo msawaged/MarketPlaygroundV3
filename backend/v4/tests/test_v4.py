@@ -2455,6 +2455,70 @@ def test_short_term_reversal_rule():
     assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
 
 
+
+def test_idiosyncratic_vol_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(53)
+    d0 = _dt.date(2023, 1, 2)
+    n = 400
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    m = [rng.gauss(0.0004, 0.01) for _ in range(n)]
+    spy = [100.0]
+    for r in m[1:]:
+        spy.append(spy[-1] * (1 + r))
+
+    def path(beta, noise):
+        out = [50.0]
+        for k in range(1, n):
+            out.append(out[-1] * (1 + beta * m[k] + rng.gauss(0, noise)))
+        return out
+    calm = path(1.5, 0.002)     # big market beta but little of its own noise -> low ivol
+    wild = path(0.5, 0.03)      # low beta, lots of its own noise -> high ivol (~0.48 annualized)
+    i = n - 1
+    assert market.ivol(dates, calm, dates, spy, i) < 0.08
+    assert 0.3 < market.ivol(dates, wild, dates, spy, i) < 0.8
+    assert market.ivol(dates, wild, dates, spy, 10) == market.IVOL_NEUTRAL   # under 15 days
+    assert market.ivol(dates, wild, [], [], i) == market.IVOL_NEUTRAL        # no SPY
+    later = wild[: 300 + 1] + [c * 5 for c in wild[301:]]
+    assert market.ivol(dates, later, dates, spy, 300) == market.ivol(dates, wild, dates, spy, 300)  # no look-ahead
+    assert "ivol" in research.FEATS and "ivol" in research.DIRECTIONAL
+    # planted: low-ivol longs and high-ivol shorts pay; the rule (-z_ivol, flipped for shorts) finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-iv-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            iv = rng.uniform(0.1, 0.9)
+            ex = iv * 0.05 if bear else -iv * 0.05
+            pid = f"p-iv-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"ivol": iv}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["low idiosyncratic vol (-z_ivol)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills ivol as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, spy if s == "SPY" else later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1}
+    asof = dates[300]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-ivx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-ivx", "b-ivx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-ivx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-ivx'")["features"])["num"]
+    assert abs(num["ivol"] - market.ivol(dates, wild, dates, spy, 300)) < 1e-12
+    assert num["dbeta"] == 0.1 and num["beta"] == 1.2
+
 def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
     from backend.v4 import research, brain
     import random as _r

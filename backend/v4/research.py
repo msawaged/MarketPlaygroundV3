@@ -47,13 +47,15 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "seas",
          # relative downside beta (Ang, Chen & Xing 2006): beta on below-average market days minus ordinary beta
          "dbeta",
+         # idiosyncratic volatility (Ang, Hodrick, Xing & Zhang 2006): 1-month residual volatility vs SPY, annualized
+         "ivol",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "amihud", "co", "seas", "dbeta", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "co", "seas", "dbeta", "ivol", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -62,7 +64,7 @@ INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_
                 ("mom60", "reg_calm"), ("vp_above_value", "reg_trend"))
 XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
-NEUTRAL = {"rvol": 1.0, "beta": 1.0}  # value for a feature a pick never stored (anything else: 0)
+NEUTRAL = {"rvol": 1.0, "beta": 1.0, "ivol": 0.30}  # value for a feature a pick never stored (anything else: 0)
 
 
 def _with_derived(num: dict) -> dict:
@@ -89,14 +91,14 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%"max5"%' OR p.features NOT LIKE '%"mom_12_7"%'
                   OR p.features NOT LIKE '%"mad"%' OR p.features NOT LIKE '%"amihud"%'
                   OR p.features NOT LIKE '%"co"%' OR p.features NOT LIKE '%"seas"%'
-                  OR p.features NOT LIKE '%"dbeta"%')
+                  OR p.features NOT LIKE '%"dbeta"%' OR p.features NOT LIKE '%"ivol"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
         return "vp_poc_dist" not in num or "reg_trend" not in num or "mu_dist" not in num or "fip_id" not in num \
             or "resid_mom" not in num or "beta" not in num or "max5" not in num \
             or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num \
-            or "seas" not in num or "dbeta" not in num
+            or "seas" not in num or "dbeta" not in num or "ivol" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -128,6 +130,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.seas_features(r["ticker"], d0))
             if "dbeta" not in have:
                 vp.update(market.dbeta_features(r["ticker"], d0))
+            if "ivol" not in have:
+                vp.update(market.ivol_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -598,6 +602,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         # idea log, added 2026-11-14: short-term reversal (Jegadeesh 1990) — last month's loser for a long (last month's
         # winner, for a short); uses the stored 20-session return, so nothing to backfill
         "short-term reversal (-z_mom20)": lambda f: -f["z_mom20"],
+        # idea log, added 2026-11-14: idiosyncratic volatility puzzle (Ang et al. 2006) — the stock with the calmest
+        # last month beyond what the market explains for a long (the wildest, for a short)
+        "low idiosyncratic vol (-z_ivol)": lambda f: -f["z_ivol"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
