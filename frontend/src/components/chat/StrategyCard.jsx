@@ -583,7 +583,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   </div>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? 'At expiration.' : 'Price moves at any point you sell.'} Estimates, before fees.</p>
+              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility (no live option quotes)"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}%)` : ''}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
             </>
           )}
 

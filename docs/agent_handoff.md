@@ -324,3 +324,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Brain page "N today" is the New York day now (was UTC). "Both sides of most stories" wording.
 - Files: backend/v4/yesno.py, backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend YesNoPage.jsx, BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-13 night (build chat, CTO): options cards priced at implied volatility
+- Cards were priced with 60-day historical vol; desks price at implied (usually higher, so cards made long options
+  look cheap). engine.card_vol: the 3 shown picks of a live belief use market.option_iv near the card's expiry and
+  the money (cached 30 min), falling back to vol60; backfill and unshown picks stay on vol60. trade.vol_source =
+  "implied" | "historical"; the card says which, with the vol %. Don't switch grading to a different vol: a pick is
+  graded with the vol stored on its trade.

@@ -3114,3 +3114,15 @@ def test_yesno_spread_vol_prices_yes_at_the_listed_spread_mid():
     assert yesno.spread_vol(calls, 100, 105, spot, yrs, 0.4) is None                 # no quote on 105
     bad = [{"strike": 100, "bid": 1.0, "ask": 1.1}, {"strike": 102.5, "bid": 2.0, "ask": 2.1}]
     assert yesno.spread_vol(bad, 100, 102.5, spot, yrs, 0.4) is None                 # spread can't be negative
+
+
+def test_card_vol_prefers_implied(monkeypatch):
+    from backend.v4 import engine
+    monkeypatch.setattr(market, "option_iv", lambda u, k, s, e: 0.52)
+    monkeypatch.delenv("ALPACA_API_KEY", raising=False)
+    assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=True) == (0.31, "historical")    # no market data keys
+    monkeypatch.setenv("ALPACA_API_KEY", "x")
+    assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=True) == (0.52, "implied")
+    assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=False) == (0.31, "historical")   # backfill / unshown
+    monkeypatch.setattr(market, "option_iv", lambda u, k, s, e: None)
+    assert engine.card_vol("WINR", 100.0, TODAY, 90, 0.31, live=True) == (0.31, "historical")

@@ -25,6 +25,20 @@ from typing import Any, Optional
 from . import db, interpreter, learning, lineages, market, nn, research, strategy
 
 SHOW_TOP = 3
+
+
+def card_vol(ticker: str, price: float, entry: date, horizon_days: int, hist_vol: float, live: bool) -> tuple[float, str]:
+    """Volatility for pricing an options card: the market's implied volatility near the card's expiry and the
+    money when we can get it (what the contracts actually cost), else the stock's 60-day historical volatility.
+    Implied usually sits above historical, so pricing with historical makes buying options look cheaper than it is."""
+    if live and os.getenv("ALPACA_API_KEY"):
+        try:
+            iv = market.option_iv(ticker, "call", float(price), strategy.pick_expiry(entry, horizon_days))
+            if iv:
+                return float(iv), "implied"
+        except Exception:
+            pass
+    return float(hist_vol), "historical"
 CACHE_HOURS = 24  # the same question gets the same companies all day
 
 
@@ -288,13 +302,17 @@ def process_belief(
             claude_pick=v.get("strategy", ""), claude_why=v.get("strategy_why", ""), stats=sstats, rank=final_rank,
             is_etf=bool(v["info"].get("is_etf")), price=float(v["price"]), target_price=tp,
         )
-        trade = strategy.build_trade(structure, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
+        cvol, cvol_src = card_vol(v["ticker"], v["price"], date.fromisoformat(v["entry_date"]), interp["horizon_days"],
+                                  v["mkt"]["vol60"], live=(not backfill) and final_rank < SHOW_TOP)
+        trade = strategy.build_trade(structure, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
                                      interp["horizon_days"], target_price=tp if structure == "Long Call Butterfly" else 0.0)
+        trade["vol_source"] = cvol_src
         if prefs.get("budget_usd") and not backfill:
             structure, trade, bwhy = strategy.fit_budget(
                 structure, trade, direction=v["direction"], risk=risk_profile, prefs=prefs, price=float(v["price"]),
-                build=lambda s_, v=v: strategy.build_trade(s_, v["ticker"], v["price"], v["mkt"]["vol60"],
+                build=lambda s_, v=v, cvol=cvol: strategy.build_trade(s_, v["ticker"], v["price"], cvol,
                                                            date.fromisoformat(v["entry_date"]), interp["horizon_days"]))
+            trade["vol_source"] = cvol_src
             if bwhy:
                 why = bwhy
         alt = None
@@ -303,7 +321,7 @@ def process_belief(
         if alt_name:
             try:
                 alt = {"structure": alt_name, "trade": strategy.build_trade(
-                    alt_name, v["ticker"], v["price"], v["mkt"]["vol60"], date.fromisoformat(v["entry_date"]),
+                    alt_name, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
                     interp["horizon_days"])}
             except Exception:
                 alt = None
