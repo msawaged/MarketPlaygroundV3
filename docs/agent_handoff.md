@@ -408,3 +408,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/db.py, engine.py, router.py, tests/test_v4.py (test_wrong_if_pre_mortem_..., fuzz list),
   frontend chat/WrongIf.jsx (new), ChatInterface.jsx, MyCallsPage.jsx, lib/api.js, docs/feature_ideas.md,
   docs/hq/status/builder.json.
+- Deploy note: Render skips a push when the newest commit message contains the text "[skip render]" anywhere (even
+  quoted, e.g. "previous push ended on a [skip render] commit"). Put a docs-only "[skip render]" commit in its own
+  push, never on top of code. This run's code went live via a manual deploy of cf8f44b (backend + web); the two crons
+  pick up the code on the next normal push (they don't use the new code).
