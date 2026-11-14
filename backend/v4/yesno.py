@@ -42,6 +42,31 @@ class YesNoError(Exception):
 
 # ----------------------------------------------------------------------------- math (pure)
 
+def digital_from_spread(calls: list[dict], level: float) -> Optional[tuple[float, float, float]]:
+    """Market-implied P(close > level) from the price of a tight call spread around the line:
+    (C(Ka) - C(Kb)) / (Kb - Ka) with Ka < level <= Kb as close as listed (or the neighbours of a listed strike).
+    Uses quoted mids, so the volatility skew is already in the price (a single-vol N(d2) ignores the
+    -vega * dsigma/dK term a digital carries). Returns (p, Ka, Kb), or None if quotes are missing or don't make sense."""
+    q = {}
+    for r in calls:
+        b, a = float(r.get("bid") or 0), float(r.get("ask") or 0)
+        if a > 0 and b >= 0 and a >= b and (a - b) <= max(0.25, 0.5 * a):
+            q[float(r["strike"])] = (a + b) / 2
+    ks = sorted(q)
+    below = [k for k in ks if k < level - 1e-9]
+    above = [k for k in ks if k > level + 1e-9]
+    if not below or not above:
+        return None
+    ka, kb = below[-1], above[0]
+    width = kb - ka
+    if width <= 0 or width > 0.12 * level:          # too wide to say anything precise about one line
+        return None
+    p = (q[ka] - q[kb]) / width
+    if not (0.0 < p < 1.0):
+        return None
+    return min(0.99, max(0.01, p)), ka, kb
+
+
 def _ncdf(x: float) -> float:
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
@@ -208,7 +233,12 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             vol = 0.4
         vol_source = "estimate"
     years = max(1, (exp - t).days) / 365.0
-    m_p = prob_above(spot, level, years, vol)
+    m_p_flat = prob_above(spot, level, years, vol)
+    dig = digital_from_spread([r for r in chain if r["type"] == "call"], level)
+    if dig:
+        m_p, odds_source = dig[0], f"the ${dig[1]:g}/${dig[2]:g} call spread (skew included)"
+    else:
+        m_p, odds_source = m_p_flat, "one implied volatility (no tight spread quoted)"
     sig = _signals(u)
     feats = make_features(m_p, sig, spot, level, vol, years)
     model = active_model()
@@ -240,6 +270,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "question": f"Will {u} close above ${level:,.2f} on {exp.strftime('%a %b')} {exp.day}?",
             "market_p": round(m_p, 4), "brain_p": round(b_p, 4), "tilt": round(tilt, 3),
             "vol": round(vol, 4), "vol_source": vol_source, "strikes": [k1, k2],
+            "odds_source": odds_source, "market_p_flat_vol": round(m_p_flat, 4),
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),

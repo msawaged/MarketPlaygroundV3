@@ -3069,3 +3069,15 @@ def test_hq_owner_gate(monkeypatch):
         router._hq_owner("Bearer ok")
     monkeypatch.setenv("MP_HQ_EMAILS", "first@example.com, second@example.com")
     router._hq_owner("Bearer ok")   # allowed: listed owner email
+
+
+def test_yesno_digital_from_call_spread():
+    from backend.v4 import yesno
+    calls = [{"strike": 95, "bid": 6.0, "ask": 6.2}, {"strike": 100, "bid": 3.0, "ask": 3.2}, {"strike": 105, "bid": 1.2, "ask": 1.3}]
+    p, ka, kb = yesno.digital_from_spread(calls, 100)
+    assert (ka, kb) == (95, 105) and p == pytest.approx((6.1 - 1.25) / 10)       # neighbours of a listed strike
+    p, ka, kb = yesno.digital_from_spread(calls, 102)
+    assert (ka, kb) == (100, 105) and p == pytest.approx((3.1 - 1.25) / 5)
+    assert yesno.digital_from_spread(calls, 120) is None                         # outside the listed strikes
+    assert yesno.digital_from_spread([{"strike": 95, "bid": 1, "ask": 1.1}, {"strike": 105, "bid": 2, "ask": 2.1}], 100) is None  # nonsense quotes
+    assert yesno.digital_from_spread([{"strike": 50, "bid": 6, "ask": 6.2}, {"strike": 150, "bid": 1, "ask": 1.1}], 100) is None   # too wide

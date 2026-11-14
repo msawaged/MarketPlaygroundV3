@@ -302,3 +302,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   status file at the end (status-only commits use "[skip render]"). Keys: cto, health, reel, scout, brain, polish, growth.
 - Files: backend/v4/hq.py (new), db.py, router.py, tests; frontend HQPage.jsx (new), App.jsx, AccountPage.jsx,
   lib/api.js; docs/hq/ (agents.json, README.md, status/*.json seeded by the CTO).
+
+## 2026-11-13 night (build chat, CTO): reviewer is a derivatives expert — read docs/expert_review.md
+- Prof. Brown worked on exotic contracts at Credit Suisse; Murad: "the smartest person I know". Every agent holds
+  options content to a desk's standard. Checklist: docs/expert_review.md.
+- Close Call odds now come from the tight call spread around the line (skew included, `digital_from_spread`);
+  single-vol N(d2) is only a labelled fallback. Quote returns `odds_source` and `market_p_flat_vol`. Screen labels
+  odds "risk-neutral" and says practice prices are before bid/ask costs.

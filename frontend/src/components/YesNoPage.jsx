@@ -118,7 +118,8 @@ export default function YesNoPage() {
         <Card className={`mt-4 ${busy ? 'opacity-60' : ''}`}>
           <div className="text-xl font-extrabold leading-snug">{q.question}</div>
           <div className="mt-4 space-y-3">
-            <OddsBar label="Market's odds (from option prices)" p={q.market_p} tone="bg-slate-400" />
+            <OddsBar label="Market's odds (risk-neutral)" p={q.market_p} tone="bg-slate-400" />
+            {q.odds_source && <div className="-mt-1 text-[11px] text-slate-500">From {q.odds_source}.</div>}
             <OddsBar label={q.brain_model === 'learned' ? "Brain's lean (learned)" : "Brain's lean (starting rules, untested)"} p={q.brain_p} tone="bg-blue-500" />
           </div>
           <ul className="mt-3 text-xs text-slate-400 space-y-1">
@@ -156,7 +157,7 @@ export default function YesNoPage() {
               <button onClick={() => setContracts((c) => Math.min(50, c + 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700">+</button>
             </div>
           </div>
-          <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options; priced with the market's implied volatility. Practice money. Not investment advice.</p>
+          <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options. The odds are risk-neutral (what option prices imply, not a forecast); over days or weeks they sit close to real-world odds. Practice trades are priced at the market's implied volatility, before bid/ask costs. Practice money. Not investment advice.</p>
         </Card>
       )}
 
