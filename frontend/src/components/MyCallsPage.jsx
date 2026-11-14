@@ -80,8 +80,10 @@ function CalibrationCard({ c }) {
       <div className="font-bold">How well-calibrated are you?</div>
       {!c.ready ? (
         <p className="mt-1 text-sm text-slate-300">
-          {c.graded} of {c.min_graded} calls with a “How sure” are graded so far{c.pending ? ` (${c.pending} waiting for their check)` : ''}.
-          {' '}{left} more graded call{left === 1 ? '' : 's'} until your score: fewer than that would look more precise than it is.
+          {c.graded === 0
+            ? `You've said how sure you are on ${c.pending} call${c.pending === 1 ? '' : 's'}; none ${c.pending === 1 ? 'has' : 'have'} reached ${c.pending === 1 ? 'its' : 'their'} check yet.`
+            : `${c.graded} of your “How sure” calls ${c.graded === 1 ? 'is' : 'are'} graded so far${c.pending ? ` (${c.pending} still waiting for ${c.pending === 1 ? 'its' : 'their'} check)` : ''}.`}
+          {' '}Your score shows after {c.min_graded} graded calls ({left} to go): fewer than that would look more precise than it is.
         </p>
       ) : (
         <>
@@ -107,7 +109,7 @@ function CalibrationCard({ c }) {
           </p>
         </>
       )}
-      <p className="mt-2 text-[11px] text-slate-500">“Leaning” means the gap could still be luck with this many calls. Each call counts as right if your idea did what you called vs the S&amp;P 500 at the check that matches its horizon. This mirrors your own record; it isn't advice.</p>
+      <p className="mt-2 text-[11px] text-slate-500">{c.ready ? '“Leaning” means the gap could still be luck with this many calls. ' : ''}Each call counts as right if your idea did what you called vs the S&amp;P 500 at the check that matches its horizon. This mirrors your own record; it isn't advice.</p>
     </Card>
   );
 }
@@ -234,7 +236,7 @@ export default function MyCallsPage() {
                 <HowSure beliefId={b.belief_id} direction={b.direction} checkpointDays={b.sure.checkpoint_days} initial={b.sure.prob} canSet={b.sure.can_set} onSaved={reload} />
               )}
               {editing === b.belief_id ? (
-                <WrongIf beliefId={b.belief_id} picks={b.picks} horizonDays={b.horizon_days} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
+                <WrongIf beliefId={b.belief_id} picks={b.picks} direction={b.direction} horizonDays={b.horizon_days} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
               ) : b.wrong_if ? (
                 <WrongIfStatus w={b.wrong_if} onEdit={() => setEditing(b.belief_id)} />
               ) : (

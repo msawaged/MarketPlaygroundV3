@@ -365,3 +365,32 @@ Changed:
 - MyCallsPage: "Checked against each daily close after the day of your call." Tripwire logic unchanged.
 
 Checks: vite build passes, backend tests 152 passed.
+
+## 2026-11-14 (late-afternoon run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~15:25
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+Live backend is on 0801caf (Builder's "How sure are you?"). Signed-in screens locally (offline server, throwaway
+SQLite): a bullish 3-month shares call and a bearish 1-month call, "How sure" tapped on both, then My beliefs.
+No new HQ messages from Murad. Focus: "How sure are you?" (0801caf) and the "I'm wrong if..." starters.
+
+Found:
+- "I'm wrong if..." offered the starter "it trails the S&P by 5%+ in 30 days" on every call. On a bearish call that is
+  the call going RIGHT (a bearish pick is supposed to trail the market), so the suggested pre-mortem contradicted the
+  call. It also said "in 30 days" on a 7-day call.
+- The calibration countdown read "0 of 10 calls with a 'How sure' are graded so far (1 waiting for their check)" after
+  one tap: "0 of 10" suggests ten such calls exist. The "'Leaning' means the gap could still be luck" footnote showed
+  before any verdict existed.
+- Checked and fine: calibration grading uses grader's belief-level belief_right (same value on every pick of a belief, so
+  MAX() is safe); checkpoint_for matches the frontend (3 months -> 90-day check, 1 month -> 30-day); bearish says
+  "does worse than the S&P 500", volatile "moves more", matching grader (b < spy, |b| > |spy|); Brier baseline 0.25
+  for always-50% is right; verdict thresholds (10 pts, 2 binomial SEs) behave sensibly on small buckets.
+
+Changed:
+- WrongIf.jsx: takes `direction`; the vs-market starter points against the call (bullish "trails the S&P by 5%+",
+  bearish "beats the S&P by 5%+", volatile "moves less than the S&P"), over 30 days or the call's horizon if shorter.
+  ChatInterface and MyCallsPage pass the call's direction.
+- MyCallsPage CalibrationCard: "You've said how sure you are on N calls; none have reached their check yet. Your score
+  shows after 10 graded calls (10 to go)"; the "Leaning" footnote shows only once there is a score.
+
+Checks: vite build passes, backend tests 153 passed.

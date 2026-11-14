@@ -354,7 +354,7 @@ export default function ChatInterface() {
                       <HowSure key={`sure-${m.data.belief_id}`} beliefId={m.data.belief_id} direction={m.data.interpretation?.direction} horizonDays={m.data.interpretation?.horizon_days} inChat />
                     )}
                     {m.data?.belief_id && (m.data.picks || []).some((p) => p.shown) && (
-                      <WrongIf key={m.data.belief_id} beliefId={m.data.belief_id} picks={(m.data.picks || []).filter((p) => p.shown).slice(0, 3)} horizonDays={m.data.interpretation?.horizon_days} compact inChat />
+                      <WrongIf key={m.data.belief_id} beliefId={m.data.belief_id} picks={(m.data.picks || []).filter((p) => p.shown).slice(0, 3)} direction={m.data.interpretation?.direction} horizonDays={m.data.interpretation?.horizon_days} compact inChat />
                     )}
                   </div>
                 )}

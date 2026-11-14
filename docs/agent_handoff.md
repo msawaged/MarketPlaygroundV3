@@ -439,3 +439,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/calibration.py (new), db.py, engine.py, router.py, tests/test_v4.py
   (test_how_sure_calibration_scores_stated_probabilities, fuzz list), frontend chat/HowSure.jsx (new),
   ChatInterface.jsx, MyCallsPage.jsx, ui/Term.jsx, lib/api.js, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-14 late afternoon (daily polish walk)
+- "I'm wrong if..." starter chip now follows the call's direction (bearish calls are wrong if they BEAT the S&P, volatile
+  if they move less); WrongIf takes a `direction` prop (ChatInterface + MyCallsPage pass it). Window = min(30, horizon).
+- "How sure" calibration countdown wording on My beliefs (no more "0 of 10 calls ... graded" after one tap); "Leaning"
+  footnote only once scored. No backend change.
+- Files: frontend chat/WrongIf.jsx, ChatInterface.jsx, MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

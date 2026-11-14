@@ -12,7 +12,7 @@ function horizonText(days) {
   return d >= 60 ? `${Math.round(d / 30)} months` : `${d} days`;
 }
 
-export default function WrongIf({ beliefId, picks = [], horizonDays = null, initial = null, compact = false, inChat = false, onSaved, onCancel }) {
+export default function WrongIf({ beliefId, picks = [], direction = null, horizonDays = null, initial = null, compact = false, inChat = false, onSaved, onCancel }) {
   const lineable = picks.filter((p) => (p.direction === 'bullish' || p.direction === 'bearish') && Number(p.price || p.entry_price) > 0);
   const [open, setOpen] = useState(!compact);
   const [text, setText] = useState(initial?.text || '');
@@ -29,7 +29,16 @@ export default function WrongIf({ beliefId, picks = [], horizonDays = null, init
     const px = (entry * (below ? 0.9 : 1.1)).toFixed(2);
     starters.push({ label: `${pick.ticker} closes ${below ? 'below' : 'above'} $${px}`, apply: () => setPrice(px) });
   }
-  starters.push({ label: 'it trails the S&P by 5%+ in 30 days', apply: () => setText('it trails the S&P 500 by more than 5% in 30 days') });
+  // The "against the market" starter has to point the opposite way to the call: a bearish call is wrong if the
+  // stock BEATS the S&P 500, a volatile one if it moves less. Window: 30 days, or the call's own horizon if shorter.
+  const callDir = direction || pick?.direction || lineable[0]?.direction || 'bullish';
+  const win = Math.min(30, Number(horizonDays) > 0 ? Number(horizonDays) : 30);
+  const vsSpy = callDir === 'bearish'
+    ? { label: `it beats the S&P by 5%+ in ${win} days`, text: `it beats the S&P 500 by more than 5% in ${win} days` }
+    : callDir === 'volatile'
+      ? { label: `it moves less than the S&P in ${win} days`, text: `it moves less than the S&P 500 in the next ${win} days` }
+      : { label: `it trails the S&P by 5%+ in ${win} days`, text: `it trails the S&P 500 by more than 5% in ${win} days` };
+  starters.push({ label: vsSpy.label, apply: () => setText(vsSpy.text) });
 
   async function save() {
     setState((s) => ({ ...s, saving: true, error: null }));
