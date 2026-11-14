@@ -87,6 +87,11 @@ def grade(limit: int = 50000) -> dict:
     sel = score_selection()
     if done or sel:
         learning.invalidate()
+    try:  # "the outside view": how often calls like this came true (one small kv row; info only)
+        from . import baserate
+        baserate.compute()
+    except Exception as e:
+        print(f"[grade] baserate failed: {type(e).__name__}: {e}", flush=True)
     return {"graded": done, "skipped": skipped, "errors": errors, "selection_scored": sel}
 
 

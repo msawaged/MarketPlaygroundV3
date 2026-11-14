@@ -982,6 +982,47 @@ def test_how_sure_calibration_scores_stated_probabilities():
     assert c.post("/v4/user_prob", json={"belief_id": r2["belief_id"], "user_id": "u-sure", "prob": 0.6}).status_code == 400
 
 
+def test_base_rate_outside_view_counts_each_call_once(monkeypatch):
+    from backend.v4 import baserate, calibration
+    assert baserate.public()["cells"] == {} and baserate.for_call("bullish", 90) is None   # nothing computed yet
+    made = []
+    for i, text in enumerate(["plumbing demand is going to be high", "ai chip demand keeps growing",
+                              "everyone is getting a pet", "airlines will struggle this year"]):
+        r = engine.process_belief(text, f"u-br{i}", "moderate", claude_client=FakeClaude())
+        made.append(r["belief_id"])
+    dirs = {b: db.query_one("SELECT direction FROM beliefs WHERE id = ?", (b,))["direction"] for b in made}
+    # each call: every pick graded at 90 days with the same belief_right (one result per call, as the grader stores it)
+    right = {made[0]: 1, made[1]: 0, made[2]: 1, made[3]: 1}
+    for b in made:
+        for x in db.query("SELECT id FROM picks WHERE belief_id = ?", (b,)):
+            for cp, r in ((90, right[b]), (7, 0)):
+                db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at, belief_right)
+                              VALUES (?, ?, '2026-01-01', 1, 0.1, 0.0, 0.1, '2026-01-01', ?)""", (x["id"], cp, r))
+    out = baserate.compute()
+    want: dict = {}
+    for b in made:
+        w = want.setdefault(dirs[b], [0, 0]); w[0] += 1; w[1] += right[b]
+    for d, (n, k) in want.items():
+        c = out["cells"][d]["90"]
+        assert c["n"] == n and c["right"] == k and abs(c["beat"] - round(k / n, 3)) < 1e-9   # calls, not picks
+        assert out["cells"][d]["7"]["right"] == 0 and c["since"] and c["upto"] >= c["since"]
+    # small cells are hidden from the app until they reach MIN_N calls
+    assert baserate.public()["cells"] == {}
+    monkeypatch.setattr(baserate, "MIN_N", 1)
+    d0 = dirs[made[0]]
+    got = baserate.for_call(d0, 60)
+    assert got["checkpoint_days"] == calibration.checkpoint_for(60) == 90 and got["n"] == want[d0][0]
+    assert baserate.for_call("sideways", 90) is None
+    # stored in kv, served by the public endpoint
+    baserate._cache.update(at=0.0, v=None)
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    body = TestClient(app).get("/v4/base_rates").json()
+    assert body["cells"][d0]["90"]["n"] == want[d0][0]
+
+
 # ---------------- fuzz: hostile and random input never crashes the server ----------------
 
 _NASTY = ["", " ", "\n\t", "a", "x" * 5000, "🚀📉💸" * 50, "'; DROP TABLE beliefs; --", "<script>alert(1)</script>",

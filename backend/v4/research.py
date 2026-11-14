@@ -721,6 +721,11 @@ def run_background() -> None:
                 trendlab.run_and_store()
         except Exception:
             pass
+        try:  # base rates for "How sure" (at most once a day; the grading job refreshes it too)
+            from . import baserate
+            baserate.refresh_if_stale()
+        except Exception:
+            pass
 
     threading.Thread(target=go, name="research", daemon=True).start()
 

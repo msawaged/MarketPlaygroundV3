@@ -477,3 +477,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   horizon beat the S&P, from our own grading) above the "How sure" buttons.
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_idiosyncratic_vol_rule_and_enrich_backfill),
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-14 night (Builder routine): "The outside view" base rate above "How sure"
+- Built the 2026-11-14 evening proposal from docs/feature_ideas.md (size S-M). New `backend/v4/baserate.py`: one
+  aggregate query, one result per graded CALL (MAX(belief_right) per belief and checkpoint, the same thing the "How
+  sure" calibration card scores; not per pick), grouped by direction x checkpoint, stored in kv `baserate:v1`
+  (~15 cells: n, right, beat, since/upto call dates). Refreshed by the grade phase of v4-grade-and-train and by the
+  web start thread (`research.run_background`, only if older than a day). Never computed on a request.
+  Public `GET /v4/base_rates` returns cells with n >= 100 only.
+- Frontend `chat/HowSure.jsx`: "Base rate: of 2,651 graded bullish calls (made Nov 2023 to Jul 2026), 42% beat the
+  S&P 500 at the 90-day check" above the buttons (chat and My beliefs) and under the locked "You said" line; if the
+  user's pick is 10+ points off, it says so plainly. Glossary term "base rate". No default, no advice.
+- Prod numbers today (call level): bullish 90d 41.8% (n 2,651), bearish 90d 59.2% (n 1,664); volatile cells are
+  under 100 calls (except 7d n 47, also hidden) so volatile calls show no line.
+- Information only: not used by ranking, research, gates or anything that trades.
+- Files: backend/v4/baserate.py (new), grader.py, research.py, router.py, tests/test_v4.py
+  (test_base_rate_outside_view_counts_each_call_once), frontend chat/HowSure.jsx, ui/Term.jsx, lib/api.js,
+  docs/feature_ideas.md, docs/hq/status/builder.json.

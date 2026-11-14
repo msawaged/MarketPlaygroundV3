@@ -233,7 +233,8 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-14 (evening run) — "The outside view": show how often calls like this one have beaten the S&P before the user sets "How sure"
 - **Area:** app (learning loop, honest expectations); no brain or ranking change.
-- **Status:** proposed
+- **Status:** built 2026-11-14, commit "The outside view: base rate..." (Builder): call-level (same `belief_right` the
+  calibration card scores), direction x checkpoint, kv `baserate:v1`, cells under 100 calls hidden; theme cut not built.
 - **Problem:** when a user makes a call, everything on screen is about *this* idea (Claude's picks, payoff chart,
   "How sure are you?", "I'm wrong if..."). Nothing tells them how often calls of the same kind have worked, which is
   the single most useful number for a beginner and the one people ignore by default (base-rate neglect). The app

@@ -127,6 +127,13 @@ export function saveWrongIf(beliefId, { text = null, price = null, ticker = null
 }
 
 /** "How sure are you?": the user's own probability (0.55 / 0.65 / 0.75 / 0.9) that their call plays out. */
+let _baseRates = null;
+// Base rates ("the outside view"): one small public table, fetched once per page load.
+export function getBaseRates() {
+  if (!_baseRates) _baseRates = request("/v4/base_rates").catch((e) => { _baseRates = null; throw e; });
+  return _baseRates;
+}
+
 export function saveUserProb(beliefId, prob) {
   return request("/v4/user_prob", { method: "POST", body: { belief_id: beliefId, user_id: userId(), prob } });
 }

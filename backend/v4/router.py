@@ -523,6 +523,13 @@ async def get_headlines(limit: int = 6):
     return {"headlines": await run_in_threadpool(market.headlines, max(1, min(limit, 12)))}
 
 
+@router.get("/base_rates")
+async def get_base_rates():
+    """How often graded calls of each direction beat the S&P 500 at each check (public, aggregate, info only)."""
+    from . import baserate
+    return await run_in_threadpool(baserate.public)
+
+
 @router.get("/brain")
 async def get_brain():
     """Public, aggregate view of the learning. No user's own words."""

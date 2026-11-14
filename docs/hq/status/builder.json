@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T17:35:00Z",
- "last_run": "Built honest t-stats. Calls made on the same or nearby days ride the same market for most of their 90 days, so they aren't independent, and the plain t-stat overstated how sure we can be. Research now also reports the t counted honestly (overlap-weighted errors, the standard fix a finance professor would expect), how many independent calls the sample is really worth, and which methods still clear the luck bar that way. The Brain page's luck check says it in plain words. Reporting only: nothing about how picks are chosen changed. Live result (17:19 UTC run): the #1 pick's plain t of 4.5 becomes 1.9 counted honestly; the 2,703 test calls were made on 429 days and are worth about 482 independent calls; on that lens no method clears the luck bar yet (the app's #1 and the illiquidity rule both did on the plain t). The Brain page now says this.",
+ "updated_at": "2026-11-14T20:20:00Z",
+ "last_run": "Built 'the outside view'. Before someone taps how sure they are, the How sure card now shows how often calls like theirs have come true: e.g. of 2,651 graded bullish calls, 42% beat the S&P 500 at the 90-day check (bearish: 59%). It counts each call once, the same way your calibration score grades you, and says it's mostly the app's practice calls and the past, not a forecast. If someone says 90% on a call type that works 42% of the time, it says so plainly, no advice. Shown in chat and on My beliefs. Information only: nothing about picks or trading changed.",
  "working_on": "Nothing open.",
- "next": "Feature coverage ('provisional' results) proposal, or the brain's own High/Medium/Low on the calibration scale. Your call if the ranker gate should ever use the honest t (it doesn't now).",
+ "next": "Feature coverage ('provisional' research results) proposal, or the brain's own High/Medium/Low on the calibration scale.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
