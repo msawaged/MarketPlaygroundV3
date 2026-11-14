@@ -277,7 +277,8 @@ Changed:
 - backend/v4/yesno.py: `spread_vol` finds the one volatility at which the k1/k2 call spread prices at its listed mid
   (root closest to the line IV); YES / NO and the practice trade use it, so YES costs the market's own spread price
   and YES + NO still add up to the payout. Falls back to the line IV, then an estimate. Quote returns `price_vol`,
-  `price_source`. Brain features still use the line IV (unchanged inputs). Test:
+  `price_source`. A fit more than 20% away from the line IV is treated as noisy quotes and ignored (first deploy:
+  NVDA $185 Dec 18 fitted 0.41 vs line IV 0.58 on thin $1 strikes after hours, YES $13 vs odds 21%). Brain features still use the line IV (unchanged inputs). Test:
   test_yesno_spread_vol_prices_yes_at_the_listed_spread_mid.
 - YesNoPage note says which price the practice trade used ("listed mid price of the same $X/$Y spreads").
 - backend/v4/brain.py: beliefs_today counts from New York midnight. BrainPage: "Both sides of most stories".

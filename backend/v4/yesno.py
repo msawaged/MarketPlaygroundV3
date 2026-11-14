@@ -279,7 +279,9 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         m_p, odds_source = m_p_flat, "one implied volatility (no tight spread quoted)"
     calls = [r for r in chain if r["type"] == "call"]
     sv = spread_vol(calls, k1, k2, spot, years, vol)
-    sv = round(sv, 4) if sv else None
+    # Skew moves IV only a little across one strike gap, so a fit far from the line IV means stale or noisy
+    # quotes (e.g. thin $1 strikes after hours): trust the line IV instead.
+    sv = round(sv, 4) if sv and vol_source == "market" and abs(sv / vol - 1) <= 0.2 else None
     price_vol, price_source = (sv, "spread") if sv else ((vol, "line_iv") if vol_source == "market" else (None, "estimate"))
     sig = _signals(u)
     feats = make_features(m_p, sig, spot, level, vol, years)
