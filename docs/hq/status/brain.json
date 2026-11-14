@@ -1,9 +1,9 @@
 {
  "key": "brain",
- "updated_at": "2026-11-14T08:05:00Z",
- "last_run": "Extra run (requested): checked the brain again. Everything is healthy. Today's earlier fix (honest testing of the blended rankers) is live; its first results come with the next nightly refit (Mon Nov 16). Building nothing more until then, so we can see that change's effect on its own.",
- "working_on": "Brain accuracy: making sure nothing reaches users on borrowed hindsight.",
- "next": "Read Monday night's results for the blended rankers, then the next weekly upgrade. Early December: first real-time check of the blends.",
+ "updated_at": "2026-11-14T21:30:00Z",
+ "last_run": "Weekly upgrade: the learning models now study each idea against the ideas it actually competes with (longs against longs, shorts against shorts), instead of against every idea in the belief. Before, about 2,300 opposite-direction ideas were mixing 'which direction won' into the lessons, which no user can act on. Tests and safety rules are unchanged.",
+ "working_on": "Brain accuracy: teaching the rankers the same choice users are shown.",
+ "next": "Check the next research results: if the learning models' edge holds or rises, keep it; if it drops clearly, undo it. Early December: first real-time check of the blends.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

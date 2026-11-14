@@ -519,3 +519,35 @@ is Murad's decision. Expect most current "clears" (incl. the app's #1) to look m
 research run lands. Test: `test_overlap_honest_t_counts_shared_market_paths_once`.
 First live numbers (research run 2026-11-14 17:19 UTC): app (current #1) lift_t 4.52 → lift_t_nw 1.91 (adj 3.86 → 1.76),
 2,703 calls on 429 dates, n_eff 482. `clear_nw` and `clear_adj_nw` are empty (plain `clear`: app + Amihud).
+
+## 2026-11-14 night (weekly) — Learned rankers train on each idea vs the ideas it really competes with
+
+**Problem (real numbers).** Since 2026-11-11 every test picks a belief's #1 inside the lead group (ideas in the
+belief's own direction, `engine._leads`), but training still labelled each idea against the **whole-belief** mean
+(`rel = ex - mean(all ideas)`), the gap the 2026-11-11 entry left open ("Training is unchanged"). Read-only SQL today,
+90-day checkpoint: 4,388 graded beliefs; **2,341 off-direction ideas in 1,707 mixed beliefs**, whose group average
+sits a belief-level **sd 18%** away from the belief mean, so every long in those beliefs got that offset folded into
+its label (lead-group offset sd 4.6% across all beliefs). **1,269 of those groups are a single off-direction idea**:
+its label only says "which direction won", which no user can act on. For scale, tonight's
+`off_lead` (how often the model's favourite was an idea users can't be shown first) is 15–19% for every learned
+model. Same run (2,703 test beliefs): ridge +0.93% (t 2.84, t_nw 2.02), gbm +1.15% (t 3.46), neural net +1.26%
+(t 3.69); app as stored +1.49% (t 4.52, has look-ahead), app without look-ahead +0.53% (t 1.70); mixes +0.15–0.47%.
+
+**Change (training label only; no gate touched).** `research.load` now computes `rel` / `rela` against the mean of
+the idea's own group inside the belief (lead group, or the off-direction group; beliefs with no stated direction or
+one group keep the whole-belief mean, as before) and marks `train=False` on an idea alone in its group. `_xy` (used by
+ridge, trees, the net, and `fit_production`'s ridge weights and refits) drops `train=False` rows. Test scoring
+(`_pick`: lift vs the belief's average idea, `_top` within the lead group), `_passes`, `MIN_LIFT`, `MIN_T`,
+`MIN_T_ADJ`, the 90-day embargo, the bar (`old`), the mixes and `live_check` are unchanged. Memory: one bool per idea;
+`fit_production` builds the masked matrix per refit (~11 MB each).
+
+**Checks.** Backend tests: all pass (new `test_ranker_v2_learns_each_idea_against_the_ideas_it_competes_with`;
+`test_research_picks_the_number_one_within_the_beliefs_own_direction` now expects `off_lead` < 0.5 (about chance) instead of
+> 0.9, since a lone short is no longer trained on). Commit: see git log ("Ranker v2: learn each idea against its own group").
+
+**What counts as a win.** Next `research:ranker` run (web start after deploy, then nightly): the learned models'
+out-of-sample lift on the unchanged test holds or rises (a win: ridge / gbm /
+net each up by ~0.1 point or more, overlap-honest `lift_t_nw` up too). `off_lead` is no longer a learned preference
+(a lone off-direction idea's score is now untrained), so read it as chance, not as a win metric. If lift falls clearly (more than ~0.2 points
+across the board), the whole-belief label was carrying real signal and this should be reverted. The ranker only goes
+live through the same gate either way.

@@ -494,3 +494,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/baserate.py (new), grader.py, research.py, router.py, tests/test_v4.py
   (test_base_rate_outside_view_counts_each_call_once), frontend chat/HowSure.jsx, ui/Term.jsx, lib/api.js,
   docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-14 night (weekly brain upgrade, CTO routine)
+- Ranker v2 training label now matches how the #1 is chosen: `research.load` computes `rel` / `rela` against the mean
+  of the idea's own group in the belief (lead group = belief's own direction, or the off-direction group; one group /
+  no stated direction = whole belief as before) and sets `train=False` on an idea alone in its group. `_xy` drops those
+  rows; `_fit_ridge`, `_fit_gbm`, `_fit_mlp` and `fit_production` (ridge weights + refits) all go through `_xy`.
+- Test scoring (`_pick`, `_top`), `_passes`, MIN_LIFT/MIN_T/MIN_T_ADJ, embargo, bar, mixes, `live_check`: unchanged.
+- Evidence (prod SQL, 90-day): 2,341 off-direction ideas in 1,707 mixed beliefs (group offset sd 18%), 1,269 of them
+  alone in their group. Win/revert criterion in docs/brain_upgrades.md. Research routine: compare learned-model lift
+  in the next `research:ranker` run with tonight's 20:15 UTC run (ridge +0.93%, gbm +1.15%, net +1.26%).
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.

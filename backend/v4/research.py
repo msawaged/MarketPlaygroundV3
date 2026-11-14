@@ -318,11 +318,24 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
             full[:, raw.shape[1] + nf + j] = full[:, zi] * full[:, gi]
         for c, v in zip(b["cands"], full):
             c["f"] = FeatRow.from_array(v)
-        mean_ex = float(np.mean([c["ex"] for c in b["cands"]]))
-        mean_exa = float(np.mean([c["exa"] for c in b["cands"]]))
+        # Training label: the idea's outcome minus the average of the ideas it actually competes with. The engine
+        # picks the #1 inside the lead group (belief's own direction, _lead), so a long is compared with the other
+        # longs, not with a short on a competitor. Against the whole-belief mean, the 2,341 off-direction ideas in
+        # mixed beliefs moved every lead label by a belief-level offset (sd 18% for the off group, prod 2026-11-14)
+        # and 1,269 lone off-direction ideas taught only "which direction won". A group of one has nothing to be
+        # ranked against, so it is left out of training (train=False). Test scoring (_pick) is unchanged.
+        groups: dict[bool, list[dict]] = {}
         for c in b["cands"]:
-            c["rel"] = c["ex"] - mean_ex
-            c["rela"] = c["exa"] - mean_exa
+            groups.setdefault(bool(c["lead"]), []).append(c)
+        if len(groups) == 1:  # one group (or no lead idea at all: _lead falls back to everyone)
+            groups = {True: b["cands"]}
+        for g in groups.values():
+            mean_ex = float(np.mean([c["ex"] for c in g]))
+            mean_exa = float(np.mean([c["exa"] for c in g]))
+            for c in g:
+                c["rel"] = c["ex"] - mean_ex
+                c["rela"] = c["exa"] - mean_exa
+                c["train"] = len(g) >= 2
     out.sort(key=lambda b: b["date"])
     return out
 
@@ -434,8 +447,7 @@ def _pick(b: dict, c: dict) -> tuple:
 
 
 def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
-    x = _matrix(train, keys)
-    y = np.array([max(-0.5, min(0.5, c["rel"])) for b in train for c in b["cands"]])
+    x, y = _xy(train, keys, "rel")
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + alpha * np.eye(len(keys)), xs.T @ y)
@@ -470,8 +482,10 @@ class MLPRanker:
 
 
 def _xy(train: list[dict], keys: list[str], label: str):
-    x = _matrix(train, keys)
-    y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
+    """Training inputs and labels: only ideas that have something to be ranked against inside their group (see load)."""
+    mask = np.array([c.get("train", True) for b in train for c in b["cands"]], dtype=bool)
+    x = _matrix(train, keys)[mask] if len(mask) else _matrix(train, keys)
+    y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"] if c.get("train", True)])
     return x, y
 
 
@@ -482,8 +496,7 @@ def _fit_mlp(train: list[dict], keys: list[str], label: str = "rel"):
 
 def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
     from sklearn.ensemble import HistGradientBoostingRegressor
-    x = _matrix(train, keys)
-    y = np.array([max(-0.5, min(0.5, c[label])) for b in train for c in b["cands"]])
+    x, y = _xy(train, keys, label)
     m = HistGradientBoostingRegressor(max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40,
                                       l2_regularization=1.0, random_state=7).fit(x, y)
     return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
@@ -817,8 +830,7 @@ def fit_production(results: dict | None = None) -> dict:
         if names[k] + MIX in res:
             cands[k + "_mix"] = (res[names[k] + MIX], cands[k][1])
             names[k + "_mix"] = names[k] + MIX
-    x = _matrix(data, ZKEYS)
-    y = np.array([max(-0.5, min(0.5, c["rel"])) for b in data for c in b["cands"]])
+    x, y = _xy(data, ZKEYS, "rel")
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
     w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
@@ -834,8 +846,7 @@ def fit_production(results: dict | None = None) -> dict:
             return kind_, None
         from sklearn.ensemble import HistGradientBoostingRegressor
         fit_on = data + aug if base.endswith("_aug") else data
-        xx = x if fit_on is data else _matrix(fit_on, ZKEYS)
-        yy = np.array([max(-0.5, min(0.5, c[cands[key][1]])) for b in fit_on for c in b["cands"]])
+        xx, yy = _xy(fit_on, ZKEYS, cands[key][1])
         return kind_, (MLPRanker(xx, yy) if kind_ == "mlp" else HistGradientBoostingRegressor(
             max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
             random_state=7).fit(xx, yy))

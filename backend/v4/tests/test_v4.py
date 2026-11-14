@@ -3259,13 +3259,76 @@ def test_research_picks_the_number_one_within_the_beliefs_own_direction(monkeypa
     assert research._top(b, [0.0, 0.1, 0.2, 9.0]) == 2               # the short can't be the #1, however high it scores
     out = research.run(data=data)
     assert out["lead_only"] and out["mixed_direction"] == 1.0
-    assert out["off_lead"]["ridge (learned)"] > 0.9                   # the model did learn to favour the short...
+    # the lone short has nothing to be ranked against in its own group, so it is not trained on (2026-11-14 night):
+    # the model no longer learns to favour it (before, off_lead was > 0.9 here; now about chance, ~1 in 4 ideas)
+    assert out["off_lead"]["ridge (learned)"] < 0.5
     for name in ("ridge (learned)", "gbm (learned)", "ridge (learned)" + research.MIX):
-        # ...but is scored on the long it would really put first: always below the belief average (the short's +30%
+        # scored on the long it would really put first: always below the belief average (the short's +30%
         # lifts it), never the +22% lift that picking the short would show
         assert out["results"][name]["lift"] < 0
     # a belief with no stated direction (or only opposite ideas) still has a #1
     assert research._lead({"cands": [{"lead": False}, {"lead": False}]}) == [0, 1]
+
+
+def test_ranker_v2_learns_each_idea_against_the_ideas_it_competes_with(monkeypatch):
+    # 2026-11-14 night brain upgrade: the training label is the idea's outcome minus the average of its own group
+    # (the lead group the engine picks the #1 from, or the off-direction group), not the whole belief. Planted: in
+    # bullish beliefs the longs' order follows mom60, while a pair of shorts swings the belief average by a random
+    # +-40%. Against the whole-belief mean that swing is noise on every long's label; against the longs' own mean
+    # it is gone, and the learned ranker finds the real order.
+    from backend.v4 import research
+    import datetime as _dt
+    rng = __import__("random").Random(11)
+    d0 = _dt.date(2023, 1, 1)
+    for i in range(360):
+        bid, asof = f"b-grp{i}", (d0 + _dt.timedelta(days=i * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill", "bullish"))
+        swing = rng.choice((-0.4, 0.4))
+        for j in range(6):
+            d = "bearish" if j >= 4 else "bullish"
+            mom = rng.uniform(-0.3, 0.3)
+            ex = swing + rng.gauss(0, 0.02) if d == "bearish" else mom * 0.1 + rng.gauss(0, 0.02)
+            pid = f"p-grp{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"G{j}", d, asof, 10.0, db.dumps({"num": {"mom60": mom}}), j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex, asof))
+    # a third belief shape: one lone short among longs is left out of training; a belief with no stated direction
+    # keeps the old whole-belief label
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+               ("b-grp-solo", "seed", "x", "x", "2025-06-01T00:00:00", "2025-06-01", "seed_backfill", "bullish"))
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-grp-none", "seed", "x", "x", "2025-06-01T00:00:00", "2025-06-01", "seed_backfill"))
+    for bid, rows in (("b-grp-solo", (("bullish", 0.01), ("bullish", 0.03), ("bearish", 0.5))),
+                      ("b-grp-none", (("bullish", 0.01), ("bearish", 0.03)))):
+        for j, (d, ex) in enumerate(rows):
+            pid = f"p-{bid}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"S{j}", d, "2025-06-01", 10.0, db.dumps({"num": {"mom60": 0.0}}), j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, "2025-09-01", 10.0, 0.0, 0.0, ex, "2025-09-01"))
+    data = research.load()
+    solo = none = None
+    for b in data:
+        if b["date"] != "2025-06-01":
+            continue
+        if len(b["cands"]) == 3:
+            solo = b
+        elif len(b["cands"]) == 2:
+            none = b
+    assert [round(c["rel"], 6) for c in solo["cands"]] == [-0.01, 0.01, 0.0]      # longs vs longs; the short alone
+    assert [c["train"] for c in solo["cands"]] == [True, True, False]
+    assert [round(c["rel"], 6) for c in none["cands"]] == [-0.01, 0.01]            # no stated direction: whole belief
+    x, y = research._xy([solo, none], ["z_mom60"], "rel")
+    assert x.shape == (4, 1) and len(y) == 4                                        # the lone short is not trained on
+    planted = [b for b in data if b["date"] != "2025-06-01"]
+    for b in planted[:3]:
+        longs = [c["rel"] for c in b["cands"] if c["lead"]]
+        assert abs(sum(longs)) < 1e-9 and all(abs(r) < 0.1 for r in longs)        # the +-40% swing is not in them
+    out = research.run(data=planted)
+    assert out["results"]["ridge (learned)"]["n"] > 0
+    assert out["ridge_weights_last"]["z_mom60"] > 0                                # learned the real within-group order
 
 
 def test_trending_example_matches_the_theme_direction(monkeypatch):
