@@ -323,22 +323,57 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
     return out
 
 
+def _se_overlap(x: np.ndarray, dates: list[str], window: int = DAYS) -> float:
+    """Standard error of x.mean() that counts overlapping windows honestly (Newey & West 1987 / Driscoll & Kraay 1998
+    style, Petersen 2009). Each call is graded over `window` calendar days, so calls made on the same day share one
+    market path and calls a few days apart share most of it. Residuals are summed per call date, and each pair of dates
+    is weighted by how much their windows overlap: 1 - gap/window (Bartlett weights in calendar time; positive
+    semi-definite, so never negative). Same-day pairs get weight 1, which nests date-clustered errors."""
+    n = len(x)
+    if n < 2:
+        return 0.0
+    u = x - x.mean()
+    by: dict[str, float] = {}
+    for d, v in zip(dates, u):
+        by[d] = by.get(d, 0.0) + float(v)
+    keys = sorted(by)
+    s = np.array([by[k] for k in keys])
+    t = np.array([date.fromisoformat(k).toordinal() for k in keys], dtype=float)
+    w = np.clip(1.0 - np.abs(t[:, None] - t[None, :]) / float(window), 0.0, None)
+    var = float(s @ w @ s) / (n * n) * n / (n - 1)  # same small-sample factor as the plain ddof=1 se
+    return math.sqrt(var) if var > 0 else 0.0
+
+
 def _metrics(picks: list[tuple]) -> dict:
-    """picks: [(ex of chosen, belief mean ex, risk-matched ex of chosen, belief mean risk-matched ex)].
+    """picks: [(ex of chosen, belief mean ex, risk-matched ex of chosen, belief mean risk-matched ex[, belief date])].
     beat/lift: against the S&P 500. beat_adj/lift_adj: against the S&P scaled to each stock's beta, so leaning on
-    riskier stocks in a rising market doesn't count as skill."""
+    riskier stocks in a rising market doesn't count as skill.
+    With dates: lift_t_nw / lift_adj_t_nw are the same lifts' t with overlap-honest errors (_se_overlap), `dates` the
+    distinct call dates and n_eff about how many independent calls the n is worth. Reporting only: _passes and
+    fit_production read the plain t's, exactly as before."""
     if not picks:
         return {"n": 0}
     def tstat(x):
         se = x.std(ddof=1) / math.sqrt(len(x)) if len(x) > 1 else 0.0
         return round(float(x.mean() / se), 2) if se > 0 else 0.0
+    dts = [str(p[4])[:10] for p in picks] if len(picks[0]) >= 5 and all(p[4] for p in picks) else None
+    def tnw(x):
+        se = _se_overlap(x, dts)
+        return round(float(x.mean() / se), 2) if se > 0 else 0.0
     ex = np.array([p[0] for p in picks]); lift = np.array([p[0] - p[1] for p in picks])
     out = {"n": len(picks), "beat": round(float((ex > 0).mean()), 4), "avg": round(float(ex.mean()), 4),
            "lift": round(float(lift.mean()), 4), "lift_t": tstat(lift)}
+    if dts:
+        se_p = lift.std(ddof=1) / math.sqrt(len(lift)) if len(lift) > 1 else 0.0
+        se_h = _se_overlap(lift, dts)
+        out.update({"lift_t_nw": tnw(lift), "dates": len(set(dts)),
+                    "n_eff": int(round(min(len(lift), len(lift) * (se_p / se_h) ** 2))) if se_h > 0 else len(lift)})
     if len(picks[0]) >= 4:
         exa = np.array([p[2] for p in picks]); lifta = np.array([p[2] - p[3] for p in picks])
         out.update({"beat_adj": round(float((exa > 0).mean()), 4), "avg_adj": round(float(exa.mean()), 4),
                     "lift_adj": round(float(lifta.mean()), 4), "lift_adj_t": tstat(lifta)})
+        if dts:
+            out["lift_adj_t_nw"] = tnw(lifta)
     return out
 
 
@@ -385,13 +420,13 @@ def _top(b: dict, scores) -> int:
     return max(_lead(b), key=lambda i: scores[i])
 
 
-def _choose(b: dict, score: Callable[[dict], float]) -> tuple[float, float, float, float]:
+def _choose(b: dict, score: Callable[[dict], float]) -> tuple:
     return _pick(b, b["cands"][_top(b, [score(c["f"]) for c in b["cands"]])])
 
 
-def _pick(b: dict, c: dict) -> tuple[float, float, float, float]:
+def _pick(b: dict, c: dict) -> tuple:
     return (c["ex"], float(np.mean([x["ex"] for x in b["cands"]])),
-            c["exa"], float(np.mean([x["exa"] for x in b["cands"]])))
+            c["exa"], float(np.mean([x["exa"] for x in b["cands"]])), b.get("date"))
 
 
 def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
@@ -487,10 +522,21 @@ def luck(results: dict, tries_ever: int | None = None) -> dict:
     raw = {k: float(results[k].get("lift_t", 0) or 0) for k in names}
     adj = {k: float(results[k]["lift_adj_t"]) for k in names if results[k].get("lift_adj_t") is not None}
     clear, clear_adj = _holm(raw, m), _holm(adj, m)
-    return {"tests": len(names), "tries_ever": m, "alpha": LUCK_ALPHA, "bar": round(_bar(len(names)), 2),
-            "bar_ever": round(_bar(m), 2), "clear": sorted(clear, key=lambda k: -raw[k]),
-            "clear_adj": sorted(clear_adj, key=lambda k: -adj[k]),
-            "app_clears": "app (current #1)" in clear, "app_clears_adj": "app (current #1)" in clear_adj}
+    out = {"tests": len(names), "tries_ever": m, "alpha": LUCK_ALPHA, "bar": round(_bar(len(names)), 2),
+           "bar_ever": round(_bar(m), 2), "clear": sorted(clear, key=lambda k: -raw[k]),
+           "clear_adj": sorted(clear_adj, key=lambda k: -adj[k]),
+           "app_clears": "app (current #1)" in clear, "app_clears_adj": "app (current #1)" in clear_adj}
+    # the same bar on overlap-honest t's (_metrics lift_t_nw): a stricter lens, reporting only
+    nw = {k: float(results[k]["lift_t_nw"]) for k in names if results[k].get("lift_t_nw") is not None}
+    if nw:
+        nwa = {k: float(results[k]["lift_adj_t_nw"]) for k in names if results[k].get("lift_adj_t_nw") is not None}
+        c_nw, c_nwa = _holm(nw, m), _holm(nwa, m)
+        app = results.get("app (current #1)") or {}
+        out.update({"clear_nw": sorted(c_nw, key=lambda k: -nw[k]), "clear_adj_nw": sorted(c_nwa, key=lambda k: -nwa[k]),
+                    "app_clears_nw": "app (current #1)" in c_nw, "app_clears_adj_nw": "app (current #1)" in c_nwa,
+                    "app_t": app.get("lift_t"), "app_t_nw": app.get("lift_t_nw"),
+                    "app_dates": app.get("dates"), "app_n_eff": app.get("n_eff")})
+    return out
 
 
 def _tries(names) -> int:

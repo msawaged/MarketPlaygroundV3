@@ -506,3 +506,14 @@ Commit: see git log ("Ranker v2: test the 25% mixes on the app's score without l
 the ranker stays off for now. That is the honest result. A real win later is a mix that still clears the unchanged
 gate on the honest score and then holds up in the real-time check. If none does, the fair next question for Murad is
 whether the gate's bar itself should move to the point-in-time app (his decision, proposed 2026-11-09).
+
+## 2026-11-14 evening (Builder): overlap-honest t-stats beside the plain ones (reporting only)
+
+The feature_ideas.md "Honest t-stats" proposal. `research._metrics` now also returns `lift_t_nw` / `lift_adj_t_nw`
+(same lift, standard error from `_se_overlap`: residuals summed per call date, each pair of dates weighted by how much
+their 90-day windows overlap, 1 - gap/90 in calendar days; PSD, same-day weight 1 so it nests date clustering),
+`dates` and `n_eff` = n * (se_plain / se_overlap)^2 (capped at n). `_pick` carries the belief date as a 5th element.
+`luck()` adds `clear_nw`, `clear_adj_nw`, `app_clears_nw`, `app_clears_adj_nw`, `app_t`, `app_t_nw`, `app_dates`,
+`app_n_eff`. **Not read by `_passes`, `fit_production`, MIN_T or the ranker** — whether the gate should use the honest t
+is Murad's decision. Expect most current "clears" (incl. the app's #1) to look much weaker on this lens once the next
+research run lands. Test: `test_overlap_honest_t_counts_shared_market_paths_once`.

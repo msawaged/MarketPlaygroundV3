@@ -348,6 +348,16 @@ export default function BrainPage({ viewOnly = false }) {
                     {sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet"}
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>
+                  {sk.luck.app_t_nw != null && sk.luck.app_dates > 0 && (
+                    <div className="mt-2 text-xs text-slate-300">
+                      <span className="font-semibold text-slate-200">Counting overlap honestly.</span>
+                      {' '}Calls made close together ride the same market for most of their {sk.days || 90} days, so they aren't independent.
+                      {sk.luck.n ? ` Those ${Number(sk.luck.n).toLocaleString()} calls` : ' The test calls'} were made on {Number(sk.luck.app_dates).toLocaleString()} different days
+                      {sk.luck.app_n_eff ? `, worth about ${Number(sk.luck.app_n_eff).toLocaleString()} independent calls` : ''}.
+                      {' '}Counted that way, the way we pick today's #1 scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
+                      {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways do.
+                    </div>
+                  )}
                   <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
                 </div>
               )}

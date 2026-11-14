@@ -446,3 +446,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - "How sure" calibration countdown wording on My beliefs (no more "0 of 10 calls ... graded" after one tap); "Leaning"
   footnote only once scored. No backend change.
 - Files: frontend chat/WrongIf.jsx, ChatInterface.jsx, MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 night (Builder routine): honest t-stats (overlapping 90-day windows counted once)
+- Built the 2026-11-13 proposal from docs/feature_ideas.md (size S). `research._se_overlap` + `_metrics` add
+  `lift_t_nw`, `lift_adj_t_nw`, `dates`, `n_eff` to every research result (`_pick` now returns the belief date as a
+  5th tuple element; old 4-tuples still work). `research.luck` adds `clear_nw`, `clear_adj_nw`, `app_clears_nw`,
+  `app_clears_adj_nw`, `app_t`, `app_t_nw`, `app_dates`, `app_n_eff`; `/v4/brain` passes them through `skill.luck`.
+  Brain page luck card: "Counting overlap honestly" line (days, ~independent calls, t both ways, how many clear).
+- Reporting only: `_passes`, `fit_production`, MIN_T and the ranker don't read any of it. Numbers appear after the next
+  research run (web start runs one ~2.5 min after deploy). Research routine: quote t_nw beside t (docs/research_ideas.md).
+- Files: backend/v4/research.py, tests/test_v4.py (test_overlap_honest_t_counts_shared_market_paths_once),
+  frontend BrainPage.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/brain_upgrades.md, docs/hq/status/builder.json.

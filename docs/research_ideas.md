@@ -6,6 +6,10 @@ calls never seen) against the current #1 pick. Nothing here goes into the live r
 
 Metrics: **lift** = #1 pick's 90-day excess return minus the belief's average idea; **beat** = share of #1 picks that
 beat the S&P 500 in the belief's direction; **t** = t-stat of lift.
+Since 2026-11-14 each result also has **t_nw** (`lift_t_nw`): the same lift's t with overlap-honest errors (calls on
+the same or nearby dates share most of their 90-day market path; see `research._se_overlap`), plus `dates` and `n_eff`
+(about how many independent calls the n is worth), and `luck.clear_nw`. Quote t_nw beside t in new results. Reporting
+only: `_passes` / `fit_production` still read the plain t (changing that is Murad's call, see docs/brain_upgrades.md).
 
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 

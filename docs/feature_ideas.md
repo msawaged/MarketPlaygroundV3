@@ -97,7 +97,10 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-13 — Honest t-stats: count overlapping 90-day windows once (date-clustered / Newey-West errors)
 - **Area:** brain (research honesty); feeds the luck bar and the brain page.
-- **Status:** proposed
+- **Status:** built 2026-11-14, commit "Honest t-stats: research reports..." (Builder): `research._se_overlap` (residuals summed per call date, date
+  pairs weighted by window overlap 1 - gap/90 calendar days: Bartlett/Driscoll-Kraay style, nests date clustering);
+  every result gets `lift_t_nw`, `lift_adj_t_nw`, `dates`, `n_eff`; `luck` adds `clear_nw` / `clear_adj_nw` /
+  `app_clears_nw` and the app's t's; brain page luck card says it in plain words. Reporting only (gate untouched).
 - **Problem:** every t-stat in `research:ranker` (`_metrics.tstat`) treats each test belief as an independent draw:
   se = std / sqrt(n) with n = 2,703. But those 2,703 beliefs sit on only 429 distinct dates (2024-12-03 to
   2026-07-24, prod query 2026-11-13), about 6 per date, and each is graded on a 90-day window, so calls made the same

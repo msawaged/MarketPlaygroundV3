@@ -2481,6 +2481,46 @@ def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
     sk = brain._skill()
     assert sk["luck"]["tries_ever"] == 38 and sk["luck"]["n"] == 2703 and sk["luck"]["app_clears"]
 
+def test_overlap_honest_t_counts_shared_market_paths_once():
+    """Calls made on the same day (or a few days apart) share one 90-day market path, so they aren't independent.
+    lift_t_nw sums residuals per date and weights date pairs by window overlap: a shared shock with no real edge
+    looks significant on the plain t but not on the honest one, while a real per-pick edge survives both."""
+    from backend.v4 import research
+    import random as _r
+    import datetime as _dt
+    rng = _r.Random(3)   # this seed's shared shocks happen to average positive, like a lucky stretch of market
+    d0 = _dt.date(2025, 1, 1)
+    dates = [(d0 + _dt.timedelta(days=2 * k)).isoformat() for k in range(150)]
+    # one slowly drifting market shock per date (overlapping windows): AR(1) across dates, 6 calls per date
+    noise, edge, sh = [], [], 0.0
+    for d in dates:
+        sh = 0.95 * sh + rng.gauss(0, 0.01)
+        for _ in range(6):
+            mean = rng.gauss(0, 0.002)
+            noise.append((mean + sh + rng.gauss(0, 0.003), mean, 0.0, 0.0, d))
+            edge.append((mean + 0.01 + rng.gauss(0, 0.03), mean, 0.0, 0.0, d))
+    m = research._metrics(noise)
+    assert m["dates"] == 150 and m["n"] == 900
+    assert m["lift_t"] > 5 and abs(m["lift_t_nw"]) < 2.5          # looks like an edge; counted honestly, it isn't clear
+    assert m["n_eff"] < m["n"] / 10
+    e = research._metrics(edge)
+    assert e["lift_t"] > 5 and e["lift_t_nw"] > 4                  # a real per-pick edge still shows up
+    assert e["n_eff"] > e["n"] / 3
+    # no dates (older 4-tuples): same output as before, no honest-t keys
+    assert "lift_t_nw" not in research._metrics([p[:4] for p in noise])
+    # se is never negative and same-day-only data equals date clustering
+    x = __import__("numpy").array([1.0, -1.0, 2.0, 0.0])
+    assert research._se_overlap(x, ["2025-01-01", "2025-01-01", "2025-06-01", "2025-06-01"]) >= 0
+    # the luck block reports the honest lens beside the plain one; the gate never reads it
+    res = {"app (current #1)": {**m, "lift_adj_t": m["lift_t"], "lift_adj_t_nw": m["lift_t_nw"]},
+           "real edge": {**e, "lift_adj_t": e["lift_t"], "lift_adj_t_nw": e["lift_t_nw"]}}
+    lk = research.luck(res)
+    assert lk["app_clears"] and not lk["app_clears_nw"] and lk["clear_nw"] == ["real edge"]
+    assert lk["app_dates"] == 150 and lk["app_n_eff"] == m["n_eff"] and lk["app_t_nw"] == m["lift_t_nw"]
+    app = {"beat": 0.0, "beat_adj": 0.0}
+    assert research._passes(m, app) == research._passes({k: v for k, v in m.items() if not k.endswith("_nw")}, app)
+
+
 def test_daily_job_runs_each_phase_in_its_own_process():
     """grade-and-train runs grade/train/lineages/ranker as separate child processes so their memory peaks don't stack
     (the 512Mi cron was OOM-killed that way). A real child run on the empty test DB returns its JSON result."""
