@@ -41,7 +41,7 @@ export default function HQPage() {
     finally { setSending(false); }
   };
 
-  if (err && !b) return <Page title="Agent HQ"><Card className="mt-6 text-sm text-amber-200">{/403|owner/i.test(err) ? 'Agent HQ is for the owner only.' : err}</Card></Page>;
+  if (err && !b) return <Page title="Agent HQ"><Card className="mt-6 text-sm text-amber-200">{/sign in/i.test(err) ? <>Sign in with your owner account, then come back. <a className="text-blue-300 underline" href="/account">Sign in</a></> : /owner/i.test(err) ? 'This account isn\'t the owner account. Sign out and sign in with your main email.' : err}</Card></Page>;
   if (!b) return <Page title="Agent HQ"><div className="mt-6 h-64 rounded-3xl bg-slate-800/50 animate-pulse" /></Page>;
 
   const name = (k) => (k === 'all' ? 'Everyone' : b.agents.find((a) => a.key === k)?.name || k);

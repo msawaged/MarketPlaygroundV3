@@ -3055,3 +3055,17 @@ def test_hq_board_and_messages(monkeypatch, tmp_path):
     assert b["needs"] == [{"agent": "reel", "name": "Reel", "need": "Post today's reel"}]
     kinds = [t["kind"] for t in b["thread"]]
     assert "agent" in kinds and "status" in kinds and kinds.count("murad") == 3
+
+
+def test_hq_owner_gate(monkeypatch):
+    from fastapi import HTTPException
+    from backend.v4 import router, auth, brokerage
+    monkeypatch.setattr(brokerage, "is_owner", lambda acc: False)
+    monkeypatch.setattr(auth, "account_for_token", lambda t: {"email": "Second@Example.com"} if t == "ok" else None)
+    with pytest.raises(HTTPException) as e:
+        router._hq_owner(None)
+    assert "Sign in" in e.value.detail
+    with pytest.raises(HTTPException):
+        router._hq_owner("Bearer ok")
+    monkeypatch.setenv("MP_HQ_EMAILS", "first@example.com, second@example.com")
+    router._hq_owner("Bearer ok")   # allowed: listed owner email

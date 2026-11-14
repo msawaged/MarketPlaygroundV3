@@ -410,7 +410,10 @@ class HQMessage(BaseModel):
 def _hq_owner(authorization):
     from backend.v4 import auth, brokerage
     acc = auth.account_for_token(_token(authorization))
-    if not brokerage.is_owner(acc):
+    if not acc:
+        raise HTTPException(status_code=403, detail="Sign in with your owner account to open Agent HQ.")
+    extra = {e.strip().lower() for e in os.getenv("MP_HQ_EMAILS", "").split(",") if e.strip()}
+    if not (brokerage.is_owner(acc) or acc["email"].lower() in extra):
         raise HTTPException(status_code=403, detail="Agent HQ is for the owner only.")
 
 
