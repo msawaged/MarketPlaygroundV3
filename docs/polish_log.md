@@ -419,3 +419,30 @@ Changed (frontend/src/components/BrainPage.jsx only; no numbers or gates touched
 - Feed: "Learned N beliefs from the news" (no "today's"), so it no longer competes with the "today" count.
 
 Checks: vite build passes, backend tests 154 passed.
+
+## 2026-11-14 (night run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~21:30
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+No new HQ messages from Murad. Focus: the Builder's base-rate line (ae51885) and /brain after tonight's ranker retrain
+(ranker v2 went live 21:15 UTC, model mlp).
+
+Found (from /v4/brain skill.ranker and skill.luck):
+- The green card said "New: a smarter #1 pick" and then showed its numbers BELOW the old way's: beat 52% (old 53%),
+  lift +1.2 pts (old +1.5). An expert reads that as a contradiction. Reason: the "old way" figures are the stored
+  practice-call #1, which had look-ahead (d856c72); rebuilt point-in-time it's 52% / +0.5 (old_pit), which the card
+  didn't show.
+- The luck card called the old app score "the way we pick the #1 you see today", but with the ranker active today's #1
+  mixes in the retrained model (engine, weight 0.5). The model's own overlap-honest t (2.2, bar 3.2) wasn't shown.
+- Base rate line checked and fine: /v4/base_rates cells are one result per call; all inputs are seed_backfill
+  ("practice", 4,398 beliefs to 2026-07-24) plus 7-day checks on news calls, so "Mostly the app's practice calls" is right.
+  30d and 90d cells share n (2,651) because practice calls end Jul 24 and news calls start Oct 30 (no 30-day result yet).
+
+Changed (frontend/src/components/BrainPage.jsx only; no numbers, gates or ranking touched):
+- Ranker card: title "New: a smarter #1 pick" only when it out-scores the old way's stored numbers, otherwise "Updated #1
+  pick"; when it trails them, says the stored old score peeked at later results on practice calls and shows the old way
+  rebuilt without the peek (52%, +0.5 pts). "the new #1 beat a risk-matched S&P" (was an ambiguous "it").
+- Luck card: with the ranker active, "the old way of picking the #1 (today's #1 also mixes in the retrained model
+  below)", and the overlap line adds the retrained model's t both ways and whether it clears the bar.
+
+Checks: vite build passes, backend tests 157 passed.

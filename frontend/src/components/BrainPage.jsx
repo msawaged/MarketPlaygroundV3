@@ -347,7 +347,9 @@ export default function BrainPage({ viewOnly = false }) {
                     We've tested {Number(sk.luck.tries_ever).toLocaleString()} ways to pick the #1{sk.luck.n ? ` on ${Number(sk.luck.n).toLocaleString()} past calls they never saw` : ''}.
                     {' '}Try enough ways and one will look great by chance, so a result has to reach t {Number(sk.luck.bar_ever).toFixed(1)} (not the usual 2) before we call it more than luck.
                     {' '}{sk.luck.app_t_nw != null ? 'Counting each call as independent, ' : ''}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
-                    {sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet"}
+                    {sk.ranker?.active
+                      ? (sk.luck.app_clears ? ", including the old way of picking the #1 (today's #1 also mixes in the retrained model below)" : "; the old way of picking the #1 hasn't yet (today's #1 also mixes in the retrained model below)")
+                      : (sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet")}
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>
                   {sk.luck.app_t_nw != null && sk.luck.app_dates > 0 && (
@@ -356,26 +358,38 @@ export default function BrainPage({ viewOnly = false }) {
                       {' '}Calls made close together ride the same market for most of their {sk.days || 90} days, so they aren't independent.
                       {sk.luck.n ? ` Those ${Number(sk.luck.n).toLocaleString()} calls` : ' The test calls'} were made on {Number(sk.luck.app_dates).toLocaleString()} different days
                       {sk.luck.app_n_eff ? `, worth about ${Number(sk.luck.app_n_eff).toLocaleString()} independent calls` : ''}.
-                      {' '}Counted that way, the way we pick today's #1 scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
+                      {' '}Counted that way, {sk.ranker?.active ? 'the old way of picking the #1' : "the way we pick today's #1"} scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
                       {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways do.
+                      {sk.ranker?.active && sk.ranker.oos?.lift_t_nw != null && (
+                        <> The retrained model scores t {Number(sk.ranker.oos.lift_t_nw).toFixed(1)} counted that way (t {Number(sk.ranker.oos.lift_t || 0).toFixed(1)} the plain way){Number(sk.ranker.oos.lift_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing the bar.' : ', short of the bar.'}</>
+                      )}
                     </div>
                   )}
                   <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
                 </div>
               )}
-              {sk.ranker?.active && sk.ranker.oos?.n > 0 && (
+              {sk.ranker?.active && sk.ranker.oos?.n > 0 && (() => {
+                const r = sk.ranker, o = r.oos, old = r.old || {}, pit = r.old_pit;
+                // "Smarter" only when it out-scores the old way's stored numbers; those carry look-ahead on practice
+                // calls (d856c72), so when they look better we say why and show the old way rebuilt without it.
+                const ahead = (o.lift || 0) >= (old.lift || 0) && (o.beat || 0) >= (old.beat || 0);
+                return (
                 <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">New: a smarter #1 pick · retrained {new Date(sk.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">{ahead ? 'New: a smarter #1 pick' : 'Updated #1 pick'} · retrained {new Date(r.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                   <div className="mt-1 text-xs text-slate-200">
-                    Tested on {Number(sk.ranker.oos.n).toLocaleString()} past calls it never saw: its #1 pick beat the S&P {Math.round(sk.ranker.oos.beat * 100)}% of the time
-                    (old way: {Math.round((sk.ranker.old?.beat || 0) * 100)}%) and beat our other ideas by {pts(sk.ranker.oos.lift)} pts (old way: {pts(sk.ranker.old?.lift || 0)}).
+                    Tested on {Number(o.n).toLocaleString()} past calls it never saw: its #1 pick beat the S&P {Math.round(o.beat * 100)}% of the time
+                    and beat our other ideas by {pts(o.lift)} pts.
+                    {ahead || !pit?.n
+                      ? <> The old way: {Math.round((old.beat || 0) * 100)}% and {pts(old.lift || 0)} pts.</>
+                      : <> The old way scores {Math.round((old.beat || 0) * 100)}% and {pts(old.lift || 0)} pts as stored, but on practice calls that score peeked at results that came later; rebuilt without the peek it's {Math.round((pit.beat || 0) * 100)}% and {pts(pit.lift || 0)} pts.</>}
                     {sk.ranker.risk_check && sk.ranker.oos.beat_adj != null && (
-                      <> Adjusted for risk (each stock's beta), it beat a risk-matched S&P {Math.round(sk.ranker.oos.beat_adj * 100)}% of the time, {pts(sk.ranker.oos.lift_adj)} pts ahead of our other ideas.</>
+                      <> Adjusted for risk (each stock's beta), the new #1 beat a risk-matched S&P {Math.round(sk.ranker.oos.beat_adj * 100)}% of the time, {pts(sk.ranker.oos.lift_adj)} pts ahead of our other ideas.</>
                     )}
                     {' '}The numbers above update as new calls get graded.
                   </div>
                 </div>
-              )}
+                );
+              })()}
             </div>
           );
         })()}

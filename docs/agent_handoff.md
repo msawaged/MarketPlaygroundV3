@@ -505,3 +505,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   alone in their group. Win/revert criterion in docs/brain_upgrades.md. Research routine: compare learned-model lift
   in the next `research:ranker` run with tonight's 20:15 UTC run (ridge +0.93%, gbm +1.15%, net +1.26%).
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
+
+## 2026-11-14 night (daily polish walk)
+- /brain wording only (BrainPage.jsx): ranker card no longer says "smarter" while its numbers trail the old way's stored
+  (look-ahead) numbers; it shows `old_pit` (old way without look-ahead) beside them. Luck card names the old app score
+  "the old way" while the ranker is active and adds the ranker's `oos.lift_t_nw`. Gate/ranking untouched.
+- Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

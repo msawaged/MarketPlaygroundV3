@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-14T19:00:00Z",
- "last_run": "Checked the new honest t-stats on the Brain page. The headline still called the #1 pick's lead \"skill\" while the luck check right under it says it's not clear of luck once overlapping calls are counted (t 1.9 vs a bar of 3.2). Reworded the headline, labelled the plain count, and fixed a feed line that clashed with the \"today\" count.",
+ "updated_at": "2026-11-14T22:00:00Z",
+ "last_run": "After tonight's retrain the Brain page said \"a smarter #1 pick\" while showing numbers below the old way's. The old way's numbers had look-ahead; the card now says so, shows the fair comparison (52%, +0.5 pts), and the luck card shows the new model's honest t (2.2, short of the 3.2 bar). Also checked the new base-rate line: numbers and labels hold up.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
- "next": "Re-check Close Call odds vs YES price on a weekday with live quotes (weekend quotes made AAPL $360 show 43% odds but a 33% price).",
+ "next": "Re-check Close Call odds vs YES price on a weekday with live quotes; walk the base-rate line on signed-in screens once a weekday call is graded.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
