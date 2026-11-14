@@ -2315,6 +2315,30 @@ def test_downside_beta_rule_and_enrich_backfill(monkeypatch):
     assert num["seas"] == 0.02 and num["beta"] == 1.2
 
 
+def test_short_term_reversal_rule():
+    from backend.v4 import research
+    import datetime as _dt, random as _r
+    assert "mom20" in research.FEATS and "mom20" in research.DIRECTIONAL
+    # planted: last month's losers pay for longs and last month's winners lose for shorts; the rule (-z_mom20) finds it
+    rng = _r.Random(41)
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-rv-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            m = rng.uniform(-0.15, 0.15)
+            ex = m * 0.2 if bear else -m * 0.2
+            pid = f"p-rv-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"mom20": m}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    res = research.run(data=research.load())["results"]
+    r = res["short-term reversal (-z_mom20)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+
+
 def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
     from backend.v4 import research, brain
     import random as _r

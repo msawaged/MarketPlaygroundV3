@@ -370,3 +370,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Proposal (not built): "I'm wrong if..." one-line pre-mortem per call, in docs/feature_ideas.md.
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_downside_beta_rule_and_enrich_backfill),
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-14 morning, extra run (CTO scout routine; Murad asked for an extra run)
+- Idea 12 added: short-term reversal, fixed rule "short-term reversal (-z_mom20)" on the stored mom20 (every graded
+  pick has it; no new feature, no backfill). Gate / fit_production untouched.
+- Proposal (not built): per-feature coverage in research runs + "provisional" flag, in docs/feature_ideas.md.
+- Files: backend/v4/research.py, tests/test_v4.py (test_short_term_reversal_rule), docs/research_ideas.md,
+  docs/feature_ideas.md, docs/hq/status/scout.json.

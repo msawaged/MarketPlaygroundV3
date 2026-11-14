@@ -549,6 +549,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         # idea log, added 2026-11-14: downside risk premium — the stock that falls hardest on bad market days beyond
         # its plain beta for a long (the least exposed, for a short)
         "downside beta premium (z_dbeta)": lambda f: f["z_dbeta"],
+        # idea log, added 2026-11-14: short-term reversal (Jegadeesh 1990) — last month's loser for a long (last month's
+        # winner, for a short); uses the stored 20-session return, so nothing to backfill
+        "short-term reversal (-z_mom20)": lambda f: -f["z_mom20"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],

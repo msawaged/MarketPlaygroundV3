@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-14T07:15:00Z",
- "last_run": "Seasonality idea looks promising but isn't final yet (data still filling in). Added idea 11, downside risk: stocks that fall hardest when the market falls. Proposed an \"I'm wrong if...\" line users write on each call.",
- "working_on": "Testing the downside-risk idea on calls it never saw.",
- "next": "Next run: final seasonality result, first downside-risk result, one new idea and one feature proposal.",
+ "updated_at": "2026-11-14T07:40:00Z",
+ "last_run": "Extra run: added idea 12, short-term reversal (does last month's loser make the better pick?), and proposed showing how complete each research number's data is, so half-filled results are marked 'still filling in'.",
+ "working_on": "Testing ideas 11 (downside risk) and 12 (short-term reversal) on calls they never saw; seasonality result still filling in.",
+ "next": "Next run: record those results, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

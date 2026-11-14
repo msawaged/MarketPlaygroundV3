@@ -371,3 +371,21 @@ the app's (52.9%).
 - **Note:** until enrich finishes backfilling older picks they read `dbeta = 0`; trust the result once every graded
   pick has `dbeta`.
 - **Result:** pending.
+
+### 12. Short-term reversal: last month's losers (Jegadeesh 1990; Lehmann 1990)
+- **Added:** 2026-11-14 (extra run)
+- **Source:** Jegadeesh (1990), "Evidence of Predictable Behavior of Security Returns", Journal of Finance 45(3),
+  881-898: https://econpapers.repec.org/RePEc:bla:jfinan:v:45:y:1990:i:3:p:881-98 ; practitioner summary:
+  https://alphaarchitect.com/quantitative-momentum-research-short-term-return-reversal/
+- **Why:** a stock's return over the past month tends to reverse the next month (liquidity provision and
+  overreaction to short-term news), the reason the 12-1 momentum rules (ideas 1-3) skip the latest month. We have
+  never tested it on its own: `mom20` is stored for every pick but only appears with a *positive* sign in the
+  "mom+rs blend". A cheap, clean check of whether the latest month should count against an idea.
+- **Computed as:** the stored 20-session return `mom20` (as of the pick's date, already on every graded pick, so no
+  backfill and no new feature). Directional (bearish calls flip it, so the rule shorts last month's biggest
+  winner). Research rule: `short-term reversal (-z_mom20)`.
+- **What to look at:** raw and risk-matched lift and the luck bar (now 41 tries). The effect is about one month and
+  our hold is ~90 days, so expect it to be weak; a negative result would say the latest month should not be held
+  against an idea in our setting.
+- **Result:** pending (data complete from the first run).
+

@@ -180,3 +180,42 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   like a stop-loss instruction, so the copy must say it's the user's own test of their idea, not advice, and nothing
   trades; free text is user content (length-cap, store as text, render escaped, never send to Claude without the
   existing moderation path). No real-money, gate or look-ahead impact.
+
+---
+
+## 2026-11-14 (extra run) — Feature coverage in every research run: mark a result "provisional" until its data is filled in
+- **Area:** brain (research honesty, data quality).
+- **Status:** proposed
+- **Problem:** when a new feature is added, older graded picks read it as 0 until `research.enrich` backfills them
+  (`research.load` falls back to `NEUTRAL` or 0.0 for a key the pick never stored), so a rule scored on half-filled
+  data is scored partly on placeholders. Today 5,279 graded picks still lack `seas` (prod query 2026-11-14), yet the
+  06:47 UTC run reports the seasonality rule at t 2.73 with nothing in `research:ranker` saying the input is
+  incomplete; `dbeta` (added today) starts at 0% filled. The only coverage number stored is `beta_coverage`. Every
+  routine checks completeness with ad-hoc SQL over `picks.features` (a `LIKE` scan joined to `outcomes`), the kind
+  of query that once caused an outage. The learned ridge / gbm / net also train on those placeholder zeros.
+- **Evidence / sources:**
+  - Breck, Polyzotis, Roy, Whang & Zinkevich (2019), "Data Validation for Machine Learning", MLSys: Google's TFX
+    validates every training batch against an expected schema (presence, missing-value share, distribution drift)
+    before a model sees it, because silent data gaps were a leading cause of bad models:
+    https://research.google/pubs/data-validation-for-machine-learning/ ; summary:
+    https://blog.acolyer.org/2019/06/05/data-validation-for-machine-learning/
+  - Schelter et al. (2018), "Automating Large-Scale Data Quality Verification" (Amazon Deequ): completeness metrics
+    as unit tests on data: https://cdn.amazon.science/9f/b6/15099d504c54bec20ec6a6c2eb3d/deequ-data-quality-validation-for-machine-learning-pipelines.pdf
+- **Build sketch (size S):**
+  - `backend/v4/research.py` `load()`: while building each candidate row (it already reads `num`), count per key in
+    FEATS whether the pick stored it (and whether it's exactly 0.0). `run()` adds `coverage`: {feature: share of
+    test-period candidates that stored it} plus `zero_share`, computed in the same pass (no extra query, a few
+    hundred bytes in the kv). Each fixed rule gets the features it reads (a small dict next to `fixed`) and a
+    `provisional: true` flag when any of them is under 99% covered.
+  - `research.enrich` returns `remaining` per feature (already counts `missing`), stored in kv `research:enrich` by
+    the hourly job, so routines read completeness from the kv instead of scanning `picks`.
+  - `docs/research_ideas.md`: results quote coverage; the brain page lists provisional rules as "still filling in".
+  - Reporting only: `_passes`, `fit_production`, `RISK_COVERAGE` and ranker v2's activation rules stay as they are.
+    (Whether learned models should drop features under some coverage is a separate, deliberate decision for Murad,
+    written up in docs/brain_upgrades.md.)
+  - Test: synthetic data where half the picks lack a key → coverage 0.5, rule flagged provisional; full data → 1.0, not.
+- **How we'd know it worked:** no idea-log result is recorded as final while its feature is under 99% covered; no
+  routine needs the `LIKE` scan any more; a sudden drop in a feature's coverage or a jump in its zero share (e.g.
+  a data-feed outage) shows up in the next run instead of quietly shifting results.
+- **Risks:** tiny (reporting only); the "exactly 0" share is a heuristic, since some features can truly be 0; keep
+  the payload small for the 512Mi jobs (counts only, no per-pick lists).
