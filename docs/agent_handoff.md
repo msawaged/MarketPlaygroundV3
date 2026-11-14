@@ -309,3 +309,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Close Call odds now come from the tight call spread around the line (skew included, `digital_from_spread`);
   single-vol N(d2) is only a labelled fallback. Quote returns `odds_source` and `market_p_flat_vol`. Screen labels
   odds "risk-neutral" and says practice prices are before bid/ask costs.
+
+## 2026-11-13 night (build chat, CTO): options card numbers now exact
+- library.economics read max loss / max gain off a 2,400-point grid that stepped over the strikes, so payoffs that
+  peak or bottom exactly at a strike were misstated by up to ~1% (e.g. a $480 straddle showed max loss $2,344 vs
+  $2,372 actually paid; butterfly max gain understated). Now evaluated exactly at 0, every strike and a far point,
+  breakevens solved per segment. Independent audit of 22 structures x 45 price/vol/horizon cases: 0 mismatches
+  (was 36). Test: test_economics_exact_at_strikes.

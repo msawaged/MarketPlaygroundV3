@@ -3081,3 +3081,21 @@ def test_yesno_digital_from_call_spread():
     assert yesno.digital_from_spread(calls, 120) is None                         # outside the listed strikes
     assert yesno.digital_from_spread([{"strike": 95, "bid": 1, "ask": 1.1}, {"strike": 105, "bid": 2, "ask": 2.1}], 100) is None  # nonsense quotes
     assert yesno.digital_from_spread([{"strike": 50, "bid": 6, "ask": 6.2}, {"strike": 150, "bid": 1, "ask": 1.1}], 100) is None   # too wide
+
+
+def test_economics_exact_at_strikes():
+    """Peaks and troughs sit on strikes: a straddle's max loss is exactly the premium paid, a butterfly's
+    max gain is exactly (wing width - debit) x 100 (the old 2,400-point grid stepped over them)."""
+    from backend.v4 import library
+    k = 480.0
+    straddle = [{"action": "Buy", "option_type": "Call", "strike_price": k, "est_premium": 12.34, "quantity": 1, "instrument": "option"},
+                {"action": "Buy", "option_type": "Put", "strike_price": k, "est_premium": 11.38, "quantity": 1, "instrument": "option"}]
+    e = library.economics(straddle, 481.7)
+    assert e["max_loss"] == pytest.approx((12.34 + 11.38) * 100) and e["max_profit"] == "Unlimited"
+    assert e["break_even"] == f"{round(k - 23.72, 2)} / {round(k + 23.72, 2)}"
+    fly = [{"action": "Buy", "option_type": "Call", "strike_price": 90.0, "est_premium": 6.0, "quantity": 1, "instrument": "option"},
+           {"action": "Sell", "option_type": "Call", "strike_price": 95.0, "est_premium": 3.2, "quantity": 2, "instrument": "option"},
+           {"action": "Buy", "option_type": "Call", "strike_price": 100.0, "est_premium": 1.6, "quantity": 1, "instrument": "option"}]
+    e = library.economics(fly, 93.0)
+    debit = 6.0 - 6.4 + 1.6
+    assert e["max_profit"] == pytest.approx((5 - debit) * 100) and e["max_loss"] == pytest.approx(debit * 100)

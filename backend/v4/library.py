@@ -119,17 +119,24 @@ def payoff_at_expiry(legs: list[dict], s: float, entry: float) -> float:
 
 
 def economics(legs: list[dict], price: float) -> dict:
-    """Max profit / max loss / breakevens / capital at risk, read off the payoff."""
-    n = 2400
-    lo, hi = price * 0.001, price * 3
-    xs = [lo + (hi - lo) * i / n for i in range(n + 1)]
+    """Max profit / max loss / breakevens / capital at risk, read off the payoff.
+
+    The payoff at expiry is piecewise linear with kinks only at strikes, so it is evaluated exactly at
+    0, every strike and a far point (3x price): peaks and troughs sit on strikes (a straddle's max loss, a
+    butterfly's max gain), and breakevens are solved exactly on each straight segment. 2026-11-13: replaced a
+    2,400-point grid that stepped over the strikes and misstated those numbers by up to ~1%."""
+    ks = sorted({float(l["strike_price"]) for l in legs if l.get("instrument") != "stock" and l.get("strike_price")})
+    hi = max([price * 3] + [k * 1.5 for k in ks])
+    xs = sorted({0.0, hi, *ks})
     ys = [payoff_at_expiry(legs, x, price) for x in xs]
     bes = []
     for i in range(1, len(xs)):
-        if (ys[i - 1] < 0) != (ys[i] < 0) and ys[i] != ys[i - 1]:
-            t = ys[i - 1] / (ys[i - 1] - ys[i])
+        y0, y1 = ys[i - 1], ys[i]
+        if (y0 < 0) != (y1 < 0) and y1 != y0:
+            t = y0 / (y0 - y1)
             bes.append(round(xs[i - 1] + t * (xs[i] - xs[i - 1]), 2))
-    unlimited = ys[-1] > ys[-60] + 1e-6
+    slope_far = payoff_at_expiry(legs, hi + 1.0, price) - ys[-1]
+    unlimited = slope_far > 1e-6
     max_profit = "Unlimited" if unlimited else round(max(ys), 2)
     max_loss = round(-min(ys), 2)
     stock_cost = sum(l.get("quantity", 100) * price for l in legs if l.get("instrument") == "stock")
