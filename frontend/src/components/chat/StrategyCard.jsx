@@ -584,6 +584,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 ))}
               </div>
               <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility (no live option quotes)"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}%)` : ''}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
+              {isOptions && pick.trade?.greeks && <GreeksPanel g={pick.trade.greeks} n={contracts} ticker={pick.ticker} />}
               {isOptions && pick.trade?.exercise?.length > 0 && (
                 <details className="group rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 -mt-1">
                   <summary className="cursor-pointer list-none flex items-center justify-between gap-2 text-xs font-semibold text-slate-200">
@@ -682,5 +683,38 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
         Ideas for education, not investment advice. Prices are delayed; option prices are estimates. Trading involves risk, including loss of what you invest.
       </div>
     </motion.div>
+  );
+}
+
+// Position Greeks today (backend strategy.position_greeks: Black-Scholes at the card's own vol and expiry), scaled to
+// the chosen contract count. Plain words for each, so a beginner and a desk read the same numbers.
+function GreeksPanel({ g, n, ticker }) {
+  const sgn = (x, d = 0) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
+  const usd = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}$${Math.abs(x) >= 100 ? Math.round(Math.abs(x)).toLocaleString() : Math.abs(x).toFixed(2)}`;
+  const d = g.delta * n, ga = g.gamma * n, th = g.theta * n, ve = g.vega * n;
+  const gd = Math.abs(ga) >= 10 ? 0 : Math.abs(ga) >= 1 ? 1 : 2;
+  const rows = [
+    { k: 'Delta', v: `${sgn(d)} sh`, t: `Moves like ${d < 0 ? 'being short' : 'owning'} ${Math.abs(Math.round(d))} share${Math.abs(Math.round(d)) === 1 ? '' : 's'}: about ${usd(Math.round(d)).replace('.00', '')} if ${ticker} rises $1.` },
+    { k: 'Gamma', v: sgn(ga, gd), t: `Delta changes by about ${Math.abs(ga).toFixed(gd)} shares for each $1 ${ticker} moves${ga < 0 ? ', against you' : ''}.` },
+    { k: 'Theta', v: `${usd(th)}/day`, t: th < 0 ? `Time decay: about ${usd(th)} a day if nothing else changes.` : `Time works for you: about ${usd(th)} a day if nothing else changes.` },
+    { k: 'Vega', v: usd(ve), t: `About ${usd(ve)} if implied volatility rises 1 point${ve < 0 ? ' (you gain if it falls)' : ''}.` },
+  ];
+  return (
+    <details className="group rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 -mt-1">
+      <summary className="cursor-pointer list-none flex items-center justify-between gap-2 text-xs font-semibold text-slate-200">
+        <span>Greeks today <span className="font-normal text-slate-400">· delta {sgn(d)} sh · theta {usd(th)}/day</span></span>
+        <span className="text-slate-500 group-open:rotate-180 transition-transform" aria-hidden>▾</span>
+      </summary>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        {rows.map((r) => (
+          <div key={r.k} className="rounded-md bg-slate-900/50 p-2">
+            <dt className="text-[10px] uppercase tracking-wide text-slate-500">{r.k}</dt>
+            <dd className="text-sm font-bold tabular-nums text-slate-100">{r.v}</dd>
+            <dd className="text-[10.5px] leading-snug text-slate-400 mt-0.5">{r.t}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-[10.5px] text-slate-500 mt-2">For {n} contract{n === 1 ? '' : 's'}, Black-Scholes at the card's {Math.round(g.vol * 100)}% volatility with {g.days} days to expiry. They change as the price moves and time passes; the chart shows the payoff at expiration.</p>
+    </details>
   );
 }

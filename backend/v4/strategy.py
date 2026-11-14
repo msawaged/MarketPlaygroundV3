@@ -127,6 +127,45 @@ def bs_price(spot: float, strike: float, t_years: float, vol: float, kind: str) 
     return strike * disc * _ncdf(-d2) - spot * _ncdf(-d1)
 
 
+def position_greeks(legs: list[dict], spot: float, vol: float, as_of: date) -> Optional[dict]:
+    """
+    Black-Scholes Greeks of one unit of the position (options x100, stock legs in shares), at the same spot,
+    vol and time to expiry the card's prices use. delta: share-equivalents; gamma: change in delta per $1 move;
+    theta: $ per calendar day; vega: $ per 1 vol point. None if there are no option legs.
+    """
+    opts = [l for l in legs if l.get("instrument") == "option"]
+    if not opts or spot <= 0 or vol <= 0:
+        return None
+    exp = date.fromisoformat(opts[0]["expiration"])
+    days = max((exp - as_of).days, 1)
+    t = days / 365.0
+    sq = vol * math.sqrt(t)
+    disc = math.exp(-RISK_FREE * t)
+    delta = gamma = theta = vega = 0.0
+    for l in legs:
+        sign = 1.0 if l.get("action") == "Buy" else -1.0
+        if l.get("instrument") == "stock":
+            delta += sign * l.get("quantity", 100)
+            continue
+        k = float(l["strike_price"])
+        kind = l["option_type"].lower()
+        m = sign * l.get("quantity", 1) * 100
+        d1 = (math.log(spot / k) + (RISK_FREE + 0.5 * vol * vol) * t) / sq
+        d2 = d1 - sq
+        pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+        decay = -spot * pdf * vol / (2 * math.sqrt(t))
+        if kind == "call":
+            dl, th = _ncdf(d1), decay - RISK_FREE * k * disc * _ncdf(d2)
+        else:
+            dl, th = _ncdf(d1) - 1.0, decay + RISK_FREE * k * disc * _ncdf(-d2)
+        delta += m * dl
+        gamma += m * pdf / (spot * sq)
+        theta += m * th / 365.0
+        vega += m * spot * pdf * math.sqrt(t) / 100.0
+    return {"delta": round(delta, 1), "gamma": round(gamma, 2), "theta": round(theta, 2), "vega": round(vega, 2),
+            "vol": round(vol, 4), "days": days}
+
+
 def strike_step(price: float) -> float:
     if price < 25:
         return 0.5
@@ -256,7 +295,8 @@ def build_trade(structure: str, ticker: str, price: float, vol: float, as_of: da
     return {"type": structure, "expiration": exp.isoformat(), "trade_legs": legs,
             "net_cost": econ["net_cost"], "capital": econ["capital"], "estimated": True, "vol": round(vol, 4),
             "max_loss": econ["max_loss"], "max_profit": econ["max_profit"], "break_even": econ["break_even"],
-            "plain": library.PLAIN.get(structure, ""), "exercise": library.exercise_notes(legs, ticker)}
+            "plain": library.PLAIN.get(structure, ""), "exercise": library.exercise_notes(legs, ticker),
+            "greeks": position_greeks(legs, price, vol, as_of)}
 
 
 def structure_return(trade: dict, entry_price: float, exit_price: float, entry: date, at: date, vol: float) -> Optional[float]:

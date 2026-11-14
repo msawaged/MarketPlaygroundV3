@@ -377,3 +377,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Proposal (not built): per-feature coverage in research runs + "provisional" flag, in docs/feature_ideas.md.
 - Files: backend/v4/research.py, tests/test_v4.py (test_short_term_reversal_rule), docs/research_ideas.md,
   docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-14 (Builder routine): option cards show position Greeks
+- Expert-review checklist item ("Greeks ... on option ideas must match the numbers on the card").
+  `strategy.position_greeks(legs, spot, vol, as_of)`: delta (share-equivalents, stock legs included), gamma (per $1),
+  theta ($/calendar day), vega ($ per 1 vol pt) for one unit, Black-Scholes at the same vol/time/RISK_FREE the card's
+  premiums use. `build_trade` adds it as `trade.greeks` (None for shares). Pricing/grading unchanged.
+- StrategyCard: collapsible "Greeks today · delta · theta" panel (2x2, plain words for each) between the scenarios and
+  the exercise panel, scaled to the chosen contract count. Cards cached before today just don't show it.
+- Test: test_position_greeks_match_card_pricing (finite differences of bs_price; straddle/condor/covered-call signs).
+- Files: backend/v4/strategy.py, backend/v4/tests/test_v4.py, frontend/src/components/chat/StrategyCard.jsx,
+  docs/expert_review.md, docs/hq/status/builder.json.

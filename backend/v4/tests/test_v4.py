@@ -3305,3 +3305,30 @@ def test_exercise_notes_american_style():
     assert "The cash set aside covers it." in csp
     fly = " ".join(strategy.build_trade("Long Call Butterfly", "AAPL", 230.0, 0.3, date(2026, 11, 13), 90)["exercise"])
     assert "200 shares" in fly
+
+
+def test_position_greeks_match_card_pricing():
+    """Card Greeks are Black-Scholes at the card's own vol/time: check against finite differences of bs_price."""
+    as_of, spot, vol = date(2026, 11, 16), 200.0, 0.3
+    for structure in ("Long Call", "Bull Call Spread", "Long Straddle", "Iron Condor"):
+        tr = strategy.build_trade(structure, "XYZ", spot, vol, as_of, 90)
+        g = tr["greeks"]
+        legs = tr["trade_legs"]
+        t = g["days"] / 365.0
+
+        def value(s, v=vol, tt=t):
+            return sum((1 if l["action"] == "Buy" else -1) * l.get("quantity", 1) * 100
+                       * strategy.bs_price(s, l["strike_price"], tt, v, l["option_type"].lower()) for l in legs)
+        h = 0.01
+        assert g["delta"] == pytest.approx((value(spot + h) - value(spot - h)) / (2 * h), abs=0.2)
+        assert g["vega"] == pytest.approx((value(spot, vol + 0.005) - value(spot, vol - 0.005)), abs=0.05)
+        assert g["theta"] == pytest.approx(value(spot, tt=t - 1 / 365) - value(spot), abs=0.05)
+        assert g["gamma"] == pytest.approx((value(spot + 1) - 2 * value(spot) + value(spot - 1)), abs=0.02)
+    straddle = strategy.build_trade("Long Straddle", "XYZ", spot, vol, as_of, 90)["greeks"]
+    assert abs(straddle["delta"]) < 20 and straddle["gamma"] > 0 and straddle["theta"] < 0 and straddle["vega"] > 0
+    condor = strategy.build_trade("Iron Condor", "XYZ", spot, vol, as_of, 90)["greeks"]
+    assert condor["theta"] > 0 and condor["vega"] < 0
+    assert strategy.build_trade("Buy Stock", "XYZ", spot, vol, as_of, 90).get("greeks") is None
+    cc = strategy.build_trade("Covered Call", "XYZ", spot, vol, as_of, 90)
+    call = [l for l in cc["trade_legs"] if l.get("instrument") == "option"][0]
+    assert 0 < cc["greeks"]["delta"] < 100 and cc["greeks"]["theta"] > 0

@@ -19,4 +19,7 @@ What a derivatives desk will check first (fix or label honestly; never hide):
 - **Statistics.** Out-of-sample only, embargoed, risk-matched; overlapping 90-day windows inflate t-stats (see the
   Newey-West proposal in feature_ideas.md). Never round a coin-flip into an "edge".
 - **Greeks and payoff diagrams** on option ideas must match the numbers on the card (max loss, max gain, breakeven).
+  Done 2026-11-14 (Builder): every option card has a "Greeks today" panel (`strategy.position_greeks`: delta in
+  shares, gamma, theta $/day, vega $/vol pt, Black-Scholes at the card's own vol and expiry, scaled to the contract
+  count); tested against finite differences of the same `bs_price` the card's premiums use.
 - Plain words for users, but nothing a professional would call wrong.
