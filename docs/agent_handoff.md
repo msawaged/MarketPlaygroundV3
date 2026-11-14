@@ -418,3 +418,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   a fixed "90 days" (WrongIf gets a `horizonDays` prop), and My beliefs says the line is checked "against each daily
   close after the day of your call" (matches engine.tripwire, which skips the call date's own close). No backend change.
 - Files: frontend chat/WrongIf.jsx, ChatInterface.jsx, MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 midday (health routine)
+- All healthy. Render emailed that the workspace has used >70% of its 500 free build pipeline minutes this month.
+  Every normal push to v4-polish builds backend + web (+ crons), so please batch code changes into fewer pushes and
+  keep docs-only pushes on "[skip render]" (alone in their push, per the deploy note above). No code changed.
+- Files: docs/agent_handoff.md, docs/hq/status/health.json.
