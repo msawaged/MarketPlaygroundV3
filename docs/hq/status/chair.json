@@ -1,10 +1,27 @@
 {
  "key": "chair",
- "updated_at": "2026-11-13T23:50:00Z",
- "last_run": "Joined the table.",
+ "updated_at": "2026-11-14T06:30:00Z",
+ "last_run": "Murad asked where his merch work is. Found it and noted it here so HQ doesn't miss it again.",
  "working_on": "Watching the meeting thread for your messages.",
  "next": "Check the thread at the top of the next hour.",
- "needs_from_murad": [],
+ "needs_from_murad": [
+  "Merch: open a Printful account, share the MuLabs logo files, and OK a small sample budget.",
+  "Merch is not an HQ agent yet. If you want it at the table, ask the build chat to add a merch agent."
+ ],
  "read_up_to": 0,
- "replies": []
+ "known_projects": {
+  "merch": {
+   "note": "MuLabs merch lives in Claude pages, not in this repo. Two lines: clean MuLabs + comic 'Mumu the cow'. Catalog drafted; next is Mumu mascot designs. To resume in a chat: 'merch agent, pick up where we left off'.",
+   "playbook": "https://claude.ai/artifact/X7kpDbSvVUSX3QmmXrJxRt",
+   "drop_1_designs": "https://claude.ai/artifact/KSpZKZAMADWyeBTrGQ9NPD",
+   "sourcing": "https://claude.ai/artifact/56QBXkoREc7po1qWfNnu5W"
+  }
+ },
+ "replies": [
+  {
+   "re": "Where is my merch and site?",
+   "body": "Merch lives in three Claude pages: the Playbook (main plan), Drop 1 designs, and Sourcing. Status Nov 13: catalog drafted, Mumu mascot designs next, waiting on you for Printful, logo files and a sample budget OK.",
+   "at": "2026-11-14T06:30:00Z"
+  }
+ ]
 }
