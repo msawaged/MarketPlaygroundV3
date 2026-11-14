@@ -1,6 +1,6 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T11:30:00Z",
+ "updated_at": "2026-11-14T08:22:00Z",
  "last_run": "Option cards now show the position's Greeks today: delta (moves like owning N shares), gamma, theta (dollars a day of time decay) and vega (dollars per volatility point), each in plain words, scaled to the number of contracts. Computed with the same volatility and expiry as the card's prices and checked against them in a test. Another of Prof Brown's checklist items.",
  "working_on": "Nothing open.",
  "next": "Next build in about 3 hours: the remaining expert-review items or the calibration proposal.",
