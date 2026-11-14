@@ -56,7 +56,7 @@ function WrongIfStatus({ w, onEdit }) {
               ? <span className="text-amber-200 font-semibold">Crossed on {shortDate(w.crossed_on)} (closed at ${Number(w.crossed_close).toFixed(2)}){w.past_now ? ', and still past it now' : ', back on the other side now'}.</span>
               : w.checked_through
                 ? <span className="text-slate-400">Not crossed (daily closes checked through {shortDate(w.checked_through)}){w.past_now ? `, but it's ${side} the line right now` : ''}.</span>
-                : <span className="text-slate-400">Checked from the first close after your call.</span>}
+                : <span className="text-slate-400">Checked against each daily close after the day of your call.</span>}
           </span>
         </div>
       )}
@@ -186,7 +186,7 @@ export default function MyCallsPage() {
                 </div>
               )}
               {editing === b.belief_id ? (
-                <WrongIf beliefId={b.belief_id} picks={b.picks} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
+                <WrongIf beliefId={b.belief_id} picks={b.picks} horizonDays={b.horizon_days} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
               ) : b.wrong_if ? (
                 <WrongIfStatus w={b.wrong_if} onEdit={() => setEditing(b.belief_id)} />
               ) : (

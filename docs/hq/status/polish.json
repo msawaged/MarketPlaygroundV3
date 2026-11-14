@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-14T09:55:00Z",
- "last_run": "Checked the new Greeks on option cards (numbers are right). Fixed two things: the Portfolio said new trades wait for Monday's open, but practice options open right away, so it now says that; and near-zero deltas no longer read '−0 shares'.",
+ "updated_at": "2026-11-14T12:55:00Z",
+ "last_run": "Checked the new \"I'm wrong if...\" note on calls. Numbers and the price-line check are right; fixed two wording slips: it always said 'imagine it's 90 days from now' even on 1-year calls, and My beliefs now says exactly which closes the price line is checked against.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Re-check Close Call odds vs YES price on a weekday with live quotes (weekend quotes made AAPL $360 show 43% odds but a 33% price).",
  "needs_from_murad": [],

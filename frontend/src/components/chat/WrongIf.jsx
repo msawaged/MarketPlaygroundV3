@@ -5,7 +5,14 @@ import { saveWrongIf } from '../../lib/api';
 
 const MAX = 140;
 
-export default function WrongIf({ beliefId, picks = [], initial = null, compact = false, inChat = false, onSaved, onCancel }) {
+// Same wording as the card's horizon ("~3 months", "~12 months"), so the pre-mortem looks ahead as far as the call does.
+function horizonText(days) {
+  const d = Number(days) || 0;
+  if (d <= 0) return null;
+  return d >= 60 ? `${Math.round(d / 30)} months` : `${d} days`;
+}
+
+export default function WrongIf({ beliefId, picks = [], horizonDays = null, initial = null, compact = false, inChat = false, onSaved, onCancel }) {
   const lineable = picks.filter((p) => (p.direction === 'bullish' || p.direction === 'bearish') && Number(p.price || p.entry_price) > 0);
   const [open, setOpen] = useState(!compact);
   const [text, setText] = useState(initial?.text || '');
@@ -72,7 +79,7 @@ export default function WrongIf({ beliefId, picks = [], initial = null, compact 
   return (
     <div className="mt-3 rounded-2xl border border-slate-700 bg-slate-900/80 p-3">
       <div className="font-bold text-sm">I'm wrong if…</div>
-      <p className="mt-0.5 text-xs text-slate-400">Imagine it's 90 days from now and this call lost. Why? Write it down now and check it later. Optional.</p>
+      <p className="mt-0.5 text-xs text-slate-400">{horizonText(horizonDays) ? `Imagine it's ${horizonText(horizonDays)} from now and this call lost.` : 'Imagine this call lost.'} Why? Write it down now and check it later. Optional.</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {starters.map((s) => (
           <button key={s.label} type="button" onClick={s.apply} className="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-200 hover:border-amber-300">…{s.label}</button>

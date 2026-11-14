@@ -340,3 +340,28 @@ Changed:
 - Test: test_practice_options_open_value_close_and_expire checks the open/closed message.
 
 Checks: vite build passes, backend tests 151 passed.
+
+## 2026-11-14 (afternoon run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~12:25
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+"48 today" on /brain checks out against /v4/brain activity (8 hourly rounds of 6 since New York midnight).
+Signed-in screens locally (offline server, throwaway SQLite): a bullish 3-month shares call (NVDA/AMD/AVGO) and a
+bearish 1-year options call (CMG Bear Put Spread), then My beliefs. No new HQ messages from Murad. Focus: the Builder's
+new "I'm wrong if..." (ccb4e74).
+
+Found:
+- The pre-mortem always said "Imagine it's 90 days from now and this call lost", even on a call the card itself labels
+  "~12 months" (1-year horizon) or "1 month".
+- My beliefs said the price line is "Checked from the first close after your call", but engine.tripwire starts strictly
+  after the call's date, so a call made Monday at 10am skips Monday's 4pm close.
+- Numbers checked: CMG $38/$28 Bear Put Spread $4.26 - $0.84 = $342, max gain $658, breakeven $34.58, "CMG falls 20%"
+  +$418 (spread worth $760); starter price lines are 10% past the entry ($185 -> $166.50, $38 -> $41.80); the saved
+  line, the backend check (bullish below entry, bearish above) and the My beliefs text agree.
+
+Changed:
+- WrongIf.jsx: takes `horizonDays` and says "Imagine it's ~N months/days from now" with the card's own horizon wording
+  (fallback "Imagine this call lost."); ChatInterface passes interpretation.horizon_days, MyCallsPage passes horizon_days.
+- MyCallsPage: "Checked against each daily close after the day of your call." Tripwire logic unchanged.
+
+Checks: vite build passes, backend tests 152 passed.

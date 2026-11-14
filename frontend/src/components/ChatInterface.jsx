@@ -350,7 +350,7 @@ export default function ChatInterface() {
                         prefs={m.prefs} onTune={(p) => send(m.belief, m.risk || undefined, { ...p, budget_usd: m.prefs?.budget_usd || 0, horizon_days: m.prefs?.horizon_days || 0 })} />
                     )}
                     {m.data?.belief_id && (m.data.picks || []).some((p) => p.shown) && (
-                      <WrongIf key={m.data.belief_id} beliefId={m.data.belief_id} picks={(m.data.picks || []).filter((p) => p.shown).slice(0, 3)} compact inChat />
+                      <WrongIf key={m.data.belief_id} beliefId={m.data.belief_id} picks={(m.data.picks || []).filter((p) => p.shown).slice(0, 3)} horizonDays={m.data.interpretation?.horizon_days} compact inChat />
                     )}
                   </div>
                 )}

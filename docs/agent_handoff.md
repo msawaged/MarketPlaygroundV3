@@ -412,3 +412,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   quoted, e.g. "previous push ended on a [skip render] commit"). Put a docs-only "[skip render]" commit in its own
   push, never on top of code. This run's code went live via a manual deploy of cf8f44b (backend + web); the two crons
   pick up the code on the next normal push (they don't use the new code).
+
+## 2026-11-14 afternoon (daily polish walk)
+- "I'm wrong if..." (Builder's ccb4e74): wording only. The pre-mortem prompt now uses the call's own horizon instead of
+  a fixed "90 days" (WrongIf gets a `horizonDays` prop), and My beliefs says the line is checked "against each daily
+  close after the day of your call" (matches engine.tripwire, which skips the call date's own close). No backend change.
+- Files: frontend chat/WrongIf.jsx, ChatInterface.jsx, MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
