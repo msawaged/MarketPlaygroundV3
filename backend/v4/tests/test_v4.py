@@ -2615,6 +2615,36 @@ def test_app_baseline_without_look_ahead_uses_only_earlier_track_records():
     assert early["cands"][1]["top"] and pick(early) == 0     # nothing graded before 2025-01-01: Claude's order
     assert late["cands"][1]["top"] and pick(late) == 1       # by June, BBB's earlier win was already graded
     assert live["cands"][1]["top"] and pick(live) == 1       # real-time calls were point-in-time: stored #1 stays
+    # the score a mix is tested with: the same point-in-time app score, without the engine's sort offsets
+    assert early["cands"][0]["pit_app"] == 0.505 and early["cands"][1]["pit_app"] == 0.5
+    assert [c["pit_app"] for c in live["cands"]] == [c["app"] for c in live["cands"]]   # real time: stored score
+
+
+def test_ranker_mixes_are_tested_on_the_app_score_without_look_ahead():
+    # 2026-11-14 brain upgrade: the "+ app (25%)" mixes were mixed into the STORED app score of practice calls, which
+    # carries look-ahead, so a model with no edge inherited the app's inflated lift and cleared the gate offline.
+    # Planted: the stored score knows the outcome, Claude's own score is noise, the features carry nothing.
+    from backend.v4 import research
+    rng = random.Random(21)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(300):
+        bid, asof = f"b-mixpit-{k}", (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", "2026-11-01T00:00:00", asof, "seed_backfill", "bullish"))
+        exs = [rng.gauss(0, 0.05) for _ in range(3)]
+        order = sorted(range(3), key=lambda j: -exs[j])
+        for j in range(3):
+            pid = f"p-mixpit-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank, claude_score, final_score) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"Z{k}{j}", "bullish", asof, 10.0, "{}", order.index(j), rng.uniform(0.4, 0.6), 0.5 + exs[j]))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, "2027-06-01", 10.0, 0.0, 0.0, exs[j], "2027-06-01"))
+    r = research.run(data=research.load())["results"]
+    assert r["app (current #1)"]["lift"] > 0.03                   # the stored #1 has look-ahead...
+    assert abs(r["app, no look-ahead"]["lift"]) < 0.015            # ...the point-in-time one doesn't
+    mix = r["ridge (learned)" + research.MIX]
+    assert mix["n"] == r["ridge (learned)"]["n"] > 100
+    assert abs(mix["lift"]) < 0.015                                # the mix no longer inherits it
 
 
 def test_migration_target_parses_add_column():

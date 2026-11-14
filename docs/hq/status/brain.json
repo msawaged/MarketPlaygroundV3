@@ -1,9 +1,9 @@
 {
  "key": "brain",
- "updated_at": "2026-11-13T20:53:39Z",
- "last_run": "Strategists now judge their #1 pick within the belief's own direction (removed a small leak). Fitness may dip a little; that's expected.",
- "working_on": "Brain accuracy.",
- "next": "Monday 1:39 pm upgrade.",
+ "updated_at": "2026-11-14T07:40:00Z",
+ "last_run": "Closed a hindsight leak in how the 'blended' rankers are tested. They were tested on top of an app score that secretly knew later results, so they looked better than they are. Now they are tested on the score the app really had that day. Expect their numbers to drop tonight; that's the honest picture.",
+ "working_on": "Brain accuracy: making sure nothing reaches users on borrowed hindsight.",
+ "next": "Next weekly upgrade. Early December: the first real-time check of the blended rankers can run.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

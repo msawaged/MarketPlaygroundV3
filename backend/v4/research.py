@@ -204,19 +204,16 @@ def _pit_index(rows: list) -> dict:
     return out
 
 
-def _pit_score(pit: dict | None, r: dict, top: bool, app: float) -> float:
-    """The app's score for this idea as it would have been on the call's own date: Claude's score plus the
-    track-record nudge (learning.ticker_adjustment) from outcomes graded before that date, with the user's
-    direction leading (as engine.process_belief sorts). Practice calls were scored long after their date, so their
-    stored final_score / final_rank used track records that include later outcomes (look-ahead). Calls made in real
-    time already were point-in-time: their stored #1 stays the #1. Approximation: the nudge here counts the ticker's
-    outcomes under any theme (the live one filters by the belief's themes) and ignores user votes."""
+def _pit_app(pit: dict | None, r: dict, app: float) -> float:
+    """The app's own score for this idea on the call's date, before the engine's direction-first sort: what the
+    engine mixes a live ranker into (engine.process_belief: final_score before _leads). Practice calls: Claude's
+    score + the track-record nudge from outcomes graded before the call's date (see _pit_score); calls made in real
+    time: their stored final_score, which was already point-in-time."""
     if pit is None or r.get("source") != "seed_backfill":
-        return 100.0 + app if top else app
+        return app
     from bisect import bisect_left
     from . import learning
-    d, core = str(r["direction"]).lower(), str(r.get("bdir") or "").lower()
-    lead = 1.0 if core not in ("bullish", "bearish") or d == core else 0.0
+    d = str(r["direction"]).lower()
     stat = None
     hit = pit.get(r.get("ticker"))
     if hit:
@@ -226,7 +223,21 @@ def _pit_score(pit: dict | None, r: dict, top: bool, app: float) -> float:
             stat = {"n": i, "raw_mean": rs[i] / max(rc[i], 1),
                     "n_sel_bull": bc[i], "sel_bull": bs[i] / bc[i] if bc[i] else None,
                     "n_sel_bear": ec[i], "sel_bear": es[i] / ec[i] if ec[i] else None}
-    return 10.0 * lead + float(r.get("claude_score") or 0.0) + learning.ticker_adjustment(stat, d)
+    return float(r.get("claude_score") or 0.0) + learning.ticker_adjustment(stat, d)
+
+
+def _pit_score(pit: dict | None, r: dict, top: bool, app: float) -> float:
+    """The app's score for this idea as it would have been on the call's own date: Claude's score plus the
+    track-record nudge (learning.ticker_adjustment) from outcomes graded before that date, with the user's
+    direction leading (as engine.process_belief sorts). Practice calls were scored long after their date, so their
+    stored final_score / final_rank used track records that include later outcomes (look-ahead). Calls made in real
+    time already were point-in-time: their stored #1 stays the #1. Approximation: the nudge here counts the ticker's
+    outcomes under any theme (the live one filters by the belief's themes) and ignores user votes."""
+    if pit is None or r.get("source") != "seed_backfill":
+        return 100.0 + app if top else app
+    d, core = str(r["direction"]).lower(), str(r.get("bdir") or "").lower()
+    lead = 1.0 if core not in ("bullish", "bearish") or d == core else 0.0
+    return 10.0 * lead + _pit_app(pit, r, app)
 
 
 def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -> list[dict]:
@@ -278,6 +289,8 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
         core = str(r.get("bdir") or "").lower()
         b["cands"].append({"f": f, "ex": ex, "exa": exa, "has_beta": beta is not None, "top": top,  # 0 is the #1 shown
                            "app": app, "pit": _pit_score(pit, r, top, app),
+                           # the app score a mix is tested with: point-in-time, as a live mix would get it
+                           "pit_app": _pit_app(pit, r, app),
                            # the engine always shows an idea in the belief's own direction first (engine._leads)
                            "lead": core not in ("bullish", "bearish") or str(r["direction"]).lower() == core})
     _set_keys()
@@ -560,7 +573,10 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             off.setdefault(name, []).append(int(np.argmax(sc)) != i)
             res[name].append(_pick(b, b["cands"][i]))
             spreads.setdefault(name, []).append(float(sc[i] - np.mean(sc)))
-            mx = mix_scores([c.get("app", 0.0) for c in b["cands"]], sc, MIX_WEIGHT)  # what would go live
+            # what would go live: the model mixed into the app's score as it stood on the call's date. The stored score
+            # of practice calls carries look-ahead (2026-11-09: ~2/3 of the app's lift); mixing into it let a mix
+            # inherit that edge and clear the gate offline (2026-11-14 brain upgrade).
+            mx = mix_scores([c.get("pit_app", c.get("app", 0.0)) for c in b["cands"]], sc, MIX_WEIGHT)
             j = _top(b, mx)
             res.setdefault(name + MIX, []).append(_pick(b, b["cands"][j]))
             spreads.setdefault(name + MIX, []).append(float(mx[j] - mx.mean()))

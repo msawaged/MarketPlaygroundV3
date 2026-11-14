@@ -476,3 +476,33 @@ Commit: see git log ("Lineages: choose each strategist's #1 within the belief's 
 credit (expect a few tenths of a point) and the ranking of strategists may reshuffle. Over the following generations,
 the best strategist's fitness on the window should move toward or above the app's #1 on the same calls (~+3.1% on
 today's window) without the leak; in late January, a champion is only crowned on a fair live comparison.
+
+## 2026-11-14 (weekly) — Mixes are tested on the app's score without look-ahead (closes a leak before the live check)
+
+**Problem (real numbers).** Ranker v2's "+ app (25%)" mixes are what would actually go live. Offline, each mix was
+built by mixing the model into the **stored** app score of practice calls, the score shown on 2026-11-09 to carry
+look-ahead (about two-thirds of the app's lift). Tonight's `research:ranker` (2,703 test beliefs, 90-day): app as
+stored +1.49% lift (t 4.54), app without look-ahead +0.53% (t 1.71), ridge alone +0.86% (t 2.63) — but
+**ridge + app (25%) +1.83% (t 5.68)**, and all seven mixes pass the unchanged `_passes` against the stored #1
+(e.g. beat_adj 54.8–55.1% vs 54.3%). A mix is 75% the contaminated score, so it inherits that edge: a model with no
+skill of its own would still clear the gate offline. The only remaining guard is `live_check` (300 real-time calls at
+30 days, mix avg ≥ app avg, no t-stat), which becomes reachable ~early December and is close to a coin flip for a
+mix with no real edge. So in a few weeks a mix could have reached users mainly on leaked look-ahead.
+
+**Change (makes the test stricter; no gate touched).** `research.load` stores `pit_app` per idea: the app's score as
+of the call's date, before the engine's direction-first sort (Claude's score + track-record nudge from outcomes graded
+before that date for practice calls; the stored final_score for real-time calls, already point-in-time).
+`_pit_score` now builds on it (same numbers as before). `run()` mixes each model into `pit_app` — what a live mix
+would really get. `_passes`, `MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, the bar (`old`, still the stored #1), the 90-day
+embargo, `live_check` and engine behaviour are unchanged. Memory: one float per idea.
+
+**Checks.** Backend tests: 148 passed. New `test_ranker_mixes_are_tested_on_the_app_score_without_look_ahead`
+(planted: stored score knows the outcome, Claude's score and features are noise → mix lift was +4.2% before the fix,
+now ~0); `test_app_baseline_without_look_ahead_uses_only_earlier_track_records` extended for `pit_app`.
+Commit: see git log ("Ranker v2: test the 25% mixes on the app's score without look-ahead").
+
+**What counts as a win.** After tonight's refit, the mixes' offline lift should fall toward "model alone + a bit"
+(expect roughly +0.9–1.2% instead of +1.6–1.8%), and most or all should stop passing `_passes` against the stored #1;
+the ranker stays off for now. That is the honest result. A real win later is a mix that still clears the unchanged
+gate on the honest score and then holds up in the real-time check. If none does, the fair next question for Murad is
+whether the gate's bar itself should move to the point-in-time app (his decision, proposed 2026-11-09).

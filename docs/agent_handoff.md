@@ -353,3 +353,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   re-check on a weekday.
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend MoversFeed.jsx, StoryViewer.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-14 (weekly brain upgrade routine)
+- Ranker v2's "+ app (25%)" mixes are now tested mixed into the point-in-time app score (`pit_app`, new per-idea
+  field in `research.load`), not the stored practice-call score that carries look-ahead. Stricter only: `_passes`,
+  the bar (`old`), `live_check`, embargo and the engine are unchanged. Expect tonight's mix numbers to drop and the
+  mixes to stop passing; that's intended (see docs/brain_upgrades.md). Don't switch mixes back to `c["app"]`.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
