@@ -457,3 +457,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   research run (web start runs one ~2.5 min after deploy). Research routine: quote t_nw beside t (docs/research_ideas.md).
 - Files: backend/v4/research.py, tests/test_v4.py (test_overlap_honest_t_counts_shared_market_paths_once),
   frontend BrainPage.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/brain_upgrades.md, docs/hq/status/builder.json.
+
+## 2026-11-14 evening (daily polish walk)
+- /brain wording only (BrainPage.jsx): the scorecard no longer calls the #1 gap "skill" while the overlap-honest luck
+  check (skill.luck.app_clears_nw) says it doesn't clear; the plain "N of 41 cleared" sentence is labelled "Counting
+  each call as independent"; feed line "Learned N beliefs from the news" (was "today's news", clashed with "78 today").
+  No backend change, gates untouched.
+- Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

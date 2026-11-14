@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-14T15:55:00Z",
- "last_run": "Checked the new \"How sure are you?\" feature: the scoring is right. Fixed the \"I'm wrong if...\" suggestion, which told bearish calls they'd be wrong if the stock trailed the market (that's them being right), and made the calibration countdown clearer after your first tap.",
+ "updated_at": "2026-11-14T19:00:00Z",
+ "last_run": "Checked the new honest t-stats on the Brain page. The headline still called the #1 pick's lead \"skill\" while the luck check right under it says it's not clear of luck once overlapping calls are counted (t 1.9 vs a bar of 3.2). Reworded the headline, labelled the plain count, and fixed a feed line that clashed with the \"today\" count.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Re-check Close Call odds vs YES price on a weekday with live quotes (weekend quotes made AAPL $360 show 43% odds but a 33% price).",
  "needs_from_murad": [],

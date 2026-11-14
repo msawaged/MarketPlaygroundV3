@@ -143,7 +143,7 @@ function until(iso, now) {
   return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`;
 }
 
-// Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from today's news · 8 rounds").
+// Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from the news · 8 rounds").
 function groupActivity(list) {
   const out = [];
   for (const e of list || []) {
@@ -161,7 +161,7 @@ function groupActivity(list) {
 function eventText(e) {
   if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
   const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds` : '';
-  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from today's news`, sub: `Both sides of most stories${rounds}` };
+  if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from the news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
   if (e.kind === 'trained') return { title: 'Trained a new brain', sub: (STATUS[e.status] || STATUS.retired).label };
@@ -334,7 +334,9 @@ export default function BrainPage({ viewOnly = false }) {
               </div>
               <p className="mt-3 text-xs text-slate-400">
                 {edge > 0.5
-                  ? 'The #1 pick is beating the other ideas: that gap is the skill the brain has learned so far.'
+                  ? (sk.luck?.app_t_nw != null && !sk.luck.app_clears_nw
+                    ? "The #1 pick is ahead of our other ideas so far, but the luck check below can't yet rule out luck once overlapping calls are counted honestly."
+                    : 'The #1 pick is beating the other ideas: that gap is the skill the brain has learned so far.')
                   : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
                 {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
               </p>
@@ -344,7 +346,7 @@ export default function BrainPage({ viewOnly = false }) {
                   <div className="mt-1 text-xs text-slate-300">
                     We've tested {Number(sk.luck.tries_ever).toLocaleString()} ways to pick the #1{sk.luck.n ? ` on ${Number(sk.luck.n).toLocaleString()} past calls they never saw` : ''}.
                     {' '}Try enough ways and one will look great by chance, so a result has to reach t {Number(sk.luck.bar_ever).toFixed(1)} (not the usual 2) before we call it more than luck.
-                    {' '}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
+                    {' '}{sk.luck.app_t_nw != null ? 'Counting each call as independent, ' : ''}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
                     {sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet"}
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>

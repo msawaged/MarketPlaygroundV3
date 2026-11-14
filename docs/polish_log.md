@@ -394,3 +394,28 @@ Changed:
   shows after 10 graded calls (10 to go)"; the "Leaning" footnote shows only once there is a score.
 
 Checks: vite build passes, backend tests 153 passed.
+
+## 2026-11-14 (evening run)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844 at ~18:25
+UTC (Saturday): no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+No new HQ messages from Murad. Focus: the Builder's honest t-stats on /brain (79d600f), now live with numbers.
+Signed-in screens not re-walked (no signed-in code changed since the late-afternoon run).
+
+Found (from /v4/brain skill.luck: app_t 4.52, app_t_nw 1.91, app_dates 429, app_n_eff 482, clear 2 of 41, clear_nw 0):
+- The scorecard still said "that gap is the skill the brain has learned so far" while the luck card right below now
+  says the #1 pick does NOT clear the bar once overlapping calls are counted (t 1.9 vs bar 3.2). An expert reads the
+  headline claim as overstated.
+- The luck card said "2 of 41 cleared it, including the way we pick the #1" and then "0 of 41 ways do" with no hint
+  that the first count is the plain (independent-calls) way, so the two sentences read as a contradiction.
+- Live feed "Learned 54 beliefs from today's news · 10 rounds" sat next to "78 today": the feed only lists the last
+  rounds (54 = 10 rounds since 09:19 UTC; 78 counts from New York midnight). Checked: n_eff = n*(t_nw/t)^2 = 482, right.
+
+Changed (frontend/src/components/BrainPage.jsx only; no numbers or gates touched):
+- Scorecard: when the overlap-honest t exists and doesn't clear, "The #1 pick is ahead of our other ideas so far, but
+  the luck check below can't yet rule out luck once overlapping calls are counted honestly." (skill wording kept for
+  when it does clear).
+- Luck card: "Counting each call as independent, 2 of 41 cleared it ..." when the honest line is shown.
+- Feed: "Learned N beliefs from the news" (no "today's"), so it no longer competes with the "today" count.
+
+Checks: vite build passes, backend tests 154 passed.
