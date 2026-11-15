@@ -546,3 +546,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/db.py, engine.py, router.py, tests/test_v4.py (test_wrong_if_did_that_happen_answer; the pre-mortem
   test now checks only the text/price/ticker keys), frontend components/MyCallsPage.jsx, lib/api.js,
   docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-15 early (daily polish walk)
+- /brain wording only (BrainPage.jsx): with the ranker off (as after the 02:19 UTC retrain) the page no longer presents
+  the stored #1 (look-ahead on practice calls, d856c72) as skill without saying so. Scorecard adds "A catch we found"
+  from `skill.ranker.old_pit`; luck card and confidence card say "as stored". Shown whenever stored lift > old_pit lift,
+  ranker active or not. Gates/ranking/numbers untouched. If research stops writing `old_pit`, the note just hides.
+- WhatsNew.jsx: Nov 15, lines for How sure / base rate and I'm wrong if... / Did that happen?
+- Files: frontend/src/components/BrainPage.jsx, WhatsNew.jsx, docs/polish_log.md, docs/hq/status/polish.json.

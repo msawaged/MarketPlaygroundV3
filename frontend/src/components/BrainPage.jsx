@@ -319,6 +319,11 @@ export default function BrainPage({ viewOnly = false }) {
           const sk = d.skill, top = sk.top, rest = sk.rest || { beat_rate: 0, avg_excess: 0, n: 0 };
           const edge = (top.avg_excess - rest.avg_excess) * 100;
           const pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
+          // The #1 as stored on practice calls carries look-ahead (d856c72); research rebuilds it point-in-time
+          // (ranker.old_pit). Say so whenever the stored version looks better, active ranker or not.
+          const pit = sk.ranker?.old_pit, stored = sk.ranker?.old;
+          const peek = pit?.n > 0 && stored && (stored.lift || 0) > (pit.lift || 0) + 0.002 ? pit : null;
+          const peekClears = peek && Number(peek.lift_t || 0) >= Number(sk.luck?.bar_ever || 99);
           return (
             <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">The honest scorecard · {sk.days} days after each call</div>
@@ -340,6 +345,14 @@ export default function BrainPage({ viewOnly = false }) {
                   : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
                 {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
               </p>
+              {peek && (
+                <p className="mt-2 text-xs text-slate-300">
+                  <span className="font-semibold text-amber-300">A catch we found.</span>
+                  {' '}Practice calls are made on past dates, and the #1's score there used each stock's track record including results that came later.
+                  {' '}Rebuilt without that peek, on {Number(peek.n).toLocaleString()} test calls the #1 beat our other ideas by {pts(peek.lift || 0)} pts (t {Number(peek.lift_t || 0).toFixed(1)})
+                  {' '}instead of {pts(stored.lift || 0)} pts (t {Number(stored.lift_t || 0).toFixed(1)}), so read the gap above as too generous. The live forward test below has no peek.
+                </p>
+              )}
               {sk.luck?.tries_ever > 0 && (
                 <div className="mt-3 rounded-xl border border-slate-700/70 bg-slate-800/50 p-3">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300">The luck check · we count every try</div>
@@ -349,7 +362,9 @@ export default function BrainPage({ viewOnly = false }) {
                     {' '}{sk.luck.app_t_nw != null ? 'Counting each call as independent, ' : ''}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
                     {sk.ranker?.active
                       ? (sk.luck.app_clears ? ", including the old way of picking the #1 (today's #1 also mixes in the retrained model below)" : "; the old way of picking the #1 hasn't yet (today's #1 also mixes in the retrained model below)")
-                      : (sk.luck.app_clears ? ', including the way we pick the #1 you see today' : "; the way we pick today's #1 hasn't yet")}
+                      : (sk.luck.app_clears
+                        ? (peek && !peekClears ? `, including the way we pick the #1 as stored, but not once the peek above is removed (t ${Number(peek.lift_t || 0).toFixed(1)})` : ', including the way we pick the #1 you see today')
+                        : "; the way we pick today's #1 hasn't yet")}
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>
                   {(() => {
@@ -376,7 +391,7 @@ export default function BrainPage({ viewOnly = false }) {
                       {' '}Calls made close together ride the same market for most of their {sk.days || 90} days, so they aren't independent.
                       {sk.luck.n ? ` Those ${Number(sk.luck.n).toLocaleString()} calls` : ' The test calls'} were made on {Number(sk.luck.app_dates).toLocaleString()} different days
                       {sk.luck.app_n_eff ? `, worth about ${Number(sk.luck.app_n_eff).toLocaleString()} independent calls` : ''}.
-                      {' '}Counted that way, {sk.ranker?.active ? 'the old way of picking the #1' : "the way we pick today's #1"} scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
+                      {' '}Counted that way, {sk.ranker?.active ? 'the old way of picking the #1' : (peek ? 'the way we pick the #1, as stored,' : "the way we pick today's #1")} scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
                       {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways do.
                       {sk.ranker?.active && sk.ranker.oos?.lift_t_nw != null && (
                         <> The retrained model scores t {Number(sk.ranker.oos.lift_t_nw).toFixed(1)} counted that way (t {Number(sk.ranker.oos.lift_t || 0).toFixed(1)} the plain way){Number(sk.ranker.oos.lift_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing the bar.' : ', short of the bar.'}</>
@@ -431,6 +446,9 @@ export default function BrainPage({ viewOnly = false }) {
                 ))}
               </div>
               <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average idea for the same belief over 90 days (points of return vs the S&P 500), split into thirds by how far its score stood out from that belief's other ideas. Each #1 pick now shows its confidence; live results by confidence appear in the forward test below once its calls are graded.</p>
+              {!d.skill.ranker.active && d.skill.ranker.old_pit?.n > 0 && (
+                <p className="mt-2 text-xs text-slate-400">This uses the #1's score as stored, which peeked at later results on practice calls (see the catch above), so these gaps are likely too big too.</p>
+              )}
             </div>
           );
         })()}

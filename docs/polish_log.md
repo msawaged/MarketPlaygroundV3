@@ -471,3 +471,33 @@ Changed:
   Test in test_story_mode (test_v4.py).
 
 Checks: vite build passes, figures tests pass, backend tests 158 passed.
+
+## 2026-11-15 (early run, ~03:30 UTC = Sat 10:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new HQ messages from
+Murad. Signed-in screens locally (offline server, throwaway SQLite): a bullish travel call and a bearish restaurant call,
+backdated to Nov 2, each with an "I'm wrong if..." line, one answered "Yes" -> My beliefs. Builder's "Did that happen?"
+(f4a2e4b) checks out: Yes/Partly/Not yet from a week after the call, "You marked: it happened (Nov 14)", the lesson line
+matches the call's state (ahead + "yes" -> "Was your test wrong, or is the result luck"), no overflow at 390px.
+
+Found:
+- /brain after the 02:19 UTC retrain: ranker inactive (`skill.ranker.active` false), so the green ranker card, the only
+  place that said the old #1 score peeked at later results, disappeared. The page then showed the stored #1 as skill:
+  scorecard +1.2 pts on 4,398 mostly-practice #1 picks, luck card "5 of 42 cleared it, including the way we pick the #1
+  you see today" (app t 4.52), and "When the AI is most sure ... tested on past calls it never saw" (+2.5 / +1.1 / +0.9,
+  which with the ranker off is the app's stored score: research.fit_production confidence = "app (current #1)"). Per
+  d856c72 / docs/brain_upgrades.md, about two-thirds of that lift is look-ahead: `old_pit` lift +0.53%, t 1.70 (does not
+  clear the 3.24 bar) vs stored +1.49%, t 4.52. An expert would call this look-ahead bias presented as skill.
+- Welcome / login "What's new" was dated Nov 12 and missed the user features since then (How sure, I'm wrong if...,
+  base rate, Did that happen?).
+
+Changed (frontend only; no numbers, gates or ranking touched):
+- BrainPage.jsx: when `ranker.old_pit` exists and the stored lift is higher, the scorecard adds "A catch we found":
+  practice calls used each stock's track record including later results; without the peek the #1 beat our other ideas
+  by +0.5 pts (t 1.7) instead of +1.5 (t 4.5), the live forward test has no peek. Luck card: "including the way we pick
+  the #1 as stored, but not once the peek above is removed (t 1.7)" (only when old_pit is under the bar) and "as stored"
+  on the overlap line. Confidence card (ranker off): "uses the #1's score as stored ... these gaps are likely too big too."
+- WhatsNew.jsx: Nov 15, two new lines (How sure + base rate + calibration; I'm wrong if... + mark whether it happened).
+
+Checks: vite build passes, backend tests 159 passed.

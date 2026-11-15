@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-15T00:45:00Z",
- "last_run": "Two small fixes on the news screens: a stock that moved 0.01% showed as \"-0.0%\" in red (now \"0.0%\" in grey), and a news story opened with a giant \"November 30, 2026\" that looked like today's date (now \"On Nov 30\"). Also checked the Brain page's new \"Still filling in\" note against the live numbers: it adds up.",
+ "updated_at": "2026-11-15T03:55:00Z",
+ "last_run": "After tonight's retrain the Brain page went back to showing the old #1 score as the brain's skill, without saying that score peeked at later results on practice calls (about two-thirds of its edge). It now says so plainly, with the honest number (+0.5 pts, t 1.7). Also brought 'What's new' up to date and checked the new 'Did that happen?' on My beliefs: it works.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Re-check Close Call odds vs YES price on Monday with live quotes; walk the base-rate line on signed-in screens once a weekday call is graded.",
  "needs_from_murad": [],

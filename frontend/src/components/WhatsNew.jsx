@@ -2,8 +2,10 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 12';
+export const UPDATED = 'Nov 15';
 export const UPDATES = [
+  'New: "How sure are you?" on your calls, beside how often similar calls came true; later, a score of how well your confidence matched',
+  'New: "I\'m wrong if...": write your own test for a call, then mark whether it happened',
   'New: Close Call. Yes or no: will a stock close above a price by a date? Real option odds, the brain\'s lean, fixed-risk practice trades',
   'New: Price check on option ideas: cheap or expensive vs how much the stock moves',
   'New: a confidence badge on the #1 pick, checked on past calls the AI never saw',
