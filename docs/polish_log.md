@@ -597,3 +597,25 @@ Changed:
   window says "all since Oct 28" (beliefs) / the first real-time grade day, otherwise "+N in 30 days".
 
 Checks: vite build passes, backend tests 165 passed.
+
+## 2026-11-15 (evening run, ~18:30 UTC = Sun 1:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Signed-in screens locally (offline server, throwaway SQLite): "AI chip demand will keep rising for the next 6
+months", $1,000, 6 months, Options, Biggest upside -> NVDA Bull Call Spread $185/$210 May 21 2027: $14.61 - $5.57 =
+$904 debit, max gain $2,500 - $904 = $1,596, breakeven $194.04, +20% scenario +$1,596 = +177% of cost: all add up.
+Paper traded it -> Portfolio shows Invested $904, cash $99,096. No overflow at 390px.
+
+Found:
+- Options card footnote: "Priced at the stock's past volatility (no live option quotes) (24%)." Two parentheses in a
+  row, and the 24% has no unit (it is annualized volatility).
+- Welcome "What's new" (Nov 15) misses Close Call's new "Your answers" record (6eb8c5b / 125d41c).
+
+Changed (frontend only):
+- StrategyCard.jsx: "Priced at the stock's past volatility (24% a year), since there were no live option quotes." (implied
+  case: "the market's implied volatility (N% a year)").
+- WhatsNew.jsx: "New: Close Call keeps your record: how often you picked the right side, next to what the market's odds
+  expected".
+
+Checks: vite build passes, backend tests 166 passed.

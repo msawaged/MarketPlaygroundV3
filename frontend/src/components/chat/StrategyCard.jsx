@@ -583,7 +583,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   </div>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility (no live option quotes)"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}%)` : ''}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
+              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}% a year)` : ''}${pick.trade?.vol_source === 'implied' ? '' : ', since there were no live option quotes'}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
               {isOptions && pick.trade?.greeks && <GreeksPanel g={pick.trade.greeks} n={contracts} ticker={pick.ticker} />}
               {isOptions && pick.trade?.exercise?.length > 0 && (
                 <details className="group rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 -mt-1">

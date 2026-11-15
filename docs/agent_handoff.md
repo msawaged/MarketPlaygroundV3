@@ -656,3 +656,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py
   (test_lineages_scoreboard_shows_the_apps_own_pick_and_the_average_idea), frontend/src/components/BrainLineages.jsx,
   docs/hq/status/builder.json.
+
+## 2026-11-15 evening (daily polish walk): options footnote wording; What's new mentions the Close Call record
+- Options card footnote no longer reads "(no live option quotes) (24%)": now "(24% a year), since there were no live
+  option quotes". What's new adds the Close Call "Your answers" record line.
+- Frontend only. Files: frontend/src/components/chat/StrategyCard.jsx, frontend/src/components/WhatsNew.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

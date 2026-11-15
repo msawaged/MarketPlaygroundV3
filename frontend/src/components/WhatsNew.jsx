@@ -4,6 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 15';
 export const UPDATES = [
+  "New: Close Call keeps your record: how often you picked the right side, next to what the market's odds expected",
   'New: "How sure are you?" on your calls, beside how often similar calls came true; later, a score of how well your confidence matched',
   'New: "I\'m wrong if...": write your own test for a call, then mark whether it happened',
   'New: Close Call. Yes or no: will a stock close above a price by a date? Real option odds, the brain\'s lean, fixed-risk practice trades',
