@@ -446,3 +446,28 @@ Changed (frontend/src/components/BrainPage.jsx only; no numbers, gates or rankin
   below)", and the overlap line adds the retrained model's t both ways and whether it clears the bar.
 
 Checks: vite build passes, backend tests 157 passed.
+
+## 2026-11-15 (overnight run, ~00:25 UTC = Sat 7:25 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new HQ messages from
+Murad. Checked the Builder's "Still filling in" luck card with live numbers (seas 83%, dbeta 70%, ivol 26% filled; 6 of
+42 clear the plain way, 0 the overlap-honest way): wording and counts agree with /v4/brain. Signed-in screens not
+re-walked (no signed-in code changed since the last walk).
+
+Found:
+- News feed (/trending, home "Moving now", Story) showed "stock -0.0% on Fri" in red for BA (move -0.01%): a sign and
+  color on a move that rounds to zero.
+- Story mode opened on a giant "November 30, 2026" under "MOVING NOW" (Latam / Embraer E195-E2 launch date). On
+  Nov 14 it reads like the page's own date, in the future. The no-Claude fallback would have been worse: it grabbed
+  "195" out of "E195-E2".
+
+Changed:
+- lib/figures.js `signedPct` / `pctTone` / `TONE`: a move that rounds to 0.0% reads "0.0%" in grey; text and color come
+  from the same rounded value. Used by MoversFeed Pct, StoryViewer Pct, TrendingPage, ToolSelectorPage, ui/Page `pct`.
+  Tests in figures.test.mjs.
+- movers.py: a bare-date hook becomes "On Nov 30" (year kept only if not this year), applied on read too so cached
+  stories are fixed; the story prompt says "never a bare date"; the fallback hook skips digits glued to model names.
+  Test in test_story_mode (test_v4.py).
+
+Checks: vite build passes, figures tests pass, backend tests 158 passed.

@@ -301,6 +301,7 @@ finance explainer reel. Plain English, no jargon, no tickers in the text, no hyp
 
 - hook_big: the attention-grabber, at most 4 words. Use a striking number from the article if there is one
   ("$51 billion", "Half a trillion", "Up 40%"); otherwise a short punchy phrase ("Shoppers are switching").
+  Never a bare date or year: it would read like today's date.
 - hook_line: one sentence under 14 words that makes someone want to keep reading.
 - happened: what happened, in at most 30 words.
 - figures: 0 to 2 before/after comparisons, ONLY when both numbers are written in the headline or summary
@@ -331,15 +332,34 @@ def _clip(s: Any, n: int) -> str:
     return s if len(s) <= n else s[: n - 1].rsplit(" ", 1)[0] + "…"
 
 
+_MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
+_BARE_DATE = re.compile(rf"^(?:on\s+)?(?:(?P<m1>(?:{_MONTHS})[a-z]*)\.?\s+(?P<d1>\d{{1,2}})(?:st|nd|rd|th)?"
+                        rf"|(?P<d2>\d{{1,2}})(?:st|nd|rd|th)?\s+(?P<m2>(?:{_MONTHS})[a-z]*)\.?)(?:,?\s+(?P<y>\d{{4}}))?$", re.I)
+
+
+def _undate(s: str) -> str:
+    """A bare date as the hook ("November 30, 2026") sits under "Moving now" and reads like the page's own date
+    (a future one, if the article is about a launch). Say it as when the news is for: "On Nov 30" (year kept only
+    when it isn't this year)."""
+    m = _BARE_DATE.match(s)
+    if not m:
+        return s
+    mon = (m.group("m1") or m.group("m2"))[:3].title()
+    day = int(m.group("d1") or m.group("d2"))
+    y = m.group("y")
+    out = f"On {mon} {day}"
+    return out + (f", {y}" if y and int(y) != datetime.now(timezone.utc).year else "")
+
+
 def _hook(s: Any) -> str:
     """The big hook phrase, whole or not at all: clipping it can flip its meaning
     ("Credit stress looks contained" -> "Credit stress looks…")."""
-    s = re.sub(r"\s+", " ", str(s or "")).strip()
+    s = _undate(re.sub(r"\s+", " ", str(s or "")).strip())
     return s if s and len(s) <= 40 and len(s.split()) <= 5 else ""
 
 
 def _fallback_story(item: dict) -> dict:
-    nums = re.findall(r"[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?", item["headline"])
+    nums = re.findall(r"(?<![A-Za-z\d-])[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?(?![A-Za-z\d-])", item["headline"])
     return {"hook_big": _clip(nums[0], 20) if nums else "Moving now", "hook_line": _clip(item["headline"], 110),
             "happened": _clip(item.get("summary") or item["headline"], 220), "figures": [],
             "why": _clip(item.get("why") or "News like this can shift which companies people want to own.", 220),
@@ -398,4 +418,6 @@ def story(headline: str, client: Any = None) -> Optional[dict]:
             db.execute("DELETE FROM kv_cache WHERE k = ?", (key,))
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                        (key, json.dumps(st), datetime.now(timezone.utc).isoformat()))
+    if st.get("hook_big"):  # stories cached before the date rule
+        st["hook_big"] = _hook(st["hook_big"]) or _fallback_story(item)["hook_big"]
     return {"story": st, "item": item, "market": cur.get("market")}

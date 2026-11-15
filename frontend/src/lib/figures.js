@@ -50,3 +50,19 @@ export function barWidths(a, b) {
   const max = Math.max(Math.abs(a.value), Math.abs(b.value)) || 1;
   return [a, b].map((x) => Math.max(6, (Math.abs(x.value) / max) * 100));
 }
+
+// A signed percent that never shows "-0.0%" or "+0.0%": a move that rounds to zero reads "0.0%".
+// tone() says how to color it ('up' | 'down' | 'flat') from the same rounded value, so color and text agree.
+export function signedPct(v, digits = 1) {
+  if (v == null || Number.isNaN(v)) return null;
+  const r = Number((v * 100).toFixed(digits));
+  if (r === 0) return `${(0).toFixed(digits)}%`;
+  return `${r > 0 ? '+' : ''}${r.toFixed(digits)}%`;
+}
+
+export function pctTone(v, digits = 1) {
+  if (v == null || Number.isNaN(v)) return 'flat';
+  const r = Number((v * 100).toFixed(digits));
+  return r > 0 ? 'up' : r < 0 ? 'down' : 'flat';
+}
+export const TONE = { up: 'text-green-400', down: 'text-red-400', flat: 'text-slate-300' };

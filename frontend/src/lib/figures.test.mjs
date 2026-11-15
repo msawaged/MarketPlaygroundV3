@@ -1,6 +1,6 @@
 // Run: node frontend/src/lib/figures.test.mjs
 import assert from 'node:assert/strict';
-import { amount, change, barWidths } from './figures.js';
+import { amount, change, barWidths, signedPct, pctTone } from './figures.js';
 
 const chg = (a, b) => change(amount(a), amount(b))?.text ?? null;
 
@@ -31,3 +31,13 @@ assert.deepEqual(barWidths(amount('5 months'), amount('2 years')), [100, 100]);
 assert.deepEqual(amount('5 months'), { value: 5, unit: 'months' });
 
 console.log('figures tests passed');
+
+// No "-0.0%": a tiny move reads as flat (BA -0.01% on the news feed showed "-0.0%" in red)
+assert.equal(signedPct(-0.0001), '0.0%');
+assert.equal(pctTone(-0.0001), 'flat');
+assert.equal(signedPct(0.0004), '0.0%');
+assert.equal(signedPct(-0.0092), '-0.9%');
+assert.equal(pctTone(-0.0092), 'down');
+assert.equal(signedPct(0.025), '+2.5%');
+assert.equal(signedPct(0.12345, 2), '+12.35%');
+assert.equal(signedPct(null), null);

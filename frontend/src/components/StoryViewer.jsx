@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { getStory } from '../lib/api';
 import { ago, believeUrl, doubtUrl, sessionLabel } from './MoversFeed';
-import { amount, change, barWidths } from '../lib/figures';
+import { amount, change, barWidths, signedPct, pctTone, TONE } from '../lib/figures';
 import { LogoMark, Wordmark } from './ui/Logo';
 
 const CARD_MS = 7000;
@@ -52,7 +52,7 @@ function Figure({ f, i }) {
 
 function Pct({ v }) {
   if (v == null) return null;
-  return <span className={`text-lg font-black tabular-nums ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span>;
+  return <span className={`text-lg font-black tabular-nums ${TONE[pctTone(v)]}`}>{signedPct(v)}</span>;
 }
 
 function cards(data, navigate, reel = false, launched = false) {

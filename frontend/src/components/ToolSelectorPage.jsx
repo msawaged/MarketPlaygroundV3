@@ -9,6 +9,7 @@ import { getTrending } from '../lib/api';
 import { recentBeliefs } from '../lib/recent';
 import { themeLabel } from '../lib/text';
 import { useMovers } from './MoversFeed';
+import { signedPct, pctTone, TONE } from '../lib/figures';
 import { FaceIdCard } from './AccountPage';
 import { useAccount, initials } from '../lib/auth';
 import AlertsCard from './AlertsCard';
@@ -141,7 +142,7 @@ export default function ToolSelectorPage() {
                     {m.companies.slice(0, 3).map((c) => (
                       <span key={c.ticker} className="text-[11px] rounded-md bg-slate-800 px-1.5 py-0.5">
                         <span className="font-bold text-white">{c.ticker}</span>
-                        {c.change != null && <span className={c.change >= 0 ? 'text-green-400' : 'text-red-400'}> {c.change >= 0 ? '+' : ''}{(c.change * 100).toFixed(1)}%</span>}
+                        {c.change != null && <span className={TONE[pctTone(c.change)]}> {signedPct(c.change)}</span>}
                       </span>
                     ))}
                   </div>

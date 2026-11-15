@@ -1,6 +1,7 @@
 // Shared page shell: soft gradient background, safe-area padding, title, bottom nav.
 import React from 'react';
 import BottomNavigation from '../BottomNavigation';
+import { signedPct } from '../../lib/figures';
 
 export default function Page({ title, subtitle, right, children }) {
   return (
@@ -32,5 +33,5 @@ export function Card({ className = '', children, ...rest }) {
 
 export function pct(v, digits = 1) {
   if (v == null || Number.isNaN(v)) return '—';
-  return `${v >= 0 ? '+' : ''}${(v * 100).toFixed(digits)}%`;
+  return signedPct(v, digits);
 }

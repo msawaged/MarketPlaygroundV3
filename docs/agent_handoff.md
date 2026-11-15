@@ -524,3 +524,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the next research run. Research routine: read coverage from kv `research:ranker`, not a LIKE scan (docs/research_ideas.md).
 - Files: backend/v4/research.py, brain.py, tests/test_v4.py (test_feature_coverage_marks_rules_on_half_filled_data_provisional),
   frontend BrainPage.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-15 overnight (daily polish walk)
+- News move percents never show "-0.0%": new `signedPct` / `pctTone` / `TONE` in frontend/src/lib/figures.js, used by
+  MoversFeed, StoryViewer, TrendingPage, ToolSelectorPage and ui/Page `pct` (same output otherwise; null still '—' in Page).
+- Story mode: `movers._hook` rewrites a bare date hook ("November 30, 2026") to "On Nov 30", also on cached stories at
+  read time; STORY_PROMPT says no bare dates; `_fallback_story` no longer takes digits from model names ("E195-E2").
+- Files: frontend/src/lib/figures.js, figures.test.mjs, components/MoversFeed.jsx, StoryViewer.jsx, TrendingPage.jsx,
+  ToolSelectorPage.jsx, ui/Page.jsx, backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
+  docs/hq/status/polish.json.

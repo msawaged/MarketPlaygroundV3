@@ -4,6 +4,7 @@ import { Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getMovers } from '../lib/api';
+import { signedPct, pctTone, TONE } from '../lib/figures';
 
 const StoryViewer = lazy(() => import('./StoryViewer'));
 
@@ -49,7 +50,7 @@ export function Pct({ v, day }) {
   if (v == null) return null;
   return (
     <span className="block text-[11px] text-slate-500 tabular-nums">
-      stock <span className={`font-semibold ${v >= 0 ? 'text-green-400' : 'text-red-400'}`}>{v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%</span> {sessionLabel(day)}
+      stock <span className={`font-semibold ${TONE[pctTone(v)]}`}>{signedPct(v)}</span> {sessionLabel(day)}
     </span>
   );
 }

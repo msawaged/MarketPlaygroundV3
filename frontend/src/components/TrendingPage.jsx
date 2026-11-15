@@ -7,10 +7,11 @@ import BottomNavigation from './BottomNavigation';
 import { themeLabel } from '../lib/text';
 import { useMovers, MoverCard, ago } from './MoversFeed';
 import { useAccount } from '../lib/auth';
+import { signedPct } from '../lib/figures';
 
 function pct(v) {
   if (v == null) return null;
-  return `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
+  return signedPct(v);
 }
 
 export default function TrendingPage() {

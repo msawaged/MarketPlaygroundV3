@@ -9,7 +9,7 @@ import json
 import math
 import os
 import random
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import numpy as np
@@ -1484,6 +1484,14 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     # the hook is shown whole or replaced, never clipped mid-phrase
     assert movers._hook("Credit stress looks contained") == "Credit stress looks contained"
     assert movers._hook("This hook phrase is far too long to show on one card") == ""
+    # a bare date under "Moving now" read like the page's own (future) date: say when the news is for instead
+    yr = datetime.now(timezone.utc).year
+    assert movers._hook(f"November 30, {yr}") == "On Nov 30"
+    assert movers._hook(f"30 November {yr + 1}") == f"On Nov 30, {yr + 1}"
+    assert movers._hook("$51 billion") == "$51 billion" and movers._hook("May 2026 sales") == "May 2026 sales"
+    # the no-Claude hook never takes digits out of a model name ("E195-E2" -> "195")
+    assert movers._fallback_story({"headline": "Latam launches the Embraer E195-E2"})["hook_big"] == "Moving now"
+    assert movers._fallback_story({"headline": "Oil jumps 5% as OPEC cuts"})["hook_big"] == "5%"
     assert fb["ai"] is False and fb["figures"] == [] and fb["hook_line"]
 
 
