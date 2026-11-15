@@ -1425,6 +1425,26 @@ def test_movers_falls_back_when_claude_keeps_nothing(monkeypatch):
     assert [it["headline"] for it in out["items"]] == ["Delta raises outlook"] and out["diag"]["headlines"] == 1
 
 
+def test_movers_drops_a_claude_pick_that_is_a_foreign_tag_for_a_different_us_company(monkeypatch):
+    """Live 2026-11-15: Centrica (London ticker CNA) showed as "CNA", which in the US is CNA Financial, an insurer,
+    with that insurer's price move. A tagged ticker must name the company in the story even when Claude picked it."""
+    from backend.v4 import movers
+    names = {"CNA": "CNA Financial Corporation Common Stock", "EQNR": "Equinor ASA", "DAL": "Delta Air Lines, Inc."}
+    news = [{"headline": "Centrica and Equinor Advance in Bidding Process for Uniper", "symbols": ["CNA", "EQNR"],
+             "summary": "Centrica and Equinor moved to the second round.", "source": "x", "url": "", "created_at": ""},
+            {"headline": "Weekend chaos at US airports", "symbols": [], "summary": "", "source": "x", "url": "", "created_at": ""}]
+    ai = {0: {"keep": True, "hunch": "Utilities will keep bidding", "why": "w", "companies": [
+              {"ticker": "CNA", "direction": "up", "why": "gas"}, {"ticker": "EQNR", "direction": "up", "why": "gas"}]},
+          1: {"keep": True, "hunch": "Airlines face costs", "why": "w", "companies": [{"ticker": "DAL", "direction": "down", "why": "costs"}]}}
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s, "name": names[s]})
+    monkeypatch.setattr(movers, "_ask_claude", lambda news, client=None: ai)
+    out = movers.build()
+    assert [[c["ticker"] for c in it["companies"]] for it in out["items"]] == [["EQNR"], ["DAL"]]  # DAL: not a tag, kept
+    assert all("_tags" not in it for it in out["items"])
+    assert "CNA Financial" in movers.PROMPT
+
+
 def test_movers_fallback_drops_tags_for_a_different_company_and_keeps_the_curated_feed(monkeypatch):
     from backend.v4 import movers
     from datetime import datetime, timedelta, timezone
@@ -3166,7 +3186,31 @@ def test_ranker_confidence_thirds_and_live_label(monkeypatch):
     assert all(off["confidence"][k] == pit[k] for k in ("low", "mid", "high"))
     assert pit["low"]["n"] + pit["mid"]["n"] + pit["high"]["n"] == out["results"]["app, no look-ahead"]["n"]
     r2 = engine.process_belief("plumbing demand will boom this year", "u-conf2", "moderate", claude_client=FakeClaude())
-    assert r2["picks"][0]["confidence"] in ("high", "medium", "low")
+    f2 = json.loads(db.query_one("SELECT features FROM picks WHERE belief_id = ? AND final_rank = 0", (r2["belief_id"],))["features"])
+    assert f2["rv2_conf"] in ("high", "medium", "low")  # always recorded for the forward test
+    assert r2["picks"][0]["confidence"] == (f2["rv2_conf"] if research.confidence_backed(off["confidence"]) else "")
+
+
+def test_confidence_badge_hidden_while_the_test_does_not_back_it(monkeypatch):
+    """Prod 2026-11-15: no-look-ahead thirds read high +0.2 / mid +0.9 / low +0.5 pts. A green "High confidence"
+    (whose tooltip says the most confident picks did better) would tell users the opposite of the evidence, so the
+    badge is hidden; the label is still stored on the pick for the live forward test."""
+    from backend.v4 import research
+    t = lambda x: {"n": 900, "lift": x}
+    assert not research.confidence_backed({"high": t(0.002), "mid": t(0.009), "low": t(0.005)})
+    assert research.confidence_backed({"high": t(0.02), "mid": t(0.009), "low": t(0.005)})
+    assert not research.confidence_backed({"high": t(0.02), "low": {"n": 0, "lift": 0.0}})
+    assert not research.confidence_backed(None) and not research.confidence_backed({})
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    out = research.run()
+    rv = research.fit_production(out)
+    rv["confidence"] = {**rv["confidence"], "high": t(0.002), "mid": t(0.009), "low": t(0.005)}
+    monkeypatch.setattr(research, "ranker", lambda: rv)
+    monkeypatch.setattr(learning, "build_context", lambda belief: {})
+    r = engine.process_belief("plumbing demand is going to be high", "u-conf3", "moderate", claude_client=FakeClaude())
+    assert all(p["confidence"] == "" for p in r["picks"])
+    f = json.loads(db.query_one("SELECT features FROM picks WHERE belief_id = ? AND final_rank = 0", (r["belief_id"],))["features"])
+    assert f["rv2_conf"] in ("high", "medium", "low")
 
 
 def test_app_confidence_is_judged_without_look_ahead_and_cut_on_live_calls(monkeypatch):

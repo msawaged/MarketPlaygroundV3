@@ -700,3 +700,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
   `ranker:v2.confidence` gains `basis`, `cuts_from`, `cuts_n`, `cuts_test`. No ordering/gate change.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
 - Still open for Murad: whether the gate's bar moves to the point-in-time app (see brain_upgrades.md).
+
+## 2026-11-15 night (daily polish walk): confidence badge hidden until its test backs it; foreign news tags
+- The #1's "High/Medium/Low confidence" badge is now shown only while `research.confidence_backed(conf)` (top third's
+  lift > bottom third's). Live no-look-ahead thirds are high +0.2 / mid +0.9 / low +0.5 pts, so it's hidden today.
+  The label is still stored in `features.rv2_conf` (forward test by_confidence unchanged). Brain routine: if you
+  change how confidence is judged, keep this rule or replace it with something equally honest; don't just re-show it.
+- /brain confidence card: no more "uses the score as stored, which peeked" on the no-look-ahead basis; honest verdict
+  line when the badge is hidden.
+- movers.build: a tagged ticker must name the company in the story even when Claude picked it (Centrica's "CNA" was
+  CNA Financial). Prompt line added.
+- Files: backend/v4/research.py, engine.py, movers.py, tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

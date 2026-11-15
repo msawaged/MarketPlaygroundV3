@@ -441,6 +441,18 @@ def confidence_label(spread: float, cuts) -> str:
     return "high" if spread > cuts[1] else "medium" if spread > cuts[0] else "low"
 
 
+def confidence_backed(conf) -> bool:
+    """Whether the confidence badge may be shown to users: only while the test it rests on backs its promise (the most
+    confident third of #1 picks beat the belief's average idea by more than the least confident third). On 2026-11-15
+    the no-look-ahead thirds read high +0.2 / mid +0.9 / low +0.5 pts, so a green "High confidence" told users the
+    opposite of the evidence. The label is still recorded on the pick (features.rv2_conf) for the live forward test."""
+    try:
+        hi, lo = (conf or {}).get("high") or {}, (conf or {}).get("low") or {}
+        return bool(hi.get("n")) and bool(lo.get("n")) and float(hi.get("lift") or 0) > float(lo.get("lift") or 0)
+    except (TypeError, ValueError, AttributeError):
+        return False
+
+
 def _lead(b: dict) -> list[int]:
     """Which of a belief's ideas can be its #1. The engine sorts ideas in the belief's own direction first
     (engine._leads: on a bullish belief a short on a competitor can only follow the longs), so a ranker can only

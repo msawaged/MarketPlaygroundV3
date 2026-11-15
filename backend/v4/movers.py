@@ -78,6 +78,9 @@ For each numbered headline:
 - companies: 2 to 4 US-listed stocks or ETFs it most directly moves, with direction "up" or "down" if the hunch
   is right and a 6-10 word reason that says how the hunch helps ("up") or hurts ("down") that company; the reason
   must agree with the direction (never "up" with a reason about pressure on it). Prefer the tagged tickers when they fit. Only real, currently listed tickers.
+  Tags can be foreign tickers that belong to a different US company (Centrica's London ticker CNA is CNA Financial,
+  an insurer, in the US): use a ticker only if it is the US listing of that very company; leave out companies with
+  no US listing.
 
 Return every headline once, by its number."""
 
@@ -189,6 +192,7 @@ def _items(news: list[dict], ai: Optional[dict]) -> list[dict]:
             "created_at": n.get("created_at") or "", "summary": n.get("summary") or "",
             "hunch": hunch, "why": str((a or {}).get("why") or "").strip()[:200],
             "companies": _clean_companies((a or {}).get("companies"), n.get("symbols") or []),
+            "_tags": [str(t).upper() for t in n.get("symbols") or []],
         })
         if len(items) == MAX_ITEMS:
             break
@@ -225,13 +229,16 @@ def build(client: Any = None) -> dict:
         for c in it["companies"]:
             try:
                 info = market.asset_info(c["ticker"])
-                # a news-source tag Claude didn't pick (direction None) must name the company in the story: tags are
-                # often foreign tickers that are a different US company (Dr. Martens "DOCS" is Doximity here)
-                if info and (c.get("direction") or _names_company(info, c["ticker"], it)):
+                # a news-source tag must name the company in the story, whether Claude picked it or not: tags are
+                # often foreign tickers that are a different US company (Dr. Martens "DOCS" is Doximity here; on
+                # 2026-11-15 Claude kept Centrica's London tag "CNA", which is CNA Financial, an insurer, in the US)
+                tagged = not c.get("direction") or c["ticker"] in it.get("_tags", [])
+                if info and (not tagged or _names_company(info, c["ticker"], it)):
                     ok.append(c)
             except Exception:
                 ok.append(c)  # lookup down: keep it rather than empty the card
         it["companies"] = ok
+        it.pop("_tags", None)
     items = [it for it in items if it["companies"]]
     diag = {"headlines": len(news), "error": _last_error["v"] or ((market.news_error["v"] or "no headlines from the news source") if not news else "")}
     return {"items": items, "built_at": datetime.now(timezone.utc).isoformat(), "ai": ai is not None, "diag": diag}

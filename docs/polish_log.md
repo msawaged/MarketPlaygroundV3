@@ -619,3 +619,33 @@ Changed (frontend only):
   expected".
 
 Checks: vite build passes, backend tests 166 passed.
+
+## 2026-11-15 (night run, ~21:30 UTC = Sun 4:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Checked tonight's brain upgrade (fcc9b08) and Builder spread line against /v4/brain and `baserate:v1`.
+
+Found:
+- Confidence badge contradicts its own test. `ranker:v2.confidence` (basis "app, no look-ahead") reads high +0.2 /
+  mid +0.9 / low +0.5 pts (t_nw 0.3 / 1.0 / 1.0), yet each live #1 pick still got a green "High confidence" badge
+  whose tooltip says the most confident picks beat the average idea by more than the least confident ones.
+- /brain "When the AI is most sure" still said "This uses the #1's score as stored, which peeked at later results",
+  which is no longer true since fcc9b08 switched it to the no-look-ahead score.
+- /trending: "Centrica and Equinor Advance in Bidding Process for Uniper" listed "CNA ▲ story helps, stock +0.5% on
+  Fri". CNA is Centrica's London ticker; in the US it is CNA Financial (an insurer), whose price move was shown.
+
+Changed:
+- research.confidence_backed(): the badge is shown on the #1 only while the top third beats the bottom third;
+  engine still stores the label in features.rv2_conf for the live forward test. No ordering/gate change.
+- BrainPage.jsx: says the thirds are scored without the peek; when not backed: "So far, more sure has not meant
+  better: the most confident third did +0.2 pts, the least confident +0.5 pts, and none of these gaps is clear of
+  luck. So the #1 pick shows no confidence badge until the test backs it up." The stale peek line only shows on the
+  old basis.
+- movers.py: a ticker that came from the article's tags must name the company in the story even when Claude picked
+  it; prompt warns about foreign tags that are a different US company.
+- Tests: test_confidence_badge_hidden_while_the_test_does_not_back_it,
+  test_movers_drops_a_claude_pick_that_is_a_foreign_tag_for_a_different_us_company; updated
+  test_ranker_confidence_thirds_and_live_label.
+
+Checks: vite build passes, backend tests 172 passed.

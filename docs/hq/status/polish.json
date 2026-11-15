@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-15T18:50:00Z",
- "last_run": "Nothing broken on the live site. Walked a full signed-in options idea locally (NVDA call spread): cost, max gain, breakeven and scenarios all add up, and the paper trade lands in Portfolio correctly. Tidied the options footnote ('24% a year, since there were no live option quotes') and added the Close Call 'Your answers' record to What's new.",
- "working_on": "Walking the app like a new user, checking every number an options expert would check.",
- "next": "Monday: check the news feed refreshes with new hunches once real news arrives; re-check Close Call odds vs YES price with live quotes; look at the strategist scoreboard once Monday's evolve fills in the app's own #1.",
+ "updated_at": "2026-11-15T21:55:00Z",
+ "last_run": "Found that the green 'High confidence' badge on #1 picks contradicted its own test (most confident third did worse than the least confident), so it's hidden until the test backs it, and the Brain page says so plainly. Also stopped a foreign news ticker showing as the wrong US company (Centrica's 'CNA' is an insurer here).",
+ "working_on": "Walking the app like a new user, checking every number an expert would check.",
+ "next": "Monday: see the new 'How wide it can go' range in chat once grading refreshes; re-check Close Call odds with live quotes; check the news feed after the open.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

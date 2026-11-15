@@ -455,6 +455,9 @@ export default function BrainPage({ viewOnly = false }) {
           const c = d.skill.ranker.confidence, pts = (v) => `${v >= 0 ? '+' : ''}${((v || 0) * 100).toFixed(1)}`;
           const top = Math.max(...['high', 'mid', 'low'].map((k) => Math.abs(c[k]?.lift || 0)), 0.005);
           const rows = [['high', 'Most confident'], ['mid', 'In between'], ['low', 'Least confident']];
+          // Same rule as research.confidence_backed: the badge is shown only while the top third beats the bottom one.
+          const backed = c.low?.n > 0 && (c.high?.lift || 0) > (c.low?.lift || 0);
+          const noisy = ['high', 'mid', 'low'].every((k) => Math.abs(c[k]?.lift_t_nw ?? c[k]?.lift_t ?? 0) < 2);
           return (
             <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">When the AI is most sure · tested on past calls it never saw</div>
@@ -469,8 +472,11 @@ export default function BrainPage({ viewOnly = false }) {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average idea for the same belief over 90 days (points of return vs the S&P 500), split into thirds by how far its score stood out from that belief's other ideas. Each #1 pick now shows its confidence; live results by confidence appear in the forward test below once its calls are graded.</p>
-              {!d.skill.ranker.active && d.skill.ranker.old_pit?.n > 0 && (
+              <p className="mt-3 text-xs text-slate-400">How much the #1 pick beat the average idea for the same belief over 90 days (points of return vs the S&P 500), split into thirds by how far its score stood out from that belief's other ideas.{c.basis === 'app, no look-ahead' ? " Scored the way it stood on each call's date, without the peek described above." : ''}</p>
+              {backed
+                ? <p className="mt-2 text-xs text-slate-400">Each #1 pick shows its confidence; live results by confidence appear in the forward test below once its calls are graded.</p>
+                : <p className="mt-2 text-xs text-slate-300">So far, more sure has not meant better: the most confident third did {pts(c.high?.lift)} pts, the least confident {pts(c.low?.lift)} pts{noisy ? ', and none of these gaps is clear of luck' : ''}. So the #1 pick shows no confidence badge until the test backs it up.</p>}
+              {!d.skill.ranker.active && d.skill.ranker.old_pit?.n > 0 && c.basis !== 'app, no look-ahead' && (
                 <p className="mt-2 text-xs text-slate-400">This uses the #1's score as stored, which peeked at later results on practice calls (see the catch above), so these gaps are likely too big too.</p>
               )}
             </div>

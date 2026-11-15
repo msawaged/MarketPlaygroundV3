@@ -284,10 +284,14 @@ def process_belief(
                 spread = valid[0]["rv2"] - sum(v.get("rv2", 0.0) for v in valid) / len(valid)
             else:
                 spread = valid[0]["final_score"] - sum(v["final_score"] for v in valid) / len(valid)
-            confidence = research.confidence_label(spread, ((research.ranker() or {}).get("confidence") or {}).get("cuts"))
+            conf_block = (research.ranker() or {}).get("confidence") or {}
+            confidence = research.confidence_label(spread, conf_block.get("cuts"))
             if confidence:
                 valid[0]["features"]["rv2_conf"] = confidence
                 valid[0]["features"]["rv2_spread"] = round(spread, 6)
+            # Recorded either way (the live forward test grades it); shown only while the test backs the badge.
+            if not research.confidence_backed(conf_block):
+                confidence = ""
         except Exception:
             confidence = ""
 
