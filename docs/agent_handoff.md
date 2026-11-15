@@ -713,7 +713,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/research.py, engine.py, movers.py, tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
 
-## 2026-11-16 early (Builder routine): Brain family tree fits a phone
+## 2026-11-15 late night (Builder routine): Brain family tree fits a phone
 - No HQ messages from Murad; no "proposed" items left in feature_ideas.md.
 - /brain "Survival of the smartest" family tree: at 390px it showed only Gen 1–5 of 11 and cut "Gen 6" in half; the
   newest generations, where the leaders live (Gen 9b, 11b), were off the right edge in a hidden side scroll. The tree
