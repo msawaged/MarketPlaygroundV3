@@ -712,3 +712,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   CNA Financial). Prompt line added.
 - Files: backend/v4/research.py, engine.py, movers.py, tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 early (Builder routine): Brain family tree fits a phone
+- No HQ messages from Murad; no "proposed" items left in feature_ideas.md.
+- /brain "Survival of the smartest" family tree: at 390px it showed only Gen 1–5 of 11 and cut "Gen 6" in half; the
+  newest generations, where the leaders live (Gen 9b, 11b), were off the right edge in a hidden side scroll. The tree
+  now measures its card (ResizeObserver) and spaces the generations to fit (64px max, 24px min per column); labels go
+  to every other generation (always the newest) when columns are under 34px. Only past ~14 generations on a phone does
+  it scroll, and then it opens at the newest end. Checked at 375/390/768 against the live /v4/brain data: all 11
+  generations and all 8 alive strategists visible, no page overflow.
+- Frontend only. Files: frontend/src/components/BrainLineages.jsx, docs/hq/status/builder.json.

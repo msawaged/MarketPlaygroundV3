@@ -1,6 +1,6 @@
 // "Survival of the smartest": AI strategists compete on the same graded beliefs. The weakest retire, the strongest
 // evolve into new versions. Scoreboard + family tree + births and retirements, all from the live brain snapshot.
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export const STYLE = {
@@ -14,25 +14,50 @@ export const STYLE = {
 const col = (s) => STYLE[s]?.color || '#94a3b8';
 const pct = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
 
+// Fits every generation into the card's width (a phone shows the newest ones, where the leaders are, not just
+// Gen 1-5); only when there are too many to fit does it scroll, and then it opens at the newest end.
 function Tree({ tree }) {
-  const { nodes, edges, w, h } = useMemo(() => {
+  const box = useRef(null);
+  const [cw, setCw] = useState(0);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return undefined;
+    const set = () => setCw(el.clientWidth);
+    set();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const { nodes, edges, labels, w, h } = useMemo(() => {
     const gens = [...new Set(tree.map((t) => t.gen))].sort((a, b) => a - b);
     const byGen = Object.fromEntries(gens.map((g) => [g, tree.filter((t) => t.gen === g)]));
     const rows = Math.max(...gens.map((g) => byGen[g].length), 1);
-    const H = Math.max(150, rows * 26 + 30), GAP = 64;
+    const H = Math.max(150, rows * 26 + 30), PAD = 18;
+    const span = Math.max(gens.length - 1, 1);
+    const GAP = cw ? Math.min(64, Math.max(24, (cw - 2 * PAD) / span)) : 64;
     const pos = {};
     gens.forEach((g, gi) => byGen[g].forEach((t, i) => {
-      pos[t.id] = { ...t, x: 24 + gi * GAP, y: (H / (byGen[g].length + 1)) * (i + 1) };
+      pos[t.id] = { ...t, x: PAD + gi * GAP, y: (H / (byGen[g].length + 1)) * (i + 1) };
     }));
     const ns = Object.values(pos);
+    // "Gen 10" is ~28px at 9px type: when columns are tighter than that, label every other one (always the newest)
+    const every = GAP >= 34 ? 1 : 2;
+    const last = gens.length - 1;
     return {
-      nodes: ns, w: 48 + (gens.length - 1) * GAP, h: H,
+      nodes: ns, w: 2 * PAD + (gens.length - 1) * GAP, h: H,
+      labels: gens.map((g, gi) => ({ g, x: PAD + gi * GAP, show: gi === last || ((last - gi) % every === 0) })),
       edges: ns.filter((n) => n.parent && pos[n.parent]).map((n) => [pos[n.parent], n]),
     };
-  }, [tree]);
+  }, [tree, cw]);
+  useEffect(() => {
+    const el = box.current;
+    if (el && w > el.clientWidth) el.scrollLeft = el.scrollWidth;
+  }, [w]);
   return (
-    <div className="overflow-x-auto -mx-1 px-1">
-      <svg width={Math.max(w, 300)} height={h} className="block">
+    <div ref={box} className="overflow-x-auto">
+      <svg width={Math.max(w, cw || 0)} height={h} className="block" role="img"
+        aria-label={`Family tree of ${tree.length} strategists over ${labels.length} generations`}>
         {edges.map(([a, b], i) => (
           <path key={i} d={`M${a.x},${a.y} C${(a.x + b.x) / 2},${a.y} ${(a.x + b.x) / 2},${b.y} ${b.x},${b.y}`}
             fill="none" stroke={col(b.style)} strokeOpacity={b.status === 'alive' ? 0.6 : 0.18} strokeWidth="1.5" />
@@ -44,10 +69,9 @@ function Tree({ tree }) {
               strokeOpacity={n.status === 'alive' ? 1 : 0.35} strokeWidth="1.5" />
           </g>
         ))}
-        {[...new Set(nodes.map((n) => n.gen))].map((g) => {
-          const n = nodes.find((x) => x.gen === g);
-          return <text key={g} x={n.x} y={h - 4} textAnchor="middle" fontSize="9" fill="#64748b">Gen {g}</text>;
-        })}
+        {labels.filter((l) => l.show).map((l) => (
+          <text key={l.g} x={l.x} y={h - 4} textAnchor="middle" fontSize="9" fill="#64748b">Gen {l.g}</text>
+        ))}
       </svg>
     </div>
   );
