@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-14T19:00:00Z",
- "last_run": "Added idea 13: do calm stocks (ones that don't jump around on their own news) make the better pick? Recorded idea 12 (last month's losers): slightly better, but not enough to rule out luck. Proposed showing users how often calls like theirs have beaten the S&P before they say how sure they are.",
- "working_on": "Testing ideas 10 (seasonality), 11 (downside risk) and 13 (calm stocks) on calls they never saw; older calls are still being filled in with the new numbers.",
- "next": "Next run: record whichever results are complete, one new idea and one feature proposal.",
+ "updated_at": "2026-11-15T21:00:00Z",
+ "last_run": "Added idea 14: do stocks that fell the most over the past few years (not counting the last one) make the better pick? Recorded three finished results: picking the calmest stock was clearly worse than average, same-season-last-year was weak, and the 'falls hardest in bad markets' idea was slightly better but not enough to rule out luck. Proposed showing users how far calls like theirs can land either way (about 20 points behind to 20 points ahead of the S&P), not just how often they win.",
+ "working_on": "Testing idea 14 (long-term losers) on calls it never saw; older calls are still being filled in with the new number.",
+ "next": "Next run: record idea 14 once it is filled in, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

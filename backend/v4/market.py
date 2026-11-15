@@ -821,6 +821,29 @@ def ivol_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"ivol": ivol(dates, closes, sdates, scloses, i) if i >= 0 else IVOL_NEUTRAL}
 
 
+def ltr(closes: list[float], i: int, skip: int = 252, window: int = 756, min_len: int = 252) -> float:
+    """Long-term reversal (De Bondt & Thaler 1985, "Does the Stock Market Overreact?"): stocks that were the biggest
+    losers over the past three to five years went on to beat the biggest winners, as investors overreact to a long
+    run of bad (or good) news. The stock's return from up to ~3 years (`window` sessions) ago to ~1 year (`skip`
+    sessions) ago, skipping the latest year so 12-month momentum is not mixed in. With less than three years of
+    data the formation period starts at the first close, so long as it covers at least `min_len` sessions (one year).
+    Uses only closes up to index i. Clipped to [-0.95, 10]; 0.0 without enough history."""
+    if i >= len(closes):
+        return 0.0
+    b = i - skip
+    a = max(0, i - window)
+    if b - a < min_len or closes[a] <= 0 or closes[b] <= 0:
+        return 0.0
+    return max(-0.95, min(10.0, closes[b] / closes[a] - 1.0))
+
+
+def ltr_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"ltr": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"ltr": ltr(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -928,6 +951,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "seas": seas(dates, closes, i),
         "dbeta": dbeta(dates, closes, sdates, scloses, i),
         "ivol": ivol(dates, closes, sdates, scloses, i),
+        "ltr": ltr(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

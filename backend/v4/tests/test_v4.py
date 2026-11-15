@@ -2717,6 +2717,62 @@ def test_idiosyncratic_vol_rule_and_enrich_backfill(monkeypatch):
     assert abs(num["ivol"] - market.ivol(dates, wild, dates, spy, 300)) < 1e-12
     assert num["dbeta"] == 0.1 and num["beta"] == 1.2
 
+def test_long_term_reversal_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(61)
+    # ltr = return from ~3 years to ~1 year ago; the latest year is skipped
+    n = 1000
+    closes = [100.0] * n
+    for k in range(n - 1 - 756, n - 1 - 252 + 1):
+        closes[k] = 100.0 * (1 + 0.5 * (k - (n - 1 - 756)) / 504)   # +50% over the formation period
+    for k in range(n - 1 - 252 + 1, n):
+        closes[k] = 10.0                                             # the latest year crashes: not counted
+    i = n - 1
+    assert abs(market.ltr(closes, i) - 0.5) < 1e-9
+    assert market.ltr(closes, 400) == 0.0                            # under a year of formation data
+    assert abs(market.ltr(closes[:600], 599) - (closes[347] / closes[0] - 1)) < 1e-12  # starts at the first close
+    later = closes[:700] + [c * 9 for c in closes[700:]]
+    assert market.ltr(later, 699) == market.ltr(closes, 699)          # no look-ahead
+    assert "ltr" in research.FEATS and "ltr" in research.DIRECTIONAL
+    # planted: long-term losers pay for longs, long-term winners pay for shorts; the rule (-z_ltr) finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-lt-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            lt = rng.uniform(-0.6, 1.5)
+            ex = lt * 0.03 if bear else -lt * 0.03
+            pid = f"p-lt-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"ltr": lt}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["long-term reversal (-z_ltr)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills ltr as of each pick's own date only, leaving the other features alone
+    dates = [(_dt.date(2020, 1, 1) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25}
+    asof = dates[699]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-ltx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-ltx", "b-ltx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-ltx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-ltx'")["features"])["num"]
+    assert abs(num["ltr"] - market.ltr(closes, 699)) < 1e-12 and num["ltr"] != 0.0
+    assert num["ivol"] == 0.25 and num["beta"] == 1.2
+
+
 def test_luck_bar_counts_every_try_and_leaves_the_gate_alone():
     from backend.v4 import research, brain
     import random as _r

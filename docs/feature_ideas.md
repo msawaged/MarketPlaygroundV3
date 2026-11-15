@@ -281,3 +281,45 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   so it must be labelled with its date range and can shift; it could discourage users ("why bother?"), so frame it
   as the bar to beat; mixing practice (seeded/shifted) calls and real user calls must be stated or split (use the
   same graded population the brain page already reports). No gate, look-ahead, real-money or research change.
+
+## 2026-11-15 — "How wide it can go": show the spread of outcomes for calls like this, not just the hit rate
+
+- **Status:** proposed
+- **Area:** app (learning / honest framing); reuses the brain's own graded record. Extends "The outside view"
+  (2026-11-14 evening, built in `backend/v4/baserate.py`).
+- **Problem:** the outside-view line tells a user how *often* calls like theirs beat the S&P, but not how *far* they
+  land either way, and the spread is the bigger lesson. Live DB (2026-11-15, all picks graded at 90 days, excess return
+  vs the S&P in the call's direction): bullish ideas n 14,736, average **+0.6 pts** but median **-1.0 pts**, 1 in 10
+  finished **18.6+ pts behind** the S&P and 1 in 10 **20.3+ pts ahead**; bearish n 7,923, median +3.0, 10th/90th
+  percentile **-18.2 / +21.6 pts**; volatile n 620, -4.2 / +36.6. A beginner who sees "beats the S&P 47% of the time"
+  reads a near coin-flip with small stakes; the real picture is a coin-flip whose sides are about ±20 points. Nothing
+  on the call screen says that (the options card shows a worst case in dollars for options only).
+- **Evidence / sources:**
+  - Goldstein, Johnson & Sharpe (2008), "Choosing Outcomes versus Choosing Products: Consumer-Focused Retirement
+    Investment Advice", Journal of Consumer Research 35(3), 440-456 (the "distribution builder"): people make better,
+    more consistent risk choices when shown the range of outcomes rather than summary numbers:
+    https://econpapers.repec.org/RePEc:oup:jconrs:v:35:y:2008:i:3:p:440-456 (paper:
+    https://web.stanford.edu/~wfsharpe/retecon/GJSJCR08.pdf)
+  - Kaufmann, Weber & Haisley (2013), "The Role of Experience Sampling and Graphical Displays on One's Investment Risk
+    Appetite", Management Science 59(2), 323-340: showing the distribution of outcomes (and letting people sample from
+    it) improved their understanding of risk and expected returns versus text-only descriptions:
+    https://econpapers.repec.org/RePEc:inm:ormnsc:v:59:y:2013:i:2:p:323-340
+- **Build sketch (size S):**
+  - `backend/v4/baserate.py`: in `compute()`, add one more aggregate per direction x checkpoint: 10th, 50th and 90th
+    percentile of `outcomes.dir_excess` (`percentile_cont` in Postgres; sort-and-pick fallback in SQLite for tests),
+    stored in the same `baserate:v1` cells as `p10` / `p50` / `p90`. Same `MIN_N` rule (no cell under 100), same daily
+    refresh, never on a request. One query over ~60k outcome rows, fine for the 512Mi job.
+  - `router.py`: nothing new; `base_rate` already travels with the picks response, the new keys ride along.
+  - Frontend `chat/HowSure.jsx`: under the existing outside-view line, one plain line plus a tiny bar: "Most land
+    between 19 pts behind and 20 pts ahead of the S&P after ~90 days; the middle call finished 1 pt behind." `Term`
+    for "percentile" avoided: say "1 in 10 did worse than..., 1 in 10 better than...". On My beliefs, once graded, mark
+    where the user's own result fell on that bar.
+  - Copy rules: the app's own practice record, past not future, with its date range; never "expected" or "will".
+  - Test: synthetic graded outcomes -> correct p10/p50/p90 per cell; cells under MIN_N carry no spread.
+- **How we'd know it worked:** fewer 90% taps on "How sure" and better Brier scores on the calibration card for users
+  who saw the spread (compare calls made before and after it ships); fewer calls closed or abandoned in the first
+  checkpoint after a large early drawdown, if that is tracked. No ranking metric is claimed.
+- **Risks:** one ~2-year market (bearish ideas did well in a falling stretch), so the date range must be shown and the
+  numbers will shift; percentiles of single picks overstate the spread a diversified user would face, so say "a single
+  idea"; practice and live calls are mixed, as on the brain page, and should be labelled the same way. Information
+  only: no gate, look-ahead, ranking, research or real-money change.

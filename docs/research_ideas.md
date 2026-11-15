@@ -355,6 +355,10 @@ the app's (52.9%).
   (t_nw 0.94); risk-matched +0.26% / 53.5% / t 0.81 (t_nw 0.44). Fading as the backfill fills in. Same
   run: app +1.49% / 53.4% / t 4.54 (adj +1.24% / t 3.89); illiquidity premium +1.21% / 53.1% / t 4.04 (adj +1.00% /
   t 3.44); random beat 51.0%.
+- **Result (final, run 2026-11-15 17:16 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `seas` 100%, not in
+  `provisional`):** lift **+0.79%**, beat **52.3%**, t **2.29** (t_nw **1.32**); risk-matched lift **+0.45%**, beat_adj
+  **53.8%**, t **1.36** (t_nw **0.81**). n_eff 902. Mildly positive raw, mostly gone risk-matched and on honest errors;
+  under the luck bar (3.24 for 42 tries). Not a usable rule here. Ridge weight on z_seas +0.0028.
 
 ### 11. Downside risk premium: relative downside beta (Ang, Chen & Xing)
 - **Added:** 2026-11-14
@@ -385,6 +389,12 @@ the app's (52.9%).
   **2.18** (t_nw **2.05**); risk-matched lift **+0.76%**, beat_adj **54.0%**, t **2.44** (t_nw **2.21**). Positive and
   steadier than most (n_eff 2,371 of 2,703: little overlap), but under the luck bar (3.23 for 41 tries). Learned ridge
   weight on z_dbeta +0.0020. Re-check once filled.
+- **Result (final, run 2026-11-15 17:16 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `dbeta` 100%, not in
+  `provisional`):** lift **+0.57%**, beat **52.4%**, t **1.74** (t_nw **2.09**); risk-matched lift **+0.70%**, beat_adj
+  **53.2%**, t **2.22** (t_nw **2.38**). n_eff 2,703 (picks barely overlap, so t_nw is not below t). One of the steadier
+  small positives in the log, and stronger risk-matched than raw, as the paper would predict (plain beta is already
+  in the benchmark); still under the luck bar (3.24 for 42 tries), so not a rule on its own. Ridge weight on z_dbeta
+  +0.0040.
 
 ### 12. Short-term reversal: last month's losers (Jegadeesh 1990; Lehmann 1990)
 - **Added:** 2026-11-14 (extra run)
@@ -436,4 +446,44 @@ the app's (52.9%).
   large-cap ideas. Overlap with high/low vol is large, so compare it against those rows, not just against zero.
 - **Note:** until enrich finishes backfilling older picks they read the neutral 0.30; trust the result once every
   graded pick has `ivol` (`p.features LIKE '%"ivol"%'`).
+- **Result (final, run 2026-11-15 17:16 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `ivol` 100%, zero share 0.2%,
+  not in `provisional`):** lift **-1.28%**, beat **46.2%**, t **-4.00** (t_nw **-1.58**); risk-matched lift **-0.64%**,
+  beat_adj **49.0%**, t **-2.09** (t_nw **-0.98**). n_eff 421. The puzzle runs the *other* way here: picking the calmest
+  stock was clearly worse than the belief's average idea (raw t past the luck bar, but on overlap-honest errors it is
+  -1.58), the same side as our "high vol" / "low vol" rows. About half the gap goes away risk-matched, so much of it is
+  that wild stocks rose more in this market, not stock-specific skill. Read as: don't hold idiosyncratic volatility
+  against an idea in our setting; it is not a reason to prefer wild stocks either. Ridge weight on z_ivol -0.0017.
+  Same run: app +1.49% / 53.4% / t 4.52 (t_nw 1.91); illiquidity premium +1.21% / t 4.04 (t_nw 2.63); `luck.clear` =
+  app, neural net, gbm, illiquidity, ridge, gbm (+ shifted); `clear_nw` = gbm (+ shifted) only; random beat 51.0%.
+
+### 14. Long-term reversal: losers of the past three years, skipping the latest (De Bondt & Thaler)
+- **Added:** 2026-11-15
+- **Source:** De Bondt & Thaler (1985), "Does the Stock Market Overreact?", Journal of Finance 40(3), 793-805:
+  https://econpapers.repec.org/RePEc:bla:jfinan:v:40:y:1985:i:3:p:793-805 ; practitioner summary:
+  https://alphaarchitect.com/quantitative-momentum-research-long-term-return-reversal/ ; Fama & French (1996) show the
+  long-term reversal (months -60 to -13) is one of the anomalies their 3-factor model captures through value, so it
+  is a well-known, durable pattern, not a fresh claim.
+- **Why:** portfolios of the biggest losers over the past three to five years beat the biggest winners over the
+  next three to five years (about 25% cumulative in the paper over 36 months), read as investors overreacting to
+  long runs of bad or good news. It is the long-horizon opposite of momentum: our momentum rules (1-3, 6, 7, 9) all
+  look at the last year or less, and the short-term reversal (12) at the last month. Nothing in FEATS sees prices
+  more than a year back except seasonality (10), which looks at the same season, not the whole run. Also a rough,
+  price-only stand-in for "value" (long-term losers tend to be cheap), which we cannot test directly without
+  fundamentals.
+- **Computed as:** `ltr` = close one year (252 sessions) before the pick's date over the close up to three years (756
+  sessions) before it, minus 1, clipped to [-0.95, 10]. The latest year is skipped, as in Fama-French's -60 to -13
+  version, so 12-month momentum is not mixed in. We hold 5 years of daily bars, so picks from late 2024 have only about
+  three years of history: when fewer than three years are available the formation period starts at the first close,
+  as long as it covers at least one year (0 otherwise). Shorter than the paper's 3-5 years: a choice forced by the
+  data. `market.ltr` / `market.ltr_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes up to each pick's own date only (other
+  features untouched). Directional (bearish calls flip it, so the rule shorts the biggest long-term winner). Research
+  rule: `long-term reversal (-z_ltr)`; `z_ltr` is also available to the learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift, t and t_nw, and the luck bar (now 43 tries). The effect is slow
+  (years) and our hold is ~90 days, the paper's losers were mostly small stocks and the edge concentrated in
+  Januaries, so expect a weak result; compare against 1y trend (z_mom250) since a long-term loser is often also a
+  recent loser.
+- **Note:** until enrich finishes backfilling older picks they read `ltr = 0`; trust the result once `ltr` is out of
+  `provisional` in the research kv (coverage share ≥ 99%). Picks with under two years of data will stay at 0 by
+  design, so check `coverage.zero_share.ltr` too.
 - **Result:** pending.

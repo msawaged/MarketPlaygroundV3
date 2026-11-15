@@ -662,3 +662,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   option quotes". What's new adds the Close Call "Your answers" record line.
 - Frontend only. Files: frontend/src/components/chat/StrategyCard.jsx, frontend/src/components/WhatsNew.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-15 night (CTO scout routine): idea 14 long-term reversal; ideas 10, 11, 13 final; spread-of-outcomes proposal
+- No HQ messages from Murad.
+- Research: new feature `ltr` (return from ~3 years to ~1 year before the pick's date, latest year skipped; De Bondt &
+  Thaler 1985) and fixed rule `long-term reversal (-z_ltr)` (directional). `market.ltr` / `ltr_features`, in
+  `market.features`, `nn.make_features` num (NOT MODEL_NUMERIC), `research.FEATS` + `DIRECTIONAL`; `research.enrich`
+  backfills it as of each pick's own date (its SQL filter and `_need` now also check `"ltr"`). Luck bar goes to 43
+  tries. Ranker v2 gate / activation untouched.
+- docs/research_ideas.md: final results for 10 (seasonality, weak), 11 (downside beta, small steady positive, under the
+  bar) and 13 (low IVOL: clearly *worse* raw, t -4.00 / t_nw -1.58) from the 2026-11-15 17:16 UTC run.
+- docs/feature_ideas.md: proposal "How wide it can go" (p10/p50/p90 of 90-day excess return per direction in
+  `baserate:v1`, one line in HowSure). Not built.
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_long_term_reversal_rule_and_enrich_backfill),
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
