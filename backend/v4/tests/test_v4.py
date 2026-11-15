@@ -1027,6 +1027,24 @@ def test_how_sure_calibration_scores_stated_probabilities():
     assert c.post("/v4/user_prob", json={"belief_id": r2["belief_id"], "user_id": "u-sure", "prob": 0.6}).status_code == 400
 
 
+def test_calibration_compares_with_the_outside_view():
+    from backend.v4 import calibration
+    # base rate 50%: always saying it scores 0.25 on every call
+    sharp = [(0.9, 1, 0.5)] * 9 + [(0.55, 0, 0.5)] * 3       # mostly 90% and right: clearly better
+    ov = calibration.score(sharp)["outside"]
+    assert ov["n"] == 12 and ov["outside_brier"] == 0.25 and ov["brier"] < 0.25 and ov["verdict"] == "better than the outside view"
+    bad = [(0.9, 0, 0.5)] * 8 + [(0.9, 1, 0.5)] * 4           # 90% sure, right a third of the time
+    assert calibration.score(bad)["outside"]["verdict"] == "worse than the outside view"
+    mixed = [(0.65, 1, 0.5), (0.65, 0, 0.5)] * 6                 # small edge either way: could be luck
+    assert calibration.score(mixed)["outside"]["verdict"] == "about the same as the outside view"
+    # needs MIN_OUTSIDE calls with a base rate; calls without one (cell hidden) are left out, the rest still scores
+    few = [(0.75, 1, 0.5)] * 5 + [(0.75, 1, None)] * 6
+    sc = calibration.score(few)
+    assert sc["ready"] and "outside" not in sc and sc["graded"] == 11
+    assert "outside" not in calibration.score([(0.75, 1)] * 12)   # old 2-tuples still work
+    assert calibration.outside_view([(0.9, 1, 0.47)] * 10)["avg_base_rate"] == 0.47
+
+
 def test_base_rate_outside_view_counts_each_call_once(monkeypatch):
     from backend.v4 import baserate, calibration
     assert baserate.public()["cells"] == {} and baserate.for_call("bullish", 90) is None   # nothing computed yet

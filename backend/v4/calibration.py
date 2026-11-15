@@ -21,6 +21,7 @@ MIN_GRADED = 10          # below this the card shows a countdown, not a score
 MIN_BUCKET = 3           # below this a row says "too few to say"
 SET_WINDOW_DAYS = 1      # a probability can be set or changed until the day after the call (before the outcome shows)
 NEAR = 0.10              # within 10 points of what you said counts as "about right"
+MIN_OUTSIDE = 10         # graded calls with a base rate needed before comparing with "the outside view"
 
 
 def checkpoint_for(horizon_days) -> int:
@@ -71,20 +72,45 @@ def _verdict(said: float, actual: float, n: int) -> str:
     return word if abs(gap) > 2 * se else f"leaning {word}"
 
 
-def score(pairs: list[tuple[float, int]], pending: int = 0) -> dict:
-    """pairs: (stated probability, outcome 1/0) for graded calls. Pure; no DB."""
+def outside_view(rows: list[tuple]) -> Optional[dict]:
+    """Your Brier score vs the score you'd have got by saying the base rate ("the outside view", baserate.py) on
+    every call, over the calls that have one. rows: (said, outcome, base_rate or None). The verdict is firm only when
+    the mean per-call difference is beyond two standard errors (paired, so the same calls are compared); otherwise
+    'about the same'. None until MIN_OUTSIDE such calls."""
+    xs = [(float(p), int(o), float(r)) for p, o, *rest in rows for r in rest[:1] if r is not None]
+    n = len(xs)
+    if n < MIN_OUTSIDE:
+        return None
+    you = [(p - o) ** 2 for p, o, _ in xs]
+    ref = [(r - o) ** 2 for _, o, r in xs]
+    d = [a - b for a, b in zip(you, ref)]
+    mean = sum(d) / n
+    sd = (sum((x - mean) ** 2 for x in d) / (n - 1)) ** 0.5 if n > 1 else 0.0
+    se = sd / n ** 0.5
+    if se > 0 and mean < -2 * se:
+        verdict = "better than the outside view"
+    elif se > 0 and mean > 2 * se:
+        verdict = "worse than the outside view"
+    else:
+        verdict = "about the same as the outside view"
+    return {"n": n, "brier": round(sum(you) / n, 4), "outside_brier": round(sum(ref) / n, 4),
+            "avg_base_rate": round(sum(r for _, _, r in xs) / n, 3), "verdict": verdict}
+
+
+def score(pairs: list[tuple], pending: int = 0) -> dict:
+    """pairs: (stated probability, outcome 1/0[, base rate for that call or None]) for graded calls. Pure; no DB."""
     n = len(pairs)
     out: dict = {"graded": n, "pending": int(pending), "min_graded": MIN_GRADED, "ready": n >= MIN_GRADED}
     if n == 0:
         return out
-    brier = sum((p - o) ** 2 for p, o in pairs) / n
-    said = sum(p for p, _ in pairs) / n
-    hit = sum(o for _, o in pairs) / n
+    brier = sum((t[0] - t[1]) ** 2 for t in pairs) / n
+    said = sum(t[0] for t in pairs) / n
+    hit = sum(t[1] for t in pairs) / n
     out.update({"brier": round(brier, 4), "avg_said": round(said, 3), "hit_rate": round(hit, 3),
                 "baseline_brier": 0.25})
     rows = []
     for c in CHOICES:
-        g = [o for p, o in pairs if p == c]
+        g = [t[1] for t in pairs if t[0] == c]
         if not g:
             continue
         a = sum(g) / len(g)
@@ -92,6 +118,9 @@ def score(pairs: list[tuple[float, int]], pending: int = 0) -> dict:
                      "verdict": _verdict(c, a, len(g)) if len(g) >= MIN_BUCKET else "too few to say"})
     out["buckets"] = rows
     out["overall"] = _verdict(said, hit, n)
+    ov = outside_view(pairs) if out["ready"] else None
+    if ov:
+        out["outside"] = ov
     return out
 
 
@@ -100,7 +129,7 @@ def for_user(user_id: str) -> Optional[dict]:
     if not user_id or user_id == "anonymous":
         return None
     calls = db.query(
-        "SELECT id, user_prob, horizon_days FROM beliefs WHERE user_id = ? AND source = 'user' AND user_prob IS NOT NULL",
+        "SELECT id, user_prob, horizon_days, direction FROM beliefs WHERE user_id = ? AND source = 'user' AND user_prob IS NOT NULL",
         (user_id,))
     if not calls:
         return None
@@ -117,5 +146,11 @@ def for_user(user_id: str) -> Optional[dict]:
                     GROUP BY p.belief_id, o.checkpoint_days""", chunk):
             if want[r["belief_id"]][1] == int(r["cp"]):
                 graded[r["belief_id"]] = int(r["r"])
-    pairs = [(want[b][0], o) for b, o in graded.items()]
+    from . import baserate   # lazy: baserate imports this module
+    dirs = {r["id"]: r["direction"] for r in calls}
+    cells = (baserate.public().get("cells") or {})
+    def ref(b):
+        c = (cells.get(dirs.get(b)) or {}).get(str(want[b][1]))
+        return float(c["beat"]) if c and c.get("beat") is not None else None
+    pairs = [(want[b][0], o, ref(b)) for b, o in graded.items()]
     return score(pairs, pending=len(want) - len(pairs))

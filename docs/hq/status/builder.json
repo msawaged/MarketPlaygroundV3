@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T02:05:00Z",
- "last_run": "Built 'Did that happen?' on My beliefs. When someone writes 'I'm wrong if...' on a call, a week later they can tap Yes / Partly / Not yet, and the app sets it next to how the call is actually doing (e.g. 'your test says it failed, yet the call is ahead of the S&P: was the test wrong, or luck?'). This finishes the pre-mortem idea. Information only: nothing about picks, research or trading reads it.",
+ "updated_at": "2026-11-15T12:00:00Z",
+ "last_run": "Added 'You vs the outside view' to the 'How well-calibrated are you?' card on My beliefs. Once someone has 10+ graded 'How sure' calls, it shows the score they'd have got by just saying the base rate (how often calls like theirs beat the S&P) beside their own score on the same calls, and says better / worse / about the same, only calling it when the gap is bigger than luck would explain. This is the honest version of 'compare yourself with the brain': the brain's own High/Medium/Low is 'medium' almost every time, so it had nothing to compare. Information only.",
  "working_on": "Nothing open.",
- "next": "The brain's own High/Medium/Low on the 'How sure' scale, or the next proposal in feature_ideas.md.",
+ "next": "Next proposal in feature_ideas.md, or finishing touches on Close Call / Agent HQ / Brain page.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

@@ -172,6 +172,20 @@ function CalibrationCard({ c }) {
             <Term k="brier">Brier score</Term> {c.brier.toFixed(3)}: 0 is perfect, and always saying 50% scores 0.250. Lower is better.
             {c.pending ? ` ${c.pending} more call${c.pending === 1 ? '' : 's'} still waiting for their check.` : ''}
           </p>
+          {c.outside && (
+            <div className="mt-3 rounded-2xl border border-slate-700 bg-slate-800/40 px-3 py-2.5 text-sm">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">You vs the outside view</div>
+              <p className="mt-1 text-slate-300">
+                If you had said the base rate every time (how often calls like yours beat the S&amp;P, about {p(c.outside.avg_base_rate)} on
+                {' '}{c.outside.n === c.graded ? 'these' : `${c.outside.n} of these`} calls), you'd have scored{' '}
+                <b className="text-white">{c.outside.outside_brier.toFixed(3)}</b>. {c.outside.n === c.graded ? 'You scored' : 'On those calls you scored'} <b className="text-white">{c.outside.brier.toFixed(3)}</b>:
+                {' '}<span className={`font-semibold ${/better/.test(c.outside.verdict) ? 'text-green-300' : /worse/.test(c.outside.verdict) ? 'text-amber-200' : 'text-slate-300'}`}>{c.outside.verdict}</span>.
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                {/about the same/.test(c.outside.verdict) ? 'With this many calls the gap could be luck. ' : ''}Base rates are from today's record of graded calls, so they include results that came in after you made yours.
+              </p>
+            </div>
+          )}
         </>
       )}
       <p className="mt-2 text-[11px] text-slate-500">{c.ready ? '“Leaning” means the gap could still be luck with this many calls. ' : ''}Each call counts as right if your idea did what you called vs the S&amp;P 500 at the check that matches its horizon. This mirrors your own record; it isn't advice.</p>

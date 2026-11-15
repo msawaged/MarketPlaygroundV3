@@ -13,7 +13,9 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   My beliefs (settable until the day after the call, then locked), scored at the checkpoint matching the call's
   horizon; "How well-calibrated are you?" card on My beliefs (Brier, said-vs-right table, 10-call minimum, "leaning"
   until the gap is beyond 2 standard errors). Not built yet: brain's own label on the same scale, `user_prob` in
-  pick features for research.
+  pick features for research. 2026-11-15 (Builder): instead of the brain's High/Medium/Low (Claude's `conviction` is
+  "medium" on ~97% of calls, so scoring it says nothing), the card compares the user with the outside view: Brier if
+  they had said the base rate (baserate.py) on each call, paired 2-SE verdict, 10+ calls with a base rate.
 - **Problem:** the only confidence the app records for a call is `beliefs.conviction`, which Claude infers from the
   wording, and it carries almost no information: since Oct 1, 33 of 34 real user calls and 5,801 of 6,039 seeded
   calls are "medium" (prod query, 2026-11-11). So the app grades *whether* a call beat the S&P 500 but never teaches

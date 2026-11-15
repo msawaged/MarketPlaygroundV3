@@ -554,3 +554,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
   ranker active or not. Gates/ranking/numbers untouched. If research stops writing `old_pit`, the note just hides.
 - WhatsNew.jsx: Nov 15, lines for How sure / base rate and I'm wrong if... / Did that happen?
 - Files: frontend/src/components/BrainPage.jsx, WhatsNew.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-15 day (Builder routine): "You vs the outside view" on the calibration card
+- My beliefs > How well-calibrated: once 10+ graded "How sure" calls have a base rate (baserate.py cell for the call's
+  direction x checkpoint, n >= 100), the card shows the Brier the user would have scored by saying the base rate every
+  time beside their own Brier on those same calls, with a paired 2-standard-error verdict (better / worse / about the
+  same as the outside view). Says the base rates are today's record (they include results after the call).
+- `calibration.outside_view`, `MIN_OUTSIDE`; `score()` takes optional 3rd element (base rate) per call, old 2-tuples
+  unchanged; `for_user` reads `baserate.public()` (kv, no new scan; lazy import to avoid a cycle).
+- Replaces the "brain's own High/Medium/Low" follow-up: `conviction` is "medium" on ~97% of calls, nothing to score.
+- Information only: not read by ranking, research, gates or anything that trades.
+- Files: backend/v4/calibration.py, backend/v4/tests/test_v4.py (test_calibration_compares_with_the_outside_view),
+  frontend/src/components/MyCallsPage.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.
