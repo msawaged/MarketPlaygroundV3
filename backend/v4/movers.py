@@ -76,7 +76,8 @@ For each numbered headline:
   written as a forward-looking belief ("Weight-loss drugs will keep cutting snack sales"). No tickers, no jargon.
 - why: one short sentence on why it matters for companies.
 - companies: 2 to 4 US-listed stocks or ETFs it most directly moves, with direction "up" or "down" if the hunch
-  is right and a 6-10 word reason. Prefer the tagged tickers when they fit. Only real, currently listed tickers.
+  is right and a 6-10 word reason that says how the hunch helps ("up") or hurts ("down") that company; the reason
+  must agree with the direction (never "up" with a reason about pressure on it). Prefer the tagged tickers when they fit. Only real, currently listed tickers.
 
 Return every headline once, by its number."""
 
@@ -302,12 +303,14 @@ finance explainer reel. Plain English, no jargon, no tickers in the text, no hyp
 - hook_big: the attention-grabber, at most 4 words. Use a striking number from the article if there is one
   ("$51 billion", "Half a trillion", "Up 40%"); otherwise a short punchy phrase ("Shoppers are switching").
   Never a bare date or year: it would read like today's date.
-- hook_line: one sentence under 14 words that makes someone want to keep reading.
+- hook_line: one sentence under 14 words that makes someone want to keep reading. Stay neutral: report who
+  reacted, never judge whose opinion matters or take a political side.
 - happened: what happened, in at most 30 words.
 - figures: 0 to 2 before/after comparisons, ONLY when both numbers are written in the headline or summary
   ("Cloud sales": "A year ago" "$15.2B" -> "Now" "$30.7B"; or "What Wall Street expected" vs "Actual").
   Copy the numbers exactly as written. Never estimate, round or invent a number. If unsure, return [].
-- why: why it matters for companies and investors, as a short chain of cause and effect, at most 30 words.
+- why: why it matters for companies and investors, as a short chain of cause and effect, at most 30 words, in
+  whole sentences.
 - twist: the best honest reason this might NOT play out the way people expect (the skeptic's view), at most 25 words.
 """
 
@@ -330,6 +333,23 @@ def _grounded(fig: dict, source: str) -> bool:
 def _clip(s: Any, n: int) -> str:
     s = re.sub(r"\s+", " ", str(s or "")).strip()
     return s if len(s) <= n else s[: n - 1].rsplit(" ", 1)[0] + "…"
+
+
+_SENT_END = re.compile(r"(?<=[a-z0-9%)\"'’])[.!?](?=\s+[A-Z\"“]|$)")
+
+
+def _sentences(s: Any, n: int) -> str:
+    """Story text cut at the last whole sentence that fits, so a card never stops mid-thought ("which may matter
+    for housing-linked…"). Only when no whole sentence fits is it clipped at a word with "…". Also mends text
+    cached before this rule (it ends in "…" with a whole sentence before it)."""
+    s = re.sub(r"\s+", " ", str(s or "")).strip()
+    if len(s) <= n and not s.endswith("…"):
+        return s
+    body = s.rstrip("…").rstrip()
+    ends = [m.end() for m in _SENT_END.finditer(body[:n])]
+    if ends and ends[-1] >= 25:
+        return body[: ends[-1]]
+    return s if len(s) <= n else _clip(s, n)
 
 
 _MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
@@ -355,7 +375,8 @@ def _hook(s: Any) -> str:
     """The big hook phrase, whole or not at all: clipping it can flip its meaning
     ("Credit stress looks contained" -> "Credit stress looks…")."""
     s = _undate(re.sub(r"\s+", " ", str(s or "")).strip())
-    return s if s and len(s) <= 40 and len(s.split()) <= 5 else ""
+    whole = not s.endswith(("…", "..."))  # a hook cut by an older rule ("11,000 satellites, still…")
+    return s if s and whole and len(s) <= 40 and len(s.split()) <= 5 else ""
 
 
 def _fallback_story(item: dict) -> dict:
@@ -391,8 +412,8 @@ def _write_story(item: dict, client: Any = None) -> dict:
         if isinstance(f, dict) and _grounded(f, source):
             figs.append({k: _clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")})
     return {"hook_big": _hook(d.get("hook_big")) or _fallback_story(item)["hook_big"], "hook_line": _clip(d.get("hook_line"), 120),
-            "happened": _clip(d.get("happened"), 320), "figures": figs[:2], "why": _clip(d.get("why"), 240),
-            "twist": _clip(d.get("twist"), 200), "ai": True}
+            "happened": _sentences(d.get("happened"), 320), "figures": figs[:2], "why": _sentences(d.get("why"), 240),
+            "twist": _sentences(d.get("twist"), 200), "ai": True}
 
 
 def story(headline: str, client: Any = None) -> Optional[dict]:
@@ -420,4 +441,8 @@ def story(headline: str, client: Any = None) -> Optional[dict]:
                        (key, json.dumps(st), datetime.now(timezone.utc).isoformat()))
     if st.get("hook_big"):  # stories cached before the date rule
         st["hook_big"] = _hook(st["hook_big"]) or _fallback_story(item)["hook_big"]
+    if st.get("ai"):  # stories cached before the whole-sentence rule
+        for k, n in (("happened", 320), ("why", 240), ("twist", 200)):
+            if st.get(k):
+                st[k] = _sentences(st[k], n)
     return {"story": st, "item": item, "market": cur.get("market")}

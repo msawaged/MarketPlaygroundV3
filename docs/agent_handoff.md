@@ -566,3 +566,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Information only: not read by ranking, research, gates or anything that trades.
 - Files: backend/v4/calibration.py, backend/v4/tests/test_v4.py (test_calibration_compares_with_the_outside_view),
   frontend/src/components/MyCallsPage.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-15 morning (daily polish walk)
+- Story mode: `movers._sentences` ends story happened/why/twist on a whole sentence (also on cached stories at read
+  time); `_hook` rejects a hook ending in "…". STORY_PROMPT asks for a neutral hook_line; feed PROMPT asks that each
+  company's reason agree with its up/down direction (prompt text only, schema unchanged).
+- /brain live activity: grouped rounds read "· N rounds over Xh".
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.

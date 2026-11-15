@@ -1556,6 +1556,13 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     assert movers._fallback_story({"headline": "Latam launches the Embraer E195-E2"})["hook_big"] == "Moving now"
     assert movers._fallback_story({"headline": "Oil jumps 5% as OPEC cuts"})["hook_big"] == "5%"
     assert fb["ai"] is False and fb["figures"] == [] and fb["hook_line"]
+    # story text ends on a whole sentence, also for text cached with a mid-sentence "…"
+    cut = ("Fewer young buyers slow homebuilder sales, and prices keep people out. Stronger policy pressure could "
+           "push more public spending toward building, which may matter for housing-linked…")
+    assert movers._sentences(cut, 240) == "Fewer young buyers slow homebuilder sales, and prices keep people out."
+    assert movers._sentences("It hit 242 U.S. cities. Ages rose to 40.", 320) == "It hit 242 U.S. cities. Ages rose to 40."
+    assert movers._sentences("word " * 80, 60).endswith("…")
+    assert movers._hook("11,000 satellites, still…") == ""
 
 
 def test_lineages_evolve_and_snapshot(monkeypatch):

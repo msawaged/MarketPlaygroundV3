@@ -501,3 +501,30 @@ Changed (frontend only; no numbers, gates or ranking touched):
 - WhatsNew.jsx: Nov 15, two new lines (How sure + base rate + calibration; I'm wrong if... + mark whether it happened).
 
 Checks: vite build passes, backend tests 159 passed.
+
+## 2026-11-15 (morning run, ~06:30 UTC = Sun 1:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Signed-in screens not re-walked (no signed-in code changed since the last walk). Read every story in today's
+feed via /v4/movers/story and the cached stories in kv_cache (read-only SQL).
+
+Found:
+- Story cards stopping mid-sentence: 6 of 44 cached stories had a field cut with "…", e.g. Bernie Sanders housing story
+  "why" ends "...which may matter for housing-linked…"; two had cut big hooks from before the whole-hook rule
+  ("11,000 satellites, still…", "Credit stress looks…") that the read-time hook check still let through.
+- Story hook line editorialised: SpaceX catch story said "...and the people who matter most are cheering" about
+  Musk, Hegseth and Trump Jr. reacting. Not neutral; an expert reads it as taking sides.
+- News feed: RKLB tagged "▲ story helps" with the reason "Rivals' reusable tech raises pressure to match cheaper launch
+  costs", a reason that argues the other way.
+- /live activity: "Learned 50 beliefs from the news · 10 rounds · 4m ago" next to "12 today" read as a contradiction;
+  the 10 grouped rounds span 10 hours, the time shown is only the newest.
+
+Changed:
+- movers.py: `_sentences` cuts story happened / why / twist at the last whole sentence that fits (word clip with "…"
+  only when no sentence fits), also applied on read to cached stories; `_hook` drops a hook ending in "…".
+  STORY_PROMPT: hook_line stays neutral (report who reacted, never judge whose opinion matters); why in whole
+  sentences. Feed PROMPT: a company's reason must agree with its up/down direction. Test in test_story_mode.
+- BrainPage.jsx: grouped activity says the span, "· 10 rounds over 10h".
+
+Checks: vite build passes, backend tests 160 passed.

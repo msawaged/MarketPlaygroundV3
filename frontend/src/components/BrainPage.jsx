@@ -143,7 +143,7 @@ function until(iso, now) {
   return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`;
 }
 
-// Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from the news · 8 rounds").
+// Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from the news · 8 rounds over 8h").
 function groupActivity(list) {
   const out = [];
   for (const e of list || []) {
@@ -160,7 +160,9 @@ function groupActivity(list) {
 
 function eventText(e) {
   if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
-  const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds` : '';
+  // grouped rounds show the span they cover: the time on the right is only the newest one
+  const hrs = Math.max(1, Math.round((Date.parse(e.at) - Date.parse(e.since)) / 3.6e6)) || 1;
+  const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds over ${hrs}h` : '';
   if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from the news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
