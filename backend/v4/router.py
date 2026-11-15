@@ -520,6 +520,12 @@ async def yesno_mine(user_id: str):
     return await run_in_threadpool(_yesno, lambda m: m.mine, user_id)
 
 
+@router.get("/yesno/my_record")
+async def yesno_my_record(user_id: str):
+    """The user's own Close Call record vs what the market's odds expected when they answered."""
+    return await run_in_threadpool(_yesno, lambda m: m.my_record_for, user_id)
+
+
 @router.get("/yesno/scorecard")
 async def yesno_scorecard():
     """Public: the brain's yes/no lean vs the market's odds on graded questions."""

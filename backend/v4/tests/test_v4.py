@@ -3597,6 +3597,32 @@ def test_yesno_record_verdict_counts_each_expiration_day_once():
     assert yesno.record_verdict([])["verdict"] == "too_early"
 
 
+def test_yesno_my_record_sets_right_against_the_market_odds():
+    from backend.v4 import yesno
+    def v(i, side, mp, res, exp):
+        return {"ticker": f"T{i}", "level": 100.0, "expiration": exp, "side": side, "market_p": mp, "result": res}
+    # under 5 graded: nothing but the count; open answers don't count
+    few = [v(i, "yes", 0.6, "right", "2026-12-01") for i in range(4)] + [v(9, "yes", 0.5, "open", "2026-12-05")]
+    r = yesno.my_record(few)
+    assert r == {"graded": 4, "open": 1, "min": 5, "verdict": "too_few"}
+    # NO on a 20% YES = an 80% side; duplicates count once; one day -> too early however good
+    one_day = [v(i, "no", 0.2, "right", "2026-12-01") for i in range(6)] + [v(0, "no", 0.2, "right", "2026-12-01")]
+    r = yesno.my_record(one_day)
+    assert r["graded"] == 6 and r["right"] == 6 and r["expected"] == 4.8 and r["avg_odds"] == 0.8
+    assert r["days"] == 1 and r["verdict"] == "too_early" and r["se"] is None
+    # right on every coin flip, 6 days -> ahead; wrong on every one -> behind
+    ahead = [v(f"{d}{i}", "yes", 0.5, "right", f"2026-12-{d:02d}") for d in range(1, 7) for i in range(2)]
+    ahead[0]["result"] = "wrong"
+    assert yesno.my_record(ahead)["verdict"] == "ahead"
+    behind = [dict(x, result="wrong") for x in ahead]
+    assert yesno.my_record(behind)["verdict"] == "behind"
+    # right exactly as often as the odds said, day by day -> within luck
+    even = [v(f"{d}{i}", "yes", 0.5, "right" if (d + i) % 2 else "wrong", f"2026-12-{d:02d}")
+            for d in range(1, 7) for i in range(2)]
+    r = yesno.my_record(even)
+    assert r["right"] == 6 and r["expected"] == 6.0 and r["verdict"] == "within_luck"
+
+
 def test_yesno_practice_trade(monkeypatch, tmp_path):
     yesno = _fake_chain(monkeypatch)
     from backend.v4 import practice_options

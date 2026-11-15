@@ -484,6 +484,57 @@ def record_verdict(rows: list[dict]) -> dict:
     return {"days": days, "gain": round(gain, 5), "se": round(se, 5) if se is not None else None, "verdict": verdict}
 
 
+MIN_MY_RECORD = 5   # graded answers before the user's record shows at all
+
+
+def my_record(views: list[dict]) -> dict:
+    """The user's own Close Call record, set against the market's odds at the moment they answered: being right on
+    a 90% favourite says little, so 'right X of Y' is shown beside how many the market's odds alone expected
+    (sum of the odds it gave each chosen side). Same question answered twice counts once. Like the brain's record,
+    answers that close on the same day share one market move, so the luck band is clustered by expiration day and
+    nothing beyond 'within luck' is said before MIN_VERDICT_DAYS days. Information only: read by nothing else."""
+    seen: dict = {}
+    for v in views:
+        if v.get("result") not in ("right", "wrong") or v.get("market_p") is None:
+            continue
+        seen.setdefault((v.get("ticker"), float(v.get("level") or 0), v.get("expiration"), v.get("side")), v)
+    rows = list(seen.values())
+    open_n = sum(1 for v in views if v.get("result") == "open")
+    n = len(rows)
+    if n < MIN_MY_RECORD:
+        return {"graded": n, "open": open_n, "min": MIN_MY_RECORD, "verdict": "too_few"}
+    by_day: dict = {}
+    right = expected = 0.0
+    for r in rows:
+        p = float(r["market_p"]) if r["side"] == "yes" else 1.0 - float(r["market_p"])
+        hit = 1.0 if r["result"] == "right" else 0.0
+        right += hit
+        expected += p
+        by_day.setdefault(str(r.get("expiration") or ""), []).append(hit - p)
+    days = len(by_day)
+    gap = right - expected
+    se = None
+    if days >= 2:
+        mean = gap / n
+        resid = sum((sum(d) - len(d) * mean) ** 2 for d in by_day.values())
+        se = math.sqrt(resid * days / (days - 1))
+    if days < MIN_VERDICT_DAYS or se is None:
+        verdict = "too_early"
+    elif gap > 2 * se:
+        verdict = "ahead"
+    elif gap < -2 * se:
+        verdict = "behind"
+    else:
+        verdict = "within_luck"
+    return {"graded": n, "open": open_n, "right": int(right), "expected": round(expected, 1),
+            "avg_odds": round(expected / n, 3), "days": days, "gap": round(gap, 1),
+            "se": round(se, 1) if se is not None else None, "verdict": verdict, "min_days": MIN_VERDICT_DAYS}
+
+
+def my_record_for(user_id: str) -> dict:
+    return my_record(mine(user_id))
+
+
 def scorecard() -> dict:
     """Public: how the brain's lean has done against the market's odds on graded questions (all askers)."""
     rows = db.query("SELECT market_p, brain_p, above, side, user_id, expiration FROM yesno_calls WHERE graded_at IS NOT NULL")

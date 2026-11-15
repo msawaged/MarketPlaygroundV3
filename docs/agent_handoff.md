@@ -600,3 +600,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - BrainPage.jsx: catch note says "on those same calls with the peek".
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-15 afternoon (Builder routine): Close Call "Your answers" shows your record against the market's odds
+- No HQ messages from Murad; every feature_ideas.md proposal is built, so this is a finishing touch on Close Call.
+- Users never saw their own Close Call record, only a list of right/wrong pills; being right on a 90% favourite says
+  little. Now, once 5+ answers are graded, "Your answers" opens with "You were right X of Y" beside "Market's odds
+  expected Z" (sum of the odds the market gave each chosen side when they answered) and a verdict clustered by
+  closing day like the brain's record: too early (< 5 days) / ahead / behind (past 2 clustered SEs) / within luck
+  (with the ± band). Each row also says "Market gave YES 55% · closed $201.30".
+- `yesno.my_record(views)`, `my_record_for(user_id)`, `MIN_MY_RECORD = 5`; `GET /v4/yesno/my_record?user_id=`
+  (same pattern as /yesno/mine). Same question answered twice counts once. Information only: read by nothing else.
+- Files: backend/v4/yesno.py, router.py, tests/test_v4.py (test_yesno_my_record_sets_right_against_the_market_odds),
+  frontend/src/components/YesNoPage.jsx, lib/api.js, docs/hq/status/builder.json.

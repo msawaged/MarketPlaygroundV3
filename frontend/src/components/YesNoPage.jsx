@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Page, { Card } from './ui/Page';
-import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoScorecard } from '../lib/api';
+import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoMyRecord, yesnoScorecard } from '../lib/api';
 
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
@@ -16,6 +16,34 @@ const VERDICT = {
   about_same: () => "Its odds and the market's are about even so far: the gap is within what luck would explain (each closing day counted once).",
 };
 const POPULAR = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'TSLA', 'AMZN', 'META', 'MSFT'];
+
+// The user's own record: right X of Y, beside how many the market's odds at the time expected (a 90% favourite
+// being right says little). Same-day answers share one market move, so the luck band is clustered by closing day.
+function MyRecord({ rec }) {
+  if (!rec || !rec.graded) return null;
+  if (rec.verdict === 'too_few') {
+    return <p className="mt-2 text-xs text-slate-400">Your record shows once {rec.min} answers are graded ({rec.graded} so far). It will set how often you were right beside what the market's odds expected.</p>;
+  }
+  const said = {
+    too_early: `Too early to call it skill or luck: answers that close on the same day share one market move, so the verdict waits for ${rec.min_days} closing days (${rec.days} so far).`,
+    ahead: 'Ahead of the market\'s odds by more than luck would explain (each closing day counted once).',
+    behind: 'Behind the market\'s odds by more than luck would explain (each closing day counted once).',
+    within_luck: `Within what luck would explain (about ±${Math.round(2 * (rec.se || 0) * 10) / 10} answers either way, each closing day counted once).`,
+  }[rec.verdict];
+  return (
+    <div className="mt-2 rounded-2xl border border-slate-700 bg-slate-900/50 p-3 text-sm">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-slate-300">You were right</span>
+        <span className="font-extrabold tabular-nums">{rec.right} of {rec.graded}</span>
+      </div>
+      <div className="mt-1 flex items-baseline justify-between gap-2">
+        <span className="text-slate-400 min-w-0">Market's odds expected</span>
+        <span className="shrink-0 font-bold tabular-nums text-slate-300">{rec.expected}</span>
+      </div>
+      <p className="mt-2 text-xs text-slate-400">When you answered, the market gave your side {pc(rec.avg_odds)} on average. {said}</p>
+    </div>
+  );
+}
 
 function OddsBar({ label, p, tone }) {
   return (
@@ -43,8 +71,12 @@ export default function YesNoPage() {
   const [contracts, setContracts] = useState(1);
   const [mine, setMine] = useState([]);
   const [score, setScore] = useState(null);
+  const [rec, setRec] = useState(null);
 
-  const loadMine = useCallback(() => { yesnoMine().then((r) => setMine(Array.isArray(r) ? r : [])).catch(() => {}); }, []);
+  const loadMine = useCallback(() => {
+    yesnoMine().then((r) => setMine(Array.isArray(r) ? r : [])).catch(() => {});
+    yesnoMyRecord().then((r) => setRec(r && r.graded != null ? r : null)).catch(() => {});
+  }, []);
   useEffect(() => { loadMine(); yesnoScorecard().then(setScore).catch(() => {}); }, [loadMine]);
 
   useEffect(() => {
@@ -176,10 +208,16 @@ export default function YesNoPage() {
             <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Your answers</div>
             <button onClick={() => navigate('/portfolio')} className="text-xs text-blue-300">Portfolio →</button>
           </div>
+          <MyRecord rec={rec} />
           <div className="mt-2 divide-y divide-slate-800">
             {mine.slice(0, 12).map((c) => (
               <div key={c.id} className="py-2 flex items-center justify-between text-sm">
-                <span className="min-w-0 truncate">{c.ticker} above {usd(c.level, c.level % 1 ? 2 : 0)} · {fmtDay(c.expiration)}</span>
+                <span className="min-w-0">
+                  <span className="block truncate">{c.ticker} above {usd(c.level, c.level % 1 ? 2 : 0)} · {fmtDay(c.expiration)}</span>
+                  {c.market_p != null && (
+                    <span className="block text-[11px] text-slate-500 tabular-nums">Market gave {c.side.toUpperCase()} {pc(c.side === 'yes' ? c.market_p : 1 - c.market_p)}{c.close_price != null ? ` · closed ${usd(c.close_price, 2)}` : ''}</span>
+                  )}
+                </span>
                 <span className="shrink-0 ml-2 flex items-center gap-2">
                   <b className={c.side === 'yes' ? 'text-green-300' : 'text-red-300'}>{c.side.toUpperCase()}</b>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${c.result === 'right' ? 'bg-green-500/20 text-green-200' : c.result === 'wrong' ? 'bg-red-500/20 text-red-200' : 'bg-slate-700 text-slate-300'}`}>{c.result}</span>

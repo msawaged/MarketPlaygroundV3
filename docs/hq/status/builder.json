@@ -1,10 +1,16 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T08:05:00Z",
- "last_run": "Made the brain's Close Call record honest before its first grades come in (Nov 19). It used to say the brain 'beat the market's odds' whenever its score was a hair better, even on 11 questions that all closed on the same day and rode the same market move. Now it says 'too early to say' until questions have closed on 5 different days, and after that only calls better or worse when the gap is bigger than luck would explain (each closing day counted once). It also shows how often the market's odds alone picked the right side, so the brain's hit rate has something to be compared with.",
+ "updated_at": "2026-11-15T15:30:00Z",
+ "last_run": "Close Call: your own record. After 5 graded answers, 'Your answers' shows how often you were right next to how often the market's odds expected you to be (a 90% favourite being right says little), and only calls you ahead or behind after 5 closing days and past what luck explains. Each answer line shows the market's odds for your side and the closing price.",
  "working_on": "Nothing open.",
- "next": "Check the record card after the first grades on Nov 19. Suggested to the brain agent: the Close Call learning test has the same same-day issue (see handoff).",
+ "next": "Check the brain's record and the new 'your record' box after the first grades on Nov 19.",
  "needs_from_murad": [],
  "read_up_to": 0,
- "replies": []
+ "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call now shows each user their own record against the market's odds: 'You were right 7 of 14; the market's odds expected 6.7', with an honest skill-or-luck line. Each answer also shows the odds the market gave it.",
+   "at": "2026-11-15T15:30:00Z"
+  }
+ ]
 }

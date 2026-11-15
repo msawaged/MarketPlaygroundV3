@@ -199,6 +199,9 @@ export function yesnoCall({ ticker, level, expiration, side, trade, contracts })
 export function yesnoMine() {
   return request(`/v4/yesno/mine?user_id=${encodeURIComponent(userId())}`);
 }
+export function yesnoMyRecord() {
+  return request(`/v4/yesno/my_record?user_id=${encodeURIComponent(userId())}`);
+}
 export function yesnoScorecard() {
   return request("/v4/yesno/scorecard");
 }
