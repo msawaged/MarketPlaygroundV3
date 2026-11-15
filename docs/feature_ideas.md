@@ -147,7 +147,9 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 - **Area:** app (learning loop); a small, later brain benefit.
 - **Status:** built 2026-11-14, commit ccb4e74 (Builder): optional line + price line on one shown pick, set in chat
   under the picks or later on My beliefs; My beliefs shows it with "crossed on <date>" from daily closes after the
-  call. Not built yet: the "Did that happen?" answer, push alerts on a crossing, research use.
+  call. "Did that happen?" built 2026-11-15 (Builder, commit "Did that happen?..."): yes / partly / not yet on the
+  written line from a week after the call, changeable, cleared when the line changes, set beside how the call is doing.
+  Not built yet: push alerts on a crossing, research use.
 - **Problem:** the app records *what* a user believes but not *why* or *what would prove it wrong*. Since Oct 1 the 34
   real user calls (7 users) average 43 characters (prod query 2026-11-14, `beliefs.source = 'user'`), e.g. a ticker
   and a direction. When the call is graded at 7/30/90/180/365 days (`grader.CHECKPOINTS`), the user sees a number but

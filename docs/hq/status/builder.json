@@ -1,7 +1,7 @@
 {
  "key": "builder",
- "updated_at": "2026-11-14T23:25:00Z",
- "last_run": "Built 'still filling in' (live). When a new number is added to the brain, older calls get it filled in over days, and until then a test that uses it is partly scored on blanks. Every research run now counts how filled-in each number is, and the Brain page's luck check names those tests. Live tonight: 3 of 42 tests are still filling in: same season past years 83%, downside beta 71%, calm stocks (idiosyncratic vol) 26%. Reporting only: nothing about picks, gates or trading changed.",
+ "updated_at": "2026-11-15T02:05:00Z",
+ "last_run": "Built 'Did that happen?' on My beliefs. When someone writes 'I'm wrong if...' on a call, a week later they can tap Yes / Partly / Not yet, and the app sets it next to how the call is actually doing (e.g. 'your test says it failed, yet the call is ahead of the S&P: was the test wrong, or luck?'). This finishes the pre-mortem idea. Information only: nothing about picks, research or trading reads it.",
  "working_on": "Nothing open.",
  "next": "The brain's own High/Medium/Low on the 'How sure' scale, or the next proposal in feature_ideas.md.",
  "needs_from_murad": [],

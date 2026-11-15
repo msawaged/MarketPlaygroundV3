@@ -693,7 +693,7 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
         return {"beliefs": [], "summary": None}
     rows = db.query(
         "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation, wrong_if, wrong_if_px, "
-        "wrong_if_ticker, user_prob FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
+        "wrong_if_ticker, wrong_if_answer, wrong_if_answered_at, user_prob FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
         (user_id, int(limit)),
     )
     if not rows:
@@ -852,9 +852,46 @@ def set_wrong_if(belief_id: str, user_id: str, text: Optional[str], price: Optio
         px, tk = round(px, 2), pk["ticker"]
     if text is None and px is None:
         raise BeliefError("write a line or pick a price")
+    old = db.query_one("SELECT wrong_if FROM beliefs WHERE id = ?", (belief_id,)) or {}
+    if (old.get("wrong_if") or None) != text:
+        # a new line is a new test: an answer given to the old one no longer applies
+        db.execute("UPDATE beliefs SET wrong_if_answer = NULL, wrong_if_answered_at = NULL WHERE id = ?", (belief_id,))
     db.execute("UPDATE beliefs SET wrong_if = ?, wrong_if_px = ?, wrong_if_ticker = ? WHERE id = ?",
                (text, px, tk, belief_id))
     return {"status": "ok", "wrong_if": {"text": text, "price": px, "ticker": tk}}
+
+
+WRONG_IF_ANSWERS = ("yes", "partly", "no")
+WRONG_IF_ASK_DAYS = 7   # the first checkpoint (grader.CHECKPOINTS): before that there's little to look back on
+
+
+def wrong_if_ask_from(as_of_date: str) -> Optional[str]:
+    try:
+        return (date.fromisoformat(str(as_of_date)[:10]) + timedelta(days=WRONG_IF_ASK_DAYS)).isoformat()
+    except ValueError:
+        return None
+
+
+def answer_wrong_if(belief_id: str, user_id: str, answer: Optional[str]) -> dict:
+    """'Did that happen?': the user's own yes / partly / no on their written 'I'm wrong if...' line, from the
+    first checkpoint (7 days after the call) on. They can change it as things play out; None clears it.
+    Information only: it's their reflection, not used by ranking, research or anything that trades."""
+    if not user_id or user_id == "anonymous":
+        raise BeliefError("sign in or use this device's calls to add this")
+    b = db.query_one("SELECT id, user_id, source, as_of_date, wrong_if FROM beliefs WHERE id = ?", (belief_id,))
+    if not b or b["user_id"] != user_id or b["source"] != "user":
+        raise BeliefError("unknown belief_id")
+    if not b["wrong_if"]:
+        raise BeliefError("write an 'I'm wrong if...' line first")
+    a = (str(answer).strip().lower() or None) if answer is not None else None
+    if a is not None and a not in WRONG_IF_ANSWERS:
+        raise BeliefError("answer yes, partly or no")
+    start = wrong_if_ask_from(b["as_of_date"])
+    if a is not None and (not start or market.today().isoformat() < start):
+        raise BeliefError(f"you can answer this from {start}, a week after the call")
+    at = market.today().isoformat() if a else None
+    db.execute("UPDATE beliefs SET wrong_if_answer = ?, wrong_if_answered_at = ? WHERE id = ?", (a, at, belief_id))
+    return {"status": "ok", "answer": a, "answered_at": at}
 
 
 def tripwire(direction: str, price: float, dates: list[str], closes: list[float], after: str,
@@ -877,6 +914,12 @@ def _wrong_if_view(r: dict, picks: list[dict]) -> Optional[dict]:
     if not text and px is None:
         return None
     out: dict = {"text": text, "price": px, "ticker": tk}
+    if text:
+        start = wrong_if_ask_from(r.get("as_of_date") or "")
+        out["ask_from"] = start
+        out["can_answer"] = bool(start and market.today().isoformat() >= start)
+        out["answer"] = r.get("wrong_if_answer")
+        out["answered_at"] = r.get("wrong_if_answered_at")
     if px is not None and tk:
         p = next((p for p in picks if p["ticker"] == tk), None)
         if p and p["direction"] in ("bullish", "bearish"):

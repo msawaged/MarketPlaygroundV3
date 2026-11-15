@@ -47,6 +47,12 @@ class WrongIfIn(BaseModel):
     ticker: Optional[str] = None
 
 
+class WrongIfAnswerIn(BaseModel):
+    belief_id: str
+    user_id: str = "anonymous"
+    answer: Optional[str] = None
+
+
 class SureIn(BaseModel):
     belief_id: str
     user_id: str = "anonymous"
@@ -91,6 +97,14 @@ async def post_feedback(body: FeedbackIn):
 async def post_wrong_if(body: WrongIfIn):
     try:
         return await run_in_threadpool(engine.set_wrong_if, body.belief_id, body.user_id, body.text, body.price, body.ticker)
+    except engine.BeliefError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/wrong_if/answer")
+async def post_wrong_if_answer(body: WrongIfAnswerIn):
+    try:
+        return await run_in_threadpool(engine.answer_wrong_if, body.belief_id, body.user_id, body.answer)
     except engine.BeliefError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Page, { Card, pct } from './ui/Page';
 import Term from './ui/Term';
-import { getMyBeliefs } from '../lib/api';
+import { getMyBeliefs, answerWrongIf } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { shareCard } from '../lib/shareCard';
 import WrongIf from './chat/WrongIf';
@@ -39,7 +39,7 @@ function shortDate(d) {
 }
 
 // The user's own "I'm wrong if..." shown back next to the result, with the price line checked against daily closes.
-function WrongIfStatus({ w, onEdit }) {
+function WrongIfStatus({ w, call, beliefId, onEdit, onAnswered }) {
   const side = w.direction === 'bearish' ? 'above' : 'below';
   const hasLine = w.price != null && w.ticker;
   return (
@@ -61,11 +61,76 @@ function WrongIfStatus({ w, onEdit }) {
           </span>
         </div>
       )}
+      {w.text ? (
+        <DidThatHappen w={w} call={call} beliefId={beliefId} onAnswered={onAnswered} />
+      ) : (
+        <div className="mt-1 text-[11px] text-slate-400">
+          {w.crossed_on
+            ? 'By your own test, this idea failed. Did that happen for the reason you expected? Worth a look before you add to it.'
+            : 'By your own test, the idea still stands.'}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// "Did that happen?": the user's own yes / partly / no on the line they wrote, from a week after the call.
+// Their reflection only: it isn't used for picks or research. Compared with how the call is doing, it shows
+// the two lessons a pre-mortem teaches: right for the wrong reason, or wrong for a reason you didn't list.
+const ANSWERS = [['yes', 'Yes'], ['partly', 'Partly'], ['no', 'Not yet']];
+const SAID = { yes: 'it happened', partly: 'it partly happened', no: "it hasn't happened" };
+
+function DidThatHappen({ w, call, beliefId, onAnswered }) {
+  const [st, setSt] = useState({ saving: null, error: null, changing: false });
+  const save = async (a) => {
+    setSt({ saving: a, error: null, changing: false });
+    try {
+      await answerWrongIf(beliefId, a);
+      setSt({ saving: null, error: null, changing: false });
+      onAnswered?.();
+    } catch (e) {
+      setSt({ saving: null, error: e.message || 'Could not save', changing: true });
+    }
+  };
+  if (!w.can_answer) {
+    return (
       <div className="mt-1 text-[11px] text-slate-400">
-        {w.crossed_on
-          ? 'By your own test, this idea failed. Did that happen for the reason you expected? Worth a look before you add to it.'
-          : w.text ? 'Has that happened yet? Check it against the result above.' : 'By your own test, the idea still stands.'}
+        {w.crossed_on ? 'By your own test, this idea failed. ' : ''}From {shortDate(w.ask_from)} (a week after your call) you can mark whether that happened.
       </div>
+    );
+  }
+  if (w.answer && !st.changing) {
+    let lesson = null;
+    if (call && (w.answer === 'yes' || w.answer === 'partly') && call.playing_out) {
+      lesson = 'Yet the call is ahead of the S&P so far. Was your test wrong, or is the result luck you shouldn\'t count on?';
+    } else if (call && w.answer === 'no' && !call.playing_out) {
+      lesson = 'Yet the call trails the S&P so far: something you didn\'t list is moving it. Worth naming before your next call.';
+    } else if (call && w.answer === 'yes' && !call.playing_out) {
+      lesson = 'And the call trails the S&P: your test saw it coming.';
+    }
+    return (
+      <div className="mt-2 border-t border-slate-700/70 pt-2 text-xs text-slate-300">
+        <div className="flex items-start justify-between gap-2">
+          <span>You marked: <b className="text-white">{SAID[w.answer]}</b>{w.answered_at ? ` (${shortDate(w.answered_at)})` : ''}.</span>
+          <button onClick={() => setSt({ saving: null, error: null, changing: true })} className="shrink-0 font-semibold text-slate-400 hover:text-white">Change</button>
+        </div>
+        {lesson && <div className="mt-1 text-[11px] text-slate-400">{lesson}</div>}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-2 border-t border-slate-700/70 pt-2">
+      <div className="text-xs font-semibold text-slate-200">Did that happen?</div>
+      <div className="mt-1.5 grid grid-cols-3 gap-2">
+        {ANSWERS.map(([k, label]) => (
+          <button key={k} disabled={!!st.saving} onClick={() => save(k)}
+            className={`rounded-xl border px-2 py-1.5 text-xs font-semibold ${w.answer === k ? 'border-amber-300 bg-amber-500/20 text-white' : 'border-slate-600 bg-slate-900/60 text-slate-200 hover:border-slate-400'} disabled:opacity-60`}>
+            {st.saving === k ? 'Saving…' : label}
+          </button>
+        ))}
+      </div>
+      {st.error && <div className="mt-1 text-[11px] text-red-300">{st.error}</div>}
+      <div className="mt-1 text-[11px] text-slate-500">Your own check, compared with the result above. It isn't used for picks.</div>
     </div>
   );
 }
@@ -238,7 +303,7 @@ export default function MyCallsPage() {
               {editing === b.belief_id ? (
                 <WrongIf beliefId={b.belief_id} picks={b.picks} direction={b.direction} horizonDays={b.horizon_days} initial={b.wrong_if} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
               ) : b.wrong_if ? (
-                <WrongIfStatus w={b.wrong_if} onEdit={() => setEditing(b.belief_id)} />
+                <WrongIfStatus w={b.wrong_if} call={b.call} beliefId={b.belief_id} onEdit={() => setEditing(b.belief_id)} onAnswered={reload} />
               ) : (
                 <button onClick={() => setEditing(b.belief_id)} className="mt-3 text-xs font-semibold text-amber-200 hover:text-white">+ I'm wrong if…</button>
               )}

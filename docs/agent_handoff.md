@@ -533,3 +533,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: frontend/src/lib/figures.js, figures.test.mjs, components/MoversFeed.jsx, StoryViewer.jsx, TrendingPage.jsx,
   ToolSelectorPage.jsx, ui/Page.jsx, backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-15 night (Builder routine): "Did that happen?" on the user's "I'm wrong if..." line
+- Finishes the pre-mortem loop (docs/feature_ideas.md 2026-11-14, the part listed as not built). On My beliefs, a written
+  "I'm wrong if..." line gets "Did that happen?" Yes / Partly / Not yet from 7 days after the call (`WRONG_IF_ASK_DAYS`,
+  the first checkpoint); before that it says from which date. The answer can be changed; it's cleared when the user
+  writes a different line (same line kept). Once answered, it's set beside the call result: "Yet the call is ahead of
+  the S&P so far. Was your test wrong, or is the result luck?" / "Yet the call trails the S&P: something you didn't
+  list is moving it." Price-line-only tests keep the automatic crossed / not-crossed check (no question).
+- New columns `beliefs.wrong_if_answer`, `wrong_if_answered_at` (ADD COLUMN migrations), `engine.answer_wrong_if`,
+  `POST /v4/wrong_if/answer` (owner only). Information only: not read by ranking, research, gates or anything that trades.
+- Files: backend/v4/db.py, engine.py, router.py, tests/test_v4.py (test_wrong_if_did_that_happen_answer; the pre-mortem
+  test now checks only the text/price/ticker keys), frontend components/MyCallsPage.jsx, lib/api.js,
+  docs/feature_ideas.md, docs/hq/status/builder.json.

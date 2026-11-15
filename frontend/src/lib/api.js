@@ -126,6 +126,11 @@ export function saveWrongIf(beliefId, { text = null, price = null, ticker = null
   return request("/v4/wrong_if", { method: "POST", body: { belief_id: beliefId, user_id: userId(), text, price, ticker } });
 }
 
+/** "Did that happen?": the user's own yes / partly / no on their "I'm wrong if..." line (null clears it). */
+export function answerWrongIf(beliefId, answer) {
+  return request("/v4/wrong_if/answer", { method: "POST", body: { belief_id: beliefId, user_id: userId(), answer } });
+}
+
 /** "How sure are you?": the user's own probability (0.55 / 0.65 / 0.75 / 0.9) that their call plays out. */
 let _baseRates = null;
 // Base rates ("the outside view"): one small public table, fetched once per page load.

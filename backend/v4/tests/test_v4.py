@@ -905,7 +905,8 @@ def test_wrong_if_pre_mortem_is_stored_owner_only_and_tripwire_reads_closes():
     assert "crossed_on" in w and "past_now" in w
     engine.set_wrong_if(bid, "u-pm", "rates jump")                              # text only clears the price line
     w = engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]
-    assert w == {"text": "rates jump", "price": None, "ticker": None}
+    assert {k: w[k] for k in ("text", "price", "ticker")} == {"text": "rates jump", "price": None, "ticker": None}
+    assert "direction" not in w and w["answer"] is None and w["can_answer"] is False
     assert engine.my_beliefs("u-fund-none")["beliefs"] == []
 
     from fastapi.testclient import TestClient
@@ -916,6 +917,50 @@ def test_wrong_if_pre_mortem_is_stored_owner_only_and_tripwire_reads_closes():
     assert c.post("/v4/wrong_if", json={"belief_id": bid, "user_id": "u-pm", "text": "margins shrink"}).status_code == 200
     assert c.post("/v4/wrong_if", json={"belief_id": bid, "user_id": "u-x", "text": "nope"}).status_code == 400
     assert engine.my_beliefs("u-pm")["beliefs"][0]["wrong_if"]["text"] == "margins shrink"
+
+def test_wrong_if_did_that_happen_answer(monkeypatch):
+    from datetime import date, timedelta
+    r = engine.process_belief("plumbing demand is going to be high", "u-dth", "moderate", claude_client=FakeClaude())
+    bid = r["belief_id"]
+    made = db.query_one("SELECT as_of_date FROM beliefs WHERE id = ?", (bid,))["as_of_date"]
+    with pytest.raises(engine.BeliefError):
+        engine.answer_wrong_if(bid, "u-dth", "yes")                     # no line written yet
+    engine.set_wrong_if(bid, "u-dth", "housing starts fall")
+    w = engine.my_beliefs("u-dth")["beliefs"][0]["wrong_if"]
+    assert w["can_answer"] is False and w["answer"] is None
+    assert w["ask_from"] == (date.fromisoformat(made) + timedelta(days=engine.WRONG_IF_ASK_DAYS)).isoformat()
+    with pytest.raises(engine.BeliefError):
+        engine.answer_wrong_if(bid, "u-dth", "yes")                     # too early: nothing to look back on
+    later = date.fromisoformat(made) + timedelta(days=engine.WRONG_IF_ASK_DAYS)
+    monkeypatch.setattr(engine.market, "today", lambda: later)
+    with pytest.raises(engine.BeliefError):
+        engine.answer_wrong_if(bid, "u-other", "yes")                   # only the person who made the call
+    with pytest.raises(engine.BeliefError):
+        engine.answer_wrong_if(bid, "anonymous", "yes")
+    with pytest.raises(engine.BeliefError):
+        engine.answer_wrong_if(bid, "u-dth", "maybe")
+    out = engine.answer_wrong_if(bid, "u-dth", " Partly ")
+    assert out["answer"] == "partly" and out["answered_at"] == later.isoformat()
+    w = engine.my_beliefs("u-dth")["beliefs"][0]["wrong_if"]
+    assert w["can_answer"] is True and w["answer"] == "partly" and w["answered_at"] == later.isoformat()
+    engine.answer_wrong_if(bid, "u-dth", "yes")                         # can change it as things play out
+    assert engine.my_beliefs("u-dth")["beliefs"][0]["wrong_if"]["answer"] == "yes"
+    engine.set_wrong_if(bid, "u-dth", "housing starts fall")            # same line again keeps the answer
+    assert engine.my_beliefs("u-dth")["beliefs"][0]["wrong_if"]["answer"] == "yes"
+    engine.set_wrong_if(bid, "u-dth", "mortgage rates jump")            # a new line is a new test
+    w = engine.my_beliefs("u-dth")["beliefs"][0]["wrong_if"]
+    assert w["answer"] is None and w["answered_at"] is None
+    engine.answer_wrong_if(bid, "u-dth", "no")
+    assert engine.answer_wrong_if(bid, "u-dth", None)["answer"] is None  # clearing is allowed
+
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from backend.v4.router import router
+    app = FastAPI(); app.include_router(router, prefix="/v4")
+    c = TestClient(app)
+    assert c.post("/v4/wrong_if/answer", json={"belief_id": bid, "user_id": "u-dth", "answer": "no"}).json()["answer"] == "no"
+    assert c.post("/v4/wrong_if/answer", json={"belief_id": bid, "user_id": "u-x", "answer": "no"}).status_code == 400
+
 
 def test_how_sure_calibration_scores_stated_probabilities():
     from datetime import date
