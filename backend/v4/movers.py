@@ -195,6 +195,23 @@ def _items(news: list[dict], ai: Optional[dict]) -> list[dict]:
     return items
 
 
+_NAME_FILLER = {"the", "inc", "incorporated", "corp", "corporation", "co", "company", "class", "common", "stock",
+                "shares", "ordinary", "plc", "ltd", "limited", "holdings", "holding", "group", "sa", "nv", "ag", "adr",
+                "american", "depositary", "sponsored", "new"}
+
+
+def _names_company(info: dict, ticker: str, item: dict) -> bool:
+    """True when the story mentions the company: its ticker as a word, or the first real word of its name."""
+    name = str(info.get("name") or "")
+    if not name:
+        return True  # nothing to check against
+    text = f"{item.get('headline') or ''} {item.get('summary') or ''}"
+    if re.search(rf"(?<![A-Za-z]){re.escape(ticker)}(?![A-Za-z])", text):
+        return True
+    words = [w for w in re.findall(r"[a-z0-9&']+", name.lower()) if w not in _NAME_FILLER]
+    return bool(words) and re.search(rf"(?<![a-z0-9]){re.escape(words[0])}(?![a-z0-9])", text.lower()) is not None
+
+
 def build(client: Any = None) -> dict:
     _last_error["v"] = ""
     news = [n for n in market.headlines(50) if n.get("headline")][:30]
@@ -207,7 +224,10 @@ def build(client: Any = None) -> dict:
         ok = []
         for c in it["companies"]:
             try:
-                if market.asset_info(c["ticker"]):
+                info = market.asset_info(c["ticker"])
+                # a news-source tag Claude didn't pick (direction None) must name the company in the story: tags are
+                # often foreign tickers that are a different US company (Dr. Martens "DOCS" is Doximity here)
+                if info and (c.get("direction") or _names_company(info, c["ticker"], it)):
                     ok.append(c)
             except Exception:
                 ok.append(c)  # lookup down: keep it rather than empty the card
@@ -227,9 +247,13 @@ def _stored() -> Optional[dict]:
         return None
 
 
-def _age(feed: dict) -> float:
+KEEP_CURATED = int(os.getenv("MP_MOVERS_KEEP_CURATED_SECONDS", str(3 * 86400)))  # quiet weekend news
+
+
+def _age(feed: dict, key: str = "checked_at") -> float:
+    """Seconds since the feed was last rebuilt or re-checked (key='built_at': since its stories were picked)."""
     try:
-        return time.time() - datetime.fromisoformat(feed["built_at"]).timestamp()
+        return time.time() - datetime.fromisoformat(feed.get(key) or feed["built_at"]).timestamp()
     except Exception:
         return 1e9
 
@@ -244,7 +268,15 @@ def feed(client: Any = None) -> dict:
                 cur2 = _stored()
                 if not cur2 or _age(cur2) > ttl:
                     fresh = build(client)
-                    if fresh["items"] or not (cur and cur.get("items")):
+                    if (not fresh.get("ai") and cur and cur.get("ai") and cur.get("items")
+                            and _age(cur, "built_at") < KEEP_CURATED):
+                        # Claude found nothing worth a hunch (or was down): keep the last curated feed, which says
+                        # how old it is, rather than raw routine headlines (dividend dates, rating notes)
+                        cur = dict(cur, checked_at=fresh["built_at"])
+                        db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
+                        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
+                                   (KEY, json.dumps(cur), fresh["built_at"]))
+                    elif fresh["items"] or not (cur and cur.get("items")):
                         db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
                         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                                    (KEY, json.dumps(fresh), fresh["built_at"]))

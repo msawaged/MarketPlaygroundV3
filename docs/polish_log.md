@@ -528,3 +528,29 @@ Changed:
 - BrainPage.jsx: grouped activity says the span, "· 10 rounds over 10h".
 
 Checks: vite build passes, backend tests 160 passed.
+
+## 2026-11-15 (mid-morning run, ~09:30 UTC = Sun 4:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Signed-in screens not re-walked (no signed-in code changed since the last walk).
+
+Found:
+- News feed (/trending, "Moving now") showed the wrong companies. kv_cache `movers:v1` built 09:19 UTC had `ai: false`
+  with no error: Claude kept none of the 30 weekend headlines, so the feed fell back to raw headlines and the news
+  source's own tags. "Dr. Martens plc Announces Ex-Dividend Date" -> "COMPANIES IT TOUCHES: DOCS" (DOCS here is
+  Doximity, Dr. Martens' London ticker); "Potentially AI PLC Announces Beta Workspace" -> AGI (Alamos Gold). Each with a
+  "See how to invest in this" button. The same fallback replaced Friday's curated hunches with exactly the noise the
+  prompt drops (a dividend date, "RBC Maintains Buy Rating").
+- /brain "A catch we found": "+0.5 pts (t 1.7) instead of +1.5 pts (t 4.5)" right under a headline of "+1.2 pts". Both
+  are right (2,703 test calls vs 4,398 graded #1 picks), but read as a contradiction.
+
+Changed:
+- movers.py: a news-source tag (a company Claude didn't pick) stays only if the story names it: its ticker as a word,
+  or the first real word of its listed name (`_names_company`, Alpaca asset name, already cached). When a rebuild has
+  no Claude hunches and the stored feed does and is under 3 days old (`MP_MOVERS_KEEP_CURATED_SECONDS`), keep the
+  curated feed (its "Updated" time stays honest, built_at unchanged) and mark `checked_at` so it isn't rebuilt every
+  request. Test test_movers_fallback_drops_tags_for_a_different_company_and_keeps_the_curated_feed.
+- BrainPage.jsx: "... instead of +1.5 pts (t 4.5) on those same calls with the peek".
+
+Checks: vite build passes, backend tests 162 passed.

@@ -352,7 +352,7 @@ export default function BrainPage({ viewOnly = false }) {
                   <span className="font-semibold text-amber-300">A catch we found.</span>
                   {' '}Practice calls are made on past dates, and the #1's score there used each stock's track record including results that came later.
                   {' '}Rebuilt without that peek, on {Number(peek.n).toLocaleString()} test calls the #1 beat our other ideas by {pts(peek.lift || 0)} pts (t {Number(peek.lift_t || 0).toFixed(1)})
-                  {' '}instead of {pts(stored.lift || 0)} pts (t {Number(stored.lift_t || 0).toFixed(1)}), so read the gap above as too generous. The live forward test below has no peek.
+                  {' '}instead of {pts(stored.lift || 0)} pts (t {Number(stored.lift_t || 0).toFixed(1)}) on those same calls with the peek, so read the gap above as too generous. The live forward test below has no peek.
                 </p>
               )}
               {sk.luck?.tries_ever > 0 && (

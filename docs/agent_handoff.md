@@ -589,3 +589,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   deliberate change to write up in docs/brain_upgrades.md if someone takes it.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py (test_yesno_record_verdict_counts_each_expiration_day_once),
   frontend/src/components/YesNoPage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-15 mid-morning (daily polish walk): news feed no longer shows the wrong company on quiet days
+- `movers.build`: news-source tags (direction None, used only when Claude kept nothing) must be named in the
+  headline/summary (`_names_company`); weekend tags like Dr. Martens -> DOCS (Doximity) were shown as "companies it
+  touches".
+- `movers.feed`: if a rebuild has no Claude hunches but the stored feed does (built < 3 days ago,
+  `MP_MOVERS_KEEP_CURATED_SECONDS`), the curated feed stays; `checked_at` (new optional key) drives the TTL, `built_at`
+  still drives "Updated Xm ago". Seeder's news_beliefs already skips used hunches, so no double learning.
+- BrainPage.jsx: catch note says "on those same calls with the peek".
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.

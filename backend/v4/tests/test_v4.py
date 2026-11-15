@@ -1394,6 +1394,38 @@ def test_movers_falls_back_when_claude_keeps_nothing(monkeypatch):
     assert [it["headline"] for it in out["items"]] == ["Delta raises outlook"] and out["diag"]["headlines"] == 1
 
 
+def test_movers_fallback_drops_tags_for_a_different_company_and_keeps_the_curated_feed(monkeypatch):
+    from backend.v4 import movers
+    from datetime import datetime, timedelta, timezone
+    names = {"DOCS": "Doximity, Inc. Class A Common Stock", "SMTK": "SmartKem, Inc. Common Stock", "GHRS": "GH Research PLC"}
+    news = [{"headline": "Dr. Martens plc Announces Ex-Dividend Date", "symbols": ["DOCS"], "source": "x", "url": "", "created_at": ""},
+            {"headline": "SmartKem Reports Third Quarter Results", "symbols": ["SMTK"], "source": "x", "url": "", "created_at": ""},
+            {"headline": "RBC Maintains Buy Rating on GH Research", "symbols": ["GHRS"], "source": "x", "url": "", "created_at": ""}]
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s, "name": names[s]})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {})
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (movers.KEY,))
+    plain = movers.feed()
+    assert [it["companies"][0]["ticker"] for it in plain["items"]] == ["SMTK", "GHRS"]  # Doximity isn't Dr. Martens
+
+    # a curated feed from yesterday beats raw routine headlines; it keeps its own age and isn't rebuilt every call
+    built = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    curated = {"items": [{"headline": "Airlines add flights", "hunch": "People will fly more", "why": "", "summary": "",
+                          "source": "x", "url": "", "created_at": "", "companies": [{"ticker": "DAL", "direction": "up", "why": "fares"}]}],
+               "built_at": built, "ai": True}
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (movers.KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (movers.KEY, json.dumps(curated), built))
+    calls = []
+    real_build = movers.build
+    monkeypatch.setattr(movers, "build", lambda client=None: calls.append(1) or real_build(client))
+    out = movers.feed()
+    assert out["items"][0]["hunch"] == "People will fly more" and out["built_at"] == built
+    movers.feed()
+    assert len(calls) == 1
+
+
 def test_called_it_email_once_and_unsubscribe(monkeypatch):
     from backend.v4 import notify, mailer
     from datetime import datetime, timedelta, timezone

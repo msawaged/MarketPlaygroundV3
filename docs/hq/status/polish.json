@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-15T06:55:00Z",
- "last_run": "Read every news story card. Some stopped mid-sentence ('...which may matter for housing-linked…'); they now end on a whole sentence, including old cached ones. One hook said 'the people who matter most are cheering' about politicians; the writer is now told to stay neutral. Also told it a company's reason must match 'helps' or 'hurts', and the Brain activity line now says how many hours its grouped rounds cover.",
+ "updated_at": "2026-11-15T09:50:00Z",
+ "last_run": "On a quiet Sunday the news feed fell back to raw headlines and showed the wrong companies: a Dr. Martens dividend story said it touches DOCS, which is Doximity in the US. Those tags now have to match the story, and the feed keeps the last good set of hunches (with its real age) instead of routine notices. Also made one Brain page sentence stop looking like it contradicts the number above it.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
- "next": "Check tomorrow's news cards for helps/hurts reasons that disagree; re-check Close Call odds vs YES price on Monday with live quotes.",
+ "next": "Monday: check the news feed refreshes with new hunches once real news arrives; re-check Close Call odds vs YES price with live quotes.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
