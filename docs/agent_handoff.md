@@ -620,3 +620,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - yesno `_reasons`: "(for 1 trading day)" singular.
 - Files: frontend/src/components/BrainPage.jsx, backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-15 evening (Builder routine): /brain says how many grades are real time
+- No HQ messages from Murad; every feature_ideas.md proposal is built, so this is a finishing touch on the Brain page.
+- "Graded by the market 113,960" and the "Growing every day" chart read as live market grading. Live DB: 108,486 of
+  those grades are practice calls (seed_backfill, made on past dates, graded at once at 7/30/90/180/365 days); only
+  5,474 come from calls made in real time. The shared-scale chart also drew "beliefs learned" as a flat line.
+- `brain._growth` adds a running `live` total per day; `counts.graded_live` (both use the forward test's definition,
+  source <> 'seed_backfill'). Tile sub-line: "5,474 in real time, the rest practice". Chart is now two small charts
+  with their own scales and latest values (beliefs learned, graded in real time) plus one line saying what the other
+  grades are. Old snapshots without `live` still render (falls back to picks graded).
+- Information only: no ranking, research, gate or grading logic touched.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py (test_brain_counts_say_how_many_grades_are_real_time),
+  frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.

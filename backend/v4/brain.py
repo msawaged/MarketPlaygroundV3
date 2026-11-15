@@ -34,22 +34,31 @@ def _versions(limit: int = 24) -> list[dict]:
 
 
 def _growth(days: int = 30) -> list[dict]:
-    """Running totals per day: beliefs learned and picks graded."""
+    """Running totals per day: beliefs learned, picks graded, and of those the grades of real-time calls ("live").
+    Practice calls (seed_backfill) are made on past dates and graded at once at up to five checkpoints, so they
+    dominate "graded"; "live" uses the forward test's definition (source <> 'seed_backfill'), never any hindsight."""
     since = (datetime.now(timezone.utc) - timedelta(days=days)).date()
-    b0 = db.query_one("SELECT COUNT(*) AS n FROM beliefs WHERE substr(created_at, 1, 10) < ?", (since.isoformat(),))
-    g0 = db.query_one("SELECT COUNT(*) AS n FROM outcomes WHERE substr(graded_at, 1, 10) < ?", (since.isoformat(),))
+    s = since.isoformat()
+    live_join = ("FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id "
+                 "WHERE b.source <> 'seed_backfill' AND ")
+    b0 = db.query_one("SELECT COUNT(*) AS n FROM beliefs WHERE substr(created_at, 1, 10) < ?", (s,))
+    g0 = db.query_one("SELECT COUNT(*) AS n FROM outcomes WHERE substr(graded_at, 1, 10) < ?", (s,))
+    l0 = db.query_one(f"SELECT COUNT(*) AS n {live_join} substr(o.graded_at, 1, 10) < ?", (s,))
     bd = {r["d"]: int(r["n"]) for r in db.query(
         "SELECT substr(created_at, 1, 10) AS d, COUNT(*) AS n FROM beliefs WHERE substr(created_at, 1, 10) >= ? GROUP BY d",
-        (since.isoformat(),))}
+        (s,))}
     gd = {r["d"]: int(r["n"]) for r in db.query(
         "SELECT substr(graded_at, 1, 10) AS d, COUNT(*) AS n FROM outcomes WHERE substr(graded_at, 1, 10) >= ? GROUP BY d",
-        (since.isoformat(),))}
-    b, g = int(b0["n"] if b0 else 0), int(g0["n"] if g0 else 0)
+        (s,))}
+    ld = {r["d"]: int(r["n"]) for r in db.query(
+        f"SELECT substr(o.graded_at, 1, 10) AS d, COUNT(*) AS n {live_join} substr(o.graded_at, 1, 10) >= ? "
+        "GROUP BY substr(o.graded_at, 1, 10)", (s,))}
+    b, g, lv = (int(x["n"] if x else 0) for x in (b0, g0, l0))
     out = []
     for i in range(days + 1):
         d = (since + timedelta(days=i)).isoformat()
-        b += bd.get(d, 0); g += gd.get(d, 0)
-        out.append({"d": d, "beliefs": b, "graded": g})
+        b += bd.get(d, 0); g += gd.get(d, 0); lv += ld.get(d, 0)
+        out.append({"d": d, "beliefs": b, "graded": g, "live": lv})
     return out
 
 
@@ -303,6 +312,10 @@ def _build() -> dict:
         "companies": one("SELECT COUNT(DISTINCT ticker) AS n FROM picks"),
         "graded": one("SELECT COUNT(*) AS n FROM outcomes"),
         "graded_right": one("SELECT COUNT(*) AS n FROM outcomes WHERE dir_excess > 0"),
+        # Grades of real-time calls (the forward test's set). The rest are practice calls on past dates, graded at
+        # once at 7/30/90/180/365 days, so "graded" alone reads as far more live market grading than there is.
+        "graded_live": one("SELECT COUNT(*) AS n FROM outcomes o JOIN picks p ON p.id = o.pick_id "
+                           "JOIN beliefs b ON b.id = p.belief_id WHERE b.source <> 'seed_backfill'"),
         "versions": one("SELECT COUNT(*) AS n FROM nn_models"),
         "label_days": learning.LABEL_DAYS,
     }

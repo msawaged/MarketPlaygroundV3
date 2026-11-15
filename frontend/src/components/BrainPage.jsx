@@ -101,19 +101,38 @@ function Network({ themes, firing }) {
   );
 }
 
+// Each line gets its own scale and its latest value: beliefs (thousands) and real-time grades (thousands) sit far
+// below the practice grades (100k+, graded at once from past dates), so one shared scale drew them flat.
+function Spark({ data, k, color, label, dashed }) {
+  const W = 160, H = 56, max = Math.max(1, ...data.map((d) => d[k] || 0));
+  const pts = data.map((d, i) => `${i ? 'L' : 'M'}${((i / (data.length - 1)) * W).toFixed(1)},${(H - ((d[k] || 0) / max) * (H - 6)).toFixed(1)}`).join(' ');
+  const last = data[data.length - 1]?.[k] || 0, first = data[0]?.[k] || 0;
+  return (
+    <div className="min-w-0">
+      <div className="text-[11px] text-slate-400">{label}</div>
+      <div className="text-lg font-extrabold tabular-nums" style={{ color }}>{last.toLocaleString()}</div>
+      <div className="text-[10px] text-slate-500">+{(last - first).toLocaleString()} in 30 days</div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 w-full h-auto" role="img" aria-label={`${label}: ${last.toLocaleString()} now, over the last 30 days`}>
+        <path d={`${pts} L${W},${H} L0,${H} Z`} fill={color} fillOpacity="0.12" />
+        <path d={pts} fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 3' : undefined} />
+      </svg>
+    </div>
+  );
+}
+
 function Growth({ data }) {
   if (!data?.length) return null;
-  const W = 340, H = 110, max = Math.max(1, ...data.map((d) => d.beliefs), ...data.map((d) => d.graded));
-  const path = (k) => data.map((d, i) => `${i ? 'L' : 'M'}${(i / (data.length - 1)) * W},${H - (d[k] / max) * (H - 8)}`).join(' ');
-  const area = (k) => `${path(k)} L${W},${H} L0,${H} Z`;
+  const hasLive = data.some((d) => d.live != null);
   return (
-    <svg viewBox={`0 0 ${W} ${H + 16}`} className="w-full h-auto" role="img" aria-label="Beliefs learned and picks graded over the last 30 days">
-      <path d={area('beliefs')} fill="#2563eb" fillOpacity="0.18" />
-      <path d={path('beliefs')} fill="none" stroke="#60a5fa" strokeWidth="2" />
-      <path d={path('graded')} fill="none" stroke="#4ade80" strokeWidth="2" strokeDasharray="4 3" />
-      <text x="0" y={H + 14} fontSize="9" fill="#64748b">30 days ago</text>
-      <text x={W} y={H + 14} fontSize="9" fill="#64748b" textAnchor="end">today</text>
-    </svg>
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <Spark data={data} k="beliefs" color="#60a5fa" label="Beliefs learned" />
+        {hasLive
+          ? <Spark data={data} k="live" color="#4ade80" label="Graded in real time" dashed />
+          : <Spark data={data} k="graded" color="#4ade80" label="Picks graded" dashed />}
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-slate-500"><span>30 days ago</span><span>today</span></div>
+    </>
   );
 }
 
@@ -307,7 +326,7 @@ export default function BrainPage({ viewOnly = false }) {
         <div className="mt-4 grid grid-cols-2 gap-2.5">
           {[['Beliefs learned', c.beliefs, `${(c.beliefs_today || 0).toLocaleString()} today`],
             ['Companies it knows', c.companies, `${(c.picks || 0).toLocaleString()} ideas built`],
-            ['Graded by the market', c.graded, `vs the S&P 500`],
+            ['Graded by the market', c.graded, c.graded_live != null ? `${c.graded_live.toLocaleString()} in real time, the rest practice` : `vs the S&P 500`],
             ['Brains trained', c.versions, latest ? `last ${ago(latest.at, now)}` : 'first one soon']].map(([k, v, sub]) => (
             <div key={k} className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3.5">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">{k}</div>
@@ -576,7 +595,9 @@ export default function BrainPage({ viewOnly = false }) {
         <h2 className="mt-8 text-xl font-extrabold">Growing every day</h2>
         <div className="mt-2 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3.5">
           <Growth data={d?.growth} />
-          <div className="mt-1 flex gap-4 text-[11px] text-slate-400"><span><span className="text-blue-300">━</span> beliefs learned</span><span><span className="text-green-300">┅</span> picks graded</span></div>
+          {c.graded_live != null && c.graded > c.graded_live && (
+            <p className="mt-2 text-[11px] text-slate-400">Real time means the call was made before the result existed. The other {(c.graded - c.graded_live).toLocaleString()} grades are practice calls made on past dates, each graded at once at up to five checkpoints (7, 30, 90, 180 and 365 days).</p>
+          )}
         </div>
 
         <h2 className="mt-8 text-xl font-extrabold">It grades itself, honestly</h2>

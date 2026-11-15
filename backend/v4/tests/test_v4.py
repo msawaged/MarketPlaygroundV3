@@ -1479,6 +1479,23 @@ def test_brain_snapshot_is_public_safe_and_counts():
     assert "secret" not in json.dumps(s)
 
 
+def test_brain_counts_say_how_many_grades_are_real_time():
+    """Practice calls on past dates are graded at once at every checkpoint, so they swamp 'graded'. The page
+    must be able to say how many grades came from calls made in real time (the forward test's set)."""
+    from backend.v4 import brain
+    seeder.run("backfill", n=5, years=1, concurrency=1, claude_client=FakeClaude())
+    practice = db.query_one("SELECT COUNT(*) AS n FROM outcomes")["n"]
+    assert practice > 0
+    engine.process_belief("people want cheaper food", "seed", "moderate", source="seed_news", claude_client=FakeClaude())
+    pid = db.query_one("SELECT p.id FROM picks p JOIN beliefs b ON b.id = p.belief_id WHERE b.source = 'seed_news'")["id"]
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) "
+               "VALUES (?, 7, ?, 1, 0.01, 0, 0.01, ?)", (pid, TODAY.isoformat(), datetime.now(timezone.utc).isoformat()))
+    brain._cache.update(at=0, v=None)
+    s = brain.snapshot()
+    assert s["counts"]["graded"] == practice + 1 and s["counts"]["graded_live"] == 1
+    assert s["growth"][-1]["live"] == 1 and s["growth"][-1]["graded"] == practice + 1
+
+
 def test_expert_panel_and_market_backdrop(monkeypatch):
     from backend.v4 import interpreter
     out = interpreter._sanitize({"panel": {"economist": "Rates are falling.", "skeptic": 5, "junk": "x"}})

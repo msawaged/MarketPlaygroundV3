@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T15:30:00Z",
- "last_run": "Close Call: your own record. After 5 graded answers, 'Your answers' shows how often you were right next to how often the market's odds expected you to be (a 90% favourite being right says little), and only calls you ahead or behind after 5 closing days and past what luck explains. Each answer line shows the market's odds for your side and the closing price.",
+ "updated_at": "2026-11-15T21:00:00Z",
+ "last_run": "Brain page: 'Graded by the market 113,960' now says only 5,474 of those grades come from calls made in real time; the rest are practice calls on past dates, graded at once at up to five checkpoints. The 'Growing every day' chart is now two small charts with their own scales, so beliefs learned no longer looks flat.",
  "working_on": "Nothing open.",
- "next": "Check the brain's record and the new 'your record' box after the first grades on Nov 19.",
+ "next": "Check the brain's Close Call record and the 'your record' box after the first grades on Nov 19.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "A finance professor would ask how 114k picks got graded in two weeks. The Brain page now says it plainly: 5,474 real-time grades, the rest practice calls graded from history.",
+   "at": "2026-11-15T21:00:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call now shows each user their own record against the market's odds: 'You were right 7 of 14; the market's odds expected 6.7', with an honest skill-or-luck line. Each answer also shows the odds the market gave it.",
