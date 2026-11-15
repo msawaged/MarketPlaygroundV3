@@ -56,6 +56,13 @@ function Tree({ tree }) {
 export default function BrainLineages({ data, ago, now }) {
   if (!data || !data.alive?.length) return null;
   const top = data.alive[0];
+  // Yardsticks on the very calls the strategists are scored on (stored by the daily evolve; absent on old snapshots)
+  const win = data.window?.n && data.window.app?.n ? data.window : null;
+  const gap = win ? top.fitness - win.app.fitness : 0;
+  const vsApp = !win ? '' : Math.abs(gap) < 0.001 ? 'about the same as' : gap > 0 ? `${(gap * 100).toFixed(1)} pts ahead of` : `${(-gap * 100).toFixed(1)} pts behind`;
+  const rows = win
+    ? [...data.alive, { ref: true, fitness: win.app.fitness, beat_rate: win.app.beat_rate }].sort((a, b) => b.fitness - a.fitness)
+    : data.alive;
   return (
     <section>
       <h2 className="mt-8 text-xl font-extrabold">Survival of the smartest</h2>
@@ -80,6 +87,17 @@ export default function BrainLineages({ data, ago, now }) {
           {STYLE[top.style]?.blurb ? `It ${STYLE[top.style].blurb}. ` : ''}
           On the last {top.n} graded calls its picks beat the S&P 500 {Math.round(top.beat_rate * 100)}% of the time ({pct(top.fitness)} pts on average).
         </div>
+        {win && (
+          <div className="mt-2 rounded-xl bg-slate-950/40 px-3 py-2 text-xs text-slate-300">
+            <div className="flex justify-between gap-2"><span>App's own #1, same calls</span><span className="font-bold tabular-nums whitespace-nowrap">{pct(win.app.fitness)} pts</span></div>
+            <div className="flex justify-between gap-2"><span>A random idea, same calls</span><span className="font-bold tabular-nums whitespace-nowrap">{pct(win.avg_idea)} pts</span></div>
+            <div className="mt-1 text-[11px] text-slate-400">
+              So the leader is {vsApp} the app's own pick.
+              {' '}Each strategist was chosen on these same calls, which flatters it{win.practice >= 0.5 ? `, and ${win.practice >= 0.995 ? 'all' : `${Math.round(win.practice * 100)}%`} of them are practice calls made on past dates` : ''}.
+              {' '}The live record below is the fair test.
+            </div>
+          </div>
+        )}
         <div className="mt-2 text-[11px] text-slate-400">
           {data.champion
             ? <><span className="font-bold text-green-300">{data.champion.name}</span> proved itself on calls it never saw and now helps rank real picks.</>
@@ -99,9 +117,22 @@ export default function BrainLineages({ data, ago, now }) {
       </div>
 
       <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 divide-y divide-slate-800">
-        {data.alive.map((s, i) => (
+        {rows.map((s) => s.ref ? (
+          <div key="app-ref" className="flex items-center gap-3 px-3.5 py-2 bg-slate-800/30">
+            <div className="w-5 text-sm font-extrabold text-slate-600">–</div>
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-dashed border-slate-400" />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-slate-300 truncate">The app's own #1</div>
+              <div className="text-[11px] text-slate-500 truncate">for comparison, same calls</div>
+            </div>
+            <div className="text-right leading-tight">
+              <div className="text-sm font-bold tabular-nums text-slate-300">{pct(s.fitness)} pts</div>
+              <div className="text-[10px] text-slate-500">beats S&P {Math.round(s.beat_rate * 100)}%</div>
+            </div>
+          </div>
+        ) : (
           <motion.div key={s.id} layout className="flex items-center gap-3 px-3.5 py-2.5">
-            <div className="w-5 text-sm font-extrabold text-slate-500 tabular-nums">{i + 1}</div>
+            <div className="w-5 text-sm font-extrabold text-slate-500 tabular-nums">{data.alive.indexOf(s) + 1}</div>
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: col(s.style) }} />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold truncate">{s.name}{data.champion?.id === s.id && <span className="ml-1.5 rounded bg-green-500/20 px-1.5 py-0.5 text-[10px] font-bold text-green-300">CHAMPION</span>}</div>
@@ -110,7 +141,7 @@ export default function BrainLineages({ data, ago, now }) {
             <div className="text-right leading-tight">
               <div className={`text-sm font-bold tabular-nums ${s.fitness >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pct(s.fitness)} pts</div>
               <div className="text-[10px] text-slate-500">beats S&P {Math.round(s.beat_rate * 100)}%</div>
-              <div className="text-[10px] text-slate-500 whitespace-nowrap">{s.live?.n ? <>live: {pct(s.live.fitness)} pts<br />over {s.live.n.toLocaleString()} calls</> : 'live: none yet'}</div>
+              <div className="text-[10px] text-slate-500 whitespace-nowrap">{s.live?.n ? <>live: {pct(s.live.fitness)} pts<br />over {s.live.n.toLocaleString()} calls{s.live_app?.n ? <><br />app's #1: {pct(s.live_app.fitness)} pts</> : null}</> : 'live: none yet'}</div>
             </div>
           </motion.div>
         ))}

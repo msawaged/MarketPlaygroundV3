@@ -1661,6 +1661,36 @@ def test_lineages_evolve_and_snapshot(monkeypatch):
     assert lineages.champion()["id"] == ch["id"]
 
 
+def test_lineages_scoreboard_shows_the_apps_own_pick_and_the_average_idea(monkeypatch):
+    """'+2.6 pts vs the S&P' only means skill next to what the app's own #1 and a random idea did on the same calls."""
+    from backend.v4 import lineages
+    for i in range(10):
+        bid = f"b-linwin{i}"
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) VALUES (?,?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", f"2096-03-{1 + i:02d}T00:00:00", "2026-01-01",
+                    "seed_backfill" if i < 8 else "seed_news", "bullish"))
+        # the app's #1 (rank 0) wins +4%, the other longs -1% and +0%; a short on a competitor (+9%) can't be a #1
+        for j, (d, ex, rank) in enumerate((("bullish", 0.04, 0), ("bullish", -0.01, 1), ("bullish", 0.0, 2), ("bearish", 0.09, 3))):
+            pid = f"p-linwin{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"W{j}", d, "2026-01-01", 10.0, db.dumps({"num": {}}), rank))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, ex, "2026-02-01"))
+    w = lineages.window_baselines(lineages._graded_beliefs(since="2096-01-01"))
+    assert w["n"] == 10 and w["app"]["n"] == 10
+    assert abs(w["app"]["fitness"] - 0.04) < 1e-9 and w["app"]["beat_rate"] == 1.0
+    assert abs(w["avg_idea"] - 0.01) < 1e-9  # mean of the longs only (+4, -1, 0): the short is never a #1
+    assert w["practice"] == 0.8
+    assert lineages.window_baselines([])["n"] == 0
+
+    # stored by the daily evolve (even when it's too early to evolve), read by the page
+    monkeypatch.setattr(lineages, "MIN_BELIEFS", 10 ** 9)
+    monkeypatch.setattr(lineages, "SNAP_TTL", 0)
+    assert lineages.evolve(seed=3)["evolved"] is False
+    win = lineages.snapshot()["window"]
+    assert win and win["n"] > 0 and set(win) == {"app", "avg_idea", "practice", "n"}
+
+
 def test_lineages_leave_out_volatile_ideas():
     """A 'volatile' idea is graded on |move| - |S&P move| (beats the S&P ~75% of the time for any stock), so a
     strategist that picks it must not look skilled; and a champion never reorders one in the real ranking."""

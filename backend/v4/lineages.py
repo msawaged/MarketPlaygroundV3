@@ -4,7 +4,7 @@ Brain lineages ("survival of the smartest"): a small population of AI strategist
 Each strategist is a different way of choosing the best company for a belief from the candidates the brain found:
 Momentum likes companies already moving the right way, Value likes beaten-down ones, Steady likes calm ones,
 Follow-the-AI trusts Claude's ranking, Big-picture prefers broad funds. For every graded belief, a strategist's
-"call" is the candidate it ranks first, and its result is how that company did against the S&P 500 thirty days later
+"call" is the candidate it ranks first, and its result is how that company did against the S&P 500 ninety days later
 (practice only, no money). Once per trading day the weakest strategists are retired and the strongest evolve:
 copies with slightly changed preferences. Over generations, what survives is what has worked.
 
@@ -32,6 +32,7 @@ LIVE_MARGIN = 0.005      # ...and it must beat the app's own top pick by half a 
 CHAMPION_WEIGHT = 0.25   # how much a champion moves the real ranking
 CHAMPION_KEY = "lineage_champion"
 LIVE_KEY = "lineage_live_records"  # computed once per trading day (in evolve), read by the page
+WINDOW_KEY = "lineage_window"      # the app's own #1 and the average idea on the scoring window (in evolve)
 FEATURES = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol60", "claude_score", "claude_rank_frac", "is_etf", "same_dir",
             "mu_up", "mu_slope", "mu_dist", "mu_age", "mu_flips")
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mu_up", "mu_slope", "mu_dist"}  # flipped for bearish picks
@@ -133,7 +134,8 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
     """Candidates of the most recent graded beliefs: [[{feat..., ex, top}, ...], ...]. `since`: only beliefs created
     after that time (a strategist's live record: calls it never saw). Directional ideas only (see directional)."""
     rows = db.query(
-        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at, b.direction AS bdir
+        """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at, b.direction AS bdir,
+                  b.source
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ? AND b.created_at > ?
            ORDER BY b.created_at DESC""", (CHECKPOINT, since or ""))
@@ -150,6 +152,7 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
         core = str(r.get("bdir") or "").lower()
         by[r["belief_id"]].append(features_of(r["features"], r["direction"], ex=float(r["dir_excess"]),
                                               top=r["final_rank"] == 0,  # 0-based: 0 is the app's #1
+                                              practice=r.get("source") == "seed_backfill",
                                               lead=core not in ("bullish", "bearish") or str(r["direction"]).lower() == core))
     return [by[b] for b in order if len(by[b]) >= 2]  # a choice needs at least two candidates
 
@@ -172,6 +175,19 @@ def _baseline(beliefs: list[list[dict]]) -> dict:
     xs = [x for x in xs if x is not None]
     n = len(xs)
     return {"fitness": sum(xs) / n if n else 0.0, "beat_rate": sum(1 for x in xs if x > 0) / n if n else 0.0, "n": n}
+
+
+def window_baselines(beliefs: list[list[dict]]) -> dict:
+    """Yardsticks for the scoreboard, on the very calls the strategists are scored (and selected) on: the app's own
+    #1 pick, and the average idea a strategist could have chosen (its lead group, see _lead), i.e. what picking at
+    random would score. Without them '+2.6 pts vs the S&P' reads as skill even when the app's #1 did the same.
+    `practice`: share of those calls made on past dates (seed_backfill). Information only: selection is unchanged."""
+    app = _baseline(beliefs)
+    avgs = [sum(c["ex"] for c in _lead(cands)) / len(_lead(cands)) for cands in beliefs]
+    n = len(beliefs)
+    return {"app": {k: round(v, 4) if isinstance(v, float) else v for k, v in app.items()},
+            "avg_idea": round(sum(avgs) / n, 4) if n else 0.0,
+            "practice": round(sum(1 for b in beliefs if b and b[0].get("practice")) / n, 3) if n else 0.0, "n": n}
 
 
 def _lead(cands: list[dict]) -> list[dict]:
@@ -212,7 +228,10 @@ def evolve(seed: Optional[int] = None) -> dict:
         s.update(fitness=r["fitness"], beat_rate=r["beat_rate"], n_scored=r["n"])
         db.execute("UPDATE strategists SET fitness = ?, beat_rate = ?, n_scored = ? WHERE id = ?",
                    (r["fitness"], r["beat_rate"], r["n"], s["id"]))
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (WINDOW_KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (WINDOW_KEY, db.dumps(window_baselines(beliefs)), _now()))
     if len(beliefs) < MIN_BELIEFS:
+        _snap["v"] = None
         return {"evolved": False, "reason": f"needs {MIN_BELIEFS} graded beliefs, has {len(beliefs)}", "alive": len(alive)}
     alive.sort(key=lambda s: s["fitness"], reverse=True)
     gen = int(db.query_one("SELECT MAX(gen) AS g FROM strategists")["g"] or 1) + 1
@@ -310,12 +329,15 @@ def _snapshot() -> dict:
         lr = recs.get(a["id"]) or {"me": {"n": 0}, "app": {"n": 0}}
         a["live"], a["live_app"] = lr["me"], lr["app"]
     ch = champion()
+    wrow = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (WINDOW_KEY,))
+    window = db.loads(wrow["v"], None) if wrow else None  # None until the next evolve (old installs)
     events = db.query("SELECT at, kind, detail FROM lineage_events ORDER BY at DESC LIMIT 8")
     for e in events:  # older rows used different wording
         e["detail"] = (e["detail"] or "").replace(" was born from ", " evolved from ")
     return {"generation": max(r["gen"] for r in rows), "alive": alive, "tree": tree, "events": events,
             "retired": sum(1 for r in rows if r["status"] == "retired"), "checkpoint_days": CHECKPOINT,
-            "champion": {"id": ch["id"], "name": ch["name"]} if ch else None, "live_min": LIVE_MIN}
+            "champion": {"id": ch["id"], "name": ch["name"]} if ch else None, "live_min": LIVE_MIN,
+            "window": window}
 
 
 def bootstrap_background() -> None:

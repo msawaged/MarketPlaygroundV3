@@ -639,3 +639,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - /brain growth sparks: "+6,567 in 30 days" equalled the total (data starts Oct 28); now "all since <first day>" when
   the count started inside the window.
 - Frontend only. Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-15 late evening (Builder routine): strategist scoreboard shows the app's own #1 and a random idea
+- No HQ messages from Murad; every feature_ideas.md proposal is built, so this is a finishing touch on /brain.
+- "Survival of the smartest" said the leader beat the S&P by +2.6 pts with no yardstick. Live DB on its 300-call
+  window: the app's own #1 did +2.6 pts (beat 51%), a random idea from the same lead group +0.3 pts, and all 300 are
+  practice calls (seed_backfill). So the leader only ties the app's pick, and it was selected on those calls.
+- `lineages.window_baselines(beliefs)` -> {app, avg_idea, practice, n}; stored by `evolve()` in kv_cache
+  `lineage_window` (also on the too-early path), read by `_snapshot()` as `window` (None until the next evolve, Mon
+  after the close; the card hides until then). `_graded_beliefs` now also reads b.source (`practice` flag).
+- BrainLineages.jsx: leader card gets "App's own #1, same calls / A random idea, same calls" plus a plain verdict
+  (ahead / about the same / behind) and why the live record is the fair test; the list gets an unnumbered "The app's
+  own #1" reference row in fitness order; live records add "app's #1: +x pts" on the same calls.
+- Information only: fitness, selection, culling, champion rule and LIVE_MIN/LIVE_MARGIN unchanged. Docstring fix:
+  checkpoint is ninety days, not thirty.
+- Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py
+  (test_lineages_scoreboard_shows_the_apps_own_pick_and_the_average_idea), frontend/src/components/BrainLineages.jsx,
+  docs/hq/status/builder.json.
