@@ -3161,9 +3161,51 @@ def test_ranker_confidence_thirds_and_live_label(monkeypatch):
     # ranker off: the label comes from the app's own score, with the app's walk-forward cuts
     monkeypatch.setattr(research, "MIN_T", 99.0)
     off = research.fit_production(out)
-    assert not off["active"] and off["confidence"] == out["confidence"]["app (current #1)"]
+    pit = out["confidence"]["app, no look-ahead"]  # thirds on the app's score without look-ahead, not the stored one
+    assert not off["active"] and off["confidence"]["basis"] == "app, no look-ahead"
+    assert all(off["confidence"][k] == pit[k] for k in ("low", "mid", "high"))
+    assert pit["low"]["n"] + pit["mid"]["n"] + pit["high"]["n"] == out["results"]["app, no look-ahead"]["n"]
     r2 = engine.process_belief("plumbing demand will boom this year", "u-conf2", "moderate", claude_client=FakeClaude())
     assert r2["picks"][0]["confidence"] in ("high", "medium", "low")
+
+
+def test_app_confidence_is_judged_without_look_ahead_and_cut_on_live_calls(monkeypatch):
+    """Ranker off: the #1's confidence badge comes from the app's point-in-time score (the stored practice score has
+    look-ahead), and once enough real-time calls exist its cuts split those calls into thirds (prod Nov 8-15: 56% of
+    live #1 picks were 'high' under the practice cuts)."""
+    from backend.v4 import research
+    third = {"n": 1, "lift": 0.0}
+    blocks = {"app (current #1)": {"cuts": [0.1, 0.18], "low": third, "mid": third, "high": {"n": 1, "lift": 0.025}},
+              "app, no look-ahead": {"cuts": [0.05, 0.09], "low": third, "mid": third, "high": {"n": 1, "lift": 0.004}}}
+    monkeypatch.setattr(research, "_live_spreads", lambda days=research.CONF_LIVE_DAYS: [0.1] * 20)
+    c = research._app_confidence(blocks)
+    assert c["basis"] == "app, no look-ahead" and c["high"]["lift"] == 0.004 and c["cuts"] == [0.05, 0.09]
+    assert "cuts_from" not in c  # too few real-time calls: keep the walk-forward cuts
+    live = [i / 299 * 0.4 for i in range(300)]  # spreads 0 .. 0.4, evenly
+    monkeypatch.setattr(research, "_live_spreads", lambda days=research.CONF_LIVE_DAYS: live)
+    c = research._app_confidence(blocks)
+    assert c["cuts_from"] == "live" and c["cuts_n"] == 300 and c["cuts_test"] == [0.05, 0.09]
+    assert abs(c["cuts"][0] - 0.4 / 3) < 1e-3 and abs(c["cuts"][1] - 0.8 / 3) < 1e-3
+    labels = [research.confidence_label(x, c["cuts"]) for x in live]
+    assert all(abs(labels.count(k) - 100) <= 2 for k in ("low", "medium", "high"))
+    assert blocks["app, no look-ahead"]["cuts"] == [0.05, 0.09]  # the research record itself is not changed
+    # without a point-in-time block (older research record) it falls back to the stored score's thirds
+    c = research._app_confidence({"app (current #1)": blocks["app (current #1)"]})
+    assert c["basis"] == "app (current #1)" and c["high"]["lift"] == 0.025
+    assert research._app_confidence({}) is None
+
+
+def test_live_spreads_read_real_time_calls_only():
+    from backend.v4 import research
+    now = datetime.now(timezone.utc).isoformat()
+    for bid, src, scores in (("b-rt1", "user", [0.9, 0.5, 0.4]), ("b-old", "seed_backfill", [0.9, 0.1])):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "u", "x", "x", now, now[:10], src))
+        for i, sc in enumerate(scores):
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, final_score, final_rank, entry_date, entry_price) "
+                       "VALUES (?,?,?,?,?,?,?,?)", (f"{bid}-{i}", bid, f"T{i}", "bullish", sc, i, now[:10], 10.0))
+    sp = research._live_spreads()
+    assert len(sp) == 1 and abs(sp[0] - (0.9 - 0.6)) < 1e-6
 
 
 def test_the_app_number_one_is_final_rank_zero():

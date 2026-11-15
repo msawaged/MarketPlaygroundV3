@@ -746,7 +746,13 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             continue
         for name, fn in fixed.items():
             if fn is None and name == "app, no look-ahead":
-                res[name] += [_pick(b, b["cands"][_top(b, [c.get("pit", 0.0) for c in b["cands"]])]) for b in test]
+                for b in test:
+                    j = _top(b, [c.get("pit", 0.0) for c in b["cands"]])
+                    res[name].append(_pick(b, b["cands"][j]))
+                    # confidence on the same point-in-time score the live engine computes (Claude + track record so
+                    # far): how far the #1 stood out. The stored score's thirds carry look-ahead (2026-11-09).
+                    pa = [c.get("pit_app", c.get("app", 0.0)) for c in b["cands"]]
+                    spreads.setdefault(name, []).append(float(pa[j] - np.mean(pa)))
             elif fn is None:
                 for b in test:
                     top = next((c for c in b["cands"] if c["top"]), b["cands"][0])
@@ -967,8 +973,10 @@ def fit_production(results: dict | None = None) -> dict:
                 live = {**live_check(fit(mixes[0])[1], mu, sd, w), "candidate": mixes[0]}
             except Exception:
                 live = None
-    # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score
-    conf = (full.get("confidence") or {}).get(names.get(best, "") if active else "app (current #1)")
+    # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score —
+    # judged without look-ahead, with cuts that split recent real-time calls into thirds (see _app_confidence)
+    blocks = full.get("confidence") or {}
+    conf = blocks.get(names.get(best, "")) if active else _app_confidence(blocks)
     out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
            "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app,
            "old_pit": res.get("app, no look-ahead"), "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
@@ -980,6 +988,48 @@ def fit_production(results: dict | None = None) -> dict:
     _cache["v"], _cache["at"] = out, datetime.now(timezone.utc).timestamp()
     _gbm["at"] = None
     return out
+
+
+CONF_LIVE_DAYS = 7     # real-time calls whose spread sets the live confidence cuts while the ranker is off. Short on
+#                        purpose: on prod the median live spread stepped from ~0.12 to ~0.20 on Nov 9 and stayed there
+CONF_LIVE_MIN = 150    # fewer than this: keep the walk-forward cuts
+
+
+def _live_spreads(days: int = CONF_LIVE_DAYS) -> list[float]:
+    """How far each recent real-time call's #1 stood out on the app's score (final_score of the #1 minus the belief's
+    average idea), the same spread engine.process_belief labels. Aggregated in SQL: one number per belief."""
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    rows = db.query(
+        """SELECT MAX(CASE WHEN p.final_rank = 0 THEN p.final_score END) - AVG(p.final_score) AS sp
+           FROM picks p JOIN beliefs b ON b.id = p.belief_id
+           WHERE b.source <> 'seed_backfill' AND b.created_at >= ?
+           GROUP BY p.belief_id HAVING COUNT(*) >= 2""", (since,))
+    return [float(r["sp"]) for r in rows if r.get("sp") is not None]
+
+
+def _app_confidence(blocks: dict) -> dict | None:
+    """Confidence thirds for the live #1 while the ranker is off (the app's own score orders it).
+
+    Before 2026-11-15 these were the thirds of the app's STORED score on practice calls, which carries look-ahead
+    (track records that include later outcomes): its "high" third showed +2.5 pts. Now the thirds and their results
+    come from the app's score as it stood on each call's date ("app, no look-ahead"). And the cuts: on prod, 56% of
+    live #1 picks were labelled "high" and 15% "low" (Nov 8-15, 955 calls), because live spreads run wider than the
+    practice ones the cuts came from. So when enough real-time calls exist (last CONF_LIVE_DAYS), the cuts split those
+    calls into thirds;
+    "high" then means the top third of how far a #1 stands out, as it did in the test. Labels only: no ordering."""
+    conf = blocks.get("app, no look-ahead") or blocks.get("app (current #1)")
+    if not conf:
+        return conf
+    conf = {**conf, "basis": "app, no look-ahead" if "app, no look-ahead" in blocks else "app (current #1)"}
+    try:
+        sp = _live_spreads()
+    except Exception:
+        sp = []
+    if len(sp) >= CONF_LIVE_MIN:
+        q1, q2 = (float(x) for x in np.quantile(np.array(sp), [1 / 3, 2 / 3]))
+        conf.update({"cuts_test": conf.get("cuts"), "cuts": [round(q1, 6), round(q2, 6)], "cuts_from": "live",
+                     "cuts_n": len(sp)})
+    return conf
 
 
 _gbm = {"at": None, "m": None}

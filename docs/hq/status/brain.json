@@ -1,10 +1,10 @@
 {
  "key": "brain",
- "updated_at": "2026-11-14T21:30:00Z",
- "last_run": "Weekly upgrade: the learning models now study each idea against the ideas it actually competes with (longs against longs, shorts against shorts), instead of against every idea in the belief. Before, about 2,300 opposite-direction ideas were mixing 'which direction won' into the lessons, which no user can act on. Tests and safety rules are unchanged.",
- "working_on": "Brain accuracy: teaching the rankers the same choice users are shown.",
- "next": "Check the next research results: if the learning models' edge holds or rises, keep it; if it drops clearly, undo it. Early December: first real-time check of the blends.",
- "needs_from_murad": [],
+ "updated_at": "2026-11-15T20:57:36Z",
+ "last_run": "Weekly upgrade: the 'High / Medium / Low confidence' badge on each #1 pick is now based on honest past results (no hindsight) and split fairly. Before, 56% of live picks said 'High confidence', and the numbers behind it had hindsight in them. Last week's change also worked: all three learning models got better on calls they never saw.",
+ "working_on": "Brain accuracy: making what users see match what was actually tested.",
+ "next": "Check that new picks now split about a third each into high, medium and low, and whether high-confidence calls really did better. Mid December: first live results by confidence.",
+ "needs_from_murad": ["One decision when you have a minute: the learning models now beat the app's own pick on fair (no-hindsight) tests, but the safety check still compares them with an old score that had hindsight in it, so they can never switch on. Should the check use the fair score instead? Yes or no is enough; details in docs/brain_upgrades.md."],
  "read_up_to": 0,
  "replies": []
 }

@@ -691,3 +691,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   p10/p50/p90 just don't show the bar. Information only: no ranking, research, gate or grading change.
 - Files: backend/v4/baserate.py, backend/v4/tests/test_v4.py (test_base_rate_spread_says_how_far_calls_landed),
   frontend/src/components/chat/HowSure.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-15 late night (weekly brain upgrade): confidence badge without look-ahead, cuts from live calls
+- No HQ messages from Murad. Last week's group-label change held up (ridge/gbm/net each +0.1–0.2 pt out of sample).
+- Ranker off: the #1's confidence label now uses the thirds of "app, no look-ahead" (`research.run` records its
+  spreads) and, with ≥150 real-time calls in the last 7 days, cuts at their terciles (`research._app_confidence`,
+  `_live_spreads`, `CONF_LIVE_DAYS`, `CONF_LIVE_MIN`). Was 56% "high" live under the old practice cuts.
+  `ranker:v2.confidence` gains `basis`, `cuts_from`, `cuts_n`, `cuts_test`. No ordering/gate change.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
+- Still open for Murad: whether the gate's bar moves to the point-in-time app (see brain_upgrades.md).

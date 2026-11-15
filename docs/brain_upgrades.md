@@ -551,3 +551,42 @@ net each up by ~0.1 point or more, overlap-honest `lift_t_nw` up too). `off_lead
 (a lone off-direction idea's score is now untrained), so read it as chance, not as a win metric. If lift falls clearly (more than ~0.2 points
 across the board), the whole-belief label was carrying real signal and this should be reverted. The ranker only goes
 live through the same gate either way.
+
+## 2026-11-15 late night (weekly) — The #1 pick's confidence badge is judged without look-ahead and cut on live calls
+
+**Last week's result first (2026-11-14 night, group labels).** Tonight's `research:ranker` (2,703 test beliefs,
+90-day): ridge +0.93% → **+1.15%** (t_nw 2.02 → 2.19), gbm +1.15% → **+1.36%** (t_nw 2.87), neural net +1.26% →
+**+1.36%** (t 4.28, t_nw 2.37). All three rose by ≥0.1 point on the unchanged test: counts as a win, keep it. The
+honest 25% mixes are +0.25–0.44% (t_nw ≤ 0.74), below the app without look-ahead (+0.53%, t_nw 0.99), so nothing
+can pass the gate against the stored #1 (+1.49%, t 4.52, has look-ahead). See "Decision for Murad" below.
+
+**Problem (real numbers).** Every #1 pick shows a High / Medium / Low confidence badge ("checked on past calls the AI
+never saw"). With ranker v2 off, its cuts and the thirds on /brain came from the app's **stored** score on practice
+calls, the score shown on 2026-11-09 to carry look-ahead: its "high" third reads +2.46% lift. And the cuts don't fit
+live calls: read-only SQL, real-time #1 picks labelled since Nov 8 (955): **56% "high", 29% "medium", 15% "low"**
+instead of thirds (cuts 0.109 / 0.185; live spread terciles 0.160 / 0.238). The median live spread stepped from ~0.12
+to ~0.20 on Nov 9 and has stayed there (~140 calls a day).
+
+**Change (labels only; ordering, gates and ranker untouched).** `research.run` now records the confidence thirds of
+"app, no look-ahead" (spread of the point-in-time app score `pit_app`: #1 minus the belief's average idea, the same
+quantity the engine labels live). `fit_production`, when the ranker is off, uses `_app_confidence`: those
+point-in-time thirds (`basis`), and — when at least `CONF_LIVE_MIN` = 150 real-time calls were made in the last
+`CONF_LIVE_DAYS` = 7 days — cuts at the terciles of those calls' spreads (`_live_spreads`, one SQL aggregate per
+belief on the indexed `created_at`; `cuts_from: "live"`, `cuts_n`, test cuts kept as `cuts_test`). Falls back to the
+stored-score thirds for an old research record. With the ranker active nothing changes (its own model's thirds).
+`_passes`, `MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, the embargo, the bar, the mixes and `live_check` are unchanged.
+
+**Checks.** Backend tests: 170 passed. New `test_app_confidence_is_judged_without_look_ahead_and_cut_on_live_calls`,
+`test_live_spreads_read_real_time_calls_only`; `test_ranker_confidence_thirds_and_live_label` now expects the
+point-in-time thirds. Commit: see git log ("Confidence badge: judged without look-ahead, cut on live calls").
+
+**What counts as a win.** After the next nightly refit: `/v4/brain` `skill.ranker.confidence.basis` = "app, no
+look-ahead", `cuts_from` = "live", and new live #1 picks split roughly a third each (check `rv2_conf` shares a few days
+later). The honest thirds may show a much smaller high-vs-low gap than +2.5 pts; if the high third is not above the
+low third, the badge is not earning its place and the next step is to hide it while the ranker is off. The real test
+is the forward test's `by_confidence` once these calls reach 30 days (~mid December).
+
+**Decision for Murad (not taken by the routine; unchanged since 2026-11-09).** The gate's bar is the stored app #1,
+which has look-ahead. On honest numbers the learned models beat the app clearly (gbm +1.36%, t_nw 2.87 vs app +0.53%,
+t_nw 0.99), but they can't pass against +1.49%, and the honest mixes fall short too. Switching the bar to the
+point-in-time app would let a model reach users, so it is a gate change and left to him.
