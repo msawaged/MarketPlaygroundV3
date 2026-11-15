@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T05:10:00Z",
- "last_run": "Added 'You vs the outside view' to the 'How well-calibrated are you?' card on My beliefs. Once someone has 10+ graded 'How sure' calls, it shows the score they'd have got by just saying the base rate (how often calls like theirs beat the S&P) beside their own score on the same calls, and says better / worse / about the same, only calling it when the gap is bigger than luck would explain. This is the honest version of 'compare yourself with the brain': the brain's own High/Medium/Low is 'medium' almost every time, so it had nothing to compare. Information only.",
+ "updated_at": "2026-11-15T08:05:00Z",
+ "last_run": "Made the brain's Close Call record honest before its first grades come in (Nov 19). It used to say the brain 'beat the market's odds' whenever its score was a hair better, even on 11 questions that all closed on the same day and rode the same market move. Now it says 'too early to say' until questions have closed on 5 different days, and after that only calls better or worse when the gap is bigger than luck would explain (each closing day counted once). It also shows how often the market's odds alone picked the right side, so the brain's hit rate has something to be compared with.",
  "working_on": "Nothing open.",
- "next": "Live since 05:04 UTC (75e2115). Next proposal in feature_ideas.md, or finishing touches on Close Call / Agent HQ / Brain page.",
+ "next": "Check the record card after the first grades on Nov 19. Suggested to the brain agent: the Close Call learning test has the same same-day issue (see handoff).",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

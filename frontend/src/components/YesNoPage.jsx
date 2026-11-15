@@ -8,6 +8,13 @@ import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoScorecard } fr
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
 const fmtDay = (iso) => { const d = new Date(`${iso}T12:00:00`); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
+// The record's verdict is clustered by closing day: 15 stocks that close the same Friday share one market move.
+const VERDICT = {
+  too_early: (s) => `Too early to say whether its odds beat the market's. Questions that close on the same day share one market move, so each closing day counts once, and the verdict waits for ${s.min_days || 5} days (${s.days || 0} so far).`,
+  better: () => "Its odds have been closer to what happened than the market's, by more than luck would explain (each closing day counted once).",
+  worse: () => "Its odds have been further from what happened than the market's, by more than luck would explain (each closing day counted once).",
+  about_same: () => "Its odds and the market's are about even so far: the gap is within what luck would explain (each closing day counted once).",
+};
 const POPULAR = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'TSLA', 'AMZN', 'META', 'MSFT'];
 
 function OddsBar({ label, p, tone }) {
@@ -187,8 +194,11 @@ export default function YesNoPage() {
         <Card className="mt-4 text-sm">
           <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">The brain's Close Call record</div>
           {score.graded ? (
-            <p className="mt-2 text-slate-300">{score.graded.toLocaleString()} questions graded. The brain's lean picked the right side {pc(score.brain_side_right)} of the time,
-              and its odds were {score.brain_better ? 'closer to what happened than' : 'not yet better than'} the market's (Brier {score.brier_brain} vs {score.brier_market}; lower is better).</p>
+            <>
+              <p className="mt-2 text-slate-300">{score.graded.toLocaleString()} question{score.graded === 1 ? '' : 's'} graded{score.days === 1 ? (score.graded > 1 ? ', all closing on the same day' : '') : score.days ? `, closing on ${score.days} different days` : ''}.
+                The brain's lean picked the right side {pc(score.brain_side_right)} of the time{score.market_side_right != null ? `; the market's odds alone (above or below 50%) picked it ${pc(score.market_side_right)}` : ''}.</p>
+              <p className="mt-2 text-slate-300">{VERDICT[score.verdict] ? VERDICT[score.verdict](score) : VERDICT.too_early(score)} <span className="text-slate-400 tabular-nums">(Brier {score.brier_brain} vs the market's {score.brier_market}; lower is better.)</span></p>
+            </>
           ) : (
             <p className="mt-2 text-slate-300">New. The brain asks itself a question on 15 big stocks every trading day; the first ones get graded after their expiration. {score.open ? `${score.open} waiting now.` : ''}</p>
           )}

@@ -453,9 +453,40 @@ def mine(user_id: str) -> list[dict]:
     return [_view(r) for r in rows]
 
 
+MIN_VERDICT_DAYS = 5   # expiration days before the record says better / worse at all
+
+
+def record_verdict(rows: list[dict]) -> dict:
+    """Is the brain's lean beating the market's odds, or is that luck? Questions that close on the same day share one
+    market move (15 stocks don't fall separately), so the error on the Brier gap is clustered by expiration day: each
+    day counts once. 'too_early' until MIN_VERDICT_DAYS days are graded; then better / worse only past 2 errors."""
+    by_day: dict = {}
+    for r in rows:
+        d = brier(float(r["market_p"]), bool(r["above"])) - brier(float(r["brain_p"]), bool(r["above"]))
+        by_day.setdefault(str(r.get("expiration") or ""), []).append(d)
+    n = sum(len(v) for v in by_day.values())
+    days = len(by_day)
+    if not n:
+        return {"days": 0, "gain": None, "se": None, "verdict": "too_early"}
+    gain = sum(sum(v) for v in by_day.values()) / n
+    se = None
+    if days >= 2:
+        resid = sum((sum(v) - len(v) * gain) ** 2 for v in by_day.values())
+        se = math.sqrt(resid * days / (days - 1)) / n
+    if days < MIN_VERDICT_DAYS or se is None:
+        verdict = "too_early"
+    elif gain > 2 * se:
+        verdict = "better"
+    elif gain < -2 * se:
+        verdict = "worse"
+    else:
+        verdict = "about_same"
+    return {"days": days, "gain": round(gain, 5), "se": round(se, 5) if se is not None else None, "verdict": verdict}
+
+
 def scorecard() -> dict:
     """Public: how the brain's lean has done against the market's odds on graded questions (all askers)."""
-    rows = db.query("SELECT market_p, brain_p, above, side, user_id FROM yesno_calls WHERE graded_at IS NOT NULL")
+    rows = db.query("SELECT market_p, brain_p, above, side, user_id, expiration FROM yesno_calls WHERE graded_at IS NOT NULL")
     seen = {}
     for r in rows:
         seen.setdefault((r["market_p"], r["brain_p"], r["above"]), r)  # same question asked twice counts once
@@ -466,12 +497,16 @@ def scorecard() -> dict:
     bm = sum(brier(float(r["market_p"]), bool(r["above"])) for r in rows) / n
     bb = sum(brier(float(r["brain_p"]), bool(r["above"])) for r in rows) / n
     lean_right = sum(1 for r in rows if (float(r["brain_p"]) >= 0.5) == bool(r["above"])) / n
+    market_right = sum(1 for r in rows if (float(r["market_p"]) >= 0.5) == bool(r["above"])) / n
+    v = record_verdict(rows)
     open_n = int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL") or {}).get("n") or 0)
     users = [r for r in db.query("SELECT side, above FROM yesno_calls WHERE graded_at IS NOT NULL AND user_id NOT IN ('brain', 'anonymous')")]
     st = model_status() or {}
     learning = {k: st.get(k) for k in ("active", "graded", "test_n", "brier_gain", "t", "note", "at")}
     return {"learning": learning, "graded": n, "open": open_n, "brier_market": round(bm, 4), "brier_brain": round(bb, 4),
-            "brain_better": bb < bm, "brain_side_right": round(lean_right, 3),
+            "brain_better": v["verdict"] == "better", "brain_side_right": round(lean_right, 3),
+            "market_side_right": round(market_right, 3), "days": v["days"], "brier_gain": v["gain"], "brier_se": v["se"],
+            "verdict": v["verdict"], "min_days": MIN_VERDICT_DAYS,
             "people_graded": len(users),
             "people_right": round(sum(1 for r in users if (r["side"] == "yes") == bool(r["above"])) / len(users), 3) if users else None}
 

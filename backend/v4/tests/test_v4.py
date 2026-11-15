@@ -3540,6 +3540,29 @@ def test_yesno_quote_call_grade(monkeypatch):
     assert yesno.mine("u1")[0]["result"] == "right" and yesno.mine("u1")[0]["close_price"] == 999.0
     sc = yesno.scorecard()
     assert sc["graded"] == 1 and sc["open"] == 0 and sc["people_graded"] == 1 and sc["people_right"] == 1.0
+    assert sc["verdict"] == "too_early" and sc["days"] == 1 and sc["brain_better"] is False and "market_side_right" in sc
+
+
+def test_yesno_record_verdict_counts_each_expiration_day_once():
+    from backend.v4 import yesno
+    # one day: the brain was right on all 11 questions; still too early (they share one market move)
+    one = [{"market_p": 0.5, "brain_p": 0.55, "above": 1, "expiration": "2026-11-18"} for _ in range(11)]
+    v = yesno.record_verdict(one)
+    assert v["days"] == 1 and v["verdict"] == "too_early" and v["gain"] > 0 and v["se"] is None
+    # 6 days, small steady gain every day -> better
+    steady = [{"market_p": 0.5, "brain_p": 0.53 if d % 2 else 0.54, "above": 1, "expiration": f"2026-12-{d:02d}"}
+              for d in range(1, 7) for _ in range(3)]
+    assert yesno.record_verdict(steady)["verdict"] == "better"
+    # 6 days, wins and losses alternate by day -> about the same, not better
+    mixed = [{"market_p": 0.5, "brain_p": 0.6, "above": d % 2, "expiration": f"2026-12-{d:02d}"}
+             for d in range(1, 7) for _ in range(5)]
+    v = yesno.record_verdict(mixed)
+    assert v["days"] == 6 and v["verdict"] == "about_same" and abs(v["gain"]) < 0.02
+    # wrong on 7 of 8 days -> worse
+    worse = [{"market_p": 0.5, "brain_p": 0.6, "above": 0 if d < 8 else 1, "expiration": f"2026-12-{d:02d}"}
+             for d in range(1, 9) for _ in range(5)]
+    assert yesno.record_verdict(worse)["verdict"] == "worse"
+    assert yesno.record_verdict([])["verdict"] == "too_early"
 
 
 def test_yesno_practice_trade(monkeypatch, tmp_path):

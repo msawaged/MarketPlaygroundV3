@@ -574,3 +574,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - /brain live activity: grouped rounds read "· N rounds over Xh".
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-15 morning (Builder routine): Close Call record says "too early" instead of crowning a winner on one day
+- The brain's Close Call record card said its odds were "closer to what happened than the market's" whenever its Brier
+  was lower, on any sample. The first grades (Nov 19) are 11 questions all closing Nov 18, one shared market move, so
+  it would have claimed a win on a coin flip. Now `yesno.record_verdict` clusters the Brier gap by expiration day (each
+  closing day counts once) and says too early (< `MIN_VERDICT_DAYS` 5 days) / better / worse (past 2 clustered
+  standard errors) / about even. The card also shows how often the market's odds alone picked the right side, next to
+  the brain's lean, and how many closing days the questions cover.
+- `scorecard()` adds `market_side_right`, `days`, `brier_gain`, `brier_se`, `verdict`, `min_days`; `brain_better` now
+  means verdict == "better". Reporting only: `learn()`, its MIN_T gate and the lean are untouched.
+- For the brain/research sessions (not changed here): `learn()`'s walk-forward t-stat treats questions that share an
+  expiration as independent, so it overstates t the same way. Clustering it by expiration would tighten that gate; a
+  deliberate change to write up in docs/brain_upgrades.md if someone takes it.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py (test_yesno_record_verdict_counts_each_expiration_day_once),
+  frontend/src/components/YesNoPage.jsx, docs/hq/status/builder.json.
