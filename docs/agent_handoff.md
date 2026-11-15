@@ -633,3 +633,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Information only: no ranking, research, gate or grading logic touched.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py (test_brain_counts_say_how_many_grades_are_real_time),
   frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-15 late morning (daily polish walk): volatile picks no longer drawn as ▲; honest growth labels
+- /brain "Just learned" drew volatile picks (big move either way) as ▲; now ↕ with a short legend.
+- /brain growth sparks: "+6,567 in 30 days" equalled the total (data starts Oct 28); now "all since <first day>" when
+  the count started inside the window.
+- Frontend only. Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

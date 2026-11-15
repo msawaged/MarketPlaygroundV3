@@ -111,7 +111,10 @@ function Spark({ data, k, color, label, dashed }) {
     <div className="min-w-0">
       <div className="text-[11px] text-slate-400">{label}</div>
       <div className="text-lg font-extrabold tabular-nums" style={{ color }}>{last.toLocaleString()}</div>
-      <div className="text-[10px] text-slate-500">+{(last - first).toLocaleString()} in 30 days</div>
+      {/* when the count started inside the window, "+6,567 in 30 days" equals the total; say when it started instead */}
+      <div className="text-[10px] text-slate-500">{first === 0 && last > 0 && data.find((d) => (d[k] || 0) > 0)?.d
+        ? `all since ${new Date(`${data.find((d) => (d[k] || 0) > 0).d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`
+        : `+${(last - first).toLocaleString()} in 30 days`}</div>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 w-full h-auto" role="img" aria-label={`${label}: ${last.toLocaleString()} now, over the last 30 days`}>
         <path d={`${pts} L${W},${H} L0,${H} Z`} fill={color} fillOpacity="0.12" />
         <path d={pts} fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 3' : undefined} />
@@ -566,7 +569,9 @@ export default function BrainPage({ viewOnly = false }) {
             <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5">
               <div className="text-[11px] text-slate-500">{x.from_news ? 'From today\'s news' : 'Practice belief'} · {ago(x.at, now)}</div>
               <div className="text-sm font-semibold leading-snug">“{x.text}”</div>
-              {x.picks?.length > 0 && <div className="mt-1 text-xs text-slate-300">→ {x.picks.map((p) => `${p.ticker} ${p.direction === 'bearish' ? '▼' : '▲'}`).join('  ·  ')}</div>}
+              {/* volatile picks bet on a big move either way (graded on |move|), so they get ↕, never ▲ */}
+              {x.picks?.length > 0 && <div className="mt-1 text-xs text-slate-300">→ {x.picks.map((p) => `${p.ticker} ${p.direction === 'bearish' ? '▼' : p.direction === 'volatile' ? '↕' : '▲'}`).join('  ·  ')}
+                {x.picks.some((p) => p.direction === 'volatile') && <span className="text-slate-500">  (↕ a big move either way)</span>}</div>}
             </div>
           )} />
         </div>

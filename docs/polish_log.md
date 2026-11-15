@@ -577,3 +577,23 @@ Changed:
 - yesno.py `_reasons`: "1 trading day" singular. Test test_yesno_reasons_say_one_trading_day_in_the_singular.
 
 Checks: vite build passes, backend tests 164 passed.
+
+## 2026-11-15 (late-morning run, ~15:30 UTC = Sun 10:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. The Nvidia headline in the feed (Huang's ouster) is real news (WSJ/Fortune, Nov 11). New "in real time" tile
+matches the DB.
+
+Found:
+- /brain "Just learned": "Nvidia's leadership shake-up will make its chip sales harder to predict" (direction volatile in
+  DB, b-91be3cc7c96f42e2) showed "NVDA ▲ · SMH ▲ · AMD ▲". Those picks are volatile (a big move either way, graded on
+  |move|), but anything not bearish was drawn as ▲, so it read as a bullish call on a story the feed tags "story hurts".
+- /brain "Growing every day": "Beliefs learned 6,567 · +6,567 in 30 days" and "5,474 · +5,474 in 30 days". The DB starts
+  Oct 28 (MIN(created_at)), so the 30-day gain is the whole total; reads like a padded stat.
+
+Changed:
+- BrainPage.jsx: volatile picks show ↕ plus "(↕ a big move either way)"; a growth line whose count started inside the
+  window says "all since Oct 28" (beliefs) / the first real-time grade day, otherwise "+N in 30 days".
+
+Checks: vite build passes, backend tests 165 passed.

@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-15T14:45:00Z",
- "last_run": "Nothing broken on the live site. The Brain page said our MuLine trend line catches turns 'sooner' than ALMA, but the gap is 0.2 days with the same median, so it now says 'about as fast, with 2.9 fewer false turns a year'. Also fixed 'for 1 trading days' on Close Call and '1 of 42 ways do' on the Brain page.",
+ "updated_at": "2026-11-15T15:45:00Z",
+ "last_run": "Nothing broken on the live site. On the Brain page, 'big move either way' picks (like NVDA after the Huang news) were drawn with an up arrow, as if bullish; they now show ↕. The growth charts said '+6,567 in 30 days', which was the whole total since the data started Oct 28; they now say 'all since Oct 28'.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Monday: check the news feed refreshes with new hunches once real news arrives; re-check Close Call odds vs YES price with live quotes.",
  "needs_from_murad": [],
