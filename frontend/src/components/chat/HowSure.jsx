@@ -42,6 +42,49 @@ function pastGoal(direction) {
   return 'beat the S&P 500';
 }
 
+// "How wide it can go": the spread of how far those same calls finished from the S&P, in the direction called
+// (backend baserate p10 / p50 / p90). The hit rate alone reads as a coin flip with small stakes.
+const pts = (x) => Math.round(Math.abs(x) * 100);
+
+function ptsWay(x) {
+  if (pts(x) === 0) return 'about even with the S&P';
+  return `${pts(x)} pts ${x > 0 ? 'the right way' : 'the wrong way'}`;
+}
+
+// The tail of the spread, said so it stays true when the whole range sits on one side of the S&P.
+function worstTail(x) {
+  if (pts(x) === 0) return 'about even with the S&P or worse';
+  return x < 0 ? `${pts(x)} pts or more the wrong way` : `still ${pts(x)} pts the right way`;
+}
+
+function bestTail(x) {
+  if (pts(x) === 0) return 'about even with the S&P or better';
+  return x > 0 ? `${pts(x)} pts or more the right way` : `still ${pts(x)} pts the wrong way`;
+}
+
+export function SpreadLine({ cell, cp }) {
+  if (!cell || cell.p10 == null || cell.p90 == null || cell.p50 == null) return null;
+  const w = Math.max(Math.abs(cell.p10), Math.abs(cell.p90), 0.01);   // symmetric scale, so the S&P mark sits mid-bar
+  const at = (x) => `${((x + w) / (2 * w)) * 100}%`;
+  return (
+    <div className="mt-1.5" aria-label="How wide it can go">
+      <div className="relative h-2.5 rounded-full bg-slate-700/70" aria-hidden="true">
+        <div className="absolute inset-y-0 rounded-full bg-blue-400/40" style={{ left: at(cell.p10), right: `calc(100% - ${at(cell.p90)})` }} />
+        <div className="absolute -inset-y-0.5 w-px bg-slate-300" style={{ left: '50%' }} />
+        <div className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-900 bg-blue-300" style={{ left: at(cell.p50) }} />
+      </div>
+      <div className="mt-0.5 flex justify-between text-[10px] text-slate-500" aria-hidden="true">
+        <span>{pts(w)} pts wrong way</span><span>S&amp;P</span><span>{pts(w)} pts right way</span>
+      </div>
+      <div className="mt-0.5">
+        <span className="font-semibold text-slate-100">How wide it can go</span> (one call vs the S&amp;P, {cp}-day check):
+        the worst 1 in 10 ended {worstTail(cell.p10)}; the best 1 in 10 ended {bestTail(cell.p90)}.
+        The middle call ended {ptsWay(cell.p50)}.
+      </div>
+    </div>
+  );
+}
+
 export function BaseRateLine({ cell, direction, cp, prob = null }) {
   if (!cell || cell.beat == null) return null;
   const pct = Math.round(cell.beat * 100);
@@ -57,6 +100,7 @@ export function BaseRateLine({ cell, direction, cp, prob = null }) {
       {gap != null && Math.abs(gap) >= 10 && (
         <span className="text-slate-400"> You said {Math.round(prob * 100)}%, {Math.abs(gap)} points {gap > 0 ? 'above' : 'below'} it.</span>
       )}
+      <SpreadLine cell={cell} cp={cp} />
       <span className="text-slate-500"> Mostly the app's practice calls; past record, not a forecast.</span>
     </div>
   );

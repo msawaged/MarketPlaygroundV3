@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T22:30:00Z",
- "last_run": "Brain page, 'Survival of the smartest': the leading strategist's '+2.6 pts vs the S&P' now sits next to what the app's own #1 did on the same calls (+2.6, so a tie) and what a random idea did (+0.3). It also says these are practice calls the strategists were chosen on, so the live record is the fair test.",
+ "updated_at": "2026-11-15T23:59:00Z",
+ "last_run": "'How sure are you?' now shows how far calls like yours landed, not just how often they won: a small bar and one line, e.g. 90-day bullish calls: the worst 1 in 10 ended 12 pts or more behind the S&P, the best 1 in 10 12 pts or more ahead, the middle call 2 pts behind.",
  "working_on": "Nothing open.",
- "next": "After Monday's grading run (about 5:47 PM ET), check the new yardsticks appear on /brain; then the Close Call records after the first grades on Nov 19.",
+ "next": "After Monday's grading run (about 5:47 PM ET), check the spread bar shows in chat and on My calls, and the strategist yardsticks on /brain; then the Close Call records after the first grades on Nov 19.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "A 42% hit rate reads like a coin flip with small stakes. The base-rate line now also shows the range: about 12 pts either way vs the S&P for a single 90-day call, from the app's own graded calls.",
+   "at": "2026-11-15T23:59:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "A professor would ask 'compared to what?' about the strategists' +2.6 pts. The board now shows the app's own pick (+2.6) and a random idea (+0.3) on the same calls, so nobody mistakes a tie for a win.",

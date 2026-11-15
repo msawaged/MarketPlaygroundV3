@@ -676,3 +676,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
   `baserate:v1`, one line in HowSure). Not built.
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py (test_long_term_reversal_rule_and_enrich_backfill),
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-15 night (Builder routine): "How wide it can go" under the base rate
+- No HQ messages from Murad. Built the scout's 2026-11-15 proposal (feature_ideas.md), the only one still "proposed".
+- `baserate.compute()` adds p10 / p50 / p90 to each `baserate:v1` cell: how far each *call* finished from the S&P in
+  the direction called (theme = `outcomes.bench_ret` of the call's own-direction picks vs `spy_ret`; same rule as
+  grader belief_right, whose sign it is). Call-level, not pick-level as the proposal sketched, so the spread and the
+  "42% beat" line describe the same calls (live: 0 sign mismatches). Python percentiles = percentile_cont; a cell
+  gets no spread unless every counted call has a number. Same MIN_N, same daily refresh, never on a request.
+- HowSure.jsx `SpreadLine` (inside BaseRateLine, so chat and My calls both get it): small bar with the S&P mark in
+  the middle, plus "the worst 1 in 10 ended 12 pts or more the wrong way; the best 1 in 10 ended 12 pts or more the
+  right way. The middle call ended 2 pts the wrong way." Wording holds when the whole range is on one side.
+- Shows after the next grading run (or the web service's stale refresh) rewrites `baserate:v1`; old cells without
+  p10/p50/p90 just don't show the bar. Information only: no ranking, research, gate or grading change.
+- Files: backend/v4/baserate.py, backend/v4/tests/test_v4.py (test_base_rate_spread_says_how_far_calls_landed),
+  frontend/src/components/chat/HowSure.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.

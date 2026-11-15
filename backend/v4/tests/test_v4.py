@@ -1086,6 +1086,37 @@ def test_base_rate_outside_view_counts_each_call_once(monkeypatch):
     assert body["cells"][d0]["90"]["n"] == want[d0][0]
 
 
+def test_base_rate_spread_says_how_far_calls_landed():
+    from backend.v4 import baserate
+    assert abs(baserate._pct([1.0, 2.0, 3.0, 4.0, 5.0], 0.1) - 1.4) < 1e-9 and baserate._pct([5.0], 0.9) == 5.0   # = percentile_cont
+    assert abs(baserate._call_excess("bearish", -0.10, 0.02) - 0.12) < 1e-9 and abs(baserate._call_excess("volatile", -0.3, 0.1) - 0.2) < 1e-9
+    texts = ["plumbing demand is going to be high", "ai chip demand keeps growing", "everyone is getting a pet",
+             "airlines will struggle this year", "solar keeps getting cheaper", "banks will have a rough year"]
+    made = [engine.process_belief(t, f"u-sp{i}", "moderate", claude_client=FakeClaude())["belief_id"]
+            for i, t in enumerate(texts)]
+    bench = [0.20, -0.05, 0.10, -0.15, 0.02, 0.30]
+    want: dict = {}
+    for b, br in zip(made, bench):
+        d = db.query_one("SELECT direction FROM beliefs WHERE id = ?", (b,))["direction"]
+        x = baserate._call_excess(d, br, 0.01)
+        for pk in db.query("SELECT id, direction FROM picks WHERE belief_id = ?", (b,)):
+            # picks in another direction carry their own group's benchmark; only the call's own direction counts
+            mine = pk["direction"] == d
+            db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at,
+                                                belief_right, bench_ret)
+                          VALUES (?, 90, '2026-01-01', 1, 0.1, 0.01, 0.1, '2026-01-01', ?, ?)""",
+                       (pk["id"], 1 if x > 0 else 0, br if mine else -9.0))
+        want.setdefault(d, []).append(x)
+    cells = baserate.compute()["cells"]
+    for d, xs in want.items():
+        xs.sort()
+        c = cells[d]["90"]
+        assert c["n"] == len(xs) and c["right"] == sum(1 for x in xs if x > 0)
+        for q, k in ((0.1, "p10"), (0.5, "p50"), (0.9, "p90")):
+            assert abs(c[k] - round(baserate._pct(xs, q), 4)) < 1e-9
+        assert c["p10"] <= c["p50"] <= c["p90"]
+
+
 # ---------------- fuzz: hostile and random input never crashes the server ----------------
 
 _NASTY = ["", " ", "\n\t", "a", "x" * 5000, "🚀📉💸" * 50, "'; DROP TABLE beliefs; --", "<script>alert(1)</script>",
