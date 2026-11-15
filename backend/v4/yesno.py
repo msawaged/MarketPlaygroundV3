@@ -227,9 +227,9 @@ def _signals(u: str) -> dict:
 def _reasons(sig: dict, u: str) -> list[str]:
     r = []
     if sig["trend"] > 0:
-        r.append(f"{u}'s MuLine trend is rising" + (f" (for {sig['trend_age']} trading days)" if sig.get("trend_age") else "") + ".")
+        r.append(f"{u}'s MuLine trend is rising" + (f" (for {sig['trend_age']} trading day{'' if sig['trend_age'] == 1 else 's'})" if sig.get("trend_age") else "") + ".")
     elif sig["trend"] < 0:
-        r.append(f"{u}'s MuLine trend is falling" + (f" (for {sig['trend_age']} trading days)" if sig.get("trend_age") else "") + ".")
+        r.append(f"{u}'s MuLine trend is falling" + (f" (for {sig['trend_age']} trading day{'' if sig['trend_age'] == 1 else 's'})" if sig.get("trend_age") else "") + ".")
     if sig["ideas"] is not None:
         r.append(f"In the past {IDEA_DAYS} days the app suggested {u} {sig['ideas_n']:,} times: {sig['ideas_bull']:,} as a "
                  f"bullish idea, {sig['ideas_bear']:,} as a bearish one.")

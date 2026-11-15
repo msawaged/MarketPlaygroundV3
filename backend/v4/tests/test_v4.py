@@ -3858,3 +3858,10 @@ def test_position_greeks_match_card_pricing():
     cc = strategy.build_trade("Covered Call", "XYZ", spot, vol, as_of, 90)
     call = [l for l in cc["trade_legs"] if l.get("instrument") == "option"][0]
     assert 0 < cc["greeks"]["delta"] < 100 and cc["greeks"]["theta"] > 0
+
+
+def test_yesno_reasons_say_one_trading_day_in_the_singular():
+    from backend.v4 import yesno
+    one = yesno._reasons({"trend": 1.0, "trend_age": 1, "ideas": None}, "SPY")
+    two = yesno._reasons({"trend": -1.0, "trend_age": 3, "ideas": None}, "SPY")
+    assert "(for 1 trading day)." in one[0] and "(for 3 trading days)." in two[0]

@@ -612,3 +612,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (same pattern as /yesno/mine). Same question answered twice counts once. Information only: read by nothing else.
 - Files: backend/v4/yesno.py, router.py, tests/test_v4.py (test_yesno_my_record_sets_right_against_the_market_odds),
   frontend/src/components/YesNoPage.jsx, lib/api.js, docs/hq/status/builder.json.
+
+## 2026-11-15 afternoon (daily polish walk): honest MuLine vs ALMA wording, two grammar fixes
+- /brain MuLine box: verdict sentence now built from the numbers (`trendlab.results`); a lag gap under 0.5 day says
+  "about as fast as ALMA" instead of "sooner". `verdict_vs_alma` from trendlab.py is unchanged (still picks the "Still
+  tuning" suffix). Luck card "1 of 42 ways does".
+- yesno `_reasons`: "(for 1 trading day)" singular.
+- Files: frontend/src/components/BrainPage.jsx, backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
+  docs/hq/status/polish.json.

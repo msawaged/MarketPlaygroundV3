@@ -554,3 +554,26 @@ Changed:
 - BrainPage.jsx: "... instead of +1.5 pts (t 4.5) on those same calls with the peek".
 
 Checks: vite build passes, backend tests 162 passed.
+
+## 2026-11-15 (afternoon run, ~14:30 UTC = Sun 9:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. News feed shows curated hunches again (the morning fix holds). Checked live Close Call SPY $750 Nov 20: YES $53 +
+NO $46 = $99 of $100, breakevens $750.53/$750.54, consistent with 54.6% odds on a $750/$751 spread. Checked /brain
+"Just graded" AVGO +14.9% in DB (ret 17.4% minus SPY 2.5%, matches). Read the new Close Call "Your answers" record code:
+counting and clustered band add up.
+
+Found:
+- /brain "MuLine vs the classics" claimed "MuLine caught real turns sooner ... than ALMA" on 4.72 vs 4.89 days late,
+  both with a 4-day median (trendlab in /v4/brain). A 0.2-day gap is not "sooner" to an expert's eye.
+- Close Call reason: "SPY's MuLine trend is rising (for 1 trading days)."
+- /brain luck check: "1 of 42 ways do."
+
+Changed:
+- BrainPage.jsx: MuLine verdict says the gaps in numbers; under half a day reads "about as fast as ALMA (4.7 vs 4.9
+  days late on average, the same 4-day median), with 2.9 fewer false turns a year". Non-winning verdicts add "Still
+  tuning". "1 of 42 ways does".
+- yesno.py `_reasons`: "1 trading day" singular. Test test_yesno_reasons_say_one_trading_day_in_the_singular.
+
+Checks: vite build passes, backend tests 164 passed.

@@ -394,7 +394,7 @@ export default function BrainPage({ viewOnly = false }) {
                       {sk.luck.n ? ` Those ${Number(sk.luck.n).toLocaleString()} calls` : ' The test calls'} were made on {Number(sk.luck.app_dates).toLocaleString()} different days
                       {sk.luck.app_n_eff ? `, worth about ${Number(sk.luck.app_n_eff).toLocaleString()} independent calls` : ''}.
                       {' '}Counted that way, {sk.ranker?.active ? 'the old way of picking the #1' : (peek ? 'the way we pick the #1, as stored,' : "the way we pick today's #1")} scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
-                      {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways do.
+                      {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways {(sk.luck.clear_nw || []).length === 1 ? 'does' : 'do'}.
                       {sk.ranker?.active && sk.ranker.oos?.lift_t_nw != null && (
                         <> The retrained model scores t {Number(sk.ranker.oos.lift_t_nw).toFixed(1)} counted that way (t {Number(sk.ranker.oos.lift_t || 0).toFixed(1)} the plain way){Number(sk.ranker.oos.lift_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing the bar.' : ', short of the bar.'}</>
                       )}
@@ -503,12 +503,17 @@ export default function BrainPage({ viewOnly = false }) {
         {d?.trendlab?.results?.MuLine && (() => {
           const t = d.trendlab, rows = ['MuLine', 'ALMA', '20-day average'].filter((k) => t.results[k]);
           const best = (key) => Math.min(...rows.map((k) => t.results[k][key]));
-          const verdict = {
-            'quicker and calmer': 'MuLine caught real turns sooner and cried wolf less often than ALMA.',
-            'quicker but jumpier': 'MuLine caught real turns sooner, but cried wolf more often than ALMA. Still tuning.',
-            'calmer but slower': 'MuLine cried wolf less often than ALMA, but caught real turns later. Still tuning.',
-            'not better yet': 'MuLine isn\'t beating ALMA yet. Still tuning, and this box will say so until it does.',
-          }[t.verdict_vs_alma] || '';
+          // Say the gaps in numbers: a 0.2-day head start with the same median lag is "about as fast", not "sooner".
+          const m = t.results.MuLine, a = t.results.ALMA;
+          const lag = a ? a.avg_lag - m.avg_lag : 0, fal = a ? a.false_per_year - m.false_per_year : 0;
+          const same = Math.abs(lag) < 0.5;
+          const speed = !a ? '' : same
+            ? `MuLine turned about as fast as ALMA (${m.avg_lag.toFixed(1)} vs ${a.avg_lag.toFixed(1)} days late on average${m.median_lag === a.median_lag ? `, the same ${m.median_lag}-day median` : ''})`
+            : `MuLine turned ${Math.abs(lag).toFixed(1)} days ${lag > 0 ? 'sooner' : 'later'} than ALMA on average`;
+          const noise = !a ? '' : Math.abs(fal) < 0.5
+            ? 'about as many false turns'
+            : `${Math.abs(fal).toFixed(1)} ${fal > 0 ? 'fewer' : 'more'} false turns a year`;
+          const verdict = a ? `${speed}, with ${noise}.${t.verdict_vs_alma === 'quicker and calmer' ? '' : ' Still tuning.'}` : '';
           return (
             <>
               <h2 className="mt-8 text-xl font-extrabold">MuLine vs the classics</h2>

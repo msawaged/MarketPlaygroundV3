@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-15T09:50:00Z",
- "last_run": "On a quiet Sunday the news feed fell back to raw headlines and showed the wrong companies: a Dr. Martens dividend story said it touches DOCS, which is Doximity in the US. Those tags now have to match the story, and the feed keeps the last good set of hunches (with its real age) instead of routine notices. Also made one Brain page sentence stop looking like it contradicts the number above it.",
+ "updated_at": "2026-11-15T14:45:00Z",
+ "last_run": "Nothing broken on the live site. The Brain page said our MuLine trend line catches turns 'sooner' than ALMA, but the gap is 0.2 days with the same median, so it now says 'about as fast, with 2.9 fewer false turns a year'. Also fixed 'for 1 trading days' on Close Call and '1 of 42 ways do' on the Brain page.",
  "working_on": "Walking the app like a new user, checking every number an options expert would check.",
  "next": "Monday: check the news feed refreshes with new hunches once real news arrives; re-check Close Call odds vs YES price with live quotes.",
  "needs_from_murad": [],
