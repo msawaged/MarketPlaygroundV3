@@ -697,3 +697,26 @@ Changed (frontend only):
   the plain-English line. Test in payoff.test.mjs.
 
 Checks: npm test passes, vite build passes, backend tests 173 passed.
+
+## 2026-11-16 (midday run, ~06:30 UTC = Mon 1:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Cross-checked live Close Call AAPL $360 Dec 18: YES $204 + NO $294 = $498 of a $500 payout, breakevens
+$362.04 / $362.06, odds 50.2% (flat-vol 44.8%, matches N(d2)); the spread note explains the $360-$365 gap. Signed-in
+screens locally (offline server, throwaway SQLite) at 390 and 375: NVDA Bull Call Spread $185/$210, 6 months: $14.57 -
+$5.54 = $903, max gain $1,597, breakeven $194.03, delta +28 sh: all add up; paper trade lands in Portfolio at $903.
+
+Found: "Protect what I own" (the chip says "Insurance for shares I have") -> NVDA Protective Put, $5,000:
+- the card said "Doesn't fit $5,000 even at 1 contract" and "ties up about $18,710 ... No version of this idea fits
+  that amount", because the price includes buying the 100 shares the user just told us they own. Nowhere did it say
+  the insurance itself was $210. An expert reads that as the app not understanding its own strategy.
+- legs read "$177.5 strike · $2.1" (money without cents).
+
+Changed:
+- payoff.js `plainEnglish`: Protective Put adds "Already own 100 NVDA shares? Then only the put is new money: about
+  $210."; Collar adds the options-only net (paid, received, or about $0). Test in payoff.test.mjs.
+- StrategyCard: for Protective Put / Collar over budget the badge reads "With the 100 shares included, 1 contract costs
+  more than your $5,000"; leg prices show cents ($177.50, $2.10).
+- strategy.fit_budget: for those two, the note says the price includes buying 100 shares and that an owner only adds
+  the options (test_protect_goal_over_budget_says_the_price_includes_the_shares). No sizing change.

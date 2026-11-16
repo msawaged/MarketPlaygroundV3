@@ -3001,6 +3001,18 @@ def test_ranker_v2_leaves_out_volatile_ideas(monkeypatch):
     assert research.score_candidates([{"mom60": 0.2}, {"mom60": 0.9}], ["bullish", "volatile"]) is None
 
 
+def test_protect_goal_over_budget_says_the_price_includes_the_shares():
+    # "Protect what I own" = insurance for shares they have; the card prices it with 100 shares included, so the note
+    # must say so instead of "No version of this idea fits".
+    build = lambda s_: strategy.build_trade(s_, "WINR", 185.0, 0.24, TODAY, 33)
+    pp = build("Protective Put")
+    s2, _, why = strategy.fit_budget("Protective Put", pp, direction="bearish", risk="moderate",
+                                     prefs={"budget_usd": 5000.0, "instrument": "options", "goal": "protect"},
+                                     build=build, price=185.0)
+    assert s2 == "Protective Put" and "includes buying 100 shares" in why and "already own the shares" in why
+    assert "No version" not in why
+
+
 def test_budget_and_timeline_shape_the_strategies():
     p = strategy.normalize_prefs({"instrument": "options", "budget_usd": "150", "horizon_days": 5000})
     assert p["budget_usd"] == 150.0 and p["horizon_days"] == 730

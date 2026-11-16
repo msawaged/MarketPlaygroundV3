@@ -402,6 +402,11 @@ def fit_budget(structure: str, trade: dict, *, direction: str, risk: str, prefs:
         return name, t, f"{note}, so this uses a {name} (about ${c:,.0f} each)."
     if direction == "bullish" and prefs.get("instrument") != "options":
         return "Buy Stock", build("Buy Stock"), f"{note}, so this uses shares: any amount works."
+    if structure in ("Protective Put", "Collar"):
+        # "Insurance for shares I have": the price includes buying the 100 shares, which an owner already holds
+        return structure, trade, (f"One {structure} contract ties up about ${over:,.0f} because it includes buying "
+                                  f"100 shares, more than the ${budget:,.0f} you set. If you already own the shares, "
+                                  f"only the options are new money (see the deal below).")
     return structure, trade, f"{note}. No version of this idea fits that amount."
 
 

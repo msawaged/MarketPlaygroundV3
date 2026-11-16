@@ -148,3 +148,16 @@ console.log('payoff tests passed');
   const { shareCount } = await import('./payoff.js');
   if (shareCount(1000 / 58) !== '17.24' || shareCount(10) !== '10' || shareCount(250.4) !== '250') throw new Error('shareCount');
 }
+
+// Protective Put / Collar: say what is new money for someone who already owns the shares (the options alone)
+{
+  const { buildModel, summarize, plainEnglish } = await import('./payoff.js');
+  const legs = (extra) => [{ action: 'Buy', instrument: 'stock', quantity: 100, ticker: 'NVDA' },
+    { action: 'Buy', option_type: 'Put', strike_price: 177.5, est_premium: 2.1, quantity: 1, expiration: '2026-12-18', instrument: 'option' }, ...extra];
+  const pp = buildModel({ type: 'Protective Put', vol: 0.24, trade_legs: legs([]) }, 185, today);
+  const t = plainEnglish(pp, summarize(pp), 1, 'NVDA', 5000).map((l) => l.text).join(' | ');
+  if (!t.includes('Already own 100 NVDA shares? Then only the put is new money: about $210.')) throw new Error('pp owned: ' + t);
+  const co = buildModel({ type: 'Collar', vol: 0.24, trade_legs: legs([{ action: 'Sell', option_type: 'Call', strike_price: 200, est_premium: 1.4, quantity: 1, expiration: '2026-12-18', instrument: 'option' }]) }, 185, today);
+  const c = plainEnglish(co, summarize(co), 1, 'NVDA', 5000).map((l) => l.text).join(' | ');
+  if (!c.includes('only the options are new money: about $70 (the put, less what the call pays you)')) throw new Error('collar owned: ' + c);
+}

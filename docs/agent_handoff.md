@@ -769,3 +769,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Information only: no gate, ranking, grading or research change. Checked at 375/390 with mocked data: no overflow.
 - Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, frontend/src/components/chat/HowSure.jsx,
   frontend/src/components/MyCallsPage.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-16 midday (daily polish walk): "Protect what I own" says what an owner actually pays
+- No HQ messages from Murad. No sizing, gate, ranking or grading change.
+- Protective Put / Collar cards (goal "protect" = insurance for shares I have) said "Doesn't fit $5,000 ... No version
+  of this idea fits" because the price includes buying 100 shares. Now: badge "With the 100 shares included, 1 contract
+  costs more than your $X", backend note says the price includes the shares and an owner only adds the options, and the
+  plain-English deal adds "Already own 100 NVDA shares? Then only the put is new money: about $210" (collar: net).
+- Option legs show cents ($177.50 strike, $2.10).
+- Files: backend/v4/strategy.py (fit_budget note), backend/v4/tests/test_v4.py, frontend/src/lib/payoff.js
+  (`ownedNote`), frontend/src/lib/payoff.test.mjs, frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.

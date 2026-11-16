@@ -455,7 +455,9 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               <p className={`text-xs mt-1.5 font-semibold ${pick.budget.fits ? 'text-emerald-300' : 'text-amber-200'}`}>
                 {pick.budget.fits
                   ? `Fits your $${Number(pick.budget.budget).toLocaleString()}${pick.budget.unit === 'contracts' ? `: ${pick.budget.units} contract${pick.budget.units === 1 ? '' : 's'} for $${Number(pick.budget.cost).toLocaleString()}` : pick.budget.unit === 'shares' ? `: about ${Number(pick.budget.units).toFixed(2)} shares` : ''}${data.prefs?.horizon_days ? ` · ${({ 30: '1 month', 90: '3 months', 180: '6 months', 365: '1 year' })[data.prefs.horizon_days] || `${data.prefs.horizon_days} days`}` : ''}`
-                  : `Doesn't fit $${Number(pick.budget.budget).toLocaleString()} even at 1 contract`}
+                  : /^(Protective Put|Collar)$/.test(pick.structure)
+                    ? `With the 100 shares included, 1 contract costs more than your $${Number(pick.budget.budget).toLocaleString()}`
+                    : `Doesn't fit $${Number(pick.budget.budget).toLocaleString()} even at 1 contract`}
               </p>
             )}
             {pick.structure_reason && pick.structure_reason !== 'rule' && (
@@ -471,7 +473,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 {legs.map((l, i) => (
                   <li key={i} className="flex justify-between gap-2 text-sm">
                     <span className="whitespace-nowrap"><span className={l.action === 'Sell' ? 'text-red-300' : 'text-green-300'}>{l.action}</span> <span className="text-white">{l.ticker}</span>{l.option_type ? <> <Term k={String(l.option_type).toLowerCase()}>{l.option_type}</Term></> : ''}</span>
-                    {l.strike_price ? <span className="text-slate-300 text-right whitespace-nowrap">${l.strike_price} <Term k="strike">strike</Term>{l.est_premium ? <span className="text-slate-500"> · ${l.est_premium}</span> : ''}</span> : <span className="text-slate-500">{l.instrument === 'stock' ? 'shares' : ''}</span>}
+                    {l.strike_price ? <span className="text-slate-300 text-right whitespace-nowrap">${Number.isInteger(Number(l.strike_price)) ? Number(l.strike_price) : Number(l.strike_price).toFixed(2)} <Term k="strike">strike</Term>{l.est_premium ? <span className="text-slate-500"> · ${Number(l.est_premium).toFixed(2)}</span> : ''}</span> : <span className="text-slate-500">{l.instrument === 'stock' ? 'shares' : ''}</span>}
                   </li>
                 ))}
               </ul>

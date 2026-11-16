@@ -184,6 +184,20 @@ const $ = (v) => {
 };
 
 /**
+ * Protective Put / Collar are "insurance for shares I have": the card prices them with the 100 shares included, so
+ * say what is new money for someone who already owns them (the options alone; a collar's call can pay for the put).
+ */
+function ownedNote(model, n, ticker) {
+  const opt = Math.round(model.netPremium * CONTRACT * n);
+  const sh = `${(model.stockShares || 100) * n} ${ticker} shares`;
+  if (model.type === 'Protective Put') return `Already own ${sh}? Then only the put is new money: about ${$(opt)}.`;
+  if (Math.abs(opt) < 5) return `Already own ${sh}? Then the call you sell roughly pays for the put: close to $0 of new money.`;
+  return opt > 0
+    ? `Already own ${sh}? Then only the options are new money: about ${$(opt)} (the put, less what the call pays you).`
+    : `Already own ${sh}? Then the options pay you about ${$(-opt)} up front (the call pays more than the put costs).`;
+}
+
+/**
  * The trade in three or four plain sentences: what you pay, best case, worst case, breakeven.
  * Returns [{ tone: 'neutral'|'good'|'bad'|'warn', text }].
  */
@@ -259,11 +273,13 @@ export function plainEnglish(model, sum, units, ticker, amount) {
       lines[0] = { tone: 'neutral', text: `You buy ${100 * n} shares plus a put for insurance: about ${$(Math.round(cost))} in total.` };
       lines.push({ tone: 'good', text: `Best case: no cap. You make what the shares make above ${be}.` });
       lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))}, no matter how far it falls, until ${date}.` });
+      lines.push({ tone: 'neutral', text: ownedNote(model, n, ticker) });
       return lines;
     case 'Collar':
       lines[0] = { tone: 'neutral', text: `You buy ${100 * n} shares, buy a put at ${$(lo)} and sell a call at ${$(hi)}: about ${$(Math.round(cost))} in total.` };
       lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} is at or above ${$(hi)} on ${date}.` });
       lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)}. That's your floor.` });
+      lines.push({ tone: 'neutral', text: ownedNote(model, n, ticker) });
       break;
     case 'Long Call Butterfly': {
       const mid = model.legs.find((l) => l.qty === 2)?.strike ?? (lo + hi) / 2;
