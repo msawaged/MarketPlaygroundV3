@@ -3859,7 +3859,7 @@ def test_yesno_practice_trade(monkeypatch, tmp_path):
     yesno = _fake_chain(monkeypatch)
     from backend.v4 import practice_options
     seen = {}
-    def fake_open(user_id, ticker, structure, legs, contracts, belief="", vol_override=None):
+    def fake_open(user_id, ticker, structure, legs, contracts, belief="", vol_override=None, keep_leg_vols=False):
         seen.update(user=user_id, legs=practice_options._clean_legs(legs, ticker), structure=structure, n=contracts)
         return {"status": "success", "position_id": "opt-x", "message": "Opened."}
     monkeypatch.setattr(practice_options, "open_trade", fake_open)
@@ -3868,6 +3868,51 @@ def test_yesno_practice_trade(monkeypatch, tmp_path):
     r = yesno.make_call("u2", "WINR", lvl, e["expirations"][0], "no", trade=True, contracts=3)
     assert r["position_id"] == "opt-x" and seen["n"] == 3 and seen["structure"].startswith("Close Call: NO")
     assert [l["option_type"] for l in seen["legs"]] == ["Put", "Put"] and seen["legs"][0]["strike_price"] == lvl + 1
+
+
+def test_yesno_skewed_chain_prices_each_strike_at_its_own_vol(monkeypatch):
+    """Equity skew: IV falls as the strike rises. One flat vol can't reprice the k1/k2 spread (its flat-vol value
+    barely moves with vol), so YES cost sat ~9 pts under the market's odds (live AAPL $360/$365 Dec 18: odds 50%,
+    YES $204 of $500). Each strike at its own IV puts YES at the listed spread mid, YES + NO = the discounted payout,
+    and the practice trade is marked at the same vols (no jump right after it opens)."""
+    from backend.v4 import yesno, practice_options
+    from backend.v4.strategy import bs_price, RISK_FREE
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=30)
+    yrs = 30 / 365
+    iv = lambda k: 0.35 - 0.5 * (k / spot - 1)           # equity skew: half a vol pt per 1% of strike
+    mid = lambda k, t: bs_price(spot, k, yrs, iv(k), t)
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in range(int(spot * 0.9), int(spot * 1.1) + 1):
+            for t in ("call", "put"):
+                m = mid(k, t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(m - 0.01, 2), "ask": round(m + 0.01, 2), "iv": round(iv(k), 4)})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    k1 = float(int(spot))
+    v = yesno.leg_vols(chain("WINR", k1, exp)[::2], k1, k1 + 1, spot, yrs, iv(k1))
+    assert v == (pytest.approx(iv(k1), abs=2e-3), pytest.approx(iv(k1 + 1), abs=2e-3))
+    q = yesno.quote("WINR", k1, exp.isoformat())
+    assert q["price_source"] == "strikes" and q["strikes"] == [k1, k1 + 1]
+    listed = (round(mid(k1, "call"), 2) - round(mid(k1 + 1, "call"), 2)) * 100
+    assert q["yes"]["cost"] == pytest.approx(listed, abs=2.0)                       # the listed spread mid
+    flat = (bs_price(spot, k1, yrs, q["vol"], "call") - bs_price(spot, k1 + 1, yrs, q["vol"], "call")) * 100
+    assert q["yes"]["cost"] - flat > 2.0                                            # the old flat-vol price was cheap
+    df = math.exp(-RISK_FREE * yrs)
+    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=2.0)    # put-call parity, no free money
+    # the market's odds (k1-1 / k1+1 spread, discounted) and YES's price (k1 / k1+1, a strike gap higher) now agree
+    assert abs(q["yes"]["cost"] / 100 / df - q["market_p"]) < 0.04
+    assert q["market_p"] == pytest.approx((mid(k1 - 1, "call") - mid(k1 + 1, "call")) / 2 / df, abs=0.01)
+    # marked at the same per-strike vols as it was priced: worth what it cost right after it opens
+    legs = practice_options._clean_legs(q["yes"]["legs"], "WINR", keep_leg_vols=True)
+    assert [l["vol"] for l in legs] == list(q["leg_vols"])
+    assert practice_options.unit_value(legs, spot, 0.9) == pytest.approx(q["yes"]["cost"], abs=1.0)
+    # a request can't set its own vols
+    assert "vol" not in practice_options._clean_legs(q["yes"]["legs"], "WINR")[0]
 
 
 def _yn_rows(n, signal, seed=1):

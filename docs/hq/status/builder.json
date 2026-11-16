@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T05:00:00Z",
- "last_run": "My beliefs now shows where each graded call landed among calls like it: 'Graded at the 7-day check: your idea finished 9 pts the right way vs the S&P', marked 'You' on the spread bar, with an honest line that one call says little about skill.",
+ "updated_at": "2026-11-16T08:03:00Z",
+ "last_run": "Close Call's YES price now matches the market's odds. Before, AAPL $360 showed 50% odds but YES cost $204 to win $500 (41%), which looked like free money. Each option strike is now priced at its own implied volatility, so skew is in the price too.",
  "working_on": "Nothing open.",
- "next": "Watch for the first user calls reaching their own checkpoint (30-day ones from about Nov 28) so the mark shows the real judged result, not just an early read. Then Close Call records after Nov 19.",
+ "next": "Check live Close Call quotes after the open show 'strikes' pricing with cost close to the odds. Then Close Call records after Nov 19 and the first user calls reaching their own checkpoint (~Nov 28).",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call showed AAPL at 50% odds to close above $360 while YES cost $204 for a $500 payout (41%): a finance professor would call that a free-money bug. Each strike is now priced at its own implied volatility, so YES costs the market's own spread price and agrees with the odds.",
+   "at": "2026-11-16T08:03:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "A user who saw '+9 pts' on a call had no way to tell skill from luck. My beliefs now marks each graded call on the spread of calls like it (e.g. 'in the best 1 in 10; about 1 in 10 calls do this well, so one call still says little about skill').",

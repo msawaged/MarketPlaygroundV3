@@ -53,7 +53,7 @@ def init(conn) -> None:
         )""")
 
 
-def _clean_legs(raw: list, ticker: str) -> list[dict]:
+def _clean_legs(raw: list, ticker: str, keep_leg_vols: bool = False) -> list[dict]:
     if not isinstance(raw, list) or not 1 <= len(raw) <= MAX_LEGS:
         raise PracticeError("That trade doesn't look right. Try building it again.")
     today = market.today()
@@ -78,8 +78,14 @@ def _clean_legs(raw: list, ticker: str) -> list[dict]:
             raise PracticeError("That trade is missing an expiration date.")
         if kind not in ("call", "put") or k <= 0 or not 1 <= qty <= 2 or not (today < exp <= date(today.year + 3, 12, 31)):
             raise PracticeError("That trade doesn't look right. Try building it again.")
-        legs.append({"action": action, "ticker": ticker, "instrument": "option", "option_type": kind.capitalize(),
-                     "strike_price": round(k, 2), "expiration": exp.isoformat(), "quantity": qty})
+        leg = {"action": action, "ticker": ticker, "instrument": "option", "option_type": kind.capitalize(),
+               "strike_price": round(k, 2), "expiration": exp.isoformat(), "quantity": qty}
+        # A leg's own volatility (each strike at its own implied vol, "sticky strike"): only from server code
+        # (Close Call), never from a request, so nobody can price their own practice trade.
+        lv = l.get("vol") if keep_leg_vols else None
+        if isinstance(lv, (int, float)) and math.isfinite(lv) and 0.05 <= lv <= 1.5:
+            leg["vol"] = round(float(lv), 4)
+        legs.append(leg)
     if not any(l["instrument"] == "option" for l in legs):
         raise PracticeError("Use the regular trade button for shares.")
     return legs
@@ -105,7 +111,7 @@ def unit_value(legs: list[dict], spot: float, vol: float, on: Optional[date] = N
         t = max(0, (date.fromisoformat(l["expiration"]) - on).days) / 365.0
         # Option prices are quoted in whole cents, the same way the idea card shows them, so a spread the card
         # prices at $3.44 - $0.99 = $245 costs $245 here too (not $246 from unrounded model prices).
-        total += sign * round(bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()), 2) * 100 * l["quantity"]
+        total += sign * round(bs_price(spot, l["strike_price"], t, l.get("vol") or vol, l["option_type"].lower()), 2) * 100 * l["quantity"]
     return total
 
 
@@ -115,16 +121,16 @@ def _priced(legs: list[dict], spot: float, vol: float) -> list[dict]:
     for l in legs:
         if l["instrument"] == "option":
             t = max(1, (date.fromisoformat(l["expiration"]) - on).days) / 365.0
-            l = dict(l, est_premium=round(bs_price(spot, l["strike_price"], t, vol, l["option_type"].lower()), 2))
+            l = dict(l, est_premium=round(bs_price(spot, l["strike_price"], t, l.get("vol") or vol, l["option_type"].lower()), 2))
         out.append(l)
     return out
 
 
-def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None) -> dict:
+def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None, keep_leg_vols: bool = False) -> dict:
     ticker = (ticker or "").upper().strip()
     if not ticker or not market.asset_info(ticker):
         raise PracticeError("That isn't a stock we can trade.")
-    legs = _clean_legs(legs_in, ticker)
+    legs = _clean_legs(legs_in, ticker, keep_leg_vols)
     spot = float(market.latest_price(ticker))
     vol, vol_source = _vol(ticker), "estimate"
     ivs = []
@@ -148,11 +154,11 @@ def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None) -> d
 
 
 def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contracts: int, belief: str = "",
-               vol_override: Optional[float] = None) -> dict:
+               vol_override: Optional[float] = None, keep_leg_vols: bool = False) -> dict:
     contracts = int(contracts or 1)
     if not 1 <= contracts <= MAX_CONTRACTS:
         raise PracticeError(f"Choose between 1 and {MAX_CONTRACTS} contracts.")
-    q = quote(ticker, legs_in, vol_override)
+    q = quote(ticker, legs_in, vol_override, keep_leg_vols)
     need = q["unit_set_aside"] * contracts
     eng = _engine()
     with eng._lock:

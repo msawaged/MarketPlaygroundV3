@@ -780,3 +780,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/strategy.py (fit_budget note), backend/v4/tests/test_v4.py, frontend/src/lib/payoff.js
   (`ownedNote`), frontend/src/lib/payoff.test.mjs, frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-16 (Builder routine): Close Call YES / NO cost now matches the market's odds (each strike at its own IV)
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md.
+- Found on live /v4/yesno/quote: AAPL $360 Dec 18 showed market odds 50.2% (skew included) but YES cost $204 of $500
+  (41%), price_source "line_iv". Cause: one flat vol can't reprice a skewed vertical spread (its flat-vol value at
+  any vol tops out near $212, the skewed mid is ~$230), so `spread_vol` found no root / was rejected by the 20% guard
+  and YES fell back to the line IV. A user (or a professor) sees 50% odds to win $296 for $204: looks like free money.
+- `yesno.leg_vols` / `strike_vol`: each of k1, k2 at the IV that reprices its own listed call mid ("sticky strike"),
+  same 20% guard per strike, not used when the odds are flagged stale. YES and NO legs carry `vol`; `price_source`
+  "strikes", quote returns `leg_vols`. YES = the listed spread mid; NO at the same two vols, so YES + NO = the
+  discounted payout. Fallbacks unchanged (spread_vol -> line IV -> estimate).
+- practice_options: legs may carry their own `vol` (used by `unit_value` / `_priced`, so marks after opening use the
+  same vols, no jump). Only kept when server code passes `keep_leg_vols=True` (Close Call); a request can't set it.
+  Other practice trades unchanged.
+- `digital_from_spread(calls, level, years)`: divides the spread price by exp(-r t) (a spread pays at expiration).
+  ~0.2-0.4 pts on odds; grading/learning unchanged.
+- YesNoPage note: "Practice trades cost the listed mid prices of the $360 and $365 options, each at its own implied
+  volatility (24.1% and 23.5%, so skew is included)". No real-money change (`real_money_order` untouched).
+- Files: backend/v4/yesno.py, backend/v4/practice_options.py, backend/v4/tests/test_v4.py
+  (test_yesno_skewed_chain_prices_each_strike_at_its_own_vol), frontend/src/components/YesNoPage.jsx,
+  docs/hq/status/builder.json.
