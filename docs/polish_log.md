@@ -814,3 +814,33 @@ sides; some are real (winners vs losers, e.g. "tighter chip controls favor US ri
 "same direction = skip" rule would be wrong.
 
 Checks: vite build passes, npm test passes (payoff, figures, text), backend tests 180 passed.
+
+## 2026-11-16 (evening run, ~18:30 UTC = Mon 1:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call, /reel on the live site at 390x844:
+no page errors, no 4xx/5xx, no horizontal overflow. No HQ messages from Murad. Render builds still failing (out of build
+minutes): every push since 0dbdbfc is queued, including this one.
+
+Signed-in screens locally (offline server, throwaway SQLite) at 375, first walk of selling a share position and of the
+Portfolio's options rows: NVDA shares $1,000 = 5.4054 sh @ $185, sold flat -> cash back to $100,000. NVDA Long Call
+$180 @ $12.79 = $1,279, breakeven $192.79, flat -$779, +20% +$2,921, chart top +$6,621 at $259: all add up.
+
+Found:
+- Portfolio options rows never showed the strikes: "NVDA LONG STRANGLE · 5 contracts · expires Feb 19, 2027". Which
+  strangle? A finance reader can't tell what the position is.
+- Shares path (no goal question is asked) and "Any options strategy" cards said "Why this strategy: Best fit for what you
+  said matters most." The user never said what matters most.
+- After a shares paper trade the card said "Added $1,000 of NVDA to your practice portfolio" then "See it in My beliefs";
+  the options trade (rightly) links to Portfolio.
+- For later (not changed, M): a sold position disappears with no record; Portfolio then says "Nothing here yet" and the
+  realized gain only shows inside Account value. A closed-trades list would need backend history.
+
+Changed:
+- PracticePage: each options row shows its legs ("Buy $197.50 call · Buy $172.50 put", stock legs "Own 100 shares").
+- strategy.select: with no goal, shares say "You chose shares: the simplest way to own this idea, any amount, no end
+  date."; options say "Fits your belief's direction and your risk level, with options as you asked." Goal text unchanged
+  when a goal was given; stay-out cards keep the text the card already hides. Test
+  test_strategy_reason_never_claims_a_goal_the_user_did_not_give.
+- StrategyCard: shares paper-trade confirmation links to Portfolio.
+
+Checks: vite build passes, npm test passes, backend tests 182 passed.

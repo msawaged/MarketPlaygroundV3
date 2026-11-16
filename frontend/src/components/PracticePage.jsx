@@ -18,6 +18,17 @@ function fmtPct(v) {
   return `${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(2)}%`;
 }
 
+// "Buy $180 call · Sell $210 call": an options row is unreadable without its strikes.
+function strikeText(k) { const n = Number(k); return Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`; }
+function legsText(legs) {
+  if (!Array.isArray(legs) || !legs.length) return '';
+  return legs.map((l) => {
+    if (l.instrument === 'stock') return `${l.action === 'Sell' ? 'Short' : 'Own'} ${l.quantity || 100} shares`;
+    if (l.strike_price == null) return '';
+    return `${l.action} ${strikeText(l.strike_price)} ${String(l.option_type || '').toLowerCase()}`.trim();
+  }).filter(Boolean).join(' · ');
+}
+
 export default function PracticePage() {
   const navigate = useNavigate();
   const [s, setS] = useState({ loading: true });
@@ -205,6 +216,7 @@ export default function PracticePage() {
                     <span className="text-xl font-extrabold">{o.ticker}</span>
                     <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-200">{o.structure}</span>
                   </div>
+                  {legsText(o.legs) && <div className="text-xs text-slate-300 mt-0.5">{legsText(o.legs)}</div>}
                   <div className="text-xs text-slate-400">{o.contracts} contract{o.contracts > 1 ? 's' : ''} · expires {new Date(o.expiration + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · stock {usd(o.spot, 2)}</div>
                 </div>
                 <div className="text-right shrink-0">

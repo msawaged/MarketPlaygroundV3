@@ -632,10 +632,10 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
           {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Portfolio.</p>}
           {st?.startsWith?.('opt:') && <p className="text-xs text-blue-300">{st.slice(4)} <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
-          {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money.</p>}
-          {(st === 'tracking' || st === 'traded') && (
+          {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money. <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
+          {st === 'tracking' && (
             <p className="text-xs text-blue-300">
-              {st === 'tracking' ? "We'll grade this idea against the market at 1 week, 1 month and 3 months. " : ''}
+              We'll grade this idea against the market at 1 week, 1 month and 3 months. 
               <button onClick={() => navigate('/my')} className="underline font-semibold">See it in My beliefs →</button>
             </p>
           )}

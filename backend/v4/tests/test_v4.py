@@ -4335,3 +4335,15 @@ def test_my_beliefs_marks_the_newest_graded_check_like_the_base_rate():
     db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at)
                   VALUES (?, 90, '2026-04-01', 1, 0.1, 0.0, 0.1, '2026-04-01')""", (pids[0],))
     assert engine.my_beliefs("u-spot")["beliefs"][0]["graded"]["checkpoint_days"] == 30
+
+
+def test_strategy_reason_never_claims_a_goal_the_user_did_not_give():
+    """Shares or 'Any options strategy' (no goal asked): the card must not say 'what you said matters most'."""
+    from backend.v4 import library
+    P = strategy.normalize_prefs
+    s, why = strategy.select("bullish", 30, "medium", "moderate", P({"instrument": "shares"}), price=185.0)
+    assert s == "Buy Stock" and "shares" in why and "matters most" not in why
+    s, why = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options"}), price=185.0)
+    assert library.LIB[s]["family"] == "options" and "matters most" not in why
+    s, why = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options", "goal": "limited"}), price=185.0)
+    assert why == "Best fit for what you said matters most."

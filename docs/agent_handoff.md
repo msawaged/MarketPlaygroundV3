@@ -883,3 +883,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_opposite_view_with_no_side_of_its_own_is_dropped. 181 passed; vite build passes.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.
+
+## 2026-11-16 evening (daily polish walk): option rows show strikes; no made-up "what matters most"
+- No HQ messages from Murad. No gate, ranking, grading or real-money change.
+- Portfolio options rows list their legs (strikes) under the strategy name.
+- strategy.select: when the user gave no goal (Shares, or "Any options strategy"), the reason no longer says "Best fit
+  for what you said matters most". Same structures picked; only the text changed.
+- Shares paper-trade confirmation links to Portfolio (was My beliefs).
+- For the build chat (not touched, M): sold positions leave no record (no closed-trades list). Details in polish_log.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/strategy.py, backend/v4/tests/test_v4.py, frontend/src/components/PracticePage.jsx,
+  frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md, docs/hq/status/polish.json.

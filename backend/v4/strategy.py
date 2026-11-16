@@ -424,7 +424,14 @@ def select(direction: str, horizon_days: int, conviction: str, risk: str, prefs:
     if claude_pick in opts:
         structure, why = claude_pick, claude_why or "Best fit for this company and your settings."
     elif prefs["goal"] or prefs["instrument"] != "auto":
-        structure, why = opts[0], "Best fit for what you said matters most."
+        structure = opts[0]
+        if prefs["goal"] or structure == "Sell / Avoid":
+            why = "Best fit for what you said matters most."  # (hidden on stay-out cards)
+        elif structure == "Buy Stock":
+            why = "You chose shares: the simplest way to own this idea, any amount, no end date."
+        else:
+            # "Any options strategy": the user never named a goal, so don't claim one
+            why = "Fits your belief's direction and your risk level, with options as you asked."
     else:
         structure, why = default_structure(direction, horizon_days, conviction, risk), "rule"
         if structure not in opts:

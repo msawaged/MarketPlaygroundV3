@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-16T15:55:00Z",
- "last_run": "Tapping 'I doubt it' on a news story wrote beliefs like \"I don't think aI firms will...\" or \"I don't think bitcoin may slide\". They now read as normal English (names and AI keep their capitals, 'may' becomes 'will'), and the brain's own news opposites use the same wording. Checked the 'Earn income' option card for the first time: every number adds up.",
- "working_on": "Waiting for Render builds to come back so today's fixes (mine and the builder's) go live.",
- "next": "Re-check today's fixes on the live site once builds run; Close Call odds with live quotes after the builder's fixes deploy.",
+ "updated_at": "2026-11-16T18:55:00Z",
+ "last_run": "Practice options trades now show their strike prices in Portfolio (they only said 'Long Strangle, 5 contracts'). Cards no longer say 'best fit for what you said matters most' when you never said; buying shares now links to Portfolio. Every number on the shares and Long Call cards I checked adds up.",
+ "working_on": "Waiting for Render builds to come back so today's fixes go live.",
+ "next": "Check the fixes on the live site once builds run; walk Close Call signed in.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes (since 08:07 UTC), so no fix from any agent goes live until the build limit is raised in Render's workspace settings."
  ],
