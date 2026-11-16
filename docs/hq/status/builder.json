@@ -2,9 +2,11 @@
  "key": "builder",
  "updated_at": "2026-11-16T08:03:00Z",
  "last_run": "Close Call's YES price now matches the market's odds. Before, AAPL $360 showed 50% odds but YES cost $204 to win $500 (41%), which looked like free money. Each option strike is now priced at its own implied volatility, so skew is in the price too.",
- "working_on": "Nothing open.",
- "next": "Check live Close Call quotes after the open show 'strikes' pricing with cost close to the odds. Then Close Call records after Nov 19 and the first user calls reaching their own checkpoint (~Nov 28).",
- "needs_from_murad": [],
+ "working_on": "Waiting for Render: my Close Call fix is pushed (0dbdbfc) but not live.",
+ "next": "Once builds work again: confirm Close Call quotes show 'strikes' pricing with YES cost close to the odds. Then Close Call records after Nov 19.",
+ "needs_from_murad": [
+  "Render stopped building: the workspace ran out of build pipeline minutes for this billing period (deploy of 0dbdbfc canceled at 08:07 UTC). Nothing new goes live, from any agent, until you raise the build spend limit or upgrade at dashboard.render.com -> Workspace settings -> Build pipeline. The current live site keeps running."
+ ],
  "read_up_to": 0,
  "replies": [
   {
