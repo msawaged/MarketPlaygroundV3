@@ -4290,6 +4290,27 @@ def test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch(monkeypatch)
     assert "WON'T happen" in interpreter.SYSTEM_PROMPT and "bet FOR it" in interpreter.SYSTEM_PROMPT
 
 
+def test_opposite_view_with_no_side_of_its_own_is_dropped():
+    # Real pairs from the news seeder (Nov 2026). The opposite keeps a pick only if it has a side of its own.
+    c = lambda *xs: [{"ticker": t, "direction": d} for t, d in (x.split(":") for x in xs)]
+    a = lambda *xs: {tuple(x.split(":")) for x in xs}
+    kept = lambda cands, avoid: {f"{x['ticker']}:{x['direction']}" for x in engine.drop_same_side(cands, avoid)}
+    crypto = a("COIN:bearish", "MSTR:bearish", "IBIT:bearish")
+    # "I don't think Bitcoin's selloff may signal a longer downturn" -> QQQ down: same way as the hunch, no other side
+    assert kept(c("QQQ:bearish"), crypto) == set()
+    assert kept(c("QQQ:bearish", "COIN:bullish"), crypto) == {"QQQ:bearish", "COIN:bullish"}
+    # winners vs losers survive: "AI firms won't pay publishers" -> publishers down, META up
+    pubs = a("WLY:bullish", "RELX:bullish", "NYT:bullish", "GOOGL:bullish")
+    assert kept(c("RELX:bearish", "WLY:bearish", "META:bullish"), pubs) == {"RELX:bearish", "WLY:bearish", "META:bullish"}
+    # "young renters won't keep cutting housing to fund holiday shopping": WMT/AMZN up on both sides, XLY/MCD up
+    renters = a("WMT:bullish", "AMZN:bullish", "TGT:bullish", "XRT:bullish", "HD:bearish")
+    assert kept(c("WMT:bullish", "AMZN:bullish", "XLY:bullish", "MCD:bullish"), renters) == set()
+    # volatility picks are never dropped; a hunch split evenly has no main side, so only rule 1 applies
+    assert kept(c("XLY:bullish", "VXX:volatile"), renters) == {"VXX:volatile"}
+    even = a("AMD:bullish", "NVDA:bearish")
+    assert kept(c("INTC:bullish", "AMD:bullish"), even) == {"INTC:bullish"}
+
+
 def test_my_beliefs_marks_the_newest_graded_check_like_the_base_rate():
     # "Where your call landed": My beliefs carries each call's newest graded checkpoint, measured exactly like the
     # base-rate spread (theme vs the S&P in the direction called; its sign is belief_right).

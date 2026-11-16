@@ -869,3 +869,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: frontend/src/lib/text.js, text.test.mjs, auth.js, components/MoversFeed.jsx, package.json,
   backend/v4/seeder.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 evening (Builder routine): news opposites with no side of their own are no longer learned
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Picked up the polish walk's note for the
+  Builder: the same-side guard only dropped a stock bet the same way on both sides, so "I don't think Bitcoin's
+  selloff may signal a longer crypto downturn" was still learned as QQQ down.
+- `engine.drop_same_side(cands, avoid)` (used by process_belief when `avoid` is passed, i.e. news opposites only):
+  rule 1 as before (same stock, same way: dropped); rule 2: if what's left bets only the hunch's main direction
+  (majority of its up/down picks; no rule on a tie), those picks go too. Any pick the other way keeps the whole set,
+  so winners-vs-losers opposites ("AI firms won't pay publishers" -> publishers down, META up) stay. Volatile picks
+  never dropped. Checked by hand on 60 live pairs: catches the crypto->QQQ, "young renters" and "oil will struggle"
+  misreads, no false drops seen. User beliefs untouched (no avoid); gates, grading, ranking unchanged.
+- Test: test_opposite_view_with_no_side_of_its_own_is_dropped. 181 passed; vite build passes.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.

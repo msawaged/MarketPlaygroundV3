@@ -131,6 +131,25 @@ def _champion():
         return None
 
 
+def drop_same_side(cands: list[dict], avoid: set) -> list[dict]:
+    """The candidates an opposite view ("I don't think <hunch>") may keep, given the hunch's (ticker, direction) picks.
+    1. A stock bet the same way on both sides is dropped.
+    2. If what's left bets only the hunch's main direction (most of its up/down picks), the opposite has no side of
+       its own and those picks go too ("Bitcoin's selloff may signal a longer crypto downturn" -> crypto down; its
+       opposite -> QQQ down). An opposite with any pick the other way keeps its winners and losers ("AI firms won't
+       pay publishers" -> publishers down, META up). Volatility picks are never dropped."""
+    def directional(c):
+        return c.get("direction") in ("bullish", "bearish")
+    out = [c for c in cands if not directional(c) or (str(c.get("ticker", "")).upper(), c["direction"]) not in avoid]
+    ups = sum(1 for _, d in avoid if d == "bullish")
+    downs = sum(1 for _, d in avoid if d == "bearish")
+    main = "bullish" if ups > downs else "bearish" if downs > ups else None
+    left = {c["direction"] for c in out if directional(c)}
+    if main and left == {main}:
+        out = [c for c in out if not directional(c)]
+    return out
+
+
 def process_belief(
     belief: str,
     user_id: str = "anonymous",
@@ -211,8 +230,7 @@ def process_belief(
             spy_entry = None
     cands = interp["candidates"]
     if avoid:
-        cands = [c for c in cands
-                 if c.get("direction") not in ("bullish", "bearish") or (str(c.get("ticker", "")).upper(), c["direction"]) not in avoid]
+        cands = drop_same_side(cands, avoid)
         if not cands:
             return {**base, "strategy": None, "picks": [], "valid": False, "error": "same_side_as_original",
                     "reason": "Every idea for this opposite view bet the same way as the original view, so it was skipped."}

@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T14:20:00Z",
- "last_run": "The Brain page called the market 'Calm: markets are quiet' while the S&P 500 was swinging 22% a year. It now says 'In between: not a steady climb and not turbulent' and shows the S&P 500's 3-month move, how far it is off its high, its volatility, and the rule behind the label.",
- "working_on": "Waiting for Render builds to come back (out of build minutes; Inbox & health watch has the ask for you, so I dropped my copy). Today's four Builder commits are pushed and will go live together.",
- "next": "Once builds work: check Close Call odds and YES cost on live quotes and the new regime card. Close Call records after the Nov 18-20 expirations.",
+ "updated_at": "2026-11-16T17:02:37Z",
+ "last_run": "News opposites that bet the same way as their headline (just on a different stock) are no longer learned, so the brain doesn't learn both sides of a story as one. Checked on 60 real pairs: it catches the misreads (crypto -> QQQ down, 'young renters' -> retailers up on both sides) and keeps the real winners-vs-losers opposites.",
+ "working_on": "Waiting for Render builds to come back (out of build minutes; Inbox & health watch has the ask). Today's Builder commits are pushed and go live together.",
+ "next": "Once builds work: check Close Call odds and YES cost on live quotes, the regime card, and the seeder's same_side_skipped count in the next news runs.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The brain learns each news headline and its opposite. Some opposites still bet the same way as the headline on a different stock (the opposite of 'Bitcoin's selloff may signal a longer crypto downturn' was learned as QQQ down). Now an opposite whose bets all go the headline's way is dropped; opposites with real winners and losers (publishers down, META up) are kept.",
+   "at": "2026-11-16T17:02:37Z"
+  },
   {
    "re": "(no new messages)",
    "body": "A finance professor would flag 'Market regime: Calm, markets are quiet' with the S&P 500 at 22% volatility and 3% off its high. 'Calm' really meant 'anything that isn't a steady climb or turbulent', so it now says 'In between' and shows the three numbers and the rule.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A finance professor would ask how 114k picks got graded in two weeks. The Brain page now says it plainly: 5,474 real-time grades, the rest practice calls graded from history.",
    "at": "2026-11-15T21:00:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call now shows each user their own record against the market's odds: 'You were right 7 of 14; the market's odds expected 6.7', with an honest skill-or-luck line. Each answer also shows the odds the market gave it.",
-   "at": "2026-11-15T15:30:00Z"
   }
  ]
 }
