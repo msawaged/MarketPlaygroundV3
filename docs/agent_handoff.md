@@ -948,3 +948,22 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-16 late night (Builder routine): Closed trades on Portfolio (a sale leaves a record)
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Built the polish walk's open item: a sold
+  position disappeared with no record ("Nothing here yet", the gain only hidden inside Account value).
+- New `closed_trades` table in the practice DB (`paper_trading._init_database`); `_close_at` writes one row per sale
+  (now or queued for the open) with qty, cost basis, exit price, gain, belief, opened/closed times.
+  `PaperTradingEngine.closed_trades()` reads them, plus older SELL transactions with "cost not recorded" (no made-up gain).
+- `practice_options.closed()`: closed / expired options with set aside, cash back and gain (= cash back - set aside,
+  the same numbers that moved the account). Expired trades now get closed_at = expiration day 16:00 (was "now").
+- `/api/paper-trading/portfolio/{uid}` adds `closed_trades` (both kinds, newest first, max 50).
+- PracticePage: "Closed trades" list (5, then "Show all"), "Locked in: +$X on N trades", Sold / Closed / Expired date
+  chips, options legs; empty state says "No open positions" when there are past trades. Numbers checked locally at
+  375/390: the gains add up to the account's total gain.
+- Not changed (noticed): practice shorts' cash accounting (open adds no cash, cover adds the proceeds) is off, but no
+  screen opens a practice short today. Money math, grading, gates untouched.
+- Test: test_sold_positions_leave_a_closed_trade_record (test_paper.py).
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/paper_trading.py, backend/v4/practice_options.py, backend/routes/paper_trading_router.py,
+  backend/v4/tests/test_paper.py, frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.

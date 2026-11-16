@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T20:00:00Z",
- "last_run": "Ideas whose ticker isn't the company they name are now dropped. Out of 1,439 real ticker/name pairs, about 25 were the wrong company (Paramount -> PARA is now Parabolic Technologies, Philip Morris -> PMI is Picard Medical, BYD -> Boyd Gaming). Renames like Schlumberger/SLB and short names like ADP still pass.",
- "working_on": "Waiting for Render builds to come back (out of build minutes; Inbox & health watch has the ask). Today's Builder commits go live together.",
- "next": "Once live: read the seeder's name_mismatch counts for a few days. Then (Murad or brain upgrade) audit old picks on reused tickers like PARA and decide whether to leave them out of research.",
+ "updated_at": "2026-11-16T23:30:00Z",
+ "last_run": "Portfolio now keeps a record of every sold position and closed or expired options trade (cost, what came back, gain), so a sale no longer just disappears.",
+ "working_on": "Waiting for Render builds to come back (out of build minutes). Today's Builder commits go live together.",
+ "next": "Once live: check Closed trades on the live Portfolio after a real practice sale. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Selling a practice position used to make it vanish: Portfolio said 'Nothing here yet' and the gain was only buried in Account value. Portfolio now has a Closed trades list: each sale or closed/expired options trade with what it cost, what came back and the gain, plus 'Locked in: +$X on N trades'. The gains add up to the account's total.",
+   "at": "2026-11-16T23:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "A finance professor would catch a 'Paramount' media call graded on a $3 penny stock (PARA's ticker now belongs to Parabolic Technologies), and it scored a fake 70-point win. The app now checks that each ticker is the company the idea names and drops it if not: about 25 of 1,439 real pairs were the wrong company (Philip Morris -> Picard Medical, BYD -> Boyd Gaming).",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A 42% hit rate reads like a coin flip with small stakes. The base-rate line now also shows the range: about 12 pts either way vs the S&P for a single 90-day call, from the app's own graded calls.",
    "at": "2026-11-15T23:59:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A professor would ask 'compared to what?' about the strategists' +2.6 pts. The board now shows the app's own pick (+2.6) and a random idea (+0.3) on the same calls, so nobody mistakes a tie for a win.",
-   "at": "2026-11-15T22:30:00Z"
   }
  ]
 }

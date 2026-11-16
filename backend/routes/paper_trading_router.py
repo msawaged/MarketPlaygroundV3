@@ -208,6 +208,32 @@ def cancel_queued(payload: CancelQueuedPayload):
     return JSONResponse(content=result, headers={"Cache-Control": "no-store"})
 
 
+def _when_key(iso) -> float:
+    """Sort key for closing times written by different code (with or without a UTC offset)."""
+    from datetime import datetime, timezone
+    try:
+        d = datetime.fromisoformat(str(iso).replace("Z", "+00:00").replace(" ", "T"))
+        return (d if d.tzinfo else d.replace(tzinfo=timezone.utc)).timestamp()
+    except Exception:
+        return 0.0
+
+
+def _closed_trades(user_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+    """Sold shares and closed / expired options, newest first, so a sale leaves a record."""
+    rows: List[Dict[str, Any]] = []
+    try:
+        rows += paper_engine.closed_trades(user_id, limit)
+    except Exception as e:
+        logger.warning(f"closed share trades skipped: {e}")
+    try:
+        from backend.v4 import practice_options
+        rows += practice_options.closed(user_id, limit)
+    except Exception as e:
+        logger.warning(f"closed option trades skipped: {e}")
+    rows.sort(key=lambda r: _when_key(r.get("closed_at")), reverse=True)
+    return rows[:limit]
+
+
 @router.get("/portfolio/{user_id}")
 def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="Bypass any caches")):
     """Return latest paper portfolio snapshot with no-store headers."""
@@ -220,6 +246,7 @@ def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="B
             opts = []
         portfolio = paper_engine.get_portfolio(user_id, force_refresh=force_refresh)
         portfolio["option_positions"] = opts
+        portfolio["closed_trades"] = _closed_trades(user_id)
         if opts:
             acc = portfolio["account"]
             ov = sum(o["value"] for o in opts)

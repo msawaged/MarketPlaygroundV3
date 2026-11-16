@@ -29,12 +29,57 @@ function legsText(legs) {
   }).filter(Boolean).join(' · ');
 }
 
+const shortDate = (iso) => {
+  if (!iso) return '';
+  const d = new Date(String(iso).length === 10 ? `${iso}T12:00:00` : iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+};
+
+// One sold / closed / expired trade: what it cost, what came back, the gain. These are the numbers that moved the cash.
+function ClosedRow({ t }) {
+  const known = t.pnl != null;
+  const up = known && t.pnl >= 0;
+  const opt = t.kind === 'options';
+  const tag = opt ? (t.expired ? 'Expired' : 'Closed') : (t.position_type === 'short' ? 'Covered' : 'Sold');
+  return (
+    <Card className="py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-lg font-extrabold">{t.ticker}</span>
+            {opt && <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-200">{t.structure}</span>}
+            <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-slate-800 text-slate-300">{tag} {shortDate(t.closed_at)}</span>
+          </div>
+          {opt ? (
+            <>
+              {legsText(t.legs) && <div className="text-xs text-slate-300 mt-0.5">{legsText(t.legs)}</div>}
+              <div className="text-xs text-slate-400">{t.contracts} contract{t.contracts > 1 ? 's' : ''} · set aside {usd(t.cost)} · got back {usd(t.proceeds)}{t.expired && t.proceeds === 0 ? ' (expired worthless)' : ''}</div>
+            </>
+          ) : known ? (
+            <div className="text-xs text-slate-400">{shares(t.quantity)} · bought {usd(t.avg_price, 2)} · sold {usd(t.exit_price, 2)} · got {usd(t.proceeds)}</div>
+          ) : (
+            <div className="text-xs text-slate-400">{shares(t.quantity)} sold at {usd(t.exit_price, 2)} for {usd(t.proceeds)} · cost not recorded (an older sale)</div>
+          )}
+        </div>
+        {known && (
+          <div className="text-right shrink-0">
+            <div className={`text-base font-extrabold ${up ? 'text-green-300' : 'text-red-300'}`}>{signed(t.pnl)}</div>
+            {t.pnl_pct != null && <div className={`text-xs ${up ? 'text-green-400/80' : 'text-red-400/80'}`}>{fmtPct(t.pnl_pct)}</div>}
+          </div>
+        )}
+      </div>
+      {t.belief && <p className="mt-1.5 text-xs text-slate-400 italic truncate">“{t.belief}”</p>}
+    </Card>
+  );
+}
+
 export default function PracticePage() {
   const navigate = useNavigate();
   const [s, setS] = useState({ loading: true });
   const [confirm, setConfirm] = useState(null);
   const [closing, setClosing] = useState(null);
   const [toast, setToast] = useState(null);
+  const [allClosed, setAllClosed] = useState(false);
 
   const load = useCallback(() => {
     setS((x) => ({ ...x, refreshing: true }));
@@ -74,6 +119,10 @@ export default function PracticePage() {
   const positions = s.data?.positions || [];
   const queued = s.data?.queued_orders || [];
   const opts = s.data?.option_positions || [];
+  const closedTrades = s.data?.closed_trades || [];
+  const closedKnown = closedTrades.filter((t) => t.pnl != null);
+  const realized = closedKnown.reduce((x, t) => x + Number(t.pnl), 0);
+  const closedShown = allClosed ? closedTrades : closedTrades.slice(0, 5);
   const closeOpt = async (o) => {
     setClosing(o.position_id);
     try {
@@ -152,8 +201,8 @@ export default function PracticePage() {
       {a && positions.length === 0 && queued.length === 0 && opts.length === 0 && (
         <Card className="mt-4 text-center py-7">
           <LineChart className="mx-auto w-9 h-9 text-blue-300" aria-hidden />
-          <div className="mt-2 font-bold text-lg">Nothing here yet</div>
-          <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">Share a belief, pick a stock idea and tap <Term k="paper trade">Paper trade</Term>. It lands here.</p>
+          <div className="mt-2 font-bold text-lg">{closedTrades.length ? 'No open positions' : 'Nothing here yet'}</div>
+          <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">{closedTrades.length ? 'Your past trades are below. ' : ''}Share a belief, pick a stock idea and tap <Term k="paper trade">Paper trade</Term>. It lands here.</p>
           <button onClick={() => navigate('/chat')} className="mt-5 rounded-2xl bg-blue-600 hover:bg-blue-500 px-5 py-3 font-bold">Find an idea</button>
           <p className="mt-4 text-xs text-slate-500">Calls you made without practice money are in{' '}
             <button onClick={() => navigate('/my')} className="underline text-slate-300">My beliefs</button>.</p>
@@ -242,6 +291,28 @@ export default function PracticePage() {
           );
         })}
       </div>
+
+      {closedTrades.length > 0 && (
+        <>
+          <div className="mt-6 flex items-baseline justify-between gap-3">
+            <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Closed trades</span>
+            {closedKnown.length > 0 && (
+              <span className="text-xs text-slate-400">
+                Locked in: <b className={realized >= 0 ? 'text-green-300' : 'text-red-300'}>{signed(realized, 0)}</b> on {closedKnown.length} trade{closedKnown.length === 1 ? '' : 's'}
+              </span>
+            )}
+          </div>
+          <div className="mt-2 space-y-2">
+            {closedShown.map((t) => <ClosedRow key={`${t.kind}-${t.id}`} t={t} />)}
+          </div>
+          {closedTrades.length > 5 && (
+            <button onClick={() => setAllClosed((v) => !v)} className="mt-2 w-full rounded-xl border border-slate-700 py-2 text-xs font-semibold text-slate-300 hover:border-slate-500">
+              {allClosed ? 'Show fewer' : `Show all ${closedTrades.length}`}
+            </button>
+          )}
+          <p className="mt-2 text-[11px] text-slate-500">Already counted in your account value above. Options amounts are estimates.</p>
+        </>
+      )}
 
       <p className="mt-5 text-[11px] text-slate-500">Practice account. No real money moves. Prices may be delayed; options prices are estimates.</p>
 

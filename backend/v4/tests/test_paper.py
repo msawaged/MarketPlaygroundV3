@@ -246,3 +246,84 @@ def test_no_made_up_price_when_every_feed_is_down(tmp_path, monkeypatch):
     r = eng.execute_paper_trade("u6", {"ticker": "ZZZ", "type": "Buy Stock", "asset_class": "equity",
                                        "trade_legs": [{"action": "Buy", "ticker": "ZZZ"}], "investment_amount": 1000}, "x")
     assert r["status"] == "success" and abs(eng.get_portfolio("u6")["positions"][0]["avg_price"] - 40.0) < 1e-9
+
+
+def test_sold_positions_leave_a_closed_trade_record(tmp_path, monkeypatch):
+    """A sale (now, or queued for the open) and a closed / expired options trade show up in Closed trades with what
+    they cost, what came back and the gain, and those numbers match the cash that moved."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.routes import paper_trading_router as rt
+    from backend.v4 import market, practice_options as po
+    from datetime import date, timedelta
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "ct.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    monkeypatch.setattr(rt, "paper_engine", eng)
+    prices = {"WSO": Decimal("100"), "ABC": Decimal("50")}
+    monkeypatch.setattr(eng, "_get_real_market_price", lambda t: prices[t])
+    state = {"open": True, "fill": None}
+    monkeypatch.setattr(pt, "_clock", lambda: {"is_open": state["open"], "next_open": None})
+    monkeypatch.setattr(pt, "_open_after", lambda t, after: state["fill"])
+    buy = lambda t, amt: eng.execute_paper_trade("u", {"ticker": t, "type": "Buy Stock", "asset_class": "equity",
+                                                       "trade_legs": [{"action": "Buy", "ticker": t}],
+                                                       "investment_amount": amt}, f"{t} goes up")
+    assert eng.closed_trades("u") == []
+    buy("WSO", 1000)
+    buy("ABC", 500)
+    pos = {p["ticker"]: p for p in eng.get_portfolio("u")["positions"]}
+    prices["WSO"] = Decimal("112")
+    eng.close_position("u", pos["WSO"]["position_id"])
+    state["open"] = False  # after hours: queued, no record until it fills
+    eng.close_position("u", pos["ABC"]["position_id"])
+    assert [r["ticker"] for r in eng.closed_trades("u")] == ["WSO"]
+    state.update(open=True, fill=("2026-10-30", 45.0))
+    eng.get_portfolio("u")
+    rows = {r["ticker"]: r for r in eng.closed_trades("u")}
+    w, a = rows["WSO"], rows["ABC"]
+    assert w["quantity"] == 10 and w["avg_price"] == 100 and w["exit_price"] == 112
+    assert w["cost"] == 1000 and w["proceeds"] == 1120 and w["pnl"] == 120 and w["pnl_pct"] == 12
+    assert w["belief"] == "WSO goes up" and w["opened_at"]
+    assert a["exit_price"] == 45 and a["pnl"] == -50 and a["closed_at"].startswith("2026-10-30")
+    cash = eng.get_portfolio("u")["account"]["cash_balance"]
+    assert abs(cash - (100000 + w["pnl"] + a["pnl"])) < 0.01
+
+    # options: one closed by hand, one settled at expiration
+    spot = {"v": 100.0}
+    today = {"d": date.today()}
+    monkeypatch.setattr(market, "latest_price", lambda t: spot["v"])
+    monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
+    monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
+    monkeypatch.setattr(market, "today", lambda: today["d"])
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    exp = (date.today() + timedelta(days=60)).isoformat()
+    call = [{"action": "Buy", "option_type": "Call", "strike_price": 100, "expiration": exp, "quantity": 1, "instrument": "option"}]
+    o1 = po.open_trade("u", "XYZ", "Long Call", call, 2, "XYZ pops")
+    o2 = po.open_trade("u", "XYZ", "Long Call", call, 1)
+    spot["v"] = 108.0
+    c = po.close("u", o1["position_id"])
+    today["d"] = date.today() + timedelta(days=61)
+    spot["v"] = 90.0  # expires worthless: the whole cost is lost
+    assert po.positions("u") == []
+    opts = {r["id"]: r for r in po.closed("u")}
+    assert abs(opts[o1["position_id"]]["pnl"] - c["pnl"]) < 0.01 and opts[o1["position_id"]]["expired"] is False
+    assert opts[o1["position_id"]]["contracts"] == 2 and opts[o1["position_id"]]["belief"] == "XYZ pops"
+    e = opts[o2["position_id"]]
+    assert e["expired"] is True and e["proceeds"] == 0 and abs(e["pnl"] + o2["set_aside"]) < 0.01
+    assert e["closed_at"].startswith(exp)
+
+    # the portfolio carries both kinds, newest first, and the record adds up to the account
+    with eng._get_db_connection() as conn:
+        cash = float(conn.execute("SELECT cash_balance FROM users WHERE user_id = 'u'").fetchone()["cash_balance"])
+    allrows = rt._closed_trades("u")
+    assert {r["kind"] for r in allrows} == {"shares", "options"} and len(allrows) == 4
+    assert abs(cash - (100000 + sum(r["pnl"] for r in allrows))) < 0.05
+    keys = [rt._when_key(r["closed_at"]) for r in allrows]
+    assert keys == sorted(keys, reverse=True)
+
+    # a sale made before this record existed still shows, with its cost unknown (not a made-up gain)
+    with eng._get_db_connection() as conn:
+        conn.execute("""INSERT INTO transactions (transaction_id, user_id, order_id, ticker, transaction_type, quantity,
+                        price, amount, commission, net_amount, executed_at) VALUES ('t-old','u','o-old','OLD','SELL',
+                        3, 20, 60, 0, 60, '2026-11-01T15:00:00+00:00')""")
+    old = [r for r in eng.closed_trades("u") if r["ticker"] == "OLD"][0]
+    assert old["pnl"] is None and old["cost"] is None and old["proceeds"] == 60

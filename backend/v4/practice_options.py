@@ -223,8 +223,8 @@ def positions(user_id: str) -> list[dict]:
                     continue
                 exp = _expired(legs)
                 v = unit_value(legs, spot, r["vol"], on=exp) if exp else unit_value(legs, spot, r["vol"])
-                if exp:
-                    _settle(conn, r, v)
+                if exp:  # settled at what it was worth on expiration day, so that's when it closed
+                    _settle(conn, r, v, when=f"{exp.isoformat()}T16:00:00")
                     continue
                 pnl = (v - r["entry_value"]) * r["contracts"]
                 out.append({
@@ -254,3 +254,29 @@ def close(user_id: str, position_id: str) -> dict:
             pnl = (v - r["entry_value"]) * r["contracts"]
     return {"status": "success", "cash_back": round(back, 2), "pnl": round(pnl, 2),
             "message": f"Closed. {'Gain' if pnl >= 0 else 'Loss'} of ${abs(pnl):,.0f} (estimated)."}
+
+
+def closed(user_id: str, limit: int = 50) -> list[dict]:
+    """Closed or expired option trades, newest first. The gain is the cash that came back minus the cash set aside,
+    the same numbers that moved the practice account (so a trade that settled at zero shows its whole set-aside lost)."""
+    eng = _engine()
+    out = []
+    with eng._get_db_connection() as conn:
+        init(conn)
+        rows = conn.execute("SELECT * FROM option_positions WHERE user_id = ? AND status = 'closed' "
+                            "ORDER BY closed_at DESC LIMIT ?", (user_id, limit)).fetchall()
+        for r in rows:
+            legs = json.loads(r["legs"])
+            held = r["set_aside"] * r["contracts"]
+            back = max(0.0, held + ((r["close_value"] or 0.0) - r["entry_value"]) * r["contracts"])
+            exps = [l["expiration"] for l in legs if l.get("instrument") == "option"]
+            exp = max(exps) if exps else None
+            out.append({
+                "kind": "options", "id": r["position_id"], "ticker": r["ticker"], "structure": r["structure"],
+                "contracts": r["contracts"], "legs": legs, "belief": r["belief"] or None,
+                "cost": round(held, 2), "proceeds": round(back, 2), "pnl": round(back - held, 2),
+                "pnl_pct": round((back - held) / max(1.0, held) * 100, 2),
+                "expiration": exp, "expired": bool(exp and str(r["closed_at"] or "")[:10] >= exp),
+                "opened_at": r["opened_at"], "closed_at": r["closed_at"], "estimated": True,
+            })
+    return out

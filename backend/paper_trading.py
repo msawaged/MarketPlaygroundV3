@@ -193,6 +193,26 @@ class PaperTradingEngine:
                 )
             """)
             
+            # One row per sale, with what it cost, so a sold position leaves a record (Closed trades on Portfolio).
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS closed_trades (
+                    trade_id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    order_id TEXT NOT NULL,
+                    ticker TEXT NOT NULL,
+                    position_type TEXT NOT NULL,
+                    quantity REAL NOT NULL,
+                    avg_price REAL NOT NULL,
+                    exit_price REAL NOT NULL,
+                    realized_pnl REAL NOT NULL,
+                    proceeds REAL NOT NULL,
+                    belief TEXT,
+                    opened_at TEXT,
+                    closed_at TEXT NOT NULL
+                )
+            """)
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_closed_trades_user ON closed_trades(user_id, closed_at)")
+
             # Create indexes for performance
             conn.execute("CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_positions_user ON positions(user_id)")
@@ -787,6 +807,7 @@ class PaperTradingEngine:
         order_id = str(uuid.uuid4())
         transaction_type = "SELL" if position['position_type'] == 'long' else "BUY_TO_COVER"
         
+        executed_at = executed_at or datetime.now(timezone.utc).isoformat()
         # Record transaction
         user_id = position['user_id']
         conn.execute("""
@@ -798,9 +819,18 @@ class PaperTradingEngine:
             str(uuid.uuid4()), user_id, order_id, position['ticker'],
             transaction_type, position['quantity'], float(current_price),
             float(proceeds), float(commission), float(net_proceeds),
-            executed_at or datetime.now(timezone.utc).isoformat()
+            executed_at
         ))
         
+        conn.execute("""
+            INSERT INTO closed_trades (trade_id, user_id, order_id, ticker, position_type, quantity, avg_price,
+                                       exit_price, realized_pnl, proceeds, belief, opened_at, closed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (str(uuid.uuid4()), user_id, order_id, position['ticker'], position['position_type'],
+              float(qty_d), float(avg), float(current_price), float(realized_pnl), float(net_proceeds),
+              position['belief'], str(position['opened_at'] or ''),
+              executed_at))
+
         # Update user balance
         conn.execute("""
             UPDATE users 
@@ -822,6 +852,35 @@ class PaperTradingEngine:
             "proceeds": float(net_proceeds),
             "commission": float(commission)
         }
+
+    def closed_trades(self, user_id: str, limit: int = 50) -> list:
+        """Sold share positions, newest first: what they cost, what they sold for, the gain.
+        Sales from before this record existed come from the transactions table with no cost known."""
+        out = []
+        with self._get_db_connection() as conn:
+            for r in conn.execute("SELECT * FROM closed_trades WHERE user_id = ? ORDER BY closed_at DESC LIMIT ?",
+                                  (user_id, limit)).fetchall():
+                cost = r['avg_price'] * r['quantity']
+                out.append({
+                    "kind": "shares", "id": r['trade_id'], "ticker": r['ticker'], "position_type": r['position_type'],
+                    "quantity": r['quantity'], "avg_price": round(r['avg_price'], 4), "exit_price": round(r['exit_price'], 4),
+                    "cost": round(cost, 2), "proceeds": round(r['proceeds'], 2), "pnl": round(r['realized_pnl'], 2),
+                    "pnl_pct": round(r['realized_pnl'] / cost * 100, 2) if cost > 0 else None,
+                    "belief": r['belief'], "opened_at": r['opened_at'] or None, "closed_at": r['closed_at'],
+                })
+            legacy = conn.execute("""
+                SELECT * FROM transactions WHERE user_id = ? AND transaction_type IN ('SELL', 'BUY_TO_COVER')
+                AND order_id NOT IN (SELECT order_id FROM closed_trades WHERE user_id = ?)
+                ORDER BY executed_at DESC LIMIT ?""", (user_id, user_id, limit)).fetchall()
+            for t in legacy:
+                out.append({
+                    "kind": "shares", "id": t['transaction_id'], "ticker": t['ticker'],
+                    "position_type": "long" if t['transaction_type'] == 'SELL' else "short",
+                    "quantity": t['quantity'], "avg_price": None, "exit_price": round(float(t['price']), 4),
+                    "cost": None, "proceeds": round(float(t['net_amount']), 2), "pnl": None, "pnl_pct": None,
+                    "belief": None, "opened_at": None, "closed_at": str(t['executed_at']),
+                })
+        return out
 
     def evaluate_strategy_performance(self, evaluation_days: int = 7):
         """
