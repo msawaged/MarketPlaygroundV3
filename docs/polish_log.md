@@ -745,3 +745,33 @@ Changed:
 
 Not live yet: Render's build minutes ran out at 08:07 UTC (builder flagged it to Murad), so this push won't deploy until
 builds resume. Checks: vite build passes, npm test passes, backend tests 177 passed.
+
+## 2026-11-16 (midday run, ~12:30 UTC = Mon 7:30 AM ET)
+
+Walked /welcome, /trending (incl. "Watch the story in 30 seconds" and "See the other side"), /live, /story, /account,
+/brain, /journey, /close-call, /reel on the live site at 390x844: no page errors, no 4xx/5xx, no horizontal overflow.
+No HQ messages from Murad. Live Baskets (dividend income; AI and chips) add up to 100% and carry no promised return.
+Render builds still failing (out of build minutes), so 0dbdbfc / 4db4cda / ee64847 and this commit wait in line.
+
+Signed-in screens locally (offline server, throwaway SQLite) at 375, first walk of a "big move either way" (volatile)
+belief: Bold, $1,000, 3 months, Options, Limit my risk -> NVDA Long Strangle $197.50 call $5.05 + $172.50 put $3.41 =
+$846, breakevens $164.04 / $205.96, +/-20% = +$1,604, chart top +$5,304 at $259: all add up; paper trade lands in
+Portfolio at $846.
+
+Found:
+- The Breakeven tile on every two-breakeven card (strangle, straddle, condor, butterfly) read "$164.04..." at 375px:
+  the upper breakeven was cut off, the one number that says how big the move must be.
+- Choosing Shares on a volatile call gives a Sell / Avoid card that still said "Fits your $1,000 · 3 months" and "Why
+  this strategy: Best fit for what you said matters most." (nothing is bought; the user never chose a goal).
+- For Murad's build chat, not changed: a range-bound ("will trade sideways") belief can never get a range strategy.
+  Pick directions are only bullish / bearish / volatile (interpreter schema and `_sanitize` turn neutral into bullish),
+  so Iron Condor / Iron Butterfly are unreachable and a sideways call gets e.g. a Bull Call Spread whose "stays flat"
+  row reads -100%. Live DB: 0 user beliefs are neutral so far (seeded ones are), so not urgent. Fixing it touches
+  grading (no neutral rule), so it's an M for the build chat.
+
+Changed (frontend only):
+- StrategyCard `Stat`: an array value stacks one line per number; Breakeven passes both breakevens ($164.04 above
+  $205.96), single values unchanged.
+- StrategyCard: the budget line and the generic "what you said matters most" reason are hidden on Sell / Avoid cards.
+- scripts/dev_offline_server.py: the fake interpreter also returns volatile ("big move", "either way") and neutral
+  ("sideways", "range") beliefs, so those cards can be walked locally.

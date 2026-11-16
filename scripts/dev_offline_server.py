@@ -88,8 +88,12 @@ class FakeClaude:
             key = next((k for k in TOPICS if k in msg), "travel")
             bear = any(w in msg for w in ("less", "fall", "drop", "crash", "cut back", "weak"))
             d = "bearish" if bear else "bullish"
+            if any(w in msg for w in ("big move", "either way", "volatil")):
+                d = "volatile"
+            elif any(w in msg for w in ("sideways", "flat", "range")):
+                d = "neutral"
             out = {
-                "is_market_belief": True, "note": "", "summary": f"Demand linked to {key} {'weakens' if bear else 'grows'}.",
+                "is_market_belief": True, "note": "", "summary": f"Demand linked to {key} {'weakens' if bear else 'grows'}." if d in ("bullish", "bearish") else f"{key} stocks {'make a big move either way' if d == 'volatile' else 'stay in a range'}.",
                 "direction": d, "horizon_days": 120, "conviction": "medium", "themes": [key, "consumer spending"],
                 "causal_chain": f"{key} demand {'falls' if bear else 'rises'} -> these companies' sales move with it.",
                 "candidates": [{"ticker": t, "name": UNIVERSE[t][0], "exposure": "direct" if i < 2 else "beneficiary",

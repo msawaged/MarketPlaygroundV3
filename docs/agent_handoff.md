@@ -828,3 +828,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Tests: test_yesno_digital_from_call_spread updated, test_yesno_odds_at_the_line_with_uneven_strikes (smooth
   lognormal chain: new reading within 0.2 pts of P(close > $150), the old one wasn't). 178 passed.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.
+
+## 2026-11-16 midday (daily polish walk): two-breakeven cards show both numbers; stay-out cards drop the budget line
+- No HQ messages from Murad. No gate, ranking, grading or real-money change. Frontend + dev script only.
+- StrategyCard `Stat` takes an array (one line each); Breakeven passes both, so "$164.04 / $205.96" no longer truncates
+  to "$164.04..." at 375px. Sell / Avoid cards hide "Fits your $X" and the generic "what you said matters most" reason.
+- scripts/dev_offline_server.py fake interpreter now also returns volatile / neutral beliefs (local walking only).
+- For the build chat (not touched): neutral (range-bound) beliefs get bullish picks, because candidate directions are
+  only bullish/bearish/volatile (`interpreter._sanitize`), so Iron Condor / Iron Butterfly are never offered and a
+  "sideways" call can get a Bull Call Spread. Needs a grading rule for neutral first. Details in docs/polish_log.md.
+- Render builds still failing (out of build minutes): this queues behind ee64847. Don't re-push to kick it.
+- Files: frontend/src/components/chat/StrategyCard.jsx, scripts/dev_offline_server.py, docs/polish_log.md,
+  docs/hq/status/polish.json.

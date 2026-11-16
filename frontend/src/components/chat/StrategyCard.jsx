@@ -66,7 +66,10 @@ function Stat({ label, value, tone }) {
   return (
     <div className="bg-slate-800/70 rounded-lg px-3 py-2 min-w-0">
       <div className="text-[11px] uppercase tracking-wide text-slate-400">{TERM_FOR[label] ? <Term k={TERM_FOR[label]}>{label}</Term> : label}</div>
-      <div className={`text-sm font-bold truncate ${color}`}>{value}</div>
+      {Array.isArray(value)
+        // Two breakevens (straddle, strangle, condor...) stack instead of one being cut off ("$164.04...") at 375px
+        ? value.map((v) => <div key={v} className={`text-sm font-bold leading-snug whitespace-nowrap ${color}`}>{v}</div>)
+        : <div className={`text-sm font-bold truncate ${color}`}>{value}</div>}
     </div>
   );
 }
@@ -451,7 +454,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               {pick.trade?.expiration && <div className="text-xs text-slate-400"><Term k="expiration">Expires</Term> {niceDate(pick.trade.expiration)}</div>}
             </div>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">{PLAIN[pick.structure] || pick.trade?.plain || ''}</p>
-            {pick.budget && !useAlt[basePick.pick_id] && (
+            {pick.budget && !avoid && !useAlt[basePick.pick_id] && (
               <p className={`text-xs mt-1.5 font-semibold ${pick.budget.fits ? 'text-emerald-300' : 'text-amber-200'}`}>
                 {pick.budget.fits
                   ? `Fits your $${Number(pick.budget.budget).toLocaleString()}${pick.budget.unit === 'contracts' ? `: ${pick.budget.units} contract${pick.budget.units === 1 ? '' : 's'} for $${Number(pick.budget.cost).toLocaleString()}` : pick.budget.unit === 'shares' ? `: about ${Number(pick.budget.units).toFixed(2)} shares` : ''}${data.prefs?.horizon_days ? ` · ${({ 30: '1 month', 90: '3 months', 180: '6 months', 365: '1 year' })[data.prefs.horizon_days] || `${data.prefs.horizon_days} days`}` : ''}`
@@ -460,7 +463,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                     : `Doesn't fit $${Number(pick.budget.budget).toLocaleString()} even at 1 contract`}
               </p>
             )}
-            {pick.structure_reason && pick.structure_reason !== 'rule' && (
+            {pick.structure_reason && pick.structure_reason !== 'rule' && !(avoid && /what you said matters most/.test(pick.structure_reason)) && (
               <p className="text-xs text-blue-200 mt-1.5 leading-relaxed"><span className="font-semibold">Why this strategy: </span>{pick.structure_reason}</p>
             )}
             {isOptions && model?.daysToExp > 0 && (
@@ -501,7 +504,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               <div className="grid grid-cols-3 gap-2">
                 <Stat label={isOptions ? 'Per contract' : 'Price'} value={isOptions ? money(model.capitalPerUnit) : `$${Number(pick.price).toFixed(2)}`} />
                 <Stat label="Max gain" value={isOptions ? money(sum.maxProfit) : 'Unlimited'} tone="good" />
-                <Stat label="Breakeven" value={sum.breakevens.length ? sum.breakevens.map((b) => `$${b.toFixed(2)}`).join(' / ') : '—'} tone="warn" />
+                <Stat label="Breakeven" value={sum.breakevens.length ? sum.breakevens.map((b) => `$${b.toFixed(2)}`) : '—'} tone="warn" />
               </div>
               {isOptions && (
                 <p className="text-[11px] text-slate-500 -mt-2">Per contract (100 shares). Max loss per contract: {money(Math.abs(sum.maxLoss))}.</p>
