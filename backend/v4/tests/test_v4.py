@@ -4480,3 +4480,14 @@ def test_ticker_must_still_be_the_company_the_idea_names():
     # Backfill: a history that's the new issuer's pasted over old dates (200x off today's price) is skipped.
     assert engine._plausible_history("PIPE", market.daily_closes("PIPE")[1][-1] * 3)
     assert not engine._plausible_history("PIPE", market.daily_closes("PIPE")[1][-1] * 500)
+
+
+def test_brain_scorecard_says_whether_the_ranker_is_mixed(monkeypatch):
+    """The Brain page says 'today's #1 also mixes in the retrained model' only for a mix; a model that passed alone
+    picks the #1 alone (research.WEIGHT 1.0), so the scorecard must carry which one is live."""
+    from backend.v4 import brain, research
+    for mix in (False, True):
+        monkeypatch.setattr(research, "ranker", lambda mix=mix: {"active": True, "at": "2026-11-16T07:00:00+00:00",
+                                                                  "model": "mlp_adj_mix" if mix else "mlp_adj", "mix": mix,
+                                                                  "oos": {"n": 10}, "risk_check": True})
+        assert brain._skill()["ranker"]["mix"] is mix

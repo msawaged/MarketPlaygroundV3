@@ -396,7 +396,7 @@ export default function BrainPage({ viewOnly = false }) {
                     {' '}Try enough ways and one will look great by chance, so a result has to reach t {Number(sk.luck.bar_ever).toFixed(1)} (not the usual 2) before we call it more than luck.
                     {' '}{sk.luck.app_t_nw != null ? 'Counting each call as independent, ' : ''}{(sk.luck.clear || []).length} of {sk.luck.tries_ever} cleared it
                     {sk.ranker?.active
-                      ? (sk.luck.app_clears ? ", including the old way of picking the #1 (today's #1 also mixes in the retrained model below)" : "; the old way of picking the #1 hasn't yet (today's #1 also mixes in the retrained model below)")
+                      ? `${sk.luck.app_clears ? ', including the old way of picking the #1' : "; the old way of picking the #1 hasn't yet"} (${sk.ranker.mix !== false ? "today's #1 also mixes in the retrained model below" : "today's #1 now comes from the retrained model below"})`
                       : (sk.luck.app_clears
                         ? (peek && !peekClears ? `, including the way we pick the #1 as stored, but not once the peek above is removed (t ${Number(peek.lift_t || 0).toFixed(1)})` : ', including the way we pick the #1 you see today')
                         : "; the way we pick today's #1 hasn't yet")}
@@ -429,7 +429,10 @@ export default function BrainPage({ viewOnly = false }) {
                       {' '}Counted that way, {sk.ranker?.active ? 'the old way of picking the #1' : (peek ? 'the way we pick the #1, as stored,' : "the way we pick today's #1")} scores t {Number(sk.luck.app_t_nw).toFixed(1)} (t {Number(sk.luck.app_t || 0).toFixed(1)} the plain way)
                       {sk.luck.app_clears_nw ? ' and still clears the bar' : " and doesn't clear the bar"}; {(sk.luck.clear_nw || []).length} of {sk.luck.tries_ever} ways {(sk.luck.clear_nw || []).length === 1 ? 'does' : 'do'}.
                       {sk.ranker?.active && sk.ranker.oos?.lift_t_nw != null && (
-                        <> The retrained model scores t {Number(sk.ranker.oos.lift_t_nw).toFixed(1)} counted that way (t {Number(sk.ranker.oos.lift_t || 0).toFixed(1)} the plain way){Number(sk.ranker.oos.lift_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing the bar.' : ', short of the bar.'}</>
+                        <> The retrained model scores t {Number(sk.ranker.oos.lift_t_nw).toFixed(1)} counted that way (t {Number(sk.ranker.oos.lift_t || 0).toFixed(1)} the plain way){Number(sk.ranker.oos.lift_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing the bar' : ', short of the bar'}
+                          {sk.ranker.risk_check && sk.ranker.oos.lift_adj_t_nw != null
+                            ? <>; matched for each stock's risk, it scores t {Number(sk.ranker.oos.lift_adj_t_nw).toFixed(1)} counted that way{Number(sk.ranker.oos.lift_adj_t_nw) >= Number(sk.luck.bar_ever || 99) ? ', clearing it.' : ', short of it.'}</>
+                            : '.'}</>
                       )}
                     </div>
                   )}
@@ -638,6 +641,9 @@ export default function BrainPage({ viewOnly = false }) {
             return (
               <>
                 <p className="text-xs text-slate-400">{total} training runs so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>
+                {d?.skill?.ranker?.active && d.skill.ranker.since && (
+                  <p className="text-xs text-slate-400">These are the nightly brain's runs. The #1 pick model in the scorecard above is trained separately and has shaped the #1 since {new Date(d.skill.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.</p>
+                )}
                 {same >= 2 && (
                   <p className="text-xs text-slate-400">The last {same} retrains used the same {newest.n_train.toLocaleString()} graded calls. This brain learns from 90-day results, and no new ones have come in{first90 ? ` (the first real-time calls reach 90 days on ${first90})` : ' since'}. So read these as the same brain re-checked, not new ones.</p>
                 )}

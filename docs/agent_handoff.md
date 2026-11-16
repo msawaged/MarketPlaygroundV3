@@ -939,3 +939,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Tests: test_ranker_that_passed_alone_goes_live_alone, test_engine_orders_by_a_lone_ranker_exactly_as_tested. 186 passed.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/research.py, engine.py, tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
+
+## 2026-11-16 night (daily polish walk): Brain page says the #1 model runs alone, shows its risk-matched luck score
+- No HQ messages from Murad. No gate, ranking, grading or real-money change.
+- brain._skill ranker now carries `mix`; BrainPage luck check says "today's #1 now comes from the retrained model"
+  unless it's a mix (matches the brain upgrade's weight 1.0); overlap paragraph adds the risk-matched counted-overlap t
+  (4.3, clears the 3.25 bar); "It grades itself" notes the nightly brain and the #1 pick model are separate.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.

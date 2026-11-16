@@ -152,6 +152,7 @@ def _skill() -> dict:
             out["ranker"] = {"active": rv.get("active"), "since": rv.get("at"), "oos": rv.get("oos"), "old": rv.get("old"),
                              "old_pit": rv.get("old_pit"),
                              "risk_check": bool(rv.get("risk_check")), "model": rv.get("model"),
+                             "mix": bool(rv.get("mix")),  # False: the model alone orders the #1 (as tested)
                              "confidence": rv.get("confidence")}
     except Exception:
         pass

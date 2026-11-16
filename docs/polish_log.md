@@ -844,3 +844,37 @@ Changed:
 - StrategyCard: shares paper-trade confirmation links to Portfolio.
 
 Checks: vite build passes, npm test passes, backend tests 182 passed.
+
+## 2026-11-16 (night run, ~21:30 UTC = Mon 4:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+Signed-in screens locally (offline server, throwaway SQLite) at 375, first walk of a bearish "Earn income" card:
+"People are eating out less at restaurants this year", Bold, $5,000, 3 months, Options, Earn income -> CMG Bear Call
+Spread, sell $40 call $1.92 / buy $43 call $1.04: credit $0.88 = $88, max loss $300 - $88 = $212 per contract, 23
+contracts = collect $2,024, worst case $4,876, breakeven $40.88, +42% of cost: all add up. Paper trade -> Portfolio:
+Invested $4,876 + cash $95,124 = $100,000, row shows "Sell $40 call · Buy $43 call".
+
+Found (Brain page, the part a finance reader will study hardest), checked against live /v4/brain:
+- The luck check said "today's #1 also mixes in the retrained model below". Since the brain upgrade (69ab3d0, queued)
+  a model that passed alone picks the #1 alone (weight 1.0); the sentence would be wrong as soon as it deploys.
+- "Counting overlap honestly" said the live #1 model scores t 3.0, "short of the bar" (3.25), with no mention that on
+  the risk-matched measure the same counting gives t 4.25 (lift_adj_t_nw), which clears it. A reader sees a model
+  "short of the bar" running the #1 and no reason why.
+- "It grades itself, honestly" said "46 training runs · none of the latest 24 has earned a vote" right under a card
+  saying the retrained #1 model is live. They're different models (nightly brain vs ranker v2), never said.
+
+Changed:
+- brain._skill: ranker carries `mix` (False = the model alone orders the #1). Test
+  test_brain_scorecard_says_whether_the_ranker_is_mixed.
+- BrainPage: luck check says "today's #1 now comes from the retrained model below" unless the ranker is a mix (or an
+  older backend sends no `mix`); overlap paragraph adds "matched for each stock's risk, it scores t 4.3 counted that
+  way, clearing it" (or "short of it"); the versions list says "These are the nightly brain's runs. The #1 pick model in
+  the scorecard above is trained separately and has shaped the #1 since Nov 16."
+- Not changed (research gate, not mine): the go-live gate uses plain t (MIN_T 1.5, MIN_T_ADJ 1.0), well under the luck
+  bar the page shows (3.25). Today's live model clears both anyway; worth a sentence from the brain upgrade task if a
+  future model goes live between the two.
+
+Checks: vite build passes, npm test passes, backend tests 187 passed. Verified locally against live /v4/brain data.
