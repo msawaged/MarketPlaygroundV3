@@ -812,3 +812,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Murad restores builds. Don't re-push to "kick" it.
 - Files: backend/routes/basket_router.py, backend/v4/basket.py, backend/v4/tests/test_v4.py,
   frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 late morning (Builder routine): Close Call odds read at the line itself, not at a spread's middle
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Render builds still failing (out of build
+  minutes, flagged to Murad by the 08:03 run): this commit queues behind 0dbdbfc / 4db4cda and won't be live until
+  builds resume. Don't re-push to kick it.
+- Found on live /v4/yesno/quote: NVDA "close above $150" (Nov 20) said "From the $149/$152.5 call spread". A call
+  spread prices the chance of finishing above the middle of its strikes ($150.75 here), not above the line, so uneven
+  strikes (or a typed line between strikes) gave the odds of a different question (~1-2 pts off on NVDA).
+- `yesno.digital_from_spread` now reads the chance at the line: the two neighbouring strike pairs whose middles sit
+  either side of it, in a straight line between them (even strikes around a listed line = the same central spread
+  as before). One pair only -> that spread, as before. Returns (p, lo, hi, strikes used). `odds_label`: "the
+  $149/$150/$152.5 call prices, read at the $150 line (skew included)" or "the $157.5/$162.5 call spread (skew
+  included)". Stale check, YES/NO pricing, grading and learning unchanged.
+- Tests: test_yesno_digital_from_call_spread updated, test_yesno_odds_at_the_line_with_uneven_strikes (smooth
+  lognormal chain: new reading within 0.2 pts of P(close > $150), the old one wasn't). 178 passed.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.

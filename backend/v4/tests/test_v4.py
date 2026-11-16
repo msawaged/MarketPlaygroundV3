@@ -4033,13 +4033,41 @@ def test_hq_owner_gate(monkeypatch):
 def test_yesno_digital_from_call_spread():
     from backend.v4 import yesno
     calls = [{"strike": 95, "bid": 6.0, "ask": 6.2}, {"strike": 100, "bid": 3.0, "ask": 3.2}, {"strike": 105, "bid": 1.2, "ask": 1.3}]
-    p, ka, kb = yesno.digital_from_spread(calls, 100)
-    assert (ka, kb) == (95, 105) and p == pytest.approx((6.1 - 1.25) / 10)       # neighbours of a listed strike
-    p, ka, kb = yesno.digital_from_spread(calls, 102)
-    assert (ka, kb) == (100, 105) and p == pytest.approx((3.1 - 1.25) / 5)
+    p, ka, kb, used = yesno.digital_from_spread(calls, 100)
+    assert (ka, kb) == (95, 105) and p == pytest.approx((6.1 - 1.25) / 10)       # even strikes: the usual central spread
+    assert yesno.odds_label(used, 100) == "the $95/$100/$105 call prices, read at the $100 line (skew included)"
+    # $102: the $100/$105 spread measures a close above $102.50, so read between the 97.5 and 102.5 middles.
+    p, ka, kb, used = yesno.digital_from_spread(calls, 102)
+    p_left, p_right = (6.1 - 3.1) / 5, (3.1 - 1.25) / 5
+    assert used == [95, 100, 105] and p == pytest.approx(p_left + (p_right - p_left) * 4.5 / 5)
+    assert p_right < p < p_left
+    # Only one pair reaches the line: that spread, labelled as a spread.
+    p, ka, kb, used = yesno.digital_from_spread(calls, 104)
+    assert used == [100, 105] and p == pytest.approx(p_right)
+    assert yesno.odds_label(used, 104) == "the $100/$105 call spread (skew included)"
     assert yesno.digital_from_spread(calls, 120) is None                         # outside the listed strikes
     assert yesno.digital_from_spread([{"strike": 95, "bid": 1, "ask": 1.1}, {"strike": 105, "bid": 2, "ask": 2.1}], 100) is None  # nonsense quotes
     assert yesno.digital_from_spread([{"strike": 50, "bid": 6, "ask": 6.2}, {"strike": 150, "bid": 1, "ask": 1.1}], 100) is None   # too wide
+
+
+def test_yesno_odds_at_the_line_with_uneven_strikes():
+    """Seen live: NVDA $150 line with $149 / $150 / $152.5 listed. The $149/$152.5 spread alone is the chance of a close
+    above $150.75. On a smooth chain (calls priced off one lognormal) the odds must match P(close > $150) itself."""
+    import math
+    from backend.v4 import yesno
+    spot, vol, years = 161.87, 0.9, 4 / 365
+
+    def call(k):
+        sq = vol * math.sqrt(years)
+        d1 = (math.log(spot / k) + 0.5 * vol * vol * years) / sq
+        return spot * yesno._ncdf(d1) - k * yesno._ncdf(d1 - sq)
+
+    calls = [{"strike": k, "bid": call(k) - 0.01, "ask": call(k) + 0.01} for k in (147.5, 149, 150, 152.5, 155)]
+    truth = yesno.prob_above(spot, 150, years, vol, rate=0.0)
+    p, ka, kb, used = yesno.digital_from_spread(calls, 150)
+    old = (call(149) - call(152.5)) / 3.5                                         # the one-spread reading
+    assert used == [149, 150, 152.5]
+    assert abs(p - truth) < 0.002 < abs(old - truth)
 
 
 def test_economics_exact_at_strikes():

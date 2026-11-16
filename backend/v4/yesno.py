@@ -117,13 +117,17 @@ def leg_vols(calls: list[dict], k1: float, k2: float, spot: float, years: float,
     return round(v1, 4), round(v2, 4)
 
 
-def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> Optional[tuple[float, float, float]]:
-    """Market-implied P(close > level) from the price of a tight call spread around the line:
-    (C(Ka) - C(Kb)) / (Kb - Ka) with Ka < level <= Kb as close as listed (or the neighbours of a listed strike).
+def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> Optional[tuple[float, float, float, list]]:
+    """Market-implied P(close > level) from listed call prices. A call spread (C(Ka) - C(Kb)) / (Kb - Ka) is the
+    chance of finishing above the middle of its two strikes, (Ka + Kb) / 2, not above any line between them. So take
+    the two neighbouring strike pairs whose middles sit either side of the line and read the chance at the line
+    itself, in a straight line between them (for evenly spaced strikes around a listed line this is the usual
+    (C(K - w) - C(K + w)) / 2w). With $149 / $150 / $152.5 listed, the $149/$152.5 spread alone measures a close above
+    $150.75, not $150. If only one pair is quoted near the line, that pair is used as before.
     Uses quoted mids, so the volatility skew is already in the price (a single-vol N(d2) ignores the
     -vega * dsigma/dK term a digital carries). A spread pays at expiration, so its price is the discounted chance:
-    divide by exp(-r * years) (r = the same rate the option prices use). Returns (p, Ka, Kb), or None if quotes are
-    missing or don't make sense."""
+    divide by exp(-r * years) (r = the same rate the option prices use). Returns (p, lowest strike used, highest
+    strike used, all strikes used), or None if quotes are missing or don't make sense."""
     from .strategy import RISK_FREE
     q = _mids(calls)
     ks = sorted(q)
@@ -131,14 +135,52 @@ def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> 
     above = [k for k in ks if k > level + 1e-9]
     if not below or not above:
         return None
+    grow = math.exp(RISK_FREE * max(0.0, years))
+    cap = 0.12 * level                                   # too wide to say anything precise about one line
+
+    def pair(ka, kb):
+        if not (0 < kb - ka <= cap):
+            return None
+        p = (q[ka] - q[kb]) / (kb - ka) * grow
+        return p if 0.0 < p < 1.0 else None
+
     ka, kb = below[-1], above[0]
-    width = kb - ka
-    if width <= 0 or width > 0.12 * level:          # too wide to say anything precise about one line
+    at = [k for k in ks if abs(k - level) <= 1e-9]
+    # Neighbouring pairs: left middle at or below the line, right middle at or above it.
+    if at:                                               # a listed line: (Ka, K) and (K, Kb)
+        left, right = (ka, at[0]), (at[0], kb)
+    else:
+        mid = (ka + kb) / 2
+        if abs(mid - level) <= 1e-9:
+            left = right = (ka, kb)
+        elif level < mid:
+            left, right = ((below[-2], ka) if len(below) > 1 else None), (ka, kb)
+        else:
+            left, right = (ka, kb), ((kb, above[1]) if len(above) > 1 else None)
+    pl = pair(*left) if left else None
+    pr = pair(*right) if right else None
+    if pl is not None and pr is not None and left != right:
+        ml, mr = sum(left) / 2, sum(right) / 2
+        p = pl + (pr - pl) * (level - ml) / (mr - ml)
+        used = sorted(set(left) | set(right))
+    else:                                                # one pair only: the tight spread around the line
+        if at:
+            p = pair(ka, kb)
+            used = [ka, kb]
+        else:
+            p = pr if right == (ka, kb) else pl
+            used = [ka, kb]
+    if p is None or not (0.0 < p < 1.0):
         return None
-    p = (q[ka] - q[kb]) / width * math.exp(RISK_FREE * max(0.0, years))
-    if not (0.0 < p < 1.0):
-        return None
-    return min(0.99, max(0.01, p)), ka, kb
+    return min(0.99, max(0.01, p)), used[0], used[-1], used
+
+
+def odds_label(used: list, level: float) -> str:
+    """Where the market's odds came from, in the words shown under them."""
+    ks = "/".join(f"${k:g}" for k in used)
+    if len(used) == 2:                                   # one spread (its middle is what it measures)
+        return f"the {ks} call spread (skew included)"
+    return f"the {ks} call prices, read at the ${level:g} line (skew included)"
 
 
 def _ncdf(x: float) -> float:
@@ -314,7 +356,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
     stale = bool(dig) and abs(dig[0] - m_p_flat) > 0.10
     if dig and not stale:
-        m_p, odds_source = dig[0], f"the ${dig[1]:g}/${dig[2]:g} call spread (skew included)"
+        m_p, odds_source = dig[0], odds_label(dig[3], level)
     else:
         m_p, odds_source = m_p_flat, ("one implied volatility (the spread quotes looked out of date)" if stale
                                       else "one implied volatility (no tight spread quoted)")

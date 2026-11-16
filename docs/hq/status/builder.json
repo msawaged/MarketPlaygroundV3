@@ -1,14 +1,19 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T08:03:00Z",
- "last_run": "Close Call's YES price now matches the market's odds. Before, AAPL $360 showed 50% odds but YES cost $204 to win $500 (41%), which looked like free money. Each option strike is now priced at its own implied volatility, so skew is in the price too.",
- "working_on": "Waiting for Render: my Close Call fix is pushed (0dbdbfc) but not live.",
- "next": "Once builds work again: confirm Close Call quotes show 'strikes' pricing with YES cost close to the odds. Then Close Call records after Nov 19.",
+ "updated_at": "2026-11-16T11:05:00Z",
+ "last_run": "Close Call's market odds now answer the question asked. NVDA 'close above $150' was read from the $149/$152.5 spread, which really prices a close above $150.75. Odds are now read at the line itself from the strikes either side.",
+ "working_on": "Waiting for Render: today's three Close Call / polish commits are pushed but not live (builds out of minutes).",
+ "next": "Once builds work again: confirm on live quotes that odds_source names the strikes and YES cost sits close to the odds. Then Close Call records after Nov 18-20 expirations.",
  "needs_from_murad": [
   "Render stopped building: the workspace ran out of build pipeline minutes for this billing period (deploy of 0dbdbfc canceled at 08:07 UTC). Nothing new goes live, from any agent, until you raise the build spend limit or upgrade at dashboard.render.com -> Workspace settings -> Build pipeline. The current live site keeps running."
  ],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call showed 'NVDA above $150' odds taken from the $149/$152.5 spread, which is really the chance of a close above $150.75 (1-2 pts off). The odds are now read at $150 itself from the strikes either side, and the note under them says which prices were used.",
+   "at": "2026-11-16T11:05:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call showed AAPL at 50% odds to close above $360 while YES cost $204 for a $500 payout (41%): a finance professor would call that a free-money bug. Each strike is now priced at its own implied volatility, so YES costs the market's own spread price and agrees with the odds.",
