@@ -2124,6 +2124,29 @@ def test_regime_state_and_regime_aware_research(monkeypatch):
     assert "zx_mom60_reg_trend" in research.ZKEYS
 
 
+def test_regime_label_says_why_with_the_numbers(monkeypatch):
+    """The Brain page used to call every non-trending, non-crisis market 'Calm: markets are quiet', even with the
+    S&P 500 swinging 22% a year. 'calm' is really 'in between'; the state carries the numbers, the close date and the
+    rule, written from the same thresholds the classifier uses."""
+    from datetime import timedelta as _td
+    d0 = TODAY - _td(days=400)
+    dates = [(d0 + _td(days=i)).isoformat() for i in range(300)]
+    steady = [100 * (1.0008 ** i) for i in range(300)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, steady))
+    market._state_cache.clear()
+    st = market.regime_state()
+    assert st["regime"] == "trending" and st["date"] == dates[-1] and st["rule"] == market.REGIME_RULE
+    # flat but choppy: +/-1.5% day after day, no trend, near the high -> "in between" (calm), though not quiet
+    chop = [100 * (1.015 if i % 2 else 1.0) for i in range(300)]
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, chop))
+    market._state_cache.clear()
+    st = market.regime_state()
+    assert st["regime"] == "calm" and market.REG_TREND_VOL <= st["spy_vol20"] <= market.REG_CRISIS_VOL
+    assert abs(st["spy_r60"]) < 0.02 and st["spy_dd"] > market.REG_CRISIS_DD
+    r = market.REGIME_RULE
+    assert "more than 4% over 3 months" in r and "under 22%" in r and "above 28%" in r and "12% below" in r
+    assert "quiet" not in r
+
 def test_option_iv_from_snapshots_and_practice_pricing(monkeypatch):
     from types import SimpleNamespace as NS
     from datetime import timedelta as _td

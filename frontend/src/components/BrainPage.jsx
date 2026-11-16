@@ -278,12 +278,23 @@ export default function BrainPage({ viewOnly = false }) {
         })()}
         {d?.regime?.regime && d.regime.regime !== 'unknown' && (() => {
           const r = d.regime;
-          const m = { trending: ['Trending', 'text-green-300 border-green-500/30 bg-green-500/[0.06]', 'The S&P 500 is climbing steadily.'],
-            calm: ['Calm', 'text-blue-200 border-blue-400/30 bg-blue-500/[0.06]', 'Markets are quiet or moving sideways.'],
+          // "calm" is the backend's name for "everything else": not a steady climb, not turbulent. It can be choppy,
+          // so it's shown as "In between", with the S&P 500's own numbers and the rule (r.rule) under the label.
+          const m = { trending: ['Steady climb', 'text-green-300 border-green-500/30 bg-green-500/[0.06]', 'The S&P 500 is climbing steadily.'],
+            calm: ['In between', 'text-blue-200 border-blue-400/30 bg-blue-500/[0.06]', 'Not a steady climb and not turbulent.'],
             crisis: ['Turbulent', 'text-red-300 border-red-500/30 bg-red-500/[0.06]', 'Big swings: volatility is high or stocks are well off their highs.'] }[r.regime];
+          const pct = (x, sign) => `${sign && x > 0 ? '+' : ''}${(x * 100).toFixed(1)}%`;
           return m ? (
             <div className={`mt-2 rounded-2xl border px-3.5 py-2.5 text-xs ${m[1]}`}>
               <span className="font-bold">Market regime: {m[0]}.</span> <span className="text-slate-300">{m[2]} Different picking styles work in different regimes; the brain tests which.</span>
+              {typeof r.spy_vol20 === 'number' && r.spy_vol20 > 0 && (
+                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-slate-400 tabular-nums">
+                  <span>S&amp;P 500, 3 months: <span className="text-slate-200">{pct(r.spy_r60, true)}</span></span>
+                  <span>Off its 1-year high: <span className="text-slate-200">{pct(r.spy_dd)}</span></span>
+                  <span>Volatility (20 days, yearly): <span className="text-slate-200">{pct(r.spy_vol20)}</span></span>
+                </div>
+              )}
+              {r.rule && <div className="mt-1 text-[11px] leading-snug text-slate-500">{r.rule}</div>}
             </div>
           ) : null;
         })()}

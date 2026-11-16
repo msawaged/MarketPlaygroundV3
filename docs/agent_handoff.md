@@ -840,3 +840,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues behind ee64847. Don't re-push to kick it.
 - Files: frontend/src/components/chat/StrategyCard.jsx, scripts/dev_offline_server.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-16 afternoon (Builder routine): Brain page market regime says what it is, with the numbers
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Render builds still failing (out of build
+  minutes): this commit queues behind 083cc8b and won't be live until builds resume. Don't re-push to kick it.
+- Found on live /brain: "Market regime: Calm. Markets are quiet or moving sideways." while the S&P 500's 20-day
+  volatility was 22.1% a year (above its usual level) and it was 3.2% off its high. "calm" is just the bucket for
+  anything that isn't a steady climb or turbulent; a finance professor would read "quiet" as wrong.
+- Backend: `market.regime_state` thresholds are now named constants (REG_CRISIS_VOL/DD, REG_TREND_R60/VOL, same
+  values, same classification; regime features and research untouched). The state also returns `date` (last S&P
+  close used) and `rule` (`market.REGIME_RULE`, written from those constants).
+- BrainPage: "calm" shows as "In between: not a steady climb and not turbulent", "trending" as "Steady climb"; under the
+  label the three S&P 500 numbers (3 months, off 1-year high, 20-day volatility) and the rule. Works with the old
+  backend shape too (numbers/rule just hidden).
+- Test: test_regime_label_says_why_with_the_numbers. 179 passed.
+- Files: backend/v4/market.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/hq/status/builder.json.

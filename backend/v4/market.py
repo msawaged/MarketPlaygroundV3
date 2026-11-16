@@ -1108,12 +1108,21 @@ def parse_occ(symbol: str) -> Optional[dict]:
 
 _state_cache: dict[str, dict] = {}
 
+# Regime rules (S&P 500 only). Shown on the Brain page with the live numbers, so the label always says why.
+REG_CRISIS_VOL, REG_CRISIS_DD = 0.28, -0.12   # turbulent: 20-day swings above 28% a year, or 12%+ below the 1-year high
+REG_TREND_R60, REG_TREND_VOL = 0.04, 0.22     # steady climb: up more than 4% over 3 months with swings under 22% a year
+
+
+REGIME_RULE = (f"Steady climb: the S&P 500 up more than {REG_TREND_R60:.0%} over 3 months with 20-day volatility under "
+               f"{REG_TREND_VOL:.0%} a year. Turbulent: volatility above {REG_CRISIS_VOL:.0%} or more than "
+               f"{-REG_CRISIS_DD:.0%} below its 1-year high. Anything else is in between, which can still be choppy.")
+
 
 def regime_state(as_of: Optional[date] = None) -> dict:
     """Which of three market regimes we're in, from the S&P 500 only (prices up to as_of):
     crisis   - turbulent: 20-day volatility above 28% a year, or more than 12% below the 1-year high
     trending - steady climb: up more than 4% over 3 months with volatility under 22%
-    calm     - everything else (sideways or quiet)
+    calm     - everything else: in between (not a steady climb, not turbulent; NOT necessarily quiet)
     Different stock-picking styles tend to work in different regimes; the brain tests that."""
     d = (as_of or today()).isoformat()
     if d in _state_cache:
@@ -1127,8 +1136,10 @@ def regime_state(as_of: Optional[date] = None) -> dict:
         hi = max(closes[max(0, i - 251): i + 1])
         dd = closes[i] / hi - 1 if hi > 0 else 0.0
         r60 = _ret(closes, i, 60)
-        name = "crisis" if (vol > 0.28 or dd < -0.12) else "trending" if (r60 > 0.04 and vol < 0.22) else "calm"
-        out = {"regime": name, "spy_vol20": round(vol, 4), "spy_dd": round(dd, 4), "spy_r60": round(r60, 4)}
+        name = ("crisis" if (vol > REG_CRISIS_VOL or dd < REG_CRISIS_DD)
+                else "trending" if (r60 > REG_TREND_R60 and vol < REG_TREND_VOL) else "calm")
+        out = {"regime": name, "spy_vol20": round(vol, 4), "spy_dd": round(dd, 4), "spy_r60": round(r60, 4),
+               "date": dates[i], "rule": REGIME_RULE}
     except Exception:
         out = {"regime": "unknown", "spy_vol20": 0.0, "spy_dd": 0.0, "spy_r60": 0.0}
     if len(_state_cache) > 2000:
