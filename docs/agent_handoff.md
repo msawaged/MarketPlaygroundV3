@@ -722,3 +722,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   it scroll, and then it opens at the newest end. Checked at 375/390/768 against the live /v4/brain data: all 11
   generations and all 8 alive strategists visible, no page overflow.
 - Frontend only. Files: frontend/src/components/BrainLineages.jsx, docs/hq/status/builder.json.
+
+## 2026-11-16 early (daily polish walk): option card max gain read exactly
+- No HQ messages from Murad. Frontend `lib/payoff.js` `summarize` / `capitalPerUnit` now evaluate the expiry payoff at
+  $0, every strike and a far point (same method as backend `library.economics`) instead of a grid starting at 1% of the
+  price. A long put's max gain was short by 1% of the price x 100 ($3,661 vs $3,699 on a $39 put at $2.01).
+- Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, docs/polish_log.md, docs/hq/status/polish.json.

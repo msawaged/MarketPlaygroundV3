@@ -68,7 +68,7 @@ export function buildModel(trade, entryPrice, today = new Date()) {
     model.capitalPerUnit = Math.max(1, stockShares * model.entry + netPremium * CONTRACT);
   } else {
     let worst = 0;
-    for (let i = 0; i <= 600; i++) worst = Math.min(worst, unitPnl(model, model.entry * 3 * (i / 600)));
+    for (const S of kinks(model).xs) worst = Math.min(worst, unitPnl(model, S));
     model.capitalPerUnit = Math.max(1, -worst);
   }
   return model;
@@ -101,15 +101,26 @@ export function sizePosition(model, amount) {
   return { units, cost: units * per, note, over: amount < per, per };
 }
 
+/**
+ * The prices where the expiry payoff can turn: $0, every strike and a far point. At expiration the P&L is a straight
+ * line between strikes, so its max, min and breakevens are exact when read at these points (same method as backend
+ * library.economics). 2026-11-16: replaced a 1,200-point grid that started at 1% of the price and stepped over
+ * strikes, so a long put's max gain read (strike - premium - 1% of price) and disagreed with the breakeven beside it.
+ */
+function kinks(model) {
+  const ks = model.kind === 'options' ? model.legs.map((l) => l.strike).filter((k) => k > 0) : [];
+  const hi = Math.max(model.entry * 3, ...ks.map((k) => k * 1.5));
+  return { xs: [...new Set([0, ...ks, hi])].sort((a, b) => a - b), hi };
+}
+
 /** Summary at expiration over a wide price range: breakevens, max profit, max loss (per unit). */
 export function summarize(model) {
   if (!model || model.kind === 'avoid') return null;
-  const lo = model.entry * 0.01, hi = model.entry * 3;
-  const n = 1200;
+  const lo = model.entry * 0.01;
+  const { xs, hi } = kinks(model);
   let maxP = -Infinity, maxL = Infinity, prev = null;
   const breakevens = [];
-  for (let i = 0; i <= n; i++) {
-    const S = lo + (hi - lo) * (i / n);
+  for (const S of xs) {
     const v = unitPnl(model, S);
     maxP = Math.max(maxP, v);
     maxL = Math.min(maxL, v);

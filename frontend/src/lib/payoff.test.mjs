@@ -124,3 +124,21 @@ console.log('payoff tests passed');
   if (!s3.unlimitedUp || Math.abs(s3.maxLoss + 1200) > 5) throw new Error('protective put ' + s3.maxLoss);
   console.log('income + protection ok');
 }
+
+// Exact extremes (2026-11-16): a long put's max gain is (strike - premium) x 100, the same number as its breakeven,
+// and a butterfly's peak sits exactly on its middle strike. The old grid started at 1% of the price and stepped over
+// strikes: CMG $39 put at $2.01 on a $38 stock read $3,661 next to a $36.99 breakeven.
+{
+  const lp = buildModel({ type: 'Long Put', vol: 0.33, trade_legs: [
+    { action: 'Buy', option_type: 'Put', strike_price: 39, est_premium: 2.01, quantity: 1, expiration: '2026-12-18', instrument: 'option' }] }, 38, today);
+  const s = summarize(lp);
+  near(s.maxProfit, 3699, 0.01); near(s.maxLoss, -201, 0.01); near(s.breakevens[0], 36.99, 0.001);
+  near(lp.capitalPerUnit, 201, 0.01);
+  const fly = buildModel({ type: 'Long Call Butterfly', vol: 0.3, trade_legs: [
+    { action: 'Buy', option_type: 'Call', strike_price: 95, est_premium: 7.3, quantity: 1, expiration: '2027-01-15', instrument: 'option' },
+    { action: 'Sell', option_type: 'Call', strike_price: 100.5, est_premium: 4.4, quantity: 2, expiration: '2027-01-15', instrument: 'option' },
+    { action: 'Buy', option_type: 'Call', strike_price: 106, est_premium: 2.6, quantity: 1, expiration: '2027-01-15', instrument: 'option' }] }, 100, today);
+  const f = summarize(fly);
+  near(f.maxProfit, (5.5 - 1.1) * 100, 0.01); near(f.maxLoss, -110, 0.01);
+  console.log('exact extremes ok');
+}

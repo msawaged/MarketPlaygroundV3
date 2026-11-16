@@ -649,3 +649,26 @@ Changed:
   test_ranker_confidence_thirds_and_live_label.
 
 Checks: vite build passes, backend tests 172 passed.
+
+## 2026-11-16 (early run, ~00:30 UTC = Sun 7:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. /brain confidence card now reads high +2.2 / mid +1.6 / low +0.4 pts (ranker active, model's own out-of-sample
+thirds in `ranker:v2.confidence`), so the badge is back by the same honest rule. Signed-in screens locally (offline
+server, throwaway SQLite): "Restaurants will struggle as consumers cut back", $1,000, Options.
+- Earn income -> CMG Bear Call Spread $40/$44: credit $2.34 - $1.16 = $118, max loss $282, 3 for $846, collect $354,
+  breakeven $41.18, +42% of cost if flat (354/846): all add up.
+- Biggest upside, 1 month -> CMG Long Put $39 at $2.01: breakeven $36.99, but "Max gain $3,661" and "Best case
+  +$14,644" (4 contracts). Should be ($39 - $2.01) x 100 = $3,699 and $14,796.
+
+Found: the card's max gain / max loss / breakevens came from frontend `payoff.summarize`, a 1,200-point grid starting
+at 1% of the stock price (so a put's best case stopped at $0.38, short by 1% of the price x 100) and stepping over
+strikes (a butterfly's peak read low). The backend fixed the same grid on 11-13 (`library.economics`); the card never
+got it. An expert reading "$3,661" beside a "$36.99" breakeven sees the mismatch at once.
+
+Changed: payoff.js reads the expiry payoff exactly at $0, every strike and a far point (it is straight between strikes),
+for both `summarize` and `capitalPerUnit`. Test in payoff.test.mjs (long put $3,699, butterfly peak on the strike).
+Re-walked: "Max gain $3,699", "Best case +$14,796".
+
+Checks: npm test passes, vite build passes, backend tests 172 passed.
