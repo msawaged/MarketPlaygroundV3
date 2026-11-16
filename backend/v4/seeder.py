@@ -137,6 +137,13 @@ def _negatable(hunch: str) -> bool:
 
 
 OPPOSITE = "I don't think "
+_MODAL = re.compile(r"\b(may|might|could)\b")  # lower case only: "May" the month stays
+
+
+def _opposite(hunch: str, context: str = "") -> str:
+    """"Bitcoin may slide" -> "I don't think Bitcoin will slide" ("I don't think X may ..." isn't English).
+    Same wording as the app's "See the other side" button (frontend lib/text.js oppositeOf)."""
+    return OPPOSITE + _MODAL.sub("will", _lower_first(hunch, context), count=1)
 
 
 def news_beliefs(limit: int) -> list[str]:
@@ -155,9 +162,10 @@ def news_beliefs(limit: int) -> list[str]:
         if not h or h == it.get("headline"):
             continue  # no AI rewrite: a raw headline isn't a belief
         context = " ".join([it.get("summary") or "", it.get("why") or ""] + [c.get("why") or "" for c in it.get("companies", [])])
-        sides = [h] + ([f"{OPPOSITE}{_lower_first(h, context)}"] if _negatable(h) else [])
+        sides = [h] + ([_opposite(h, context)] if _negatable(h) else [])
+        legacy = f"{OPPOSITE}{_lower_first(h, context)}".lower()  # opposites learned before the may -> will wording
         for b in sides:
-            if b.lower() not in used and b not in out:
+            if b.lower() not in used and b not in out and not (b is not h and legacy in used):
                 out.append(b)
     return out[:limit]
 
@@ -203,6 +211,7 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
     # A hunch's opposite ("I don't think <hunch>") runs after the hunch itself, and leaves out any stock the hunch
     # already bet on in the same direction (see engine.process_belief avoid).
     originals = {t.lower(): t for t in jobs}
+    originals.update({_MODAL.sub("will", t, count=1).lower(): t for t in jobs if not t.startswith(OPPOSITE)})
     pair_of = {t: originals[t[len(OPPOSITE):].lower()] for t in jobs
                if t.startswith(OPPOSITE) and t[len(OPPOSITE):].lower() in originals} if beliefs else {}
     taken: dict[str, set] = {}

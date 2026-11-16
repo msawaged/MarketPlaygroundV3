@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-16T12:55:00Z",
- "last_run": "Option cards with two breakevens (like 'a big move either way') cut off the second number on a phone; now both show, one above the other. 'Stay out' cards no longer say 'Fits your $1,000'.",
+ "updated_at": "2026-11-16T15:55:00Z",
+ "last_run": "Tapping 'I doubt it' on a news story wrote beliefs like \"I don't think aI firms will...\" or \"I don't think bitcoin may slide\". They now read as normal English (names and AI keep their capitals, 'may' becomes 'will'), and the brain's own news opposites use the same wording. Checked the 'Earn income' option card for the first time: every number adds up.",
  "working_on": "Waiting for Render builds to come back so today's fixes (mine and the builder's) go live.",
- "next": "Re-check the fixed cards on the live site once builds run; Close Call with live quotes; the news feed.",
+ "next": "Re-check today's fixes on the live site once builds run; Close Call odds with live quotes after the builder's fixes deploy.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes (since 08:07 UTC), so no fix from any agent goes live until the build limit is raised in Render's workspace settings."
  ],

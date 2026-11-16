@@ -1411,6 +1411,31 @@ def test_opposite_side_keeps_names_and_acronyms_capitalised():
     assert f("Data center demand will rise") == "data center demand will rise"
 
 
+def test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch(monkeypatch):
+    """ "I don't think bitcoin may slide" isn't English: may / might / could become "will" in the opposite, the
+    month May is left alone, an opposite learned before the change isn't learned again, and the renamed opposite
+    still runs after its hunch with the hunch's picks to avoid."""
+    from backend.v4 import movers, seeder
+    assert seeder._opposite("Bitcoin may slide toward $38,000") == "I don't think bitcoin will slide toward $38,000"
+    assert seeder._opposite("Rate cuts could lift homebuilders") == "I don't think rate cuts will lift homebuilders"
+    assert seeder._opposite("Retail sales will beat May levels") == "I don't think retail sales will beat May levels"
+    feed = {"items": [{"headline": "h1", "hunch": "Bitcoin's weekend selloff may signal a longer crypto downturn ahead."},
+                      {"headline": "h2", "hunch": "Solar demand might cool."}]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: feed)
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, source, created_at, as_of_date) VALUES (?,?,?,?,?,?,?)",
+               ("b-legacy", "seed", "I don't think solar demand might cool", "x", "seed_news", "2026-11-16T00:00:00+00:00",
+                "2026-11-16"))
+    got = seeder.news_beliefs(10)
+    assert got == ["Bitcoin's weekend selloff may signal a longer crypto downturn ahead",
+                   "I don't think Bitcoin's weekend selloff will signal a longer crypto downturn ahead",
+                   "Solar demand might cool"]
+    seen = {}
+    monkeypatch.setattr(seeder.engine, "process_belief",
+                        lambda text, **kw: seen.setdefault(text, kw.get("avoid")) or {"valid": True, "picks": [{"ticker": "IBIT", "direction": "bearish"}]})
+    seeder.run("live", n=2, beliefs=got[:2], source="seed_news", concurrency=1, max_usd=1)
+    assert seen[got[1]] == {("IBIT", "bearish")}
+
+
 def test_price_target_below_today_means_bearish():
     interp = {"direction": "bullish", "target_price": 5.0}
     valid = [{"ticker": "SLS", "price": 9.0, "direction": "bullish"}, {"ticker": "XBI", "price": 90.0, "direction": "bullish"}]

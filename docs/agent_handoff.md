@@ -856,3 +856,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_regime_label_says_why_with_the_numbers. 179 passed.
 - Files: backend/v4/market.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/hq/status/builder.json.
+
+## 2026-11-16 late (daily polish walk): "I doubt it" beliefs read as English; news opposites say "will", not "may"
+- No HQ messages from Murad. No gate, ranking, grading or real-money change.
+- Frontend: lib/text.js `oppositeOf(hunch)` replaces MoversFeed's blind first-letter lower-casing ("I don't think aI
+  firms...", "nvidia", "europe's"); may/might/could -> will; negative hunches -> "I doubt that ...". Test
+  src/lib/text.test.mjs, added to `npm test`. auth.biometricName: "a passkey" off Windows.
+- seeder: `_opposite()` (same rule), legacy-wording opposites not re-learned, pairing for `avoid` still works with the
+  new wording (originals keyed by both forms). Test test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch.
+- For the Builder: same-side opposites with *different* stocks still slip past the avoid guard (Bitcoin selloff
+  opposite -> QQQ bearish). Details in docs/polish_log.md. Not touched.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: frontend/src/lib/text.js, text.test.mjs, auth.js, components/MoversFeed.jsx, package.json,
+  backend/v4/seeder.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

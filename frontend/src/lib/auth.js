@@ -108,7 +108,8 @@ export function biometricName() {
   if (/iPhone|iPad|iPod/.test(ua)) return 'Face ID';
   if (/Macintosh/.test(ua)) return 'Touch ID';
   if (/Android/.test(ua)) return 'fingerprint or face';
-  return 'Windows Hello or a passkey';
+  if (/Windows/.test(ua)) return 'Windows Hello or a passkey';
+  return 'a passkey'; // Linux, ChromeOS, anything else: no Windows Hello there
 }
 
 export async function passkeyStatus() {

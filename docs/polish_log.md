@@ -775,3 +775,42 @@ Changed (frontend only):
 - StrategyCard: the budget line and the generic "what you said matters most" reason are hidden on Sell / Avoid cards.
 - scripts/dev_offline_server.py: the fake interpreter also returns volatile ("big move", "either way") and neutral
   ("sideways", "range") beliefs, so those cards can be walked locally.
+
+## 2026-11-16 (late run, ~15:30 UTC = Mon 10:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call, /reel on the live site at 390x844:
+no page errors, no 4xx/5xx, no horizontal overflow. No HQ messages from Murad. Render builds still failing (out of
+build minutes): every push since 0dbdbfc is queued, including this one.
+
+Signed-in screens locally (offline server, throwaway SQLite) at 375, first walk of the "Earn income" goal: Careful,
+$5,000, 6 months, Options, Earn income -> JETS Cash-Secured Put $21.50 for $0.74 x 2: collect $148, set aside
+$4,152 (= $4,300 - $148), breakeven $20.76, -20% = -$312 (-8% of $4,152), delta +46 sh: all add up. Paper trade ->
+Portfolio: Invested $4,152 + cash $95,848 = $100,000.
+
+Found:
+- "See the other side" / "I doubt it" (news feed and story viewer) built the user's belief by lower-casing the first
+  letter of the hunch, whatever it was. From this week's real hunches that gives "I don't think aI firms will pay
+  publishers...", "aI coding tools", "nvidia will face...", "europe's race...", "social Security overhaul...", and a
+  hunch with "may" gives "I don't think bitcoin may slide...", which isn't English. An already negative hunch
+  ("X won't ...") gave a double negative. The text becomes the user's belief in chat and My beliefs.
+- The brain's own news opposites (/brain "Just learned") had the same "I don't think X may ..." wording
+  (e.g. "I don't think Bitcoin's weekend selloff may signal a longer crypto downturn ahead").
+- The passkey card said "Log in with Windows Hello or a passkey" on every device that isn't iPhone, Mac or Android
+  (Linux, ChromeOS).
+
+Changed:
+- frontend lib/text.js `oppositeOf` / `lowerFirst` (mirrors seeder._lower_first: acronyms, names, possessives,
+  two-word names and nationalities keep their capital; may / might / could -> will; a negative hunch becomes
+  "I doubt that ..."). MoversFeed `doubtUrl` uses it. Test: src/lib/text.test.mjs (in npm test).
+- seeder: `_opposite` writes may / might / could as "will" (lower-case only, so the month May stays); an opposite
+  already learned in the old wording isn't learned again; the renamed opposite still pairs with its hunch for the
+  same-side `avoid` check. Test: test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch.
+- auth.biometricName: "Windows Hello or a passkey" only on Windows, otherwise "a passkey".
+
+For the Builder (not changed): the same-side guard only drops a stock bet the same way on both sides. "I don't think
+Bitcoin's weekend selloff may signal a longer crypto downturn" was still learned bearish (QQQ down) because QQQ
+wasn't one of the hunch's stocks. Of the last 60 hunch/opposite pairs, ~9 have the same overall direction on both
+sides; some are real (winners vs losers, e.g. "tighter chip controls favor US rivals over Nvidia"), so a blanket
+"same direction = skip" rule would be wrong.
+
+Checks: vite build passes, npm test passes (payoff, figures, text), backend tests 180 passed.

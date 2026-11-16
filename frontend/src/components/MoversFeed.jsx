@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getMovers } from '../lib/api';
 import { signedPct, pctTone, TONE } from '../lib/figures';
+import { oppositeOf } from '../lib/text';
 
 const StoryViewer = lazy(() => import('./StoryViewer'));
 
@@ -32,9 +33,8 @@ export function ago(iso) {
   return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
-const lower = (s) => s.charAt(0).toLowerCase() + s.slice(1);
 export const believeUrl = (hunch) => `/chat?b=${encodeURIComponent(hunch)}&go=1`;
-export const doubtUrl = (hunch) => `/chat?b=${encodeURIComponent(`I don't think ${lower(hunch).replace(/\.$/, '')}`)}&go=1`;
+export const doubtUrl = (hunch) => `/chat?b=${encodeURIComponent(oppositeOf(hunch))}&go=1`;
 
 // "today" only when the move is from today's New York session; on a weekend or before the open it's "on Fri".
 export function sessionLabel(day) {
