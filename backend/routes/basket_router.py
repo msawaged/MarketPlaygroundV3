@@ -53,27 +53,10 @@ def route_generate_asset_basket(request: BasketRequest):
         )
 
     except Exception as e:
+        # No canned basket here: a fixed 60/40 with a promised "5-7% a year" ignored the goal (e.g. a 3-year house
+        # down payment got 60% stocks) and never said it was a stand-in. Say we couldn't build one instead.
         print("⚠️ AI Engine Basket Generation Failed:", e)
-
-        # === 🔁 Fallback: conservative 60/40 allocation
-        fallback_basket = [
-            BasketItem(
-                ticker="VTI",
-                type="stock",
-                allocation="60%",
-                rationale="Broad U.S. equity exposure for long-term growth"
-            ),
-            BasketItem(
-                ticker="BND",
-                type="bond",
-                allocation="40%",
-                rationale="Diversified bond ETF for income and stability"
-            )
-        ]
-
-        return BasketResponse(
-            basket=fallback_basket,
-            goal=request.goal or "growth",
-            estimated_return="5-7% annually",
-            risk_profile="moderate"
+        raise HTTPException(
+            status_code=500,
+            detail="We couldn't build a basket for that goal just now. Nothing was made up: please try again in a minute.",
         )

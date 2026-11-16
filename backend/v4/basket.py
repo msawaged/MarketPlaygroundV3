@@ -59,7 +59,7 @@ def _fallback(goal: str) -> dict:
             {"ticker": "BND", "type": "bond etf", "allocation": "40%", "rationale": "Diversified US investment-grade bonds."},
         ],
         "goal": goal or "Balanced growth",
-        "estimated_return": "Varies with markets; not guaranteed.",
+        "estimated_return": "A plain 60/40 starter mix, not built for a goal. Past behavior does not guarantee future results.",
         "risk_profile": "moderate",
         "engine": "fallback",
     }
@@ -92,7 +92,8 @@ def generate(goal: str, user_id: Optional[str] = None, client: Any = None) -> di
             pass  # market data unavailable: keep Claude's pick rather than fail
         items.append({**it, "ticker": t, "allocation_pct": max(0.0, float(it.get("allocation_pct") or 0))})
     if not items:
-        return _fallback(goal)
+        # A generic 60/40 would ignore the goal; let the route say no basket could be built instead.
+        raise ValueError("no valid holdings for this goal")
 
     # normalize to whole percents summing to 100
     total = sum(i["allocation_pct"] for i in items) or 1.0

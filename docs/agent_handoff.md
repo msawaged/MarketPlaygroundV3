@@ -801,3 +801,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/yesno.py, backend/v4/practice_options.py, backend/v4/tests/test_v4.py
   (test_yesno_skewed_chain_prices_each_strike_at_its_own_vol), frontend/src/components/YesNoPage.jsx,
   docs/hq/status/builder.json.
+
+## 2026-11-16 afternoon (daily polish walk): Baskets never serve a canned 60/40 with a promised return
+- No HQ messages from Murad. No gate, ranking, grading or real-money change.
+- `/basket/generate_basket` used to answer any failure with VTI 60 / BND 40 and "5-7% annually" whatever the goal. It now
+  returns 500 with a plain "couldn't build a basket, nothing was made up, try again" (the page shows it). v4
+  `basket.generate` raises ValueError when no valid holding survives (empty goal still gets the labelled stand-in).
+- BrainPage wording: "Training runs" instead of "Brains trained" (matches the same-data retrain note).
+- Render builds are failing (out of build minutes since 08:07 UTC): this commit, like 0dbdbfc, won't be live until
+  Murad restores builds. Don't re-push to "kick" it.
+- Files: backend/routes/basket_router.py, backend/v4/basket.py, backend/v4/tests/test_v4.py,
+  frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

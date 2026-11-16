@@ -1,10 +1,12 @@
 {
  "key": "polish",
- "updated_at": "2026-11-16T07:00:00Z",
- "last_run": "Picking 'Protect what I own' (insurance for shares you have) told you the trade didn't fit your budget, because it priced in buying the 100 shares you already own, and never said the insurance itself costs about $210. The card now says both. Option prices also show cents ($2.10, not $2.1).",
- "working_on": "Walking the app like a new user, checking every number an expert would check.",
- "next": "After the open: Close Call odds with live quotes, the new 'where your call landed' line in My beliefs once real grades show, the news feed.",
- "needs_from_murad": [],
+ "updated_at": "2026-11-16T09:50:00Z",
+ "last_run": "Baskets used to answer any hiccup with the same 60% stocks / 40% bonds mix and a promised '5-7% a year', even for 'safe money for a house in 3 years'. Now it says it couldn't build one and to try again. The Brain page also says 'training runs' instead of 'brains trained', since recent retrains were the same brain re-checked.",
+ "working_on": "Waiting for Render builds to come back so today's fixes go live; then re-checking the Baskets page on the live site.",
+ "next": "Close Call odds with live quotes once the builder's fix is live, the 'where your call landed' line in My beliefs once real grades show, the news feed.",
+ "needs_from_murad": [
+  "Same as the builder's note: Render is out of build minutes (since 08:07 UTC), so no fix from any agent goes live until you raise the build limit or upgrade in Render's workspace settings."
+ ],
  "read_up_to": 0,
  "replies": []
 }

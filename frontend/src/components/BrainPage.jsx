@@ -330,7 +330,7 @@ export default function BrainPage({ viewOnly = false }) {
           {[['Beliefs learned', c.beliefs, `${(c.beliefs_today || 0).toLocaleString()} today`],
             ['Companies it knows', c.companies, `${(c.picks || 0).toLocaleString()} ideas built`],
             ['Graded by the market', c.graded, c.graded_live != null ? `${c.graded_live.toLocaleString()} in real time, the rest practice` : `vs the S&P 500`],
-            ['Brains trained', c.versions, latest ? `last ${ago(latest.at, now)}` : 'first one soon']].map(([k, v, sub]) => (
+            ['Training runs', c.versions, latest ? `last ${ago(latest.at, now)}` : 'first one soon']].map(([k, v, sub]) => (
             <div key={k} className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3.5">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">{k}</div>
               <div className="mt-1 text-3xl font-extrabold tabular-nums"><CountUp value={v || 0} /></div>
@@ -626,7 +626,7 @@ export default function BrainPage({ viewOnly = false }) {
             const first90 = fs && !d?.forward?.by_days?.['90'] ? (() => { const t = new Date(`${String(fs).slice(0, 10)}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + 91); return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); })() : null;
             return (
               <>
-                <p className="text-xs text-slate-400">{total} brains trained so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>
+                <p className="text-xs text-slate-400">{total} training runs so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>
                 {same >= 2 && (
                   <p className="text-xs text-slate-400">The last {same} retrains used the same {newest.n_train.toLocaleString()} graded calls. This brain learns from 90-day results, and no new ones have come in{first90 ? ` (the first real-time calls reach 90 days on ${first90})` : ' since'}. So read these as the same brain re-checked, not new ones.</p>
                 )}

@@ -720,3 +720,28 @@ Changed:
   more than your $5,000"; leg prices show cents ($177.50, $2.10).
 - strategy.fit_budget: for those two, the note says the price includes buying 100 shares and that an owner only adds
   the options (test_protect_goal_over_budget_says_the_price_includes_the_shares). No sizing change.
+
+## 2026-11-16 (afternoon run, ~09:30 UTC = Mon 4:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call, /reel, /learning on the live site at
+390x844: no page errors, no 4xx/5xx (except /v4/learning 403, the owner-only page, as designed), no horizontal overflow.
+No HQ messages from Murad. Signed-in screens locally (offline dev server, throwaway SQLite) at 375: "Restaurants will
+struggle as consumers cut back", Not sure / AI decides / Let the AI decide -> CMG Bear Put Spread $38/$32: $2.67 -
+$0.61 = $206, max gain $394, breakeven $35.94: all add up; paper trade lands in Portfolio at $206.
+
+Found:
+- Baskets (Home -> Baskets, never walked before): when the basket builder fails for any reason, `/basket/generate_basket`
+  returned a fixed VTI 60% / BND 40% (VTI labelled "stock") with "5-7% annually" and risk "moderate", whatever the goal,
+  and never said it was a stand-in. Reproduced locally with "Something safe for a house down payment in 3 years": 60%
+  stocks and a promised return. (Live currently builds a sensible SGOV/SHY/BND/VTIP mix, so this only shows on a failure.)
+- /live and /brain tile "Brains trained 46" sits above the note that the last 9 retrains were the same brain re-checked.
+
+Changed:
+- basket_router: on failure, HTTP 500 "We couldn't build a basket for that goal just now. Nothing was made up: please
+  try again in a minute." (shown in the page's error line). v4 basket.generate raises when no valid holding survives
+  instead of the generic 60/40; the empty-goal stand-in now says "A plain 60/40 starter mix, not built for a goal."
+  Test: test_basket_route_never_serves_a_canned_basket_when_the_builder_fails.
+- BrainPage: "Training runs" (tile) and "46 training runs so far".
+
+Not live yet: Render's build minutes ran out at 08:07 UTC (builder flagged it to Murad), so this push won't deploy until
+builds resume. Checks: vite build passes, npm test passes, backend tests 177 passed.

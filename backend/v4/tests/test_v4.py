@@ -343,6 +343,29 @@ def test_basket_builder_normalizes_and_validates():
     assert basket.generate("")["engine"] == "fallback"
 
 
+def test_basket_route_never_serves_a_canned_basket_when_the_builder_fails(monkeypatch):
+    """A failed build used to return a fixed 60/40 VTI/BND with "5-7% annually" for any goal (a 3-year house fund
+    got 60% stocks and a promised return). Now it says no basket could be built."""
+    from fastapi import HTTPException
+    import importlib
+    basket_router = importlib.import_module("backend.routes.basket_router")
+    from backend.v4 import basket
+
+    def boom(*a, **k): raise RuntimeError("model unavailable")
+    monkeypatch.setattr(basket_router, "generate_basket", boom)
+    with pytest.raises(HTTPException) as e:
+        basket_router.route_generate_asset_basket(basket_router.BasketRequest(input_text="Safe house fund in 3 years"))
+    assert e.value.status_code == 500 and "try again" in e.value.detail
+
+    class EmptyClaude:
+        def __init__(self): self.messages = self
+        def create(self, **kw):
+            out = {"basket": [], "goal": "x", "risk_profile": "moderate", "historical_note": "n"}
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))])
+    with pytest.raises(ValueError):
+        basket.generate("Safe house fund in 3 years", client=EmptyClaude())
+
+
 def test_engine_switch_routes_to_v4_and_legacy_is_lazy(monkeypatch):
     import sys
     from backend import engine_switch
