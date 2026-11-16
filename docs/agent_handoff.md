@@ -728,3 +728,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   $0, every strike and a far point (same method as backend `library.economics`) instead of a grid starting at 1% of the
   price. A long put's max gain was short by 1% of the price x 100 ($3,661 vs $3,699 on a $39 put at $2.01).
 - Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 (Builder routine): a news hunch and its opposite no longer bet the same stock the same way
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md.
+- Found on /brain "Just learned": "I don't think big retailers' sales recovery will stall" -> TGT down, same as the
+  hunch. Live count: in 385 of 939 hunch/opposite pairs since Oct 30, at least one stock was bet the same way on both
+  sides (844 picks), so the brain was partly taught that both sides of a story mean the same thing.
+- seeder.run: an opposite ("I don't think <hunch>", `seeder.OPPOSITE`) now runs after its hunch and passes the hunch's
+  picks as `avoid` to `engine.process_belief`, which drops any candidate bet the same way (bullish/bearish only;
+  volatile/neutral untouched) before scoring. Nothing left -> `same_side_as_original`, not stored
+  (`results["same_side_skipped"]`). No extra Claude calls.
+- interpreter SYSTEM_PROMPT: one line so "I don't think X" / "X won't happen" (from users too) is read as a bet on the
+  opposite of X.
+- Not changed: the 844 old same-side picks stay in the data (no deletes). Brain routine: if you want them out of
+  training, that's your call; they're seed_news beliefs starting "I don't think " whose pick repeats the hunch's
+  ticker+direction. No gate, ranking or grading change.
+- Files: backend/v4/engine.py, seeder.py, interpreter.py, tests/test_v4.py
+  (test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch), docs/hq/status/builder.json.

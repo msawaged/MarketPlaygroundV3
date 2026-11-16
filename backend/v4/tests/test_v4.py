@@ -4085,3 +4085,50 @@ def test_yesno_reasons_say_one_trading_day_in_the_singular():
     one = yesno._reasons({"trend": 1.0, "trend_age": 1, "ideas": None}, "SPY")
     two = yesno._reasons({"trend": -1.0, "trend_age": 3, "ideas": None}, "SPY")
     assert "(for 1 trading day)." in one[0] and "(for 3 trading days)." in two[0]
+
+
+def test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch(monkeypatch):
+    """Live, 385 of 939 news pairs had a stock bet the same way on a hunch and on "I don't think <hunch>" ("I don't
+    think big retailers' sales recovery will stall" -> TGT down, like the hunch). The opposite now runs after its
+    hunch and drops those picks; a pair with nothing left on the opposite side is skipped, not learned."""
+    from backend.v4 import interpreter
+
+    class Mirror(FakeClaude):  # the opposite comes back as a copy of the hunch, plus one real opposite (LOSR up)
+        def create(self, **kw):
+            msg = kw["messages"][0]["content"]
+            out = default_interp(msg)
+            if "I don't think" in msg:
+                out["candidates"] = [dict(c) for c in out["candidates"]]
+                out["candidates"][1]["direction"] = "bullish"  # LOSR
+                for c in out["candidates"][2:]:
+                    c["direction"] = "bearish"
+            else:
+                for c in out["candidates"]:
+                    c["direction"] = "bearish" if c["ticker"] in ("LOSR", "WINR") else c["direction"]
+            self.calls.append(kw)
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))],
+                                   usage=SimpleNamespace(input_tokens=10, output_tokens=10, cache_read_input_tokens=0,
+                                                         cache_creation_input_tokens=0), stop_reason="end_turn")
+
+    hunch = "Plumbing demand will cool"
+    beliefs = [f"{seeder.OPPOSITE}plumbing demand will cool", hunch]  # opposite listed first: order must not matter
+    r = seeder.run("live", n=2, beliefs=beliefs, source="seed_news", concurrency=2, max_usd=1, claude_client=Mirror())
+    assert r["ok"] == 2
+
+    def picks(text):
+        row = db.query_one("SELECT id FROM beliefs WHERE text = ?", (text,))
+        return {(p["ticker"], p["direction"]) for p in db.query("SELECT ticker, direction FROM picks WHERE belief_id = ?", (row["id"],))}
+    a, b = picks(hunch), picks(beliefs[0])
+    assert ("PIPE", "bullish") in a and ("PIPE", "bullish") not in b   # same bet on both sides: dropped
+    assert ("LOSR", "bearish") in a and ("LOSR", "bullish") in b       # a real opposite stays
+    assert not (a & b)
+
+    # nothing left on the opposite side: skipped, never stored
+    out = engine.process_belief("I don't think plumbing demand will rise", "seed", source="seed_news",
+                                claude_client=FakeClaude(),
+                                avoid={(t, "bullish") for t in ("PIPE", "LOSR", "WINR", "FLAT", "XLI", "NOPE")})
+    assert out["valid"] is False and out["error"] == "same_side_as_original"
+    assert not db.query_one("SELECT id FROM beliefs WHERE text = ?", ("I don't think plumbing demand will rise",))
+
+    # users who say they DON'T expect something get the opposite bet
+    assert "WON'T happen" in interpreter.SYSTEM_PROMPT and "bet FOR it" in interpreter.SYSTEM_PROMPT

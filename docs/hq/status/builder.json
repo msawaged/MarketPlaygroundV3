@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-15T23:05:00Z",
- "last_run": "Brain page family tree now fits a phone: all 11 generations and every living strategist show at 390px. Before, a phone saw only Gen 1-5 and the leaders were hidden off the right edge.",
+ "updated_at": "2026-11-16T01:57:00Z",
+ "last_run": "Fixed news learning: when the brain learns a headline and its opposite ('I don't think ...'), the opposite can no longer bet a stock the same way as the headline. Before, 385 of 939 pairs did (e.g. 'I don't think the retail recovery will stall' -> Target down), teaching the brain that both sides mean the same.",
  "working_on": "Nothing open.",
- "next": "After Monday's grading run (about 5:47 PM ET), check the spread bar in chat and on My calls and the strategist yardsticks on /brain; then the Close Call records after the first grades on Nov 19.",
+ "next": "Check tonight's news rounds on /brain 'Just learned': opposites should point the other way or be skipped. Then the spread bar after Monday's grading and Close Call records after Nov 19.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The brain learns each news headline and its opposite. 4 in 10 opposites were bet the same way as the headline (e.g. 'I don't think the retail recovery will stall' -> Target down). Now a stock can't be bet the same way on both sides, and users who type 'I don't think...' get the opposite bet.",
+   "at": "2026-11-16T01:57:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "On a phone the strategist family tree showed only the first 5 of 11 generations, so the current leaders were off screen. It now fits the whole tree in the card, newest on the right.",

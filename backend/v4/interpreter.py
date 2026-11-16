@@ -103,6 +103,7 @@ Return:
 - is_market_belief: false only if the text has no plausible market implication at all (greetings, nonsense). Then explain briefly in note and leave candidates empty.
 - summary: one sentence restating the belief as a market view.
 - direction: the overall stance on the core theme (bullish = the theme benefits, bearish = it suffers, neutral = range-bound / calm, volatile = a BIG move is coming but the direction is unclear, e.g. "this earnings report will be a shock either way", "the FDA decision will make or break them", "it's going to crash or moon").
+- A belief that says something WON'T happen ("I don't think X", "I doubt X", "X won't happen") is the user's bet on the opposite of X: direction and candidates follow what the user expects, never X itself. "I don't think the retail recovery will stall" is bullish retailers; a company X would hurt is a bet FOR it, a company X would help is a bet AGAINST it.
 - horizon_days: how long the belief needs to play out (use the user's wording; default 180 for open-ended trends, 30 for event-driven).
 - conviction: from the user's wording ("definitely", "might", "I think").
 - themes: 2-5 short lowercase tags that a different user with a similar idea would also produce (e.g. "plumbing", "housing", "water infrastructure"). Prefer common, reusable words over clever ones.

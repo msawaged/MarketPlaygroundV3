@@ -136,6 +136,9 @@ def _negatable(hunch: str) -> bool:
     return not (_COMPOUND.search(hunch) or _NEGATED.search(hunch))
 
 
+OPPOSITE = "I don't think "
+
+
 def news_beliefs(limit: int) -> list[str]:
     """Today's real headlines as hunches (from the Moving now feed), each paired with its opposite so the
     network sees both sides of real news. Only ones not seeded before."""
@@ -152,7 +155,7 @@ def news_beliefs(limit: int) -> list[str]:
         if not h or h == it.get("headline"):
             continue  # no AI rewrite: a raw headline isn't a belief
         context = " ".join([it.get("summary") or "", it.get("why") or ""] + [c.get("why") or "" for c in it.get("companies", [])])
-        sides = [h] + ([f"I don't think {_lower_first(h, context)}"] if _negatable(h) else [])
+        sides = [h] + ([f"{OPPOSITE}{_lower_first(h, context)}"] if _negatable(h) else [])
         for b in sides:
             if b.lower() not in used and b not in out:
                 out.append(b)
@@ -186,38 +189,57 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
     results = {"ok": 0, "skipped": 0, "errors": 0, "cost_usd": 0.0, "stopped_for_time": 0}
     max_days = int(365 * years)
 
-    def one(text: str) -> dict:
+    def one(text: str, avoid: Optional[set] = None) -> dict:
         if deadline is not None and time.time() >= deadline:
             return {"valid": False, "stopped_for_time": True}
         as_of = _random_past_weekday(100, max_days) if mode == "backfill" else None
+        kw = {"avoid": avoid} if avoid else {}
         return engine.process_belief(
             text, user_id="seed", risk_profile=random.choice(RISKS), as_of=as_of,
             source=source or ("seed_backfill" if mode == "backfill" else "seed_live"),
-            model=model, claude_client=claude_client,
+            model=model, claude_client=claude_client, **kw,
         )
 
-    with ThreadPoolExecutor(max_workers=max(1, concurrency)) as ex:
-        futures = []
-        for text in jobs:
-            with lock:
-                if spent >= max_usd:
-                    break
-            futures.append(ex.submit(one, text))
-        for f in as_completed(futures):
-            try:
-                r = f.result()
+    # A hunch's opposite ("I don't think <hunch>") runs after the hunch itself, and leaves out any stock the hunch
+    # already bet on in the same direction (see engine.process_belief avoid).
+    originals = {t.lower(): t for t in jobs}
+    pair_of = {t: originals[t[len(OPPOSITE):].lower()] for t in jobs
+               if t.startswith(OPPOSITE) and t[len(OPPOSITE):].lower() in originals} if beliefs else {}
+    taken: dict[str, set] = {}
+
+    def batch(texts: list[str]) -> None:
+        nonlocal spent
+        with ThreadPoolExecutor(max_workers=max(1, concurrency)) as ex:
+            futures = {}
+            for text in texts:
                 with lock:
-                    spent += float((r.get("usage") or {}).get("cost_usd", 0.0))
-                    if r.get("stopped_for_time"):
-                        results["stopped_for_time"] += 1
-                    else:
-                        results["ok" if r.get("valid") else "skipped"] += 1
-            except Exception as e:
-                results["errors"] += 1
-                print(f"[seeder] error: {e}")
-            if spent >= max_usd:
-                for other in futures:
-                    other.cancel()
+                    if spent >= max_usd:
+                        break
+                avoid = taken.get(pair_of[text]) if text in pair_of else None
+                futures[ex.submit(one, text, avoid)] = text
+            for f in as_completed(futures):
+                try:
+                    r = f.result()
+                    with lock:
+                        spent += float((r.get("usage") or {}).get("cost_usd", 0.0))
+                        if r.get("stopped_for_time"):
+                            results["stopped_for_time"] += 1
+                        else:
+                            results["ok" if r.get("valid") else "skipped"] += 1
+                            if r.get("error") == "same_side_as_original":
+                                results["same_side_skipped"] = results.get("same_side_skipped", 0) + 1
+                        taken[futures[f]] = {(str(p.get("ticker", "")).upper(), p.get("direction"))
+                                             for p in (r.get("picks") or [])}
+                except Exception as e:
+                    results["errors"] += 1
+                    print(f"[seeder] error: {e}")
+                if spent >= max_usd:
+                    for other in futures:
+                        other.cancel()
+
+    batch([t for t in jobs if t not in pair_of])
+    if pair_of:
+        batch([t for t in jobs if t in pair_of])
     results["cost_usd"] = round(spent, 4)
     if mode == "backfill":
         results["grading"] = grader.grade()
