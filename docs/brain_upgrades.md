@@ -590,3 +590,43 @@ is the forward test's `by_confidence` once these calls reach 30 days (~mid Decem
 which has look-ahead. On honest numbers the learned models beat the app clearly (gbm +1.36%, t_nw 2.87 vs app +0.53%,
 t_nw 0.99), but they can't pass against +1.49%, and the honest mixes fall short too. Switching the bar to the
 point-in-time app would let a model reach users, so it is a gate change and left to him.
+
+## 2026-11-16 night (weekly) — A ranker that passed the gate alone goes live alone, as tested
+
+**Last week's result first (2026-11-15, confidence badge).** Not measurable yet: Render builds have failed since
+2026-11-16 08:07 UTC (build-minute limit), so that change is not live. Instead the bigger news: this morning's refit
+(07:00 UTC) switched **ranker v2 on** for the first time, through the unchanged gate. Model: neural net risk-adjusted
+(`mlp_adj`), alone (not a mix): walk-forward on 2,703 calls, lift +0.96% (t 3.14, t_nw 3.01), risk-matched lift
+**+1.15% (t 3.91)**, beat 52.6% / risk-matched 55.0% vs the stored #1's 53.4% / 54.2%. It passed `_passes` with the
+risk check (raw beat within the 1-point slack).
+
+**Problem (real numbers).** The gate tested the model ordering the ideas **on its own**, but the engine used it at
+`WEIGHT` = 0.5: a half-and-half blend with the app's score that no test ever measured. The only blends we did measure
+(25% mixes, same test) keep well under half the edge: `mlp_adj` alone +1.15% risk-matched (t_nw 3.01) vs its 25% mix
++0.48% (t_nw 0.92); every 25% mix is +0.21–0.52%. Read-only SQL on today's real-time beliefs since the switch: in
+**17 of 62** (27%) the #1 users saw was not the tested model's #1 among the lead ideas. The confidence badge was also
+cut on the model's own spread while the blend chose the #1. (The 2026-11-09 entry already named this gap — "the gate
+compared the model alone ... something users never get" — and added tested mixes, but kept the alone path.)
+
+**Change (live = tested; no gate touched).** `research.WEIGHT` 0.5 → 1.0, so a candidate that passed alone is stored
+with weight 1.0, and `engine.process_belief` uses `research.WEIGHT` for any non-mix ranker (ignoring a stale stored
+weight) and the stored tested weight (`MIX_WEIGHT`, 25%) for a mix. Inside the lead group the #1 is now the model's
+#1, exactly what the walk-forward test scored; the badge and the #1 now come from the same score. `_passes`, `MIN_LIFT`,
+`MIN_T`, `MIN_T_ADJ`, the bar, the 90-day embargo, `live_check`, mixes, `_leads` and the champion blend (no champion
+exists) are unchanged. Memory: none.
+
+**Checks.** Backend tests: 186 passed. New `test_ranker_that_passed_alone_goes_live_alone` (fit_production stores
+weight 1.0 for a lone model) and `test_engine_orders_by_a_lone_ranker_exactly_as_tested` (model prefers the reverse
+of the app's order → shown #1 is the model's favourite lead idea, even with a stale stored weight 0.5; a mix still
+blends). Commit: see git log ("Ranker v2: a model that passed alone goes live alone").
+
+**What counts as a win.** Once builds deploy again and the next refit runs: `/v4/brain` ranker `weight` = 1.0, and on
+new real-time beliefs the shown #1 equals the model's lead #1 in every belief (re-run the 17-of-62 query: expect 0).
+Results: the live forward test's real-time #1 lift vs the belief's other ideas (7-day now, 30-day from ~mid December)
+should move toward the tested +1% and beat the pre-switch real-time #1. If the model's real-time #1 does clearly worse
+than the app's old #1 over 300+ graded calls, the safe step is to revert to the app ordering, not to re-blend.
+If the refit ever finds no candidate passing, nothing changes: the app's own ordering runs, as before.
+
+**Decision for Murad (2026-11-09 proposal): no longer needed for now.** A model alone has now cleared the unchanged
+gate against the stored #1 (look-ahead and all), so the question of moving the bar to the point-in-time app is moot
+while it keeps passing. Removed from the HQ status.

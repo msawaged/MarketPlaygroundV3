@@ -859,7 +859,11 @@ def run_background() -> None:
 RANKER_KEY = "ranker:v2"
 ZKEYS = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
 MIN_LIFT, MIN_T = 0.005, 1.5
-WEIGHT = 0.5
+# A model that passed the gate ALONE goes live alone: it orders the ideas inside the lead group exactly as in its
+# walk-forward test. It used to go live at 0.5, a half-and-half blend with the app's score that no test ever measured
+# (on 2026-11-16, the first day mlp_adj was active, the shown #1 was not the tested model's #1 in 17 of 62 real-time
+# beliefs; the measured 25% blends kept under half the model's edge). A mix candidate runs at MIX_WEIGHT, as tested.
+WEIGHT = 1.0
 # Murad's decision (2026-11-09, option B): also test each model the way it would go live, mixed into the app's own
 # score at MIX_WEIGHT, against the app alone; a mix must clear the same gate AND hold up on real-time calls.
 MIX_WEIGHT = float(os.getenv("MP_RANKER_MIX_WEIGHT", "0.25"))

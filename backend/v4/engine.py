@@ -305,8 +305,10 @@ def process_belief(
         rv2 = None
     if rv2:
         parts = nn.on_claude_scale(rv2, [v["final_score"] for v in valid])
+        rk = research.ranker() or {}
+        # live exactly as tested: a mix at its tested weight, a model that passed alone on its own (research.WEIGHT)
+        wt = float(rk.get("weight") or research.MIX_WEIGHT) if rk.get("mix") else research.WEIGHT
         for i, v in enumerate(valid):
-            wt = float((research.ranker() or {}).get("weight") or research.WEIGHT)  # a mix goes live at its tested weight
             v["final_score"] = (1 - wt) * v["final_score"] + wt * parts[i]
             v["rv2"] = float(rv2[i])
             records[i]["rv2"] = round(float(rv2[i]), 6)  # kept with the pick for the forward test (not a model input)

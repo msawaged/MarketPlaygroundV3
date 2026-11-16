@@ -1899,6 +1899,36 @@ def test_engine_uses_ranker_v2_scores(monkeypatch):
     assert r["valid"] and seen["n"] == 5
 
 
+def test_ranker_that_passed_alone_goes_live_alone(monkeypatch):
+    # a model that cleared the gate on its own must order the ideas exactly as in its walk-forward test; it used to go
+    # live as an untested 50/50 blend with the app's score (2026-11-16: shown #1 != the model's #1 in 17 of 62 beliefs)
+    from backend.v4 import research
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    rv = research.fit_production()
+    assert rv["active"] and not rv["mix"] and rv["weight"] == research.WEIGHT == 1.0
+
+
+def test_engine_orders_by_a_lone_ranker_exactly_as_tested(monkeypatch):
+    from backend.v4 import research
+    def run(rk):
+        monkeypatch.setattr(research, "ranker", lambda: rk)
+        # the model prefers exactly the reverse of the app's order
+        monkeypatch.setattr(research, "score_candidates",
+                            lambda nums, dirs: [float(i) for i in range(len(nums))] if rk else None)
+        r = engine.process_belief("plumbing demand is going to be high", "u1", "moderate", claude_client=FakeClaude())
+        rows = db.query("SELECT ticker, features FROM picks WHERE belief_id = ? ORDER BY final_rank", (r["belief_id"],))
+        lead = {p["ticker"] for p in r["picks"] if p["direction"] == r["picks"][0]["direction"]}
+        return [p["ticker"] for p in r["picks"]], {x["ticker"]: db.loads(x["features"], {}).get("rv2") for x in rows
+                                                   if x["ticker"] in lead}
+    base, _ = run(None)
+    alone, rv2 = run({"active": True, "mix": False, "weight": 0.5})      # a stale stored weight is ignored
+    assert alone[0] != base[0] and all(v is not None for v in rv2.values())
+    # the shown #1 is the model's favourite idea in the belief's own direction, whatever the app thought
+    assert len(rv2) >= 2 and rv2[alone[0]] == max(rv2.values())
+    mixed, _ = run({"active": True, "mix": True, "weight": research.MIX_WEIGHT})
+    assert sorted(mixed) == sorted(base)                                 # a mix still blends at its tested weight
+
+
 def test_extra_backfill_grant_is_capped(monkeypatch):
     from backend.v4 import seeder
     monkeypatch.setenv("MP_WARMUP_GRADED", "0")  # warm-up already done

@@ -1,10 +1,10 @@
 {
  "key": "brain",
- "updated_at": "2026-11-15T20:57:36Z",
- "last_run": "Weekly upgrade: the 'High / Medium / Low confidence' badge on each #1 pick is now based on honest past results (no hindsight) and split fairly. Before, 56% of live picks said 'High confidence', and the numbers behind it had hindsight in them. Last week's change also worked: all three learning models got better on calls they never saw.",
- "working_on": "Brain accuracy: making what users see match what was actually tested.",
- "next": "Check that new picks now split about a third each into high, medium and low, and whether high-confidence calls really did better. Mid December: first live results by confidence.",
- "needs_from_murad": ["One decision when you have a minute: the learning models now beat the app's own pick on fair (no-hindsight) tests, but the safety check still compares them with an old score that had hindsight in it, so they can never switch on. Should the check use the fair score instead? Yes or no is enough; details in docs/brain_upgrades.md."],
+ "updated_at": "2026-11-16T21:45:00Z",
+ "last_run": "Weekly upgrade. Good news: this morning the smarter pick-ranker (a neural network) passed all its safety checks on past calls it never saw and switched on for the first time. But the app was using it half-and-half with the old ranking, a mix nobody had tested, so in about 1 of 4 new beliefs the #1 pick shown was not the one the network actually chose. Fixed: when the network passes on its own, it now picks the #1 on its own, exactly as it was tested. This goes live once Render builds work again.",
+ "working_on": "Making sure what users see is exactly what passed the tests.",
+ "next": "After the next deploy: check that every new #1 pick is the network's own choice, then watch whether real-time #1 picks do better than before (first 30-day results mid December).",
+ "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
 }

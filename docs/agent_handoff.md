@@ -928,3 +928,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_ticker_must_still_be_the_company_the_idea_names.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/names.py, engine.py, seeder.py, tests/test_v4.py, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-16 night (weekly brain upgrade): a ranker that passed alone goes live alone (weight 1.0, as tested)
+- No HQ messages from Murad; no "proposed" brain items in feature_ideas.md.
+- Ranker v2 switched on this morning (refit 07:00 UTC, `mlp_adj` alone, through the unchanged gate), but the engine
+  blended it 50/50 with the app score, a setup never tested (27% of today's real-time #1s were not the model's #1).
+- `research.WEIGHT` 0.5 -> 1.0; `engine.process_belief`: non-mix ranker uses `research.WEIGHT`, mix uses its stored
+  tested weight. No gate, embargo, live_check, grading or real-money change. Don't put a hand-picked blend weight back
+  without testing that exact blend in research.run.
+- Tests: test_ranker_that_passed_alone_goes_live_alone, test_engine_orders_by_a_lone_ranker_exactly_as_tested. 186 passed.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/research.py, engine.py, tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
