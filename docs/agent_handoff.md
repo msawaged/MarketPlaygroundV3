@@ -755,3 +755,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - `payoff.shareCount`: share counts show 2 decimals under 100 shares (card said "17 shares" next to "about 17.24").
 - Files: frontend/src/components/BrainPage.jsx, frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 (Builder routine): My beliefs shows where your graded call landed among calls like it
+- No HQ messages from Murad; no "proposed" items left. Built the unbuilt half of "How wide it can go" (feature_ideas).
+- `engine.my_beliefs` items gain `graded`: the call's newest graded checkpoint `{checkpoint_days, vs_spy, right, on}`,
+  from `engine._graded_checks` (one grouped query, same call-level number as `baserate._spreads`: theme vs the S&P in
+  the direction called; its sign is belief_right, checked on the live DB). 31 user calls have a 7-day grade today;
+  none has reached its own checkpoint yet.
+- My beliefs card: "Graded at the 7-day check (Nov 5): your idea finished 9 pts the right way vs the S&P", the spread
+  bar for that same direction x check with a "You" mark, where it sits (worst 1 in 10 / blue band / best 1 in 10) and
+  the lesson that one call says little about skill; "An early read" when the check is before the call's own one.
+  `HowSure.jsx` gains `SpreadBar` (shared with `SpreadLine`), `spotWord`, `YourSpot`.
+- Information only: no gate, ranking, grading or research change. Checked at 375/390 with mocked data: no overflow.
+- Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, frontend/src/components/chat/HowSure.jsx,
+  frontend/src/components/MyCallsPage.jsx, docs/feature_ideas.md, docs/hq/status/builder.json.

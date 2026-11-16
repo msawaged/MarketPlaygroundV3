@@ -4132,3 +4132,29 @@ def test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch(monkeypatch)
 
     # users who say they DON'T expect something get the opposite bet
     assert "WON'T happen" in interpreter.SYSTEM_PROMPT and "bet FOR it" in interpreter.SYSTEM_PROMPT
+
+
+def test_my_beliefs_marks_the_newest_graded_check_like_the_base_rate():
+    # "Where your call landed": My beliefs carries each call's newest graded checkpoint, measured exactly like the
+    # base-rate spread (theme vs the S&P in the direction called; its sign is belief_right).
+    from backend.v4 import baserate
+    r = engine.process_belief("plumbing demand is going to be high", "u-spot", "moderate", claude_client=FakeClaude())
+    bid = r["belief_id"]
+    assert engine.my_beliefs("u-spot")["beliefs"][0]["graded"] is None     # nothing graded yet
+    d = db.query_one("SELECT direction FROM beliefs WHERE id = ?", (bid,))["direction"]
+    pids = [x["id"] for x in db.query("SELECT id FROM picks WHERE belief_id = ? AND direction = ?", (bid, d))]
+    assert pids
+    for pid in pids:
+        for cp, bench, spy, right, on in ((7, 0.05, 0.02, 1, "2026-01-08"), (30, 0.01, 0.04, 0, "2026-01-31")):
+            db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at,
+                          bench_ret, belief_right) VALUES (?, ?, ?, 1, 0.1, ?, 0.1, ?, ?, ?)""", (pid, cp, on, spy, on, bench, right))
+    g = engine.my_beliefs("u-spot")["beliefs"][0]["graded"]
+    assert g["checkpoint_days"] == 30 and g["on"] == "2026-01-31" and g["right"] is False   # the newest check wins
+    want = baserate._call_excess(d, 0.01, 0.04)
+    assert abs(g["vs_spy"] - round(want, 4)) < 1e-9 and (g["vs_spy"] > 0) == g["right"]
+    # the same number the base-rate spread sorts for this call at that check
+    assert round(want, 4) in [round(x, 4) for x in baserate._spreads()[(d, 30)]]
+    # ungraded rows (belief_right still empty) are not a result
+    db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at)
+                  VALUES (?, 90, '2026-04-01', 1, 0.1, 0.0, 0.1, '2026-04-01')""", (pids[0],))
+    assert engine.my_beliefs("u-spot")["beliefs"][0]["graded"]["checkpoint_days"] == 30

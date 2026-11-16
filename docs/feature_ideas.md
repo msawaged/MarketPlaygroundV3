@@ -287,7 +287,8 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 - **Status:** built 2026-11-15 night, commit "How wide it can go..." (Builder): call-level, not pick-level, so it is the
   same calls the base rate counts (each call's theme vs the S&P in the direction called; its sign is belief_right, 0
   mismatches on the live DB). Live 90-day bullish: worst 1 in 10 -12 pts, middle -2, best 1 in 10 +12. My beliefs
-  marker not built.
+  marker built 2026-11-16, commit "My beliefs: where your graded call landed..." (Builder): each call's newest graded
+  check (`engine._graded_checks`, same number as `baserate._spreads`) marked "You" on the spread bar for that check.
 - **Area:** app (learning / honest framing); reuses the brain's own graded record. Extends "The outside view"
   (2026-11-14 evening, built in `backend/v4/baserate.py`).
 - **Problem:** the outside-view line tells a user how *often* calls like theirs beat the S&P, but not how *far* they

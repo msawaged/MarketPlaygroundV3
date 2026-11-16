@@ -734,6 +734,7 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
     def _signed(direction: str, x: float) -> float:
         return -x if direction == "bearish" else x
 
+    graded = _graded_checks(ids)
     out = []
     calls_tracked = calls_right = ahead = tracked = 0
     for r in rows:
@@ -787,11 +788,39 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
                     "summary": interp.get("summary"), "direction": r["direction"],
                     "horizon_days": r["horizon_days"], "picks": items, "call": call,
                     "wrong_if": _wrong_if_view(r, [p for p in by_belief.get(r["id"], []) if p["shown"]]),
-                    "sure": _sure_view(r)})
+                    "sure": _sure_view(r), "graded": graded.get(r["id"])})
     summary = None
     if tracked or calls_tracked:
         summary = {"tracked": tracked, "ahead": ahead, "calls": calls_tracked, "calls_playing_out": calls_right}
     return {"beliefs": out, "summary": summary, "as_of": today_s, "calibration": calibration.for_user(user_id)}
+
+
+def _graded_checks(belief_ids: list) -> dict:
+    """Each call's newest graded checkpoint, measured the way the base rate and its spread are (baserate._spreads:
+    one number per call, the theme vs the S&P in the direction called, whose sign is belief_right). So My beliefs can
+    mark where the user's own result fell among calls like it at that same check. One small grouped query."""
+    if not belief_ids:
+        return {}
+    from . import baserate   # lazy, like the other optional readers here
+    ph = ",".join("?" for _ in belief_ids)
+    rows = db.query(
+        f"""SELECT p.belief_id AS belief_id, b.direction AS direction, o.checkpoint_days AS cp,
+                   MAX(o.bench_ret) AS br, MAX(o.spy_ret) AS sr, MAX(o.belief_right) AS r, MAX(o.eval_date) AS on_date
+            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+            WHERE p.belief_id IN ({ph}) AND o.belief_right IS NOT NULL AND p.direction = b.direction
+            GROUP BY p.belief_id, o.checkpoint_days, b.direction""",
+        belief_ids)
+    out: dict = {}
+    for r in rows:
+        x = baserate._call_excess(r["direction"], r["br"], r["sr"])
+        if x is None:
+            continue
+        cp = int(r["cp"])
+        if r["belief_id"] in out and out[r["belief_id"]]["checkpoint_days"] > cp:
+            continue
+        out[r["belief_id"]] = {"checkpoint_days": cp, "vs_spy": round(x, 4), "right": bool(r["r"]),
+                               "on": str(r["on_date"] or "")[:10] or None}
+    return out
 
 
 # ---------------- "How sure are you?" (the user's own probability, scored later) ----------------

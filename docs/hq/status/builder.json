@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T01:57:00Z",
- "last_run": "Fixed news learning: when the brain learns a headline and its opposite ('I don't think ...'), the opposite can no longer bet a stock the same way as the headline. Before, 385 of 939 pairs did (e.g. 'I don't think the retail recovery will stall' -> Target down), teaching the brain that both sides mean the same.",
+ "updated_at": "2026-11-16T05:00:00Z",
+ "last_run": "My beliefs now shows where each graded call landed among calls like it: 'Graded at the 7-day check: your idea finished 9 pts the right way vs the S&P', marked 'You' on the spread bar, with an honest line that one call says little about skill.",
  "working_on": "Nothing open.",
- "next": "Check tonight's news rounds on /brain 'Just learned': opposites should point the other way or be skipped. Then the spread bar after Monday's grading and Close Call records after Nov 19.",
+ "next": "Watch for the first user calls reaching their own checkpoint (30-day ones from about Nov 28) so the mark shows the real judged result, not just an early read. Then Close Call records after Nov 19.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "A user who saw '+9 pts' on a call had no way to tell skill from luck. My beliefs now marks each graded call on the spread of calls like it (e.g. 'in the best 1 in 10; about 1 in 10 calls do this well, so one call still says little about skill').",
+   "at": "2026-11-16T05:00:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The brain learns each news headline and its opposite. 4 in 10 opposites were bet the same way as the headline (e.g. 'I don't think the retail recovery will stall' -> Target down). Now a stock can't be bet the same way on both sides, and users who type 'I don't think...' get the opposite bet.",

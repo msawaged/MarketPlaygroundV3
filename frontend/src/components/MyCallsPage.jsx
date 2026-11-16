@@ -9,7 +9,7 @@ import { getMyBeliefs, answerWrongIf } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { shareCard } from '../lib/shareCard';
 import WrongIf from './chat/WrongIf';
-import HowSure from './chat/HowSure';
+import HowSure, { YourSpot, checkpointFor } from './chat/HowSure';
 
 function ago(iso) {
   const d = (Date.now() - new Date(iso).getTime()) / 86400000;
@@ -311,6 +311,7 @@ export default function MyCallsPage() {
                   })}
                 </div>
               )}
+              {b.graded && <YourSpot graded={b.graded} direction={b.direction} ownCp={b.sure?.checkpoint_days || checkpointFor(b.horizon_days)} />}
               {b.sure && (b.sure.can_set || b.sure.prob != null) && (
                 <HowSure beliefId={b.belief_id} direction={b.direction} checkpointDays={b.sure.checkpoint_days} initial={b.sure.prob} canSet={b.sure.can_set} onSaved={reload} />
               )}
