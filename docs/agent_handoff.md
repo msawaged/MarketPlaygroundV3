@@ -910,3 +910,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
   rerun with it until builds resume. Don't re-push to kick it.
 - Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md,
   docs/hq/status/scout.json.
+
+## 2026-11-16 night (Builder routine): ticker identity check (a ticker must still be the company the idea names)
+- No HQ messages from Murad. Built the CTO scout's "proposed" ticker identity check (first part).
+- Problem: the engine trusted the ticker alone. Of 1,439 live (ticker, Claude's name, Alpaca's name) pairs from the
+  interpretation cache, ~25 were different companies: PARA = Parabolic Technologies (not Paramount), PMI = Picard
+  Medical (not Philip Morris), BYD = Boyd Gaming, CAL = Caleres (not Cal-Maine), CATL = a SPAC, INTM = a muni ETF, etc.
+  Users saw and were graded on the wrong company.
+- New `backend/v4/names.py` `same_company()`: word overlap after dropping legal/listing/fund-issuer words, word
+  prefixes, initials (ADP, UEC, TSMC, GE, Wabtec), short rename list (SLB, MARA, MSTR, IREN, GOOGL, QQQ...). Empty name
+  passes. On all 1,439 pairs: drops the misreads, no false drops found (misses: Yum China -> YUM, Barrick -> GOLD).
+- `engine.process_belief`: mismatched candidates skipped (like an untradable ticker), listed in `name_mismatch` on the
+  result and printed; backfill candidates whose call-date price is >200x off today's are skipped too
+  (`_plausible_history`, PARA's $215k Dec 2023 rows); each pick's features keep `claude_name`. seeder counts
+  `name_mismatch`. Gates, grading, ranking unchanged. Old PARA rows untouched: auditing/excluding them from research
+  is a separate deliberate step (brain_upgrades.md).
+- Test: test_ticker_must_still_be_the_company_the_idea_names.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/names.py, engine.py, seeder.py, tests/test_v4.py, docs/feature_ideas.md, docs/hq/status/builder.json.

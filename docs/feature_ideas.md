@@ -330,7 +330,12 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-16 — Ticker identity check: make sure the ticker still is the company the idea names
 
-- **Status:** proposed
+- **Status:** built 2026-11-16 night, commit "Ticker identity check..." (Builder), first part only: new ideas whose
+  ticker isn't the company Claude named are dropped (`names.same_company`, checked on 1,439 live pairs: drops PARA,
+  PMI/Philip Morris, BYD/Boyd Gaming, CAL, CATL, INTM, NOVZ and ~20 more misreads, keeps renames and initials);
+  backfill calls skip tickers whose price on the call date is 200x off today's; `features.claude_name` stored; seeder
+  counts `name_mismatch`. Enforced, not log-only, because the 1,439-pair check showed no false drops. Not done (Murad's
+  call / brain upgrade): the audit of old picks and leaving flagged rows out of research.
 - **Area:** brain (data quality / honest grading); small app effect (a wrong company is never shown).
 - **Problem:** a ticker is not a company. Tickers get reused after mergers and delistings, and the app trusts the
   ticker alone. Live DB, 2026-11-16: **PARA** has 30 picks, every one stored with the name **"Parabolic

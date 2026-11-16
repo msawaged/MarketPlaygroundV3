@@ -235,6 +235,8 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
                             results["stopped_for_time"] += 1
                         else:
                             results["ok" if r.get("valid") else "skipped"] += 1
+                            if r.get("name_mismatch"):
+                                results["name_mismatch"] = results.get("name_mismatch", 0) + len(r["name_mismatch"])
                             if r.get("error") == "same_side_as_original":
                                 results["same_side_skipped"] = results.get("same_side_skipped", 0) + 1
                         taken[futures[f]] = {(str(p.get("ticker", "")).upper(), p.get("direction"))

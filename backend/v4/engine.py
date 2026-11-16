@@ -22,7 +22,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from . import calibration, db, interpreter, learning, lineages, market, nn, research, strategy
+from . import calibration, db, interpreter, learning, lineages, market, names, nn, research, strategy
 
 SHOW_TOP = 3
 
@@ -97,6 +97,23 @@ def _store_interpretation(norm: str, risk: str, interp: dict, usage: dict) -> No
     db.execute("DELETE FROM kv_cache WHERE k = ?", (key,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                (key, db.dumps({"interp": interp, "usage": usage}), now))
+
+
+# A practice call dated in the past is only fair if the ticker's history is that company's. A reused ticker pastes a
+# new issuer's (reverse-split-adjusted) history over the old dates, e.g. PARA at $215,128 in Dec 2023 vs ~$3 today.
+IMPLAUSIBLE_RATIO = 200.0
+
+
+def _plausible_history(ticker: str, entry_price: float) -> bool:
+    try:
+        _, closes = market.daily_closes(ticker)
+    except Exception:
+        return True
+    last = float(closes[-1]) if closes else 0.0
+    if last <= 0 or not entry_price or entry_price <= 0:
+        return True
+    r = float(entry_price) / last
+    return 1.0 / IMPLAUSIBLE_RATIO <= r <= IMPLAUSIBLE_RATIO
 
 
 def _levels(ticker: str):
@@ -235,16 +252,26 @@ def process_belief(
             return {**base, "strategy": None, "picks": [], "valid": False, "error": "same_side_as_original",
                     "reason": "Every idea for this opposite view bet the same way as the original view, so it was skipped."}
     valid: list[dict] = []
+    name_mismatch: list[dict] = []  # ticker isn't the company the idea names (reused ticker or a misread)
     for rank, c in enumerate(cands):
         try:
             info = market.asset_info(c["ticker"])
             if not info:
                 continue
+            if not names.same_company(c.get("name", ""), info.get("name", ""), c["ticker"]):
+                name_mismatch.append({"ticker": c["ticker"], "meant": c.get("name", ""), "is": info.get("name", "")})
+                continue
             entry_date, price = market.price_on(c["ticker"], as_of if backfill else None)
+            if backfill and not _plausible_history(c["ticker"], price):
+                name_mismatch.append({"ticker": c["ticker"], "meant": c.get("name", ""), "is": "implausible price history"})
+                continue
             feats = market.features(c["ticker"], as_of)
         except market.MarketDataError:
             continue
         valid.append({**c, "rank": rank, "info": info, "entry_date": entry_date, "price": price, "mkt": feats})
+    if name_mismatch:
+        base["name_mismatch"] = name_mismatch
+        print(f"[engine] name_mismatch: {name_mismatch}")
     if not valid:
         return {**base, "strategy": None, "picks": [], "valid": False, "error": "no_tradable_tickers",
                 "reason": "None of the suggested tickers could be verified as tradable right now. Try rephrasing the belief."}
@@ -258,6 +285,8 @@ def process_belief(
         )
         for v in valid
     ]
+    for i, v in enumerate(valid):
+        records[i]["claude_name"] = str(v.get("name") or "")[:120]  # the company meant, kept next to Alpaca's name
     preds, w, model_id = nn.predict(records)
     stats = {s["ticker"]: s for s in learning.ticker_stats(interp["themes"], [v["ticker"] for v in valid])}
     claude_parts = [v["score"] + learning.ticker_adjustment(stats.get(v["ticker"]), v.get("direction", "bullish")) for v in valid]

@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T17:02:37Z",
- "last_run": "News opposites that bet the same way as their headline (just on a different stock) are no longer learned, so the brain doesn't learn both sides of a story as one. Checked on 60 real pairs: it catches the misreads (crypto -> QQQ down, 'young renters' -> retailers up on both sides) and keeps the real winners-vs-losers opposites.",
- "working_on": "Waiting for Render builds to come back (out of build minutes; Inbox & health watch has the ask). Today's Builder commits are pushed and go live together.",
- "next": "Once builds work: check Close Call odds and YES cost on live quotes, the regime card, and the seeder's same_side_skipped count in the next news runs.",
+ "updated_at": "2026-11-16T20:00:00Z",
+ "last_run": "Ideas whose ticker isn't the company they name are now dropped. Out of 1,439 real ticker/name pairs, about 25 were the wrong company (Paramount -> PARA is now Parabolic Technologies, Philip Morris -> PMI is Picard Medical, BYD -> Boyd Gaming). Renames like Schlumberger/SLB and short names like ADP still pass.",
+ "working_on": "Waiting for Render builds to come back (out of build minutes; Inbox & health watch has the ask). Today's Builder commits go live together.",
+ "next": "Once live: read the seeder's name_mismatch counts for a few days. Then (Murad or brain upgrade) audit old picks on reused tickers like PARA and decide whether to leave them out of research.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "A finance professor would catch a 'Paramount' media call graded on a $3 penny stock (PARA's ticker now belongs to Parabolic Technologies), and it scored a fake 70-point win. The app now checks that each ticker is the company the idea names and drops it if not: about 25 of 1,439 real pairs were the wrong company (Philip Morris -> Picard Medical, BYD -> Boyd Gaming).",
+   "at": "2026-11-16T20:00:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The brain learns each news headline and its opposite. Some opposites still bet the same way as the headline on a different stock (the opposite of 'Bitcoin's selloff may signal a longer crypto downturn' was learned as QQQ down). Now an opposite whose bets all go the headline's way is dropped; opposites with real winners and losers (publishers down, META up) are kept.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A professor would ask 'compared to what?' about the strategists' +2.6 pts. The board now shows the app's own pick (+2.6) and a random idea (+0.3) on the same calls, so nobody mistakes a tie for a win.",
    "at": "2026-11-15T22:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A finance professor would ask how 114k picks got graded in two weeks. The Brain page now says it plainly: 5,474 real-time grades, the rest practice calls graded from history.",
-   "at": "2026-11-15T21:00:00Z"
   }
  ]
 }

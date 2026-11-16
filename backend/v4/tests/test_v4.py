@@ -4406,3 +4406,47 @@ def test_price_delay_rule_and_enrich_backfill(monkeypatch):
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-dlx'")["features"])["num"]
     assert abs(num["delay"] - market.delay(dates, slow, dates, spy, 299)) < 1e-12 and num["delay"] > 0.5
     assert num["ltr"] == 0.4 and num["beta"] == 1.2
+
+
+def test_ticker_must_still_be_the_company_the_idea_names():
+    # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
+    # abbreviations still count as the same company.
+    from backend.v4.names import same_company as same
+    assert not same("Paramount Global", "Parabolic Technologies, Inc. Class A Common Stock", "PARA")
+    assert not same("Philip Morris International", "Picard Medical, Inc.", "PMI")
+    assert not same("BYD", "Boyd Gaming Corporation", "BYD")
+    assert not same("Cal-Maine Foods", "Caleres Inc", "CAL")
+    assert not same("Intermex", "Invesco Intermediate Municipal ETF", "INTM")
+    assert not same("Novozymes", "TrueShares Structured Outcome (November) ETF", "NOVZ")
+    assert not same("iShares MSCI Japan", "iShares Gold Trust", "IAU")  # fund issuer alone isn't a match
+    for t, meant, is_ in [("AAPL", "Apple Inc.", "Apple Inc. Common Stock"),
+                          ("ADP", "ADP", "Automatic Data Processing, Inc. Common Stock"),
+                          ("UEC", "UEC Corporation", "Uranium Energy Corp."),
+                          ("ON", "onsemi", "ON Semiconductor Corporation Common Stock"),
+                          ("TSM", "TSMC", "Taiwan Semiconductor Manufacturing Company Ltd."),
+                          ("GE", "General Electric", "GE Aerospace"),
+                          ("WAB", "Westinghouse Air Brake Technologies", "Wabtec Inc."),
+                          ("MARA", "Marathon Digital", "MARA Holdings, Inc. Common Stock"),
+                          ("MSTR", "MicroStrategy", "Strategy Inc Common Stock Class A"),
+                          ("SLB", "Schlumberger", "SLB Limited"),
+                          ("GOOGL", "Google", "Alphabet Inc. Class A Common Stock"),
+                          ("XLF", "Financials Select Sector SPDR", "State Street Financial Select Sector SPDR ETF"),
+                          ("SPY", "SPDR S&P 500 ETF", "State Street SPDR S&P 500 ETF Trust"),
+                          ("QQQ", "Nasdaq 100 ETF", "Invesco QQQ Trust, Series 1"),
+                          ("T", "AT&T", "AT&T Inc."), ("MMM", "3M", "3M Company"), ("PCG", "PG&E", "PG&E Corporation"),
+                          ("X", "", "Anything Inc.")]:
+        assert same(meant, is_, t), (t, meant, is_)
+
+    # In the engine: the mismatched idea is dropped (and reported), Claude's name is kept with each pick.
+    payload = default_interp("plumbing")
+    payload["candidates"][0]["name"] = "Pipe Supply"
+    payload["candidates"][1]["name"] = "Paramount Global"  # LOSR is "Loser Corp"
+    r = engine.process_belief("plumbing demand is going to be high", "u-name", "moderate", claude_client=FakeClaude(payload))
+    assert r["valid"] and "LOSR" not in {p["ticker"] for p in r["picks"]}
+    assert r["name_mismatch"] == [{"ticker": "LOSR", "meant": "Paramount Global", "is": "Loser Corp"}]
+    row = db.query_one("SELECT features FROM picks WHERE belief_id = ? AND ticker = 'PIPE'", (r["belief_id"],))
+    assert json.loads(row["features"])["claude_name"] == "Pipe Supply"
+
+    # Backfill: a history that's the new issuer's pasted over old dates (200x off today's price) is skipped.
+    assert engine._plausible_history("PIPE", market.daily_closes("PIPE")[1][-1] * 3)
+    assert not engine._plausible_history("PIPE", market.daily_closes("PIPE")[1][-1] * 500)
