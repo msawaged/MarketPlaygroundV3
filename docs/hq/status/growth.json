@@ -1,10 +1,13 @@
 {
  "key": "growth",
- "updated_at": "2026-11-09T01:24:56Z",
- "last_run": "Sent last week's growth report.",
- "working_on": "Weekly numbers.",
- "next": "Sunday 6:23 pm report.",
- "needs_from_murad": [],
+ "updated_at": "2026-11-16T01:35:00Z",
+ "last_run": "Weekly report: 0 new accounts this week (2 last week), and the only beliefs from people were yours. Reels are not turning into sign-ups yet.",
+ "working_on": "Finding out which reel platform, if any, brings people in.",
+ "next": "Next Sunday report: count sign-ups and first beliefs again, and check whether a reel link tag shows any visits.",
+ "needs_from_murad": [
+  "Render build minutes passed 70% of the free 500 for November on Nov 14. If they run out, new fixes stop going live until Dec 1. Ask the agents to bundle changes, or decide if you'd pay to raise the limit.",
+  "Put one link in your TikTok and Instagram bio and end every reel with one ask: 'Make your call, link in bio'."
+ ],
  "read_up_to": 0,
  "replies": []
 }
