@@ -745,3 +745,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   ticker+direction. No gate, ranking or grading change.
 - Files: backend/v4/engine.py, seeder.py, interpreter.py, tests/test_v4.py
   (test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch), docs/hq/status/builder.json.
+
+## 2026-11-16 morning (daily polish walk): honest retrain list; share counts match the amount
+- No HQ messages from Murad. Frontend only.
+- /brain versions list: retrains on unchanged data (same n_train/n_test as the one before) now say "same data as the
+  one before", with one line explaining no new 90-day results arrive until real-time calls reach 90 days (date from
+  `forward.since` + 91). Activity feed: "Retrained the brain". When n_train grows again the old text comes back by
+  itself. No backend, gate or training change.
+- `payoff.shareCount`: share counts show 2 decimals under 100 shares (card said "17 shares" next to "about 17.24").
+- Files: frontend/src/components/BrainPage.jsx, frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs,
+  docs/polish_log.md, docs/hq/status/polish.json.

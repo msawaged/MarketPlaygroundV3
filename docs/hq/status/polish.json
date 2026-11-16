@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-16T00:55:00Z",
- "last_run": "Option cards showed a put's 'Max gain' a little low ($3,661 instead of $3,699 on a $39 put bought for $2.01), right next to a breakeven that implied the right number. Fixed the math so max gain, max loss and breakevens are exact for every strategy.",
+ "updated_at": "2026-11-16T03:55:00Z",
+ "last_run": "The Brain page listed nine 'new brains' that were really the same brain re-fit on the same 11,408 graded calls (no new 90-day results until Jan 27). It now says so plainly. Also, a $1,000 share card said '17 shares' next to 'about 17.24 shares'; both now say 17.24.",
  "working_on": "Walking the app like a new user, checking every number an expert would check.",
- "next": "Monday: see the new 'How wide it can go' range in chat once grading refreshes; re-check Close Call odds with live quotes after the open; check the news feed.",
+ "next": "Monday after the open: Close Call odds with live quotes, the 'How wide it can go' line in chat, the news feed.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

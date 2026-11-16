@@ -28,6 +28,11 @@ export function bsPrice(spot, strike, years, vol, kind) {
 
 const DAY_MS = 86400000;
 
+// Share counts: two decimals under 100 shares (17.24, not 17, so it matches the dollar amount), no trailing zeros.
+export function shareCount(n) {
+  return n < 100 ? String(Number(n.toFixed(2))) : n.toFixed(0);
+}
+
 function daysBetween(a, b) {
   return Math.max(0, Math.round((b - a) / DAY_MS));
 }
@@ -91,7 +96,7 @@ export function sizePosition(model, amount) {
   if (!model || model.kind === 'avoid' || amount <= 0) return { units: 0, cost: 0, note: null };
   if (model.kind === 'stock') {
     const units = amount / model.entry;
-    return { units, cost: amount, note: `${units.toFixed(units < 10 ? 2 : 0)} shares` };
+    return { units, cost: amount, note: `${shareCount(units)} shares` };
   }
   const per = model.capitalPerUnit;
   const units = Math.max(1, Math.floor(amount / per));
@@ -188,7 +193,7 @@ export function plainEnglish(model, sum, units, ticker, amount) {
     const ten = Math.round(amount * 0.1);
     const up = model.direction > 0;
     return [
-      { tone: 'neutral', text: `You ${up ? 'buy' : 'short'} about ${$(amount)} of ${ticker} (${(amount / model.entry).toFixed(amount / model.entry < 10 ? 2 : 0)} shares).` },
+      { tone: 'neutral', text: `You ${up ? 'buy' : 'short'} about ${$(amount)} of ${ticker} (${shareCount(amount / model.entry)} shares).` },
       { tone: 'good', text: `Every 10% ${ticker} ${up ? 'rises' : 'falls'}, you make about ${$(ten)}.` },
       { tone: 'bad', text: `Every 10% it ${up ? 'falls' : 'rises'}, you lose about ${$(ten)}. You can sell any time.` },
     ];

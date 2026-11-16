@@ -142,3 +142,9 @@ console.log('payoff tests passed');
   near(f.maxProfit, (5.5 - 1.1) * 100, 0.01); near(f.maxLoss, -110, 0.01);
   console.log('exact extremes ok');
 }
+
+// share counts match the dollar amount (no '17 shares' beside 'about 17.24 shares')
+{
+  const { shareCount } = await import('./payoff.js');
+  if (shareCount(1000 / 58) !== '17.24' || shareCount(10) !== '10' || shareCount(250.4) !== '250') throw new Error('shareCount');
+}

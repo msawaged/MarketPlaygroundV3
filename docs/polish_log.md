@@ -672,3 +672,28 @@ for both `summarize` and `capitalPerUnit`. Test in payoff.test.mjs (long put $3,
 Re-walked: "Max gain $3,699", "Best case +$14,796".
 
 Checks: npm test passes, vite build passes, backend tests 172 passed.
+
+## 2026-11-16 (morning run, ~03:30 UTC = Sun 10:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Signed-in screens locally (offline server, throwaway SQLite): "Airlines will have a strong holiday travel
+season", $1,000, 3 months, Shares. Close Call can't be walked offline (no option chains).
+
+Found:
+- /brain "It grades itself, honestly": every row read "Trained a new brain ... trained on 11,408, tested on 3,299",
+  nine days running (/v4/brain versions since Nov 4; identical lift 0.0058 t 1.21 since Nov 9). No 90-day outcome has
+  been graded since Nov 2 (outcomes, checkpoint_days=90), so these are the same brain re-fit on the same data, shown
+  as a stream of new brains. An expert reads that as theatre.
+- DAL share card: "Fits your $1,000: about 17.24 shares", then "You buy about $1,000 of DAL (17 shares)" and "17
+  shares" under the amount (17 x $58 = $986, not $1,000).
+
+Changed (frontend only):
+- BrainPage.jsx: when the newest retrains used the same counts, a line says "The last 9 retrains used the same 11,408
+  graded calls. This brain learns from 90-day results, and no new ones have come in (the first real-time calls reach
+  90 days on Jan 27). So read these as the same brain re-checked, not new ones."; each such row reads "same data as
+  the one before"; activity feed says "Retrained the brain" instead of "Trained a new brain".
+- payoff.js `shareCount`: two decimals under 100 shares, no trailing zeros (17.24, 10); used by the sizing note and
+  the plain-English line. Test in payoff.test.mjs.
+
+Checks: npm test passes, vite build passes, backend tests 173 passed.

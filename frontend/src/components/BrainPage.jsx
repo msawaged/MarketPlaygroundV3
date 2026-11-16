@@ -188,7 +188,7 @@ function eventText(e) {
   if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from the news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
-  if (e.kind === 'trained') return { title: 'Trained a new brain', sub: (STATUS[e.status] || STATUS.retired).label };
+  if (e.kind === 'trained') return { title: 'Retrained the brain', sub: (STATUS[e.status] || STATUS.retired).label };
   return { title: '', sub: '' };
 }
 
@@ -618,15 +618,30 @@ export default function BrainPage({ viewOnly = false }) {
           {versions.length > 0 && (() => {
             const kept = versions.filter((v) => v.status === 'active').length;
             const total = Math.max(versions.length, d?.counts?.versions || 0);
-            return <p className="text-xs text-slate-400">{total} brains trained so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>;
+            // Retrains on unchanged data are not new brains; say so instead of showing "new" brains that aren't.
+            const newest = versions[versions.length - 1];
+            let same = 0;
+            for (let j = versions.length - 1; j >= 0 && versions[j].n_train === newest.n_train && versions[j].n_test === newest.n_test; j -= 1) same += 1;
+            const fs = d?.forward?.since;
+            const first90 = fs && !d?.forward?.by_days?.['90'] ? (() => { const t = new Date(`${String(fs).slice(0, 10)}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + 91); return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); })() : null;
+            return (
+              <>
+                <p className="text-xs text-slate-400">{total} brains trained so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>
+                {same >= 2 && (
+                  <p className="text-xs text-slate-400">The last {same} retrains used the same {newest.n_train.toLocaleString()} graded calls. This brain learns from 90-day results, and no new ones have come in{first90 ? ` (the first real-time calls reach 90 days on ${first90})` : ' since'}. So read these as the same brain re-checked, not new ones.</p>
+                )}
+              </>
+            );
           })()}
           {[...versions].reverse().slice(0, allVersions ? 50 : 3).map((v, i) => {
             const st = STATUS[v.status] || STATUS.retired;
+            const prev = versions[versions.length - 2 - i]; // the version trained just before this one
+            const sameData = prev && prev.n_train === v.n_train && prev.n_test === v.n_test;
             return (
               <div key={i} className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="shrink-0 whitespace-nowrap text-xs font-bold rounded-full px-2 py-0.5" style={{ color: st.color, background: `${st.color}22` }}>{st.label}</span>
-                  <span className="text-right text-[11px] text-slate-500">{ago(v.at, now)} · trained on {v.n_train.toLocaleString()}, tested on {v.n_test.toLocaleString()}</span>
+                  <span className="text-right text-[11px] text-slate-500">{ago(v.at, now)} · {sameData ? 'same data as the one before' : `trained on ${v.n_train.toLocaleString()}, tested on ${v.n_test.toLocaleString()}`}</span>
                 </div>
                 <div className="mt-1.5 h-1.5 rounded-full bg-slate-800 overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${Math.max(3, Math.min(100, 50 + v.score * 250))}%`, background: st.color }} />
