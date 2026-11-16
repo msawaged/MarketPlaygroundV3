@@ -4347,3 +4347,62 @@ def test_strategy_reason_never_claims_a_goal_the_user_did_not_give():
     assert library.LIB[s]["family"] == "options" and "matters most" not in why
     s, why = strategy.select("bullish", 90, "medium", "moderate", P({"instrument": "options", "goal": "limited"}), price=185.0)
     assert why == "Best fit for what you said matters most."
+
+def test_price_delay_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(71)
+    n = 400
+    dates = [(_dt.date(2022, 1, 3) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    sret = [rng.gauss(0, 0.01) for _ in range(n)]
+    spy = [100.0]
+    for r in sret[1:]:
+        spy.append(spy[-1] * (1 + r))
+    # a fast stock moves with SPY the same day; a slow one takes the same move 10 sessions (2 weeks) late
+    fast, slow = [50.0], [50.0]
+    for k in range(1, n):
+        fast.append(fast[-1] * (1 + sret[k] + rng.gauss(0, 0.002)))
+        slow.append(slow[-1] * (1 + (sret[k - 10] if k >= 10 else 0.0) + rng.gauss(0, 0.002)))
+    i = n - 1
+    d_fast = market.delay(dates, fast, dates, spy, i)
+    d_slow = market.delay(dates, slow, dates, spy, i)
+    assert 0.0 <= d_fast < 0.3 and d_slow > 0.8
+    assert market.delay(dates, slow, dates, spy, 100) == market.DELAY_NEUTRAL   # under a year of weekly history
+    later = slow[:300] + [c * 3 for c in slow[300:]]
+    assert market.delay(dates, later, dates, spy, 299) == market.delay(dates, slow, dates, spy, 299)  # no look-ahead
+    assert "delay" in research.FEATS and "delay" in research.DIRECTIONAL and research.NEUTRAL["delay"] == market.DELAY_NEUTRAL
+    # planted: delayed stocks pay for longs, quick ones pay for shorts; the rule (z_delay) finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-dl-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            dl = rng.uniform(0.0, 1.0)
+            ex = -dl * 0.04 if bear else dl * 0.04
+            pid = f"p-dl-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"delay": dl}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["price delay premium (z_delay)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills delay as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, spy if s == "SPY" else later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4}
+    asof = dates[299]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-dlx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-dlx", "b-dlx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-dlx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-dlx'")["features"])["num"]
+    assert abs(num["delay"] - market.delay(dates, slow, dates, spy, 299)) < 1e-12 and num["delay"] > 0.5
+    assert num["ltr"] == 0.4 and num["beta"] == 1.2

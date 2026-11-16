@@ -486,4 +486,38 @@ the app's (52.9%).
 - **Note:** until enrich finishes backfilling older picks they read `ltr = 0`; trust the result once `ltr` is out of
   `provisional` in the research kv (coverage share ≥ 99%). Picks with under two years of data will stay at 0 by
   design, so check `coverage.zero_share.ltr` too.
+- **Result (preliminary, run 2026-11-16 06:59 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `ltr` 77.0%,
+  still in `provisional`, so not final):** lift **+0.32%**, beat **51.0%**, t **1.08** (t_nw **0.65**); risk-matched
+  lift **+0.39%**, beat_adj **52.0%**, t **1.38** (t_nw **0.85**). n_eff 997. Weak, as expected; well under the luck bar
+  (3.25 for 43 tries). Ridge weight on z_ltr +0.0013. Re-check once `ltr` leaves `provisional`.
+
+### 15. Price delay premium: stocks that take in market news late (Hou & Moskowitz)
+- **Added:** 2026-11-16
+- **Source:** Hou & Moskowitz (2005), "Market Frictions, Price Delay, and the Cross-Section of Expected Returns",
+  Review of Financial Studies 18(3), 981-1020: https://econpapers.repec.org/RePEc:oup:rfinst:v:18:y:2005:i:3:p:981-1020
+  (also https://ideas.repec.org/a/oup/rfinst/v18y2005i3p981-1020.html)
+- **Why:** some stocks respond to market-wide news days or weeks late (few analysts, few institutions, little
+  attention). The paper's delay measure, from regressions of weekly returns on the market's current and lagged weekly
+  returns, finds the most delayed stocks earned a large premium that size, liquidity and value don't explain, read as a
+  neglect / friction premium. A new family for the log: it is about *how* a price follows the market, not its level
+  (beta, idea 4; downside beta, 11), its own noise (IVOL, 13) or its liquidity (Amihud, 8). Built from a year of weekly
+  returns, which suits our ~90-day hold.
+- **Computed as:** non-overlapping 5-session returns of the stock and SPY over the last 52 weeks up to the pick's own
+  date; regress the stock's weekly return on SPY's same-week return (R2 same) and on SPY's same-week plus previous 4
+  weeks' returns (R2 full); `delay` = 1 - R2 same / R2 full (the paper's D1), clipped to [0, 1]; 0.20 (neutral, also
+  `research.NEUTRAL`) without 40 usable weeks or a degenerate fit. `market.delay` / `market.delay_features`; stored for
+  new picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by
+  `research.enrich` using closes up to each pick's own date only (other features untouched). Directional (bearish
+  calls flip it, so the rule shorts the stock that reacts at once, the weak side of the premium, as with Amihud).
+  Research rule: `price delay premium (z_delay)`; `z_delay` is also available to the learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift, t and t_nw, and the luck bar (now 44 tries). Compare against the
+  illiquidity rule (z_amihud), the one fixed rule that has cleared the plain luck bar: delay and illiquidity are
+  correlated, so a delay result that only repeats Amihud's adds little. The paper's premium sits mostly in small,
+  neglected stocks and our ideas are mostly large caps, so expect a small effect. Caveat: our bars come from Alpaca's
+  IEX feed, whose closes can be stale for thinly traded names, which itself looks like delay; one more reason to read
+  it next to Amihud.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 0.20; trust the result once `delay` is
+  out of `provisional` in the research kv (coverage share ≥ 99%). Data caveat for every rule: PARA picks are a
+  reused ticker (Parabolic Technologies, not Paramount; see docs/feature_ideas.md 2026-11-16), a small number of bad
+  rows in every result until they are flagged.
 - **Result:** pending.

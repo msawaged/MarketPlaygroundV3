@@ -844,6 +844,80 @@ def ltr_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"ltr": ltr(closes, i) if i >= 0 else 0.0}
 
 
+DELAY_NEUTRAL = 0.20  # typical price delay for a liquid stock over a year of weekly returns, used without enough history
+
+
+def _r2(y: list[float], xs: list[list[float]]) -> Optional[float]:
+    """R-squared of an OLS fit of y on the columns xs plus a constant (normal equations, Gaussian elimination)."""
+    n, p = len(y), len(xs) + 1
+    cols = [[1.0] * n] + xs
+    a = [[sum(cols[r][t] * cols[c][t] for t in range(n)) for c in range(p)] + [sum(cols[r][t] * y[t] for t in range(n))]
+         for r in range(p)]
+    for c in range(p):
+        piv = max(range(c, p), key=lambda r: abs(a[r][c]))
+        if abs(a[piv][c]) < 1e-14:
+            return None
+        a[c], a[piv] = a[piv], a[c]
+        for r in range(p):
+            if r != c:
+                f = a[r][c] / a[c][c]
+                for k in range(c, p + 1):
+                    a[r][k] -= f * a[c][k]
+    coef = [a[r][p] / a[r][r] for r in range(p)]
+    my = sum(y) / n
+    sst = sum((v - my) ** 2 for v in y)
+    if sst <= 1e-14:
+        return None
+    sse = sum((y[t] - sum(coef[c] * cols[c][t] for c in range(p))) ** 2 for t in range(n))
+    return max(0.0, 1.0 - sse / sst)
+
+
+def delay(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int,
+          weeks: int = 52, step: int = 5, lags: int = 4, min_weeks: int = 40) -> float:
+    """Price delay (Hou & Moskowitz 2005, "Market Frictions, Price Delay, and the Cross-Section of Expected
+    Returns"): how slowly a stock's price takes in market-wide news. Weekly (5-session) returns of the stock over the
+    last `weeks` weeks up to index i are regressed on SPY's same-week return, then again adding SPY's returns from
+    the previous `lags` weeks; D1 = 1 - R2(same week only) / R2(with lags). Near 0: the stock reacts to the market
+    at once; near 1: much of its market response comes weeks late. The paper finds the most delayed stocks earned a
+    large premium (a friction / neglect premium). Uses only closes up to index i. Clipped to [0, 1]; DELAY_NEUTRAL
+    without `min_weeks` usable weeks or when the fit is degenerate."""
+    if i < step * (lags + min_weeks) or i >= len(closes) or not sdates:
+        return DELAY_NEUTRAL
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    pts = list(range(i, max(-1, i - step * (weeks + lags) - 1), -step))[::-1]  # session indices, oldest first
+    rs: list[Optional[float]] = []
+    ms: list[Optional[float]] = []
+    for a, b in zip(pts, pts[1:]):
+        ca, cb, sa, sb = closes[a], closes[b], spx.get(dates[a]), spx.get(dates[b])
+        ok = ca > 0 and sa and sb and sa > 0
+        rs.append(cb / ca - 1.0 if ok else None)
+        ms.append(sb / sa - 1.0 if ok else None)
+    y: list[float] = []
+    x: list[list[float]] = [[] for _ in range(lags + 1)]
+    for t in range(lags, len(rs)):
+        win = [ms[t - l] for l in range(lags + 1)]
+        if rs[t] is None or any(v is None for v in win):
+            continue
+        y.append(rs[t])
+        for l in range(lags + 1):
+            x[l].append(win[l])
+    if len(y) < min_weeks:
+        return DELAY_NEUTRAL
+    r_full = _r2(y, x)
+    r_same = _r2(y, x[:1])
+    if r_full is None or r_same is None or r_full <= 1e-9:
+        return DELAY_NEUTRAL
+    return max(0.0, min(1.0, 1.0 - r_same / r_full))
+
+
+def delay_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"delay": ...} using closes (stock and SPY) up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    sdates, scloses = daily_closes("SPY")
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"delay": delay(dates, closes, sdates, scloses, i) if i >= 0 else DELAY_NEUTRAL}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -952,6 +1026,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "dbeta": dbeta(dates, closes, sdates, scloses, i),
         "ivol": ivol(dates, closes, sdates, scloses, i),
         "ltr": ltr(closes, i),
+        "delay": delay(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

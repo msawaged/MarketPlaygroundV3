@@ -127,6 +127,8 @@ def make_features(
         "ivol": market.get("ivol", 0.30),
         # long-term reversal, return from ~3 years to ~1 year ago (research + ranker v2 only; not MODEL_NUMERIC)
         "ltr": market.get("ltr", 0.0),
+        # price delay, how late weekly returns follow SPY (research + ranker v2 only; not MODEL_NUMERIC)
+        "delay": market.get("delay", 0.20),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

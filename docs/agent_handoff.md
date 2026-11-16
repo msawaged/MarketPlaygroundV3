@@ -894,3 +894,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/strategy.py, backend/v4/tests/test_v4.py, frontend/src/components/PracticePage.jsx,
   frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-16 evening (CTO scout routine): idea 15 price delay; proposal "ticker identity check" (PARA is a reused ticker)
+- No HQ messages from Murad. No gate, ranker v2 activation, grading or real-money change.
+- Part A: idea 15, price delay (Hou & Moskowitz 2005): `market.delay` / `delay_features` (1 - R2 same-week SPY / R2
+  with 4 lagged weeks, weekly returns over 52 weeks, as of each pick's date; neutral 0.20), in `market.features`,
+  `nn.make_features` (not MODEL_NUMERIC), `research.FEATS` + DIRECTIONAL + NEUTRAL, `research.enrich` backfill, rule
+  `price delay premium (z_delay)`. Test test_price_delay_rule_and_enrich_backfill. Idea 14 (long-term reversal)
+  recorded as preliminary (ltr coverage 77%).
+- Part B, for the Builder (proposed in docs/feature_ideas.md): PARA picks are **Parabolic Technologies**, not Paramount
+  (ticker reused after the Aug 2025 Skydance merger). 30 picks, 25 backfill calls from Dec 2023 with entry prices up to
+  $215,128 and 16 fake -60% to -86% grades. `engine.process_belief` never compares Claude's company name with Alpaca's.
+  Not fixed here (proposal only); excluding rows from research is a deliberate step for brain_upgrades.md.
+- Render builds still failing (out of build minutes): this queues too, so idea 15 is not live and research won't
+  rerun with it until builds resume. Don't re-push to kick it.
+- Files: backend/v4/market.py, nn.py, research.py, tests/test_v4.py, docs/research_ideas.md, docs/feature_ideas.md,
+  docs/hq/status/scout.json.

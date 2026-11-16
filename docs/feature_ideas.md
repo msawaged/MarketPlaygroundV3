@@ -327,3 +327,49 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   numbers will shift; percentiles of single picks overstate the spread a diversified user would face, so say "a single
   idea"; practice and live calls are mixed, as on the brain page, and should be labelled the same way. Information
   only: no gate, look-ahead, ranking, research or real-money change.
+
+## 2026-11-16 — Ticker identity check: make sure the ticker still is the company the idea names
+
+- **Status:** proposed
+- **Area:** brain (data quality / honest grading); small app effect (a wrong company is never shown).
+- **Problem:** a ticker is not a company. Tickers get reused after mergers and delistings, and the app trusts the
+  ticker alone. Live DB, 2026-11-16: **PARA** has 30 picks, every one stored with the name **"Parabolic
+  Technologies, Inc. Class A Common Stock"**, not Paramount (Paramount merged with Skydance and left PARA in August
+  2025). 25 of them are `seed_backfill` practice calls dated Dec 2023 to Jul 2026 that were meant as Paramount media
+  calls; their entry prices run from **$215,128.56** (Dec 2023) down to $22.50, i.e. the new issuer's
+  reverse-split-adjusted history pasted over Paramount's dates. 16 of the 90-day grades are -60% to -86% (a bearish
+  "media is in trouble" call scores a ~70-point win that never happened), 4 of the 30 were the #1 pick, and the newest
+  `seed_news` / `seed_live` picks (Nov 2026) are a $0.08-$3 penny stock. These rows feed research, ranker v2's
+  training, the base rate / spread on the call screen and the brain page. Nothing in `engine.process_belief` compares
+  the company Claude meant with the company Alpaca returns: `market.asset_info` only checks "active and tradable".
+  (Other big price ranges in the picks table, e.g. SEZL, BYND, ASTS, look like real moves; PARA is the one clear
+  identity break found with one small query, but nobody checks, so there may be others.)
+- **Evidence / sources:**
+  - CRSP, the standard U.S. research database, keys every security by a permanent number (PERMNO) precisely because
+    tickers change and are reassigned; studies built on tickers silently splice different firms:
+    https://www.crsp.org/wp-content/uploads/guides/CRSP_US_Stock_&_Indexes_Database_Knowledge_Base.pdf ; practitioner
+    note on why quant data uses permanent IDs, not tickers: https://quantit.gitbook.io/finter/research-guide/data-science-for-finance/data-characteristics-and-methodologies/id-structures-quant-finance
+  - Paramount-Skydance merger completed Aug 7, 2025 (Paramount Global's PARA stopped trading):
+    https://www.advanced-television.com/2025/08/08/skydance-media-paramount-global-complete-merger/
+- **Build sketch (size S-M):**
+  - `backend/v4/engine.py` (candidate loop, where `asset_info` is called): compare Claude's `c["name"]` with
+    `info["name"]` using a plain normalised-word overlap (drop "Inc", "Corp", "Class A", "Common Stock", "ETF" etc.);
+    no overlap → skip the candidate and log `name_mismatch` (same path as an untradable ticker). Keep Claude's name in
+    the pick record next to Alpaca's (e.g. `features.meta.claude_name`) so later checks can see both.
+  - Backfill / shifted calls: also skip when the stock's bars are implausible for the dates used, e.g. any adjusted
+    close above $20,000 or a 5-year max/min close ratio above 1,000 (`market.daily_closes` already has the series).
+  - One-off audit job (read-only report first): list tickers whose stored pick names differ from today's
+    `asset_info` name or whose history fails the plausibility check; write the list to `kv_cache` `audit:tickers`
+    and show the count on /v4/brain. Then, as a separate deliberate step (Murad's call), mark those picks
+    `data_flag` and leave them out of research, ranker v2 training and the base rate. No grade is rewritten in place.
+  - Tests: synthetic candidate "Paramount Global" vs asset name "Parabolic Technologies" is dropped; "Apple Inc." vs
+    "Apple Inc. Common Stock" kept; an ETF whose Alpaca name is the fund's long name kept (word overlap on the issuer
+    or index name, so check a few real ETF names before shipping).
+- **How we'd know it worked:** `name_mismatch` count in the seeder's log is small but non-zero; the audit lists PARA
+  (and any others); after the flagged picks are excluded, research's raw lift and t for each rule move by less than a
+  few hundredths on well-covered rules (if they move a lot, the bad rows were driving them, which is worth knowing).
+- **Risks:** name matching can drop real tickers with very different legal names (e.g. "Alphabet" vs "Google",
+  share-class names, ADRs), so start in log-only mode for a week and read the drops before enforcing. Excluding
+  flagged rows changes the research sample, so it is written up in docs/brain_upgrades.md, and gates are untouched.
+  No look-ahead: the name check uses what Alpaca says at pick time for live calls; for old backfill calls it only
+  removes rows, never adds information.
