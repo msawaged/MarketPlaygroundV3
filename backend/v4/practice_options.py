@@ -308,6 +308,33 @@ def close(user_id: str, position_id: str) -> dict:
             "message": f"Closed. {'Gain' if pnl >= 0 else 'Loss'} of ${abs(pnl):,.0f} (estimated)."}
 
 
+def outcomes(user_id: str, ids: list[str]) -> dict:
+    """What became of these trades (Close Call links its answers to them): money set aside, and once closed or
+    settled, the gain on the same cash numbers as the Portfolio's closed list. Read only; settling happens in
+    positions(). {position_id: {"cost", "status": "open" | "closed", "pnl", "expired"}}."""
+    ids = [i for i in dict.fromkeys(ids or []) if i]
+    if not ids:
+        return {}
+    out = {}
+    eng = _engine()
+    with eng._get_db_connection() as conn:
+        init(conn)
+        marks = ",".join("?" for _ in ids)
+        rows = conn.execute(f"SELECT * FROM option_positions WHERE user_id = ? AND position_id IN ({marks})",
+                            (user_id, *ids)).fetchall()
+        for r in rows:
+            held = r["set_aside"] * r["contracts"]
+            o = {"cost": round(held, 2), "status": r["status"], "pnl": None, "expired": False}
+            if r["status"] == "closed":
+                back = max(0.0, held + ((r["close_value"] or 0.0) - r["entry_value"]) * r["contracts"])
+                o["pnl"] = round(back - held, 2)
+                exps = [l["expiration"] for l in json.loads(r["legs"]) if l.get("instrument") == "option"]
+                shut = _aware(r["closed_at"])
+                o["expired"] = bool(exps and shut and shut >= _expiry_close(date.fromisoformat(max(exps))))
+            out[r["position_id"]] = o
+    return out
+
+
 def closed(user_id: str, limit: int = 50) -> list[dict]:
     """Closed or expired option trades, newest first. The gain is the cash that came back minus the cash set aside,
     the same numbers that moved the practice account (so a trade that settled at zero shows its whole set-aside lost)."""

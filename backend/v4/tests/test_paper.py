@@ -421,3 +421,54 @@ def test_expired_options_settle_at_the_expiration_day_close_not_a_later_price(tm
     assert c["expired"] is True and abs(c["proceeds"] - 1000.0) < 0.01
     assert abs(c["pnl"] - (1000.0 - cost)) < 0.01
     assert abs(cash() - (cash0 + 1000.0)) < 0.01
+
+
+def test_close_call_answers_show_what_their_practice_trade_did(tmp_path, monkeypatch):
+    """A Close Call YES ($100/$105 call spread) is 'right' when the stock closes above $100, but a close at $101
+    pays only $100 a contract, less than it cost: the answer list must show the trade lost, and the Close Call
+    total must add up to the Portfolio's closed list."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.v4 import market, practice_options as po, yesno
+    from datetime import date, datetime
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "cc.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    today = {"d": date(2026, 11, 16)}
+    now = {"t": datetime(2026, 11, 16, 11, 0, tzinfo=market.NY)}
+    monkeypatch.setattr(market, "latest_price", lambda t: 102.0)
+    monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
+    monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
+    monkeypatch.setattr(market, "today", lambda: today["d"])
+    monkeypatch.setattr(market, "now_ny", lambda: now["t"])
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    closes = {}
+    monkeypatch.setattr(market, "session_close_on", lambda t, d: closes.get(d))
+    exp = date(2026, 11, 20)
+    leg = lambda a, k: {"action": a, "option_type": "Call", "strike_price": k, "expiration": exp.isoformat(),
+                        "quantity": 1, "instrument": "option"}
+    a = po.open_trade("u", "XYZ", "Close Call: YES", [leg("Buy", 100), leg("Sell", 105)], 1)
+    b = po.open_trade("u", "XYZ", "Close Call: YES", [leg("Buy", 100), leg("Sell", 105)], 1)
+    assert a["set_aside"] > 100  # costs more than the $100 a $101 close pays
+
+    views = [{"position_id": a["position_id"], "result": "open"}, {"position_id": b["position_id"], "result": "open"},
+             {"position_id": None, "result": "open"}]
+    yesno._attach_trades("u", views)
+    assert views[0]["trade"] == {"cost": a["set_aside"], "status": "open", "pnl": None, "expired": False}
+    assert "trade" not in views[2]
+    assert yesno.trades_total(views) == {"settled": 0, "pnl": 0, "won": 0, "open": 2}
+    assert yesno.trades_total([{"result": "open"}]) is None
+    assert po.outcomes("someone-else", [a["position_id"]]) == {}
+
+    # b closed by hand before expiry; a expires with Friday's close at $101 (right on the question)
+    po.close("u", b["position_id"])
+    today["d"], now["t"] = date(2026, 11, 23), datetime(2026, 11, 23, 10, 0, tzinfo=market.NY)
+    closes[exp] = ("2026-11-20", 101.0)
+    views = [{"position_id": a["position_id"], "result": "right"}, {"position_id": b["position_id"], "result": "right"}]
+    yesno._attach_trades("u", views)   # settles a at Friday's close, the same step the Portfolio runs
+    ta, tb = views[0]["trade"], views[1]["trade"]
+    assert ta["status"] == "closed" and ta["expired"] is True
+    assert abs(ta["pnl"] - (100.0 - a["set_aside"])) < 0.01 and ta["pnl"] < 0
+    assert tb["status"] == "closed" and tb["expired"] is False
+    tot = yesno.trades_total(views)
+    assert tot["settled"] == 2 and tot["open"] == 0
+    assert abs(tot["pnl"] - sum(c["pnl"] for c in po.closed("u"))) < 0.02

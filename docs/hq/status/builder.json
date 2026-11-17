@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T14:20:00Z",
- "last_run": "Close Call now shows how far the stock could move by the chosen date (the range options put a 2-in-3 chance on, with today's price and your line on it), and warns when options expect a much bigger move than the stock has been making, which usually means earnings or news before that date.",
+ "updated_at": "2026-11-17T17:30:00Z",
+ "last_run": "Close Call's 'Your answers' now shows what each practice trade made or lost, a total for your Close Call trades, and a plain note when the trade and the yes/no answer disagree (the stock closed between the two strikes).",
  "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
- "next": "Once live: check the Close Call move box on NVDA/WMT this week and the queued Brain page and Portfolio changes. Then the next finishing touch for Prof Brown's review.",
+ "next": "Once live: check the first graded Close Call answers (Nov 18 expiry) show their trades, plus the queued Close Call move box, Brain page and Portfolio changes. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call's answer list said only 'right' or 'wrong', and a practice trade looked the same as 'Just call it'. But a YES trade (a call spread) that closes between its two strikes is right on the question and can still lose money, and the reverse for NO, so the page could say 'right' next to a trade that lost. Each traded answer now shows what's at risk, then what it made or lost at expiration, with a note when that differs from right/wrong, plus a 'Your practice trades' total that matches Portfolio. Information only: odds, pricing and grading unchanged.",
+   "at": "2026-11-17T17:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call asked 'Will NVDA close above $160 on Fri Nov 20?' with 40% odds, but those odds came from options priced for 130% volatility (NVDA has moved about 45% a year lately): the market expects a big earnings-week jump, and the page never said so. Now a 'How far it could move' box shows the range options give a 2-in-3 chance (a bar with today's price and your line), and an amber note when options expect a much bigger move than usual, often earnings or news before that date. Information only: the odds, the brain's lean and the trade prices are unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A finance professor would flag 'Market regime: Calm, markets are quiet' with the S&P 500 at 22% volatility and 3% off its high. 'Calm' really meant 'anything that isn't a steady climb or turbulent', so it now says 'In between' and shows the three numbers and the rule.",
    "at": "2026-11-16T14:20:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call showed 'NVDA above $150' odds taken from the $149/$152.5 spread, which is really the chance of a close above $150.75 (1-2 pts off). The odds are now read at $150 itself from the strikes either side, and the note under them says which prices were used.",
-   "at": "2026-11-16T11:05:00Z"
   }
  ]
 }

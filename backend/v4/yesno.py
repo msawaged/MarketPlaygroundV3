@@ -588,7 +588,42 @@ def mine(user_id: str) -> list[dict]:
     except Exception:
         pass
     rows = db.query("SELECT * FROM yesno_calls WHERE user_id = ? ORDER BY created_at DESC LIMIT 100", ((user_id or "")[:80],))
-    return [_view(r) for r in rows]
+    views = [_view(r) for r in rows]
+    _attach_trades(user_id, views)
+    return views
+
+
+def _attach_trades(user_id: str, views: list[dict]) -> None:
+    """An answer placed as a practice trade carries what the trade did. "Right" and "made money" can differ: a YES
+    call spread that closes between its two strikes is right on the question but can still lose (below the
+    breakeven), so the answer list shows both. Expired trades settle first (at the expiration-day close), the same
+    step the Portfolio runs, so the two pages never disagree."""
+    ids = [v["position_id"] for v in views if v.get("position_id")]
+    if not ids:
+        return
+    from . import practice_options
+    try:
+        got = practice_options.outcomes(user_id, ids)
+        if any(o["status"] == "open" for o in got.values()) and any(v["result"] != "open" for v in views):
+            practice_options.positions(user_id)   # settles trades whose expiration-day close is in
+            got = practice_options.outcomes(user_id, ids)
+    except Exception:
+        return
+    for v in views:
+        o = got.get(v.get("position_id") or "")
+        if o:
+            v["trade"] = o
+
+
+def trades_total(views: list[dict]) -> Optional[dict]:
+    """Close Call practice trades added up: the gain on settled or closed ones (same numbers as the Portfolio's
+    closed list) and how many are still open. None when the user hasn't traded an answer."""
+    t = [v["trade"] for v in views if v.get("trade")]
+    if not t:
+        return None
+    done = [x for x in t if x["status"] == "closed" and x["pnl"] is not None]
+    return {"settled": len(done), "pnl": round(sum(x["pnl"] for x in done), 2),
+            "won": sum(1 for x in done if x["pnl"] > 0), "open": len(t) - len(done)}
 
 
 MIN_VERDICT_DAYS = 5   # expiration days before the record says better / worse at all
@@ -670,7 +705,10 @@ def my_record(views: list[dict]) -> dict:
 
 
 def my_record_for(user_id: str) -> dict:
-    return my_record(mine(user_id))
+    views = mine(user_id)
+    out = my_record(views)
+    out["trades"] = trades_total(views)
+    return out
 
 
 def scorecard() -> dict:

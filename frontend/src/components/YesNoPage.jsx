@@ -45,6 +45,54 @@ function MyRecord({ rec }) {
   );
 }
 
+// Close Call answers placed as practice trades, added up on the same cash numbers as the Portfolio's closed list.
+function TradesTotal({ t }) {
+  if (!t) return null;
+  const sign = (v) => `${v < 0 ? '−' : '+'}${usd(Math.abs(v))}`;
+  return (
+    <div className="mt-2 rounded-2xl border border-slate-700 bg-slate-900/50 p-3 text-sm">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-slate-300 min-w-0">Your practice trades</span>
+        {t.settled > 0
+          ? <span className={`shrink-0 font-extrabold tabular-nums ${t.pnl > 0 ? 'text-green-300' : t.pnl < 0 ? 'text-red-300' : ''}`}>{sign(t.pnl)}</span>
+          : <span className="shrink-0 text-slate-400">none settled yet</span>}
+      </div>
+      <p className="mt-1 text-xs text-slate-400">
+        {t.settled > 0 ? `${t.settled} settled or closed, ${t.won} made money. ` : ''}
+        {t.open > 0 ? `${t.open} still open. ` : ''}
+        Trades settle at the closing price on their expiration day. A close between the two strikes can make a right answer lose a little, or a wrong one make a little.
+      </p>
+    </div>
+  );
+}
+
+// One answer's practice trade: what's at risk while it's open, what it made or lost once settled, and a plain
+// note when the trade and the yes/no answer disagree (closed between the strikes, past the breakeven or short of it).
+function TradeLine({ c }) {
+  const t = c.trade;
+  if (!t) return null;
+  if (t.status !== 'closed' || t.pnl == null) {
+    return <span className="block text-[11px] text-slate-400 tabular-nums">Practice trade · {usd(t.cost)} at risk</span>;
+  }
+  const up = t.pnl >= 0;
+  const amt = `${up ? '+' : '−'}${usd(Math.abs(t.pnl))}`;
+  const odd = t.expired && ((c.result === 'right' && t.pnl < 0) || (c.result === 'wrong' && t.pnl > 0));
+  return (
+    <>
+      <span className="block text-[11px] tabular-nums text-slate-400">
+        Practice trade <b className={up ? 'text-green-300' : 'text-red-300'}>{amt}</b>{t.expired ? ' at expiration' : ' (closed early)'}
+      </span>
+      {odd && (
+        <span className="block text-[11px] text-amber-200/90 whitespace-normal">
+          {c.result === 'right'
+            ? `Right on the question, but it closed between the strikes, short of the trade's breakeven.`
+            : `Wrong on the question, but it closed between the strikes, past the trade's breakeven.`}
+        </span>
+      )}
+    </>
+  );
+}
+
 function OddsBar({ label, p, tone }) {
   return (
     <div>
@@ -237,6 +285,7 @@ export default function YesNoPage() {
             <button onClick={() => navigate('/portfolio')} className="text-xs text-blue-300">Portfolio →</button>
           </div>
           <MyRecord rec={rec} />
+          <TradesTotal t={rec?.trades} />
           <div className="mt-2 divide-y divide-slate-800">
             {mine.slice(0, 12).map((c) => (
               <div key={c.id} className="py-2 flex items-center justify-between text-sm">
@@ -245,6 +294,7 @@ export default function YesNoPage() {
                   {c.market_p != null && (
                     <span className="block text-[11px] text-slate-500 tabular-nums">Market gave {c.side.toUpperCase()} {pc(c.side === 'yes' ? c.market_p : 1 - c.market_p)}{c.close_price != null ? ` · closed ${usd(c.close_price, 2)}` : ''}</span>
                   )}
+                  <TradeLine c={c} />
                 </span>
                 <span className="shrink-0 ml-2 flex items-center gap-2">
                   <b className={c.side === 'yes' ? 'text-green-300' : 'text-red-300'}>{c.side.toUpperCase()}</b>

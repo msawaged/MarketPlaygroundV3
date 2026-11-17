@@ -1120,3 +1120,22 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - movers._hook / _fallback_story: a bare year ("2026") is never the Story hook.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 late afternoon (Builder routine): Close Call answers show what their practice trade did
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Picked a numbers-that-add-up gap on Close Call
+  (rule c): "Your answers" showed only right / wrong, and a practice-traded answer looked the same as "Just call it".
+  A YES call spread that closes between its strikes is right on the question but can lose money (below the breakeven),
+  and the reverse for NO, so the page could say "right" next to a trade that lost, with the loss only on Portfolio.
+- practice_options.outcomes(user_id, ids): read-only cost / status / gain per position (same cash numbers as closed()).
+  yesno.mine attaches `trade` to answers with a position_id; when a graded answer's trade is still open it runs
+  practice_options.positions() first, the same settle step the Portfolio runs (expiration-day close), so the two
+  pages agree. yesno.trades_total; my_record_for adds `trades` {settled, pnl, won, open}.
+- YesNoPage: "Your practice trades" box (total gain on settled/closed, how many made money, how many open) and on
+  each traded answer "Practice trade · $X at risk" or "+$X at expiration" / "(closed early)", with an amber line when
+  the trade and the answer disagree. WhatsNew line added.
+- Information only: no odds, lean, pricing, grading, research or real-money change.
+- Test: test_close_call_answers_show_what_their_practice_trade_did (test_paper.py). Checked at 390 and 375 (offline
+  server; settled cases mocked in).
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/practice_options.py, backend/v4/yesno.py, backend/v4/tests/test_paper.py,
+  frontend/src/components/YesNoPage.jsx, frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
