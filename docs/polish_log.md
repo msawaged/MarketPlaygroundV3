@@ -1083,16 +1083,20 @@ Close Call quotes checked against the live API (read-only GETs): NVDA/SPY/AAPL/M
 spread width, breakevens = strike +/- cost, the ±move range = spot·exp(±IV·√t). All add up.
 
 Found:
-- Close Call after hours, NVDA $159.45, Fri Nov 27: "46% to close above $155" but 40% above $160 and 36% above $165.
-  The $152.50/$155 call spread read 40% while the $155/$157.50 spread read 52%: a chance of closing above that RISES
-  with the strike, i.e. out-of-step after-hours quotes. Interpolating between them gave 46%, a level 3% under the
-  stock. The existing staleness guard (10 points from the one-vol answer) missed it (8 points).
+- Close Call after hours, NVDA $159.45, Fri Nov 27: "46% to close above $155" vs 52% from one implied vol. I first
+  read this as inverted spread quotes; re-deriving the pairs from the live 150/152.50/155/157.50 lines after deploy
+  shows they are monotone (about 62% / 47% / 45% / 44%, a lumpy after-hours chain), so the new guard does not fire
+  here and the 6-point gap stays under the existing 10-point stale guard. Not a bug, just noisy quotes. The guard
+  is kept because truly inverted pairs (a higher strike reading MORE likely) are arbitrage and should never be shown.
 - SPY's expected-move line: "Often that means news is due before Tue Nov 24, like an earnings report." A fund has
   no earnings report.
 
 Changed:
-- yesno.digital_from_spread: when the left pair reads more than 2 points below the right pair, returns None and
+- yesno.digital_from_spread (defensive): when the left pair reads more than 2 points below the right pair, returns None and
   reports "inverted"; quote() then uses the one-implied-vol odds and says "the spread quotes looked out of date"
   (same fallback as the existing stale guard). Pricing of the YES/NO spreads is unchanged.
 - yesno.move_text: funds (asset_info is_etf) say "like a Fed decision or a big economic report".
 - Tests: inverted quotes in test_yesno_digital_from_call_spread; ETF wording in the expected-move test.
+
+Verified live after deploy: SPY's move note now says "like a Fed decision or a big economic report". Correction to
+the NVDA finding above recorded the same run (commit after 526abaa).

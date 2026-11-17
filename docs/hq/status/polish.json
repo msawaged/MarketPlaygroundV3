@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T22:00:00Z",
- "last_run": "Close Call after the close told users NVDA had a 46% chance to finish above $155 while it sat at $159; the after-hours option quotes were out of step (a higher strike read MORE likely). Those quotes are now ignored and the simpler one-volatility odds are shown, labelled as such. Also SPY's 'big move' note no longer blames an earnings report a fund doesn't have.",
+ "updated_at": "2026-11-17T22:20:00Z",
+ "last_run": "SPY's 'bigger move than usual' note on Close Call said news like 'an earnings report' was due; a fund has none, so funds now say 'a Fed decision or a big economic report' (live). Also added a guard so Close Call never reads odds from option quotes that contradict each other (a higher price looking more likely); today's odd-looking NVDA after-hours number turned out to be noisy but consistent quotes, so it was left alone.",
  "working_on": "Nothing open.",
  "next": "Check the chat's options card numbers and My beliefs at 360 wide; the local server can't reach market data from the sandbox, so use the live public GETs where possible.",
  "needs_from_murad": [],

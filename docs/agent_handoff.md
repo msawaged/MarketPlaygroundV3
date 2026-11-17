@@ -1191,6 +1191,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 ## 2026-11-17 evening ET (daily polish walk, 6th run): Close Call ignores out-of-step spread quotes; ETF move wording
 - No HQ messages from Murad. No ranking, research gate, grading or real-money change.
 - yesno.digital_from_spread(..., why=None): left pair > 2 pts below the right pair -> None, "inverted" appended to why;
-  quote() treats that as stale (one-vol odds, "out of date" label). Live after hours NVDA read 46% above $155 at $159.45.
+  quote() treats that as stale (one-vol odds, "out of date" label). Defensive only: the live NVDA 46%-above-$155
+  case turned out to be monotone (lumpy) quotes, not inverted, so it still shows; it's under the 10-pt stale guard.
 - yesno.move_text(..., is_etf=False): funds get "like a Fed decision or a big economic report" instead of earnings.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
