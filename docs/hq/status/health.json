@@ -1,9 +1,9 @@
 {
  "key": "health",
- "updated_at": "2026-11-16T21:15:00Z",
- "last_run": "Monday evening check. App is healthy: learning ran at 20:20 UTC fine (every hourly run today succeeded), beliefs at 6,737 (up 99 today), site loads. Grading last ran Friday fine; next run is tonight around 22:47 UTC. Same one problem as this afternoon: every Render deploy still fails because the workspace is out of build minutes, so today's fixes (ticker identity check, ranker v2 weight, price-delay idea, polish) are queued, not live. No user emails.",
+ "updated_at": "2026-11-17T01:15:00Z",
+ "last_run": "Monday late-night check. App is healthy: learning ran at 00:19 UTC fine, beliefs at 6,756 (up 141 since yesterday), site loads. Grading ran tonight at 22:47 UTC with no errors; it graded 0 picks, which is expected: the next due picks were made on the weekend, so their 7-day mark falls on today's close, which the grader waits a day for. They should grade tonight. Deploys still fail because the workspace is out of build minutes (5 more failed today), so today's fixes are queued, not live. No user emails, no HQ messages.",
  "working_on": "Watching the inbox and the jobs twice a day.",
- "next": "Next check: confirm tonight's grading run, and whether deploys work again.",
+ "next": "Next check: confirm tonight's grading run grades the Nov 7-9 picks, and whether deploys work again.",
  "needs_from_murad": [
   "Render deploys are blocked: raise the build-minute spend limit in Render workspace settings (Build pipeline section), or accept that new fixes wait until Dec 1. The running app and jobs are fine."
  ],
