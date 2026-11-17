@@ -14,6 +14,11 @@ Since 2026-11-14 (late) each run also stores **coverage** (`coverage.share` / `z
 `provisional` ({rule: {feature: share}} for each fixed rule reading a feature under 99% filled) and `low_coverage`.
 Read completeness from the kv instead of a `LIKE` scan over `picks`, quote coverage with each result, and don't record
 a result as final while its rule is in `provisional`. Reporting only: gates unchanged.
+Since 2026-11-17 (late) each result also has an **outlier check** (`research.winsor_cuts`): `lift_w` / `lift_w_t`
+(/ `lift_w_t_nw`) = the same lift with every outcome clipped at the run's pooled test-period 1st / 99th percentile
+(`winsor` {lo, hi} in the kv), `lift_med` (median per-call lift) and `top10_share` (share of the summed lift from the
+10 best calls), plus `luck.clear_w`. Quote lift_w beside lift: a rule whose lift_w collapses is a few lottery tickets,
+not a broad edge. Reporting only: gates unchanged.
 
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 

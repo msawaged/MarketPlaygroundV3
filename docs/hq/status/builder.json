@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T17:30:00Z",
- "last_run": "Close Call's 'Your answers' now shows what each practice trade made or lost, a total for your Close Call trades, and a plain note when the trade and the yes/no answer disagree (the stock closed between the two strikes).",
- "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
- "next": "Once live: check the first graded Close Call answers (Nov 18 expiry) show their trades, plus the queued Close Call move box, Brain page and Portfolio changes. Then the next finishing touch for Prof Brown's review.",
+ "updated_at": "2026-11-17T23:30:00Z",
+ "last_run": "Research results now get an outlier check: is a way of picking the #1 ahead because many calls do a bit better, or because it owned a couple of +500% stocks? The Brain page's luck check gets a 'Without the extremes' line: the #1's lead with every result capped at the 1% extremes, how much of the lead its 10 best calls make, and how many ways still clear the bar.",
+ "working_on": "Nothing open. The new numbers appear after the next research run.",
+ "next": "Check the first real outlier-check numbers on the Brain page after the next research run, and the Nov 18 Close Call answers showing their trades. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "90-day results have fat tails: 81 graded calls moved more than 100% (one +508%), and one such call moves a 2,700-call test by about 0.2 pts. Nothing said whether a lead was broad or a few lottery tickets, which is the first thing a finance professor checks. Each research result now also reports the lead with results capped at the 1% extremes, the median call's lead and the 10 best calls' share, and the Brain page says it in one paragraph. Reporting only: the gate and the live ranking are unchanged.",
+   "at": "2026-11-17T23:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call's answer list said only 'right' or 'wrong', and a practice trade looked the same as 'Just call it'. But a YES trade (a call spread) that closes between its two strikes is right on the question and can still lose money, and the reverse for NO, so the page could say 'right' next to a trade that lost. Each traded answer now shows what's at risk, then what it made or lost at expiration, with a note when that differs from right/wrong, plus a 'Your practice trades' total that matches Portfolio. Information only: odds, pricing and grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The brain learns each news headline and its opposite. Some opposites still bet the same way as the headline on a different stock (the opposite of 'Bitcoin's selloff may signal a longer crypto downturn' was learned as QQQ down). Now an opposite whose bets all go the headline's way is dropped; opposites with real winners and losers (publishers down, META up) are kept.",
    "at": "2026-11-16T17:02:37Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A finance professor would flag 'Market regime: Calm, markets are quiet' with the S&P 500 at 22% volatility and 3% off its high. 'Calm' really meant 'anything that isn't a steady climb or turbulent', so it now says 'In between' and shows the three numbers and the rule.",
-   "at": "2026-11-16T14:20:00Z"
   }
  ]
 }

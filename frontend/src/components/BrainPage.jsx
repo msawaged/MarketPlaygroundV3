@@ -436,6 +436,26 @@ export default function BrainPage({ viewOnly = false }) {
                       )}
                     </div>
                   )}
+                  {sk.luck.app_lift_w != null && sk.luck.winsor && (() => {
+                    const L = Number(sk.luck.app_lift || 0), W = Number(sk.luck.app_lift_w), sh = sk.luck.app_top10_share;
+                    const who = sk.ranker?.active ? 'the old way of picking the #1' : (peek ? 'the #1 as stored' : 'our #1 pick');
+                    const pct = (v) => `${v >= 0 ? '+' : ''}${Math.round(v * 100)}%`;
+                    const verdict = L > 0.002
+                      ? (W >= 0.7 * L ? ' So the lead is broad, not a few lucky calls.'
+                        : W < 0.5 * L ? ' So much of the lead comes from a handful of huge calls.' : '')
+                      : '';
+                    const nw = (sk.luck.clear_w || []).length;
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-slate-200">Without the extremes.</span>
+                        {' '}A few calls move more than 100% in {sk.days || 90} days, and a handful like that can carry an average.
+                        {' '}With every result capped at the 1% extremes (below {pct(sk.luck.winsor.lo)} or above {pct(sk.luck.winsor.hi)}), {who} beats our other ideas by {pts(W)} pts instead of {pts(L)} pts (t {Number(sk.luck.app_lift_w_t || 0).toFixed(1)})
+                        {sh != null && L > 0 ? `; its 10 best calls make ${Math.round(sh * 100)}% of its lead` : ''}.
+                        {verdict}
+                        {' '}{nw} of {sk.luck.tries_ever} ways {nw === 1 ? 'clears' : 'clear'} the bar counted that way.
+                      </div>
+                    );
+                  })()}
                   <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
                 </div>
               )}

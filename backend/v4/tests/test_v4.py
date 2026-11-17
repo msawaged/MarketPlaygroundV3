@@ -4701,3 +4701,64 @@ def test_brain_scorecard_says_whether_the_ranker_is_mixed(monkeypatch):
                                                                   "model": "mlp_adj_mix" if mix else "mlp_adj", "mix": mix,
                                                                   "oos": {"n": 10}, "risk_check": True})
         assert brain._skill()["ranker"]["mix"] is mix
+
+
+def test_outlier_check_tells_a_broad_edge_from_a_few_lottery_tickets():
+    """Research lifts are means of fat-tailed 90-day returns. The outlier check (reporting only) clips every outcome at
+    the run's pooled 1st / 99th percentile, and reports the median lift and the 10 best calls' share of the lift: a
+    rule that owns two +500% calls and nothing else shows a big lift, ~0 clipped lift and top10_share ~1; a broad edge
+    keeps its clipped lift. The gate (_passes) still reads the plain lift and t."""
+    from backend.v4 import research
+    import numpy as _np
+    rng = random.Random(21)
+    beliefs = [{"date": f"2025-{1 + k % 12:02d}-{1 + k % 27:02d}",
+                "cands": [{"ex": rng.gauss(0, 0.1)} for _ in range(4)]} for k in range(600)]
+    beliefs[0]["cands"][0]["ex"] = 5.0; beliefs[1]["cands"][0]["ex"] = 5.0   # two +500% ideas
+    lo, hi = research.winsor_cuts(beliefs)
+    assert -0.4 < lo < -0.1 and 0.1 < hi < 0.4                    # per run, from the pooled outcomes (not hard-coded)
+    assert research.winsor_cuts(beliefs[:5]) is None              # too few to say
+    for b in beliefs:
+        b["wmean"] = float(_np.mean(_np.clip([c["ex"] for c in b["cands"]], lo, hi)))
+    mean = lambda b: float(_np.mean([c["ex"] for c in b["cands"]]))
+    # lottery rule: picks the +500% idea where there is one, otherwise the idea closest to the belief's average
+    lot = []
+    for b in beliefs:
+        c = b["cands"][0] if b["cands"][0]["ex"] >= 5 else min(b["cands"], key=lambda c: abs(c["ex"] - mean(b)))
+        lot.append((c["ex"], mean(b), 0.0, 0.0, b["date"], b["wmean"]))
+    broad = [(max(c["ex"] for c in b["cands"]) if b["cands"][0]["ex"] < 5 else b["cands"][1]["ex"],
+              mean(b), 0.0, 0.0, b["date"], b["wmean"]) for b in beliefs]
+    m, e = research._metrics(lot, (lo, hi)), research._metrics(broad, (lo, hi))
+    assert m["lift"] > 0.01 and abs(m["lift_w"]) < 0.004 and m["top10_share"] > 0.9 and abs(m["lift_med"]) < 0.002
+    assert e["lift_w"] > 0.05 and e["lift_w_t"] > 10 and e["top10_share"] < 0.2 and e["lift_med"] > 0.05
+    assert "lift_w_t_nw" in e
+    # no cuts / no clipped means: no clipped keys (callers outside run(), e.g. the live check)
+    assert "lift_w" not in research._metrics(lot) and "lift_w" not in research._metrics([p[:5] for p in lot], (lo, hi))
+    # the luck block reports which ways clear the bar once clipped; the gate keeps reading plain numbers
+    lk = research.luck({"app (current #1)": {**m, "lift_adj_t": 0.0}, "broad": {**e, "lift_adj_t": 0.0}})
+    assert lk["clear_w"] == ["broad"] and not lk["app_clears_w"] and lk["app_lift_w"] == m["lift_w"]
+    assert lk["app_top10_share"] == m["top10_share"]
+    assert research._passes({**m, "lift_w": 0.0, "lift_w_t": 0.0}, {}) == research._passes(m, {})
+
+
+def test_research_run_reports_the_outlier_check():
+    from backend.v4 import research
+    rng = random.Random(5)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(300):
+        bid = f"b-wz-{k}"
+        asof = (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            pid = f"p-wz-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": {"mom60": rng.uniform(-1, 1)}}), j + 1))
+            ex = 5.0 if (j == 0 and k in (250, 280)) else rng.gauss(0, 0.1)   # two +500% #1 picks in the test period
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex, asof))
+    out = research.run(data=research.load())
+    assert out["winsor"]["lo"] < 0 < out["winsor"]["hi"] < 1 and out["luck"]["winsor"] == out["winsor"]
+    app = out["results"]["app (current #1)"]
+    assert app["lift"] > app["lift_w"] + 0.01            # the two lottery tickets carry the plain lift
+    assert app["top10_share"] is None or app["top10_share"] > 0.5
+    assert "clear_w" in out["luck"] and out["luck"]["app_lift_w"] == app["lift_w"]

@@ -390,13 +390,16 @@ def _se_overlap(x: np.ndarray, dates: list[str], window: int = DAYS) -> float:
     return math.sqrt(var) if var > 0 else 0.0
 
 
-def _metrics(picks: list[tuple]) -> dict:
+def _metrics(picks: list[tuple], cuts: tuple[float, float] | None = None) -> dict:
     """picks: [(ex of chosen, belief mean ex, risk-matched ex of chosen, belief mean risk-matched ex[, belief date])].
     beat/lift: against the S&P 500. beat_adj/lift_adj: against the S&P scaled to each stock's beta, so leaning on
     riskier stocks in a rising market doesn't count as skill.
     With dates: lift_t_nw / lift_adj_t_nw are the same lifts' t with overlap-honest errors (_se_overlap), `dates` the
     distinct call dates and n_eff about how many independent calls the n is worth. Reporting only: _passes and
-    fit_production read the plain t's, exactly as before."""
+    fit_production read the plain t's, exactly as before.
+    Outlier check (always): lift_med = median per-call lift; top10_share = share of the summed lift that the 10 best
+    calls contribute (None unless the summed lift is positive). With `cuts` and winsorized belief means (6th item):
+    lift_w / lift_w_t (/ lift_w_t_nw) = the same lift with every outcome clipped to the cuts. Reporting only."""
     if not picks:
         return {"n": 0}
     def tstat(x):
@@ -408,7 +411,14 @@ def _metrics(picks: list[tuple]) -> dict:
         return round(float(x.mean() / se), 2) if se > 0 else 0.0
     ex = np.array([p[0] for p in picks]); lift = np.array([p[0] - p[1] for p in picks])
     out = {"n": len(picks), "beat": round(float((ex > 0).mean()), 4), "avg": round(float(ex.mean()), 4),
-           "lift": round(float(lift.mean()), 4), "lift_t": tstat(lift)}
+           "lift": round(float(lift.mean()), 4), "lift_t": tstat(lift), "lift_med": round(float(np.median(lift)), 4)}
+    tot = float(lift.sum())
+    out["top10_share"] = round(float(np.sort(lift)[::-1][:10].sum()) / tot, 3) if tot > 0 and len(lift) > 10 else None
+    if cuts and len(picks[0]) >= 6 and all(p[5] is not None for p in picks):
+        lw = np.clip(ex, cuts[0], cuts[1]) - np.array([p[5] for p in picks], dtype=float)
+        out.update({"lift_w": round(float(lw.mean()), 4), "lift_w_t": tstat(lw)})
+        if dts:
+            out["lift_w_t_nw"] = tnw(lw)
     if dts:
         se_p = lift.std(ddof=1) / math.sqrt(len(lift)) if len(lift) > 1 else 0.0
         se_h = _se_overlap(lift, dts)
@@ -483,8 +493,23 @@ def _choose(b: dict, score: Callable[[dict], float]) -> tuple:
 
 
 def _pick(b: dict, c: dict) -> tuple:
+    # 6th: the belief's mean excess with every idea's outcome winsorized (run() sets b["wmean"]); None outside run()
     return (c["ex"], float(np.mean([x["ex"] for x in b["cands"]])),
-            c["exa"], float(np.mean([x["exa"] for x in b["cands"]])), b.get("date"))
+            c["exa"], float(np.mean([x["exa"] for x in b["cands"]])), b.get("date"), b.get("wmean"))
+
+
+WINSOR_Q = 0.01  # the outlier check clips outcomes at the 1st / 99th percentile of the run's test-period ideas
+
+
+def winsor_cuts(beliefs: list[dict], q: float = WINSOR_Q) -> tuple[float, float] | None:
+    """Cut points for the outlier check (Adams, Hayunga, Mansi, Reeb & Verardi 2019): the q / 1-q quantiles of every
+    candidate's 90-day excess in these beliefs, computed per run from outcomes already graded, so every rule is clipped
+    at the same place and no rule's choice is looked ahead at. Reporting only."""
+    xs = [float(c["ex"]) for b in beliefs for c in b["cands"]]
+    if len(xs) < 50:
+        return None
+    lo, hi = (float(v) for v in np.quantile(np.array(xs), [q, 1 - q]))
+    return (lo, hi) if hi > lo else None
 
 
 def _fit_ridge(train: list[dict], keys: list[str], alpha: float = 5.0):
@@ -594,6 +619,14 @@ def luck(results: dict, tries_ever: int | None = None) -> dict:
                     "app_clears_nw": "app (current #1)" in c_nw, "app_clears_adj_nw": "app (current #1)" in c_nwa,
                     "app_t": app.get("lift_t"), "app_t_nw": app.get("lift_t_nw"),
                     "app_dates": app.get("dates"), "app_n_eff": app.get("n_eff")})
+    # the same bar on outlier-clipped lifts (_metrics lift_w_t): does an edge survive without its few huge calls?
+    w = {k: float(results[k]["lift_w_t"]) for k in names if results[k].get("lift_w_t") is not None}
+    if w:
+        app = results.get("app (current #1)") or {}
+        c_w = _holm(w, m)
+        out.update({"clear_w": sorted(c_w, key=lambda k: -w[k]), "app_clears_w": "app (current #1)" in c_w,
+                    "app_lift": app.get("lift"), "app_lift_w": app.get("lift_w"), "app_lift_w_t": app.get("lift_w_t"),
+                    "app_lift_med": app.get("lift_med"), "app_top10_share": app.get("top10_share")})
     return out
 
 
@@ -745,6 +778,13 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
     weights = None
+    # outlier check: clip at the pooled test-period ideas' 1st / 99th percentile; each test belief's clipped mean
+    # rides along in _pick. Reporting only (the gate reads the plain lift and t).
+    cuts = winsor_cuts([b for b in data if b["date"] >= dates[start]])
+    for b in data:
+        b.pop("wmean", None)
+        if cuts and b["date"] >= dates[start]:
+            b["wmean"] = float(np.mean(np.clip([c["ex"] for c in b["cands"]], cuts[0], cuts[1])))
     spreads: dict[str, list[float]] = {}
     off: dict[str, list[bool]] = {}  # test beliefs where the model's favourite idea was in the other direction
 
@@ -815,13 +855,16 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             pass
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS, "shifted_beliefs": len(aug),
            "confidence": {k: _by_confidence(res[k], v) for k, v in spreads.items() if len(v) == len(res[k]) >= 90},
-           "test_from": dates[start], "results": {k: _metrics(v) for k, v in res.items()},
+           "test_from": dates[start], "results": {k: _metrics(v, cuts) for k, v in res.items()},
+           "winsor": {"q": WINSOR_Q, "lo": round(cuts[0], 4), "hi": round(cuts[1], 4)} if cuts else None,
            "ridge_weights_last": weights, "lead_only": True,
            "mixed_direction": round(float(np.mean([len(_lead(b)) < len(b["cands"]) for b in data[start:]])), 4),
            "off_lead": {k: round(float(np.mean(v)), 4) for k, v in off.items() if v},
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
+    if out["winsor"]:
+        out["luck"]["winsor"] = out["winsor"]
     # feature coverage on the test-period calls (the ones every result is scored on); reporting only
     cov = coverage([b for b in data if b["date"] >= dates[start]])
     out["coverage"] = cov

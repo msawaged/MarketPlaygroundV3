@@ -1161,3 +1161,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_realized_skewness_rule_and_enrich_backfill.
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json, docs/agent_handoff.md.
+
+## 2026-11-17 night (Builder routine): outlier check on research results ("Without the extremes" on the Brain page)
+- No HQ messages from Murad. Built the scout's 2026-11-17 proposal (rule b). Reporting only: `_passes`,
+  `fit_production`, MIN_LIFT / MIN_T, embargoes and the live ranking are unchanged.
+- research.winsor_cuts: 1st / 99th percentile of every test-period idea's 90-day excess, per run. run() sets each test
+  belief's clipped mean (`b["wmean"]`, rides in `_pick`'s new 6th item; None outside run(), e.g. live_check) and passes
+  the cuts to `_metrics`, which adds lift_w / lift_w_t / lift_w_t_nw (with cuts) and lift_med / top10_share (always).
+  luck() adds clear_w, app_clears_w, app_lift, app_lift_w, app_lift_w_t, app_lift_med, app_top10_share; run() stores
+  `winsor` {q, lo, hi} (also in luck). brain._skill passes luck through unchanged.
+- BrainPage: "Without the extremes" paragraph in the luck check (capped lift vs plain, 10 best calls' share, how many
+  ways clear the bar capped; says "broad" at >= 70% kept, "a handful of huge calls" under 50%). Shows after the next
+  research run fills the kv. WhatsNew line added. docs/research_ideas.md header explains the new columns.
+- Tests: test_outlier_check_tells_a_broad_edge_from_a_few_lottery_tickets, test_research_run_reports_the_outlier_check.
+  Checked at 390 and 375 (live /v4/brain JSON with mocked outlier numbers).
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/builder.json.
