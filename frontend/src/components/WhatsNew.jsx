@@ -4,6 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 17';
 export const UPDATES = [
+  "New: Close Call shows how far the stock could move by that date, and flags when options expect a bigger move than usual",
   'New: Portfolio puts each practice trade next to the same money in the S&P 500 over the same days',
   'New: Closed trades on Portfolio: what you put in, what came back, and the gain; expired options settle at the expiration-day close',
   "New: Close Call keeps your record: how often you picked the right side, next to what the market's odds expected",

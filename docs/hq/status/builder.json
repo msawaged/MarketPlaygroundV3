@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T13:30:00Z",
- "last_run": "Brain page: the live forward test's luck check now counts calls made the same days as one market week (like the scorecard above it does): t 2.0 instead of 2.1, from 1,409 calls made on 14 days. Still 'unlikely to be luck', now honestly.",
+ "updated_at": "2026-11-17T14:20:00Z",
+ "last_run": "Close Call now shows how far the stock could move by the chosen date (the range options put a 2-in-3 chance on, with today's price and your line on it), and warns when options expect a much bigger move than the stock has been making, which usually means earnings or news before that date.",
  "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
- "next": "Once live: check the Brain page forward test lines and the queued Portfolio changes. Then the next finishing touch for Prof Brown's review.",
+ "next": "Once live: check the Close Call move box on NVDA/WMT this week and the queued Brain page and Portfolio changes. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call asked 'Will NVDA close above $160 on Fri Nov 20?' with 40% odds, but those odds came from options priced for 130% volatility (NVDA has moved about 45% a year lately): the market expects a big earnings-week jump, and the page never said so. Now a 'How far it could move' box shows the range options give a 2-in-3 chance (a bar with today's price and your line), and an amber note when options expect a much bigger move than usual, often earnings or news before that date. Information only: the odds, the brain's lean and the trade prices are unchanged.",
+   "at": "2026-11-17T14:20:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The Brain page's live forward test said the #1 pick's +0.4 pts lead was 'unlikely to be luck (t 2.1)', counting all 1,409 calls as independent. But they were made on only 14 days, and calls made the same week ride the same market, which the scorecard right above already counts honestly. The forward test now does the same: t 2.0 counted that way (still just clear of luck), with a line saying the calls came from 14 days and what the plain t was. The High/Medium/Low split uses the same check.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call showed 'NVDA above $150' odds taken from the $149/$152.5 spread, which is really the chance of a close above $150.75 (1-2 pts off). The odds are now read at $150 itself from the strikes either side, and the note under them says which prices were used.",
    "at": "2026-11-16T11:05:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call showed AAPL at 50% odds to close above $360 while YES cost $204 for a $500 payout (41%): a finance professor would call that a free-money bug. Each strike is now priced at its own implied volatility, so YES costs the market's own spread price and agrees with the odds.",
-   "at": "2026-11-16T08:03:00Z"
   }
  ]
 }

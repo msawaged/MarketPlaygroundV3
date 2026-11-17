@@ -3916,6 +3916,42 @@ def test_yesno_math():
     assert yesno.brier(0.7, True) == pytest.approx(0.09)
 
 
+def test_yesno_expected_move_and_big_move_warning(monkeypatch):
+    from backend.v4 import yesno
+    e = date(2026, 11, 20)
+    rows = [{"strike": k, "type": t, "iv": iv, "expiration": e}
+            for k, iv in ((150.0, 1.30), (155.0, 1.28), (160.0, 1.30)) for t in ("call", "put")]
+    m = yesno.expected_move(157.29, rows, 3 / 365, rv60=0.50)
+    # at-the-money = the strike nearest $157.29 ($155): one standard deviation over 3 days at 128%
+    sd = 1.28 * math.sqrt(3 / 365)
+    assert m["atm_strike"] == 155.0 and m["atm_iv"] == pytest.approx(1.28)
+    assert m["low"] == pytest.approx(157.29 * math.exp(-sd), abs=0.01) and m["high"] == pytest.approx(157.29 * math.exp(sd), abs=0.01)
+    assert m["low"] < 157.29 < m["high"] and 0.10 < m["pct"] < 0.13
+    assert m["big"] is True and m["iv_rv"] == pytest.approx(2.56)
+    lines = yesno.move_text("NVDA", m, e)
+    assert lines[0].startswith("Option prices put about a 2-in-3 chance on NVDA closing between $") and "on Fri Nov 20 (about \u00b112%" in lines[0]
+    assert "128% yearly volatility" in lines[1] and "50% a year over the last 60 trading days" in lines[1] and "earnings" in lines[1]
+    # a normal premium over realized: no warning; no realized history: no warning either
+    assert yesno.expected_move(157.29, rows, 3 / 365, rv60=1.10)["big"] is False
+    assert len(yesno.move_text("NVDA", yesno.expected_move(157.29, rows, 3 / 365, rv60=1.10), e)) == 1
+    assert yesno.expected_move(157.29, rows, 3 / 365)["big"] is False
+    # no strike within 3% of today's price (the chain slice sits around a far line): no range rather than a wrong one
+    assert yesno.expected_move(120.0, rows, 3 / 365, rv60=0.5) is None
+    assert yesno.expected_move(157.29, [dict(r, iv=None) for r in rows], 3 / 365) is None
+
+
+def test_yesno_quote_sends_the_expected_move(monkeypatch):
+    yesno = _fake_chain(monkeypatch, iv=0.4)
+    e = yesno.expirations("WINR")
+    spot = market.latest_price("WINR")
+    q = yesno.quote("WINR", float(int(spot)), e["expirations"][0])
+    m = q["move"]
+    assert m and m["atm_iv"] == pytest.approx(0.4) and m["low"] < spot < m["high"]
+    assert m["pct"] == pytest.approx(0.4 * math.sqrt(9 / 365), rel=0.02) and m["lines"][0].startswith("Option prices put")
+    # the odds and the trade don't change because of it
+    assert 0.3 < q["market_p"] < 0.8
+
+
 def test_yesno_quote_call_grade(monkeypatch):
     yesno = _fake_chain(monkeypatch)
     spot = market.latest_price("WINR")

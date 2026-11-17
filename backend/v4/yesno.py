@@ -203,6 +203,41 @@ def prob_above(spot: float, level: float, years: float, vol: float, rate: float 
     return min(0.995, max(0.005, _ncdf(d2)))
 
 
+def expected_move(spot: float, rows: list[dict], years: float, rv60: Optional[float] = None) -> Optional[dict]:
+    """The range option prices put about a 2-in-3 chance on by the expiration (one standard deviation), from the
+    at-the-money implied volatility of that one expiration, and whether that's a bigger move than the stock has been
+    making (implied vs its last 60 trading days of realized volatility; same 1.35x line as Price Check).
+
+    Information only: it doesn't feed the odds, the lean or any grade."""
+    rows = [r for r in rows if r.get("iv")]
+    if not rows or spot <= 0 or years <= 0:
+        return None
+    k = min({r["strike"] for r in rows}, key=lambda s: abs(s - spot))
+    if abs(k / spot - 1) > 0.03:        # no strike near today's price in this slice of the chain
+        return None
+    ivs = [r["iv"] for r in rows if r["strike"] == k]
+    iv = sum(ivs) / len(ivs)
+    sd = iv * math.sqrt(years)
+    lo, hi = spot * math.exp(-sd), spot * math.exp(sd)
+    ratio = iv / rv60 if rv60 else None
+    return {"atm_iv": round(iv, 4), "atm_strike": k, "low": round(lo, 2), "high": round(hi, 2),
+            "pct": round((hi - lo) / (2 * spot), 4), "rv60": round(rv60, 4) if rv60 else None,
+            "iv_rv": round(ratio, 2) if ratio else None, "big": bool(ratio and ratio > 1.35)}
+
+
+def move_text(u: str, m: dict, exp: date) -> list[str]:
+    day = f"{exp.strftime('%a %b')} {exp.day}"
+    pct = m["pct"] * 100
+    pct_s = f"{pct:.1f}" if pct < 10 else f"{pct:.0f}"
+    out = [f"Option prices put about a 2-in-3 chance on {u} closing between {_money(m['low'])} and {_money(m['high'])} "
+           f"on {day} (about \u00b1{pct_s}% from today)."]
+    if m["big"]:
+        out.append(f"That's a bigger move than usual: these options are priced for {m['atm_iv'] * 100:.0f}% yearly "
+                   f"volatility, while {u} actually moved {m['rv60'] * 100:.0f}% a year over the last 60 trading days "
+                   f"({m['iv_rv']:.1f}x). Often that means news is due before {day}, like an earnings report.")
+    return out
+
+
 def _logit(p: float) -> float:
     p = min(0.995, max(0.005, p))
     return math.log(p / (1 - p))
@@ -379,6 +414,13 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         price_vol, price_source = round(vol, 4), "strikes"
     else:
         price_vol, price_source = (sv, "spread") if sv else ((vol, "line_iv") if vol_source == "market" else (None, "estimate"))
+    rv60 = None
+    try:
+        _, closes = market.daily_closes(u)
+        rv60 = market.realized_vol(closes, len(closes) - 1, 60) if len(closes) > 65 else None
+    except Exception:
+        pass
+    move = expected_move(spot, chain, years, rv60) if vol_source == "market" else None
     sig = _signals(u)
     feats = make_features(m_p, sig, spot, level, vol, years)
     model = active_model()
@@ -419,7 +461,8 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
-            "spread_note": spread_note(u, k1, k2, width)}
+            "spread_note": spread_note(u, k1, k2, width),
+            "move": dict(move, lines=move_text(u, move, exp)) if move else None}
 
 
 def spread_note(u: str, k1: float, k2: float, width: float) -> str:

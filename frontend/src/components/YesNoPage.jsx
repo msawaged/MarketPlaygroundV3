@@ -56,6 +56,33 @@ function OddsBar({ label, p, tone }) {
   );
 }
 
+// The range option prices put about a 2-in-3 chance on by the expiration, with today's price and the line on it,
+// so "Will it close above $160?" sits next to how far the market thinks it could go. Information only.
+function MoveRange({ m, spot, level }) {
+  if (!m || !m.lines) return null;
+  const lo = Math.min(m.low, level, spot);
+  const hi = Math.max(m.high, level, spot);
+  const pad = (hi - lo) * 0.06 || 1;
+  const pos = (v) => ((v - (lo - pad)) / (hi - lo + 2 * pad)) * 100;
+  // A label near either end hangs inward so it never runs off a 375px screen.
+  const tag = (v) => { const p = pos(v); return { left: `${p}%`, transform: p < 18 ? 'none' : p > 82 ? 'translateX(-100%)' : 'translateX(-50%)' }; };
+  const fmt = (v) => usd(v, v % 1 ? 2 : 0);
+  return (
+    <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900/50 p-3">
+      <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">How far it could move</div>
+      <div className="relative mt-7 mb-7 h-2 rounded-full bg-slate-800" aria-hidden="true">
+        <div className="absolute h-2 rounded-full bg-slate-500/70" style={{ left: `${pos(m.low)}%`, width: `${pos(m.high) - pos(m.low)}%` }} />
+        <div className="absolute -top-1 h-4 w-0.5 -ml-px bg-white" style={{ left: `${pos(spot)}%` }} />
+        <div className="absolute -top-6 whitespace-nowrap text-[11px] text-slate-300 tabular-nums" style={tag(spot)}>now {usd(spot, 2)}</div>
+        <div className="absolute -top-1.5 h-5 w-0.5 -ml-px bg-blue-400" style={{ left: `${pos(level)}%` }} />
+        <div className="absolute top-4 whitespace-nowrap text-[11px] font-bold text-blue-300 tabular-nums" style={tag(level)}>line {fmt(level)}</div>
+      </div>
+      <p className="text-xs text-slate-300">{m.lines[0]} <span className="text-slate-400">The grey band is that range.</span></p>
+      {m.lines[1] && <p className="mt-2 text-xs text-amber-200">{m.lines[1]}</p>}
+    </div>
+  );
+}
+
 export default function YesNoPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -161,6 +188,7 @@ export default function YesNoPage() {
             {q.odds_source && <div className="-mt-1 text-[11px] text-slate-500">From {q.odds_source}.</div>}
             <OddsBar label={q.brain_model === 'learned' ? "Brain's lean (learned)" : "Brain's lean (starting rules, untested)"} p={q.brain_p} tone="bg-blue-500" />
           </div>
+          <MoveRange m={q.move} spot={q.spot} level={q.level} />
           <ul className="mt-3 text-xs text-slate-400 space-y-1">
             {q.reasons.map((r) => <li key={r}>• {r}</li>)}
             <li>• {q.brain_model === 'learned'

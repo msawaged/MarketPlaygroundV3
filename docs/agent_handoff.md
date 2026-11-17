@@ -1094,3 +1094,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, frontend/src/components/ui/Term.jsx,
   frontend/src/components/chat/StrategyCard.jsx, backend/v4/library.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 afternoon (Builder routine): Close Call shows how far the stock could move, and flags event-sized moves
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Picked a missing-context gap on Close Call (rule c):
+  live NVDA "close above $160 on Fri Nov 20" was priced off 130% implied vol (NVDA's 60-day realized is ~45%: an
+  earnings-week chain), yet the page showed only "40% YES" and the brain's MuLine reasons, with no word that the market
+  expects a huge move before that date. A finance professor would ask where the event is.
+- yesno.expected_move (pure): ATM IV of that one expiration (strike nearest spot, must be within 3%), the 1-sd
+  range spot*exp(+-iv*sqrt(t)) ("about a 2-in-3 chance"), and implied / 60-day realized; `big` when > 1.35x (same line
+  as Price Check's "expensive"; ~7% of logged 30-day ATM readings since Oct 15, e.g. NVDA, WMT, DIS). yesno.move_text
+  writes the sentences. quote() sends `move` (None without market IVs). Information only: doesn't feed odds, lean,
+  pricing or grading.
+- YesNoPage: "How far it could move" box under the odds bars: grey band = the range, white tick = now, blue = the line,
+  labels hang inward at the ends; amber line when the move is bigger than usual. WhatsNew line added.
+- Tests: test_yesno_expected_move_and_big_move_warning, test_yesno_quote_sends_the_expected_move. Backend 199 passed
+  (fresh venv), vite build passes. Checked at 390 and 375 (offline server; event case mocked in).
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
