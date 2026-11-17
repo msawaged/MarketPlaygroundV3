@@ -177,10 +177,15 @@ def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> 
 
 def odds_label(used: list, level: float) -> str:
     """Where the market's odds came from, in the words shown under them."""
-    ks = "/".join(f"${k:g}" for k in used)
+    ks = "/".join(_money(k) for k in used)
     if len(used) == 2:                                   # one spread (its middle is what it measures)
         return f"the {ks} call spread (skew included)"
-    return f"the {ks} call prices, read at the ${level:g} line (skew included)"
+    return f"the {ks} call prices, read at the {_money(level)} line (skew included)"
+
+
+def _money(x: float) -> str:
+    """$190 for whole dollars, $187.50 otherwise (not "$187.5")."""
+    return f"${x:,.0f}" if float(x).is_integer() else f"${x:,.2f}"
 
 
 def _ncdf(x: float) -> float:

@@ -35,13 +35,18 @@ const shortDate = (iso) => {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
 };
 
+// Under 50 cents apart rounds to "$0": say "even" rather than a red "Behind by $0".
+const isEven = (ahead) => Math.abs(Number(ahead) || 0) < 0.5;
+
 // "S&P 500 same days: +$30 (+3.0%)": what the same money would have done in the index over the same days.
 function SpyLine({ v }) {
   if (!v) return null;
   return (
     <div className="text-[11px] text-slate-500">
       Same money in the S&amp;P 500: {signed(v.spy_gain)} ({fmtPct(v.spy_ret)}) ·{' '}
-      <span className={`whitespace-nowrap ${v.ahead >= 0 ? 'text-green-400/80' : 'text-red-400/80'}`}>{v.ahead >= 0 ? 'ahead' : 'behind'} by {usd(Math.abs(v.ahead))}</span>
+      {isEven(v.ahead)
+        ? <span className="whitespace-nowrap text-slate-400">even with it</span>
+        : <span className={`whitespace-nowrap ${v.ahead >= 0 ? 'text-green-400/80' : 'text-red-400/80'}`}>{v.ahead >= 0 ? 'ahead' : 'behind'} by {usd(Math.abs(v.ahead))}</span>}
     </div>
   );
 }
@@ -64,7 +69,9 @@ function BenchmarkCard({ b }) {
         </div>
       </div>
       <p className="mt-2 text-sm">
-        <b className={ahead ? 'text-green-300' : 'text-red-300'}>{ahead ? 'Ahead' : 'Behind'} by {usd(Math.abs(b.ahead))}</b>
+        {isEven(b.ahead)
+          ? <b className="text-slate-200">Even with the S&amp;P 500</b>
+          : <b className={ahead ? 'text-green-300' : 'text-red-300'}>{ahead ? 'Ahead' : 'Behind'} by {usd(Math.abs(b.ahead))}</b>}
         <span className="text-slate-300"> on {usd(b.money)} put to work in {b.trades} trade{b.trades === 1 ? '' : 's'}{b.open ? ` (${b.open} still open)` : ''}. {b.beat} of {b.trades} beat the index.</span>
       </p>
       <p className="mt-1.5 text-[11px] text-slate-500">

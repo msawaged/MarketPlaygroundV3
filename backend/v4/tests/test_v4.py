@@ -4148,6 +4148,9 @@ def test_yesno_digital_from_call_spread():
     assert used == [100, 105] and p == pytest.approx(p_right)
     assert yesno.odds_label(used, 104) == "the $100/$105 call spread (skew included)"
     assert yesno.digital_from_spread(calls, 120) is None                         # outside the listed strikes
+    # Half-dollar strikes and lines read as money: "$157.50", not "$157.5"
+    assert yesno.odds_label([157.5, 162.5], 160) == "the $157.50/$162.50 call spread (skew included)"
+    assert yesno.odds_label([185, 187.5, 190], 186.3) == "the $185/$187.50/$190 call prices, read at the $186.30 line (skew included)"
     assert yesno.digital_from_spread([{"strike": 95, "bid": 1, "ask": 1.1}, {"strike": 105, "bid": 2, "ask": 2.1}], 100) is None  # nonsense quotes
     assert yesno.digital_from_spread([{"strike": 50, "bid": 6, "ask": 6.2}, {"strike": 150, "bid": 1, "ask": 1.1}], 100) is None   # too wide
 

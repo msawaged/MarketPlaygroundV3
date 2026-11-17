@@ -86,3 +86,13 @@ def test_a_trade_opened_during_market_hours_starts_from_spy_at_that_moment_not_t
     # a fetch that fails falls back to the close rule, never an error
     boom = benchmark._price_at_factory(fetch=lambda day: (_ for _ in ()).throw(RuntimeError("down")))
     assert benchmark.level_at("2026-11-10T19:02:00+00:00", DATES, CLOSES, boom) == ("2026-11-09", 600.0)
+
+
+def test_a_trade_within_50_cents_of_the_sp500_is_even_not_a_win():
+    # $70 Close Call opened Mon after the close (SPY 600), now 600.6: S&P leg +$0.07; the trade +$0.20 -> "even"
+    trades = [{"id": "e", "cost": 70.0, "pnl": 0.2, "opened_at": "2026-11-09T22:00:00+00:00",
+               "closed_at": None, "position_type": "options"}]
+    s = benchmark.compare(trades, DATES, CLOSES, live=600.6)["summary"]
+    assert abs(s["ahead"]) < benchmark.EVEN and s["beat"] == 0
+    trades[0]["pnl"] = 5.0
+    assert benchmark.compare(trades, DATES, CLOSES, live=600.6)["summary"]["beat"] == 1

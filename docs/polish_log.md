@@ -968,3 +968,32 @@ Changed:
 - scripts/dev_offline_server.py: offline `session_close_on` from the synthetic closes (dev tool only).
 
 Checks: vite build passes, npm test passes, backend tests 194 passed.
+
+## 2026-11-17 (second run, ~09:30 UTC = Tue 4:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+First phone walk of Close Call end to end (offline server now has a synthetic option chain, see below):
+- SPY $680, "close above $675 on Fri Nov 27": market 55% YES (flat 35% vol gives 54.6%: matches). YES $670/$680 call
+  spread risk $545 to make $455, breakeven $675.45; NO risk $453 to make $547, breakeven $675.47; YES + NO = $998 of a
+  $1,000 payout. Adds up. NVDA $190 line: YES $70 / NO $180 of $250, both breakevens $190.70. Adds up.
+- Live API cross-check (read-only GET /v4/yesno/quote NVDA $160 Dec 4): YES $100 + NO $148 = $248 of $250; breakevens
+  $161.00 / $161.02. Adds up.
+
+Found:
+- Portfolio, right after a Close Call trade: "Behind by $0" in bold red, and on the trade "behind by $0" in red. The
+  difference was -$0.09; it rounds to $0 but the colour and word say the user is losing to the index.
+- Odds source label printed half-dollar strikes as "$157.5/$162.5" and a typed line as "$186.3" (live: "the
+  $157.5/$162.5 call spread").
+
+Changed:
+- PracticePage: within 50 cents of the S&P leg reads "Even with the S&P 500" (card) / "even with it" (trade line), grey.
+- benchmark: `EVEN = 0.5`; "N of M beat the index" counts a trade only when it's at least 50 cents ahead (so "Even"
+  and "1 of 1 beat" can't appear together). Test test_a_trade_within_50_cents_of_the_sp500_is_even_not_a_win.
+- yesno.odds_label: money format ($190, $187.50, $186.30). Test lines in test_yesno_digital_from_call_spread.
+- scripts/dev_offline_server.py: synthetic option chain (weekly Fridays, Black-Scholes at 35% vol, 2% wide quotes) and
+  option_quote, so Close Call and options cards can be walked locally. Dev tool only.
+
+Checks: vite build passes, npm test passes, backend tests 196 passed.

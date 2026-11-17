@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T07:00:00Z",
- "last_run": "Options cards now count days to expiry the way a trader does (it said 186 days for a 185-day option before noon). The 'How sure are you?' line now explains why a ~4-month call is checked at 180 days. What's new lists the Portfolio additions. Double-checked the Brain page's live forward test: its 'unlikely to be luck' still holds when overlapping calls are counted honestly.",
+ "updated_at": "2026-11-17T09:55:00Z",
+ "last_run": "Walked Close Call on a phone end to end: odds, costs and breakevens add up. Fixed Portfolio saying a red 'Behind by $0' when you're within pennies of the S&P 500 (now 'Even with the S&P 500'), and the odds note now writes strikes as money ($157.50, not $157.5).",
  "working_on": "Waiting for Render builds to come back so the last few days of fixes go live.",
- "next": "Check all queued fixes on the live site once builds run; walk Baskets and Close Call answers on a phone.",
+ "next": "Check all queued fixes on the live site once builds run; walk Baskets and the options card on a phone.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes, so no fix from any agent goes live until the build limit is raised in Render's workspace settings (or Dec 1)."
  ],

@@ -86,6 +86,54 @@ def session_close_on(sym, d):
 market.session_close_on = session_close_on
 
 
+def _bs(spot, k, years, vol, kind, r=0.038):
+    if years <= 0:
+        return max(0.0, (spot - k) if kind == "call" else (k - spot))
+    nd = lambda x: 0.5 * (1 + math.erf(x / math.sqrt(2)))  # noqa: E731
+    d1 = (math.log(spot / k) + (r + vol * vol / 2) * years) / (vol * math.sqrt(years))
+    d2 = d1 - vol * math.sqrt(years)
+    c = spot * nd(d1) - k * math.exp(-r * years) * nd(d2)
+    return c if kind == "call" else c - spot + k * math.exp(-r * years)
+
+
+def option_chain_near(sym, strike, expiration, days=21, band=0.15):
+    """Offline stand-in: weekly Friday expirations, Black-Scholes quotes at a flat 35% vol, 1-cent-wide markets
+    on either side of a 2% spread. Lets Close Call and the options card be walked without a quote feed."""
+    sym = sym.upper()
+    if sym not in UNIVERSE:
+        return []
+    spot, t0 = market.latest_price(sym), market.today()
+    step = 1.0 if spot < 25 else 2.5 if spot < 200 else 5.0 if spot < 500 else 10.0
+    lo, hi = max(t0 + timedelta(days=1), expiration - timedelta(days=days)), expiration + timedelta(days=days)
+    out, d = [], lo
+    while d <= hi:
+        if d.weekday() == 4:
+            years = (d - t0).days / 365.0
+            k = math.ceil(strike * (1 - band) / step) * step
+            while k <= strike * (1 + band):
+                for kind in ("call", "put"):
+                    mid = max(0.01, _bs(spot, k, years, 0.35, kind))
+                    occ = f"{sym}{d:%y%m%d}{'C' if kind == 'call' else 'P'}{int(round(k * 1000)):08d}"
+                    out.append({"symbol": occ, "type": kind, "strike": k, "expiration": d,
+                                "bid": round(mid * 0.99, 2), "ask": round(mid * 1.01 + 0.01, 2), "iv": 0.35})
+                k += step
+        d += timedelta(days=1)
+    return out
+
+
+def option_quote(occ):
+    o = market.parse_occ(occ)
+    if not o:
+        return None
+    row = next((r for r in option_chain_near(o["underlying"], o["strike"], o["expiration"], days=0, band=0.0001)
+                if r["symbol"] == occ.upper()), None)
+    return row and {"bid": row["bid"], "ask": row["ask"], "mid": round((row["bid"] + row["ask"]) / 2, 4), "t": None}
+
+
+market.option_chain_near = option_chain_near
+market.option_quote = option_quote
+
+
 class FakeClaude:
     def __init__(self):
         self.messages = self

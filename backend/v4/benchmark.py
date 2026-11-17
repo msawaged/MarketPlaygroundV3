@@ -33,6 +33,7 @@ from typing import Callable, Optional
 from . import market
 
 SYMBOL = "SPY"
+EVEN = 0.5  # dollars: closer than this to the S&P leg is shown as "even" (it rounds to $0)
 
 
 def _aware(ts) -> Optional[datetime]:
@@ -122,7 +123,7 @@ def compare(trades: list[dict], dates: list[str], closes: list[float], live: Opt
     return {"rows": rows, "summary": {
         "symbol": SYMBOL, "trades": len(used), "money": round(money, 2),
         "gain": round(gain, 2), "spy_gain": round(spy_gain, 2), "ahead": round(gain - spy_gain, 2),
-        "beat": sum(1 for t in used if rows[t["id"]]["ahead"] > 0),
+        "beat": sum(1 for t in used if rows[t["id"]]["ahead"] >= EVEN),  # under 50 cents ahead reads "even", not a win
         "open": sum(1 for t in used if not t.get("closed_at")),
         "skipped_short": sum(1 for t in trades if t.get("position_type") == "short"),
         "since": min(rows[t["id"]]["from"] for t in used)}}

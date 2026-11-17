@@ -1054,3 +1054,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Checked at 390 with the live /v4/brain data mocked in.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 late morning (daily polish walk, 2nd run): "Even with the S&P 500", money-formatted odds label
+- No HQ messages from Murad. Display/wording only: no ranking, research, gate, grading, pricing or real-money change.
+- PracticePage: |ahead| < $0.50 shows "Even with the S&P 500" / "even with it" in grey (was a red "Behind by $0").
+- benchmark.py: `EVEN = 0.5`; summary "beat" counts trades at least 50 cents ahead (was > 0).
+- yesno.odds_label: "$157.50/$162.50", "$186.30" (was "$157.5", "$186.3").
+- scripts/dev_offline_server.py: synthetic option chain + option_quote (Close Call walkable offline).
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: frontend/src/components/PracticePage.jsx, backend/v4/benchmark.py, backend/v4/yesno.py,
+  backend/v4/tests/test_benchmark.py, backend/v4/tests/test_v4.py, scripts/dev_offline_server.py, docs/polish_log.md,
+  docs/hq/status/polish.json.
