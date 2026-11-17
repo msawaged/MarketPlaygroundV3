@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T12:55:00Z",
- "last_run": "Walked an 'Earn income' options card and a credit spread in Portfolio on a phone: all the numbers add up. Fixed the wording so credit trades say what happens on the expiration date (it was 'stays above until', and the worst case had no date), and the trend chart now says when an uptrend is only a couple of days old.",
+ "updated_at": "2026-11-17T15:55:00Z",
+ "last_run": "The news feed ('Moving now') showed only one story on a Tuesday morning because each half-hourly refresh threw away the earlier stories. It now keeps today's stories (under a day old) after the new ones. Also stopped Story mode from using a bare year ('2026') as its big headline.",
  "working_on": "Waiting for Render builds to come back so the last few days of fixes go live.",
- "next": "Check all queued fixes on the live site once builds run; walk a bearish idea's options card and Close Call at 360 wide.",
+ "next": "Once builds run: check /trending shows several stories and the queued fixes on the live site; walk Close Call at 360 wide.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes, so no fix from any agent goes live until the build limit is raised in Render's workspace settings (or Dec 1)."
  ],

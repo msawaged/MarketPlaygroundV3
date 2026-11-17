@@ -1026,3 +1026,28 @@ Changed:
   isn't settled."
 
 Checks: vite build passes, npm test passes, backend tests 197 passed.
+
+## 2026-11-17 (fourth run, ~15:25 UTC = Tue 10:25 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds still failing (out of build minutes), so the live /live page still shows the pre-fix forward test.
+
+Found:
+- "Moving now" (/trending, home, Story) showed ONE story during market hours on a Tuesday: "Temu Partners with IT
+  Association of Slovakia" -> AMZN down. /v4/movers built 15:24 UTC: diag headlines 30, 1 item. Each 30-minute rebuild
+  reads only the latest 30 headlines and replaces the feed, so one quiet half hour of press releases empties it
+  (also noted 2026-11-13). The stories picked an hour earlier were simply dropped.
+- Story mode hook was a bare year: kv_cache story for the SMX / trueGold article had hook_big "2026" (from "the 2026
+  Dubai Precious Metals Conference"), shown giant under "MOVING NOW" like a date. The prompt forbids it; the model
+  did it anyway, and the old date guard only caught "November 30, 2026"-style dates.
+
+Changed:
+- movers.py `_carry`: when a rebuild and the stored feed are both Claude-curated, stories already picked stay after
+  the new ones until their news is `MP_MOVERS_CARRY_HOURS` (24) old, up to MAX_ITEMS; duplicates take the fresh copy;
+  stored copies drop prices (re-read live each request). Each card already shows its own age. Seeder dedupes.
+- movers.py `_BARE_YEAR`: `_hook` rejects "2026" / "In 2027"; the no-Claude fallback skips year numbers. Applied on
+  read, so the cached "2026" story mends to "Moving now" once deployed.
+- Tests: test_movers_keeps_todays_stories_when_a_rebuild_finds_few; bare-year lines in the story test.
+
+Checks: vite build passes, backend tests 200 passed (fresh venv).

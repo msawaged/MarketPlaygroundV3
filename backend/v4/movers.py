@@ -255,6 +255,35 @@ def _stored() -> Optional[dict]:
 
 
 KEEP_CURATED = int(os.getenv("MP_MOVERS_KEEP_CURATED_SECONDS", str(3 * 86400)))  # quiet weekend news
+CARRY_HOURS = float(os.getenv("MP_MOVERS_CARRY_HOURS", "24"))
+
+
+def _news_age_hours(item: dict) -> Optional[float]:
+    try:
+        t = datetime.fromisoformat(str(item.get("created_at") or "").replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - t).total_seconds() / 3600
+    except ValueError:
+        return None
+
+
+def _carry(fresh: list[dict], old: list[dict]) -> list[dict]:
+    """Each rebuild reads only the latest 30 headlines, so a quiet half hour of press releases left "Moving now"
+    with one story (live 2026-11-17 10:24 AM ET: one Temu story, though the feed before it had more). Stories
+    Claude already picked stay until they are CARRY_HOURS old, after the new ones; each card shows its own age."""
+    out = list(fresh)
+    seen = {it.get("headline") for it in out}
+    for it in old or []:
+        if len(out) >= MAX_ITEMS:
+            break
+        age = _news_age_hours(it)
+        if it.get("headline") in seen or age is None or age > CARRY_HOURS or not it.get("companies"):
+            continue
+        # prices are re-read on every request; keep only what the story itself says
+        out.append(dict(it, companies=[{k: c.get(k) for k in ("ticker", "direction", "why")} for c in it["companies"]]))
+        seen.add(it.get("headline"))
+    return out
 
 
 def _age(feed: dict, key: str = "checked_at") -> float:
@@ -284,6 +313,8 @@ def feed(client: Any = None) -> dict:
                         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                                    (KEY, json.dumps(cur), fresh["built_at"]))
                     elif fresh["items"] or not (cur and cur.get("items")):
+                        if fresh.get("ai") and cur and cur.get("ai"):
+                            fresh["items"] = _carry(fresh["items"], cur.get("items") or [])
                         db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
                         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                                    (KEY, json.dumps(fresh), fresh["built_at"]))
@@ -396,6 +427,9 @@ _BARE_DATE = re.compile(rf"^(?:on\s+)?(?:(?P<m1>(?:{_MONTHS})[a-z]*)\.?\s+(?P<d1
                         rf"|(?P<d2>\d{{1,2}})(?:st|nd|rd|th)?\s+(?P<m2>(?:{_MONTHS})[a-z]*)\.?)(?:,?\s+(?P<y>\d{{4}}))?$", re.I)
 
 
+_BARE_YEAR = re.compile(r"^(?:in\s+|by\s+)?(?:19|20)\d\d[.!]?$", re.I)
+
+
 def _undate(s: str) -> str:
     """A bare date as the hook ("November 30, 2026") sits under "Moving now" and reads like the page's own date
     (a future one, if the article is about a launch). Say it as when the news is for: "On Nov 30" (year kept only
@@ -415,11 +449,14 @@ def _hook(s: Any) -> str:
     ("Credit stress looks contained" -> "Credit stress looks…")."""
     s = _undate(re.sub(r"\s+", " ", str(s or "")).strip())
     whole = not s.endswith(("…", "..."))  # a hook cut by an older rule ("11,000 satellites, still…")
+    if _BARE_YEAR.match(s):  # live 2026-11-17: "2026" (a conference's year) as the giant hook under "Moving now"
+        return ""
     return s if s and whole and len(s) <= 40 and len(s.split()) <= 5 else ""
 
 
 def _fallback_story(item: dict) -> dict:
-    nums = re.findall(r"(?<![A-Za-z\d-])[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?(?![A-Za-z\d-])", item["headline"])
+    nums = [n for n in re.findall(r"(?<![A-Za-z\d-])[$]?\d[\d,.]*\s?(?:%|billion|million|trillion|B|M)?(?![A-Za-z\d-])", item["headline"])
+            if not _BARE_YEAR.match(n.strip())]  # "2026 Dubai Precious Metals Conference": a year isn't a hook
     return {"hook_big": _clip(nums[0], 20) if nums else "Moving now", "hook_line": _clip(item["headline"], 110),
             "happened": _clip(item.get("summary") or item["headline"], 220), "figures": [],
             "why": _clip(item.get("why") or "News like this can shift which companies people want to own.", 220),

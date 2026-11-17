@@ -1525,6 +1525,43 @@ def test_movers_fallback_drops_tags_for_a_different_company_and_keeps_the_curate
     assert len(calls) == 1
 
 
+def test_movers_keeps_todays_stories_when_a_rebuild_finds_few(monkeypatch):
+    """Live 2026-11-17 10:24 AM ET: a rebuild kept 1 of 30 headlines and "Moving now" showed one Temu story. Stories
+    already picked stay (after the new ones) until they are a day old; stale ones and duplicates don't."""
+    from backend.v4 import movers
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    iso = lambda h: (now - timedelta(hours=h)).isoformat().replace("+00:00", "Z")
+    old_items = [{"headline": h, "hunch": h, "why": "", "summary": "", "source": "x", "url": "", "created_at": c,
+                  "companies": [{"ticker": "DAL", "direction": "up", "why": "w", "price": 50.0, "change": 0.02}]}
+                 for h, c in (("Temu deal", iso(1)), ("Airlines add flights", iso(3)), ("Week-old news", iso(30)),
+                              ("No date", ""))]
+    built = (now - timedelta(hours=1)).isoformat()
+    db.execute("DELETE FROM kv_cache WHERE k = ?", (movers.KEY,))
+    db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
+               (movers.KEY, json.dumps({"items": old_items, "built_at": built, "ai": True}), built))
+    news = [{"headline": "Temu deal", "symbols": [], "summary": "", "source": "x", "url": "", "created_at": iso(1)},
+            {"headline": "Chip export rules tighten", "symbols": [], "summary": "", "source": "x", "url": "", "created_at": iso(0.2)}]
+    ai = {0: {"keep": True, "hunch": "Temu deal", "why": "", "companies": [{"ticker": "AMZN", "direction": "down", "why": "w"}]},
+          1: {"keep": True, "hunch": "Chips face limits", "why": "", "companies": [{"ticker": "NVDA", "direction": "down", "why": "w"}]}}
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {"DAL": {"price": 51.0, "change": -0.01}})
+    monkeypatch.setattr(movers, "_ask_claude", lambda news, client=None: ai)
+    monkeypatch.setattr(movers, "TTL", 0)
+    out = movers.feed()
+    assert [it["headline"] for it in out["items"]] == ["Temu deal", "Chip export rules tighten", "Airlines add flights"]
+    assert out["items"][0]["companies"][0]["ticker"] == "AMZN"  # the fresh copy wins a duplicate
+    carried = out["items"][2]["companies"][0]
+    assert carried["price"] == 51.0 and carried["change"] == -0.01  # today's price, not the stored one
+    stored = json.loads(db.query_one("SELECT v FROM kv_cache WHERE k = ?", (movers.KEY,))["v"])
+    assert "price" not in stored["items"][2]["companies"][0]
+    # never past MAX_ITEMS
+    many = [dict(old_items[1], headline=f"Story {i}") for i in range(12)]
+    assert len(movers._carry([], many)) == movers.MAX_ITEMS
+
+
 def test_called_it_email_once_and_unsubscribe(monkeypatch):
     from backend.v4 import notify, mailer
     from datetime import datetime, timedelta, timezone
@@ -1700,6 +1737,10 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     assert movers._hook(f"November 30, {yr}") == "On Nov 30"
     assert movers._hook(f"30 November {yr + 1}") == f"On Nov 30, {yr + 1}"
     assert movers._hook("$51 billion") == "$51 billion" and movers._hook("May 2026 sales") == "May 2026 sales"
+    # a bare year isn't a hook either (live: "2026" from "the 2026 Dubai Precious Metals Conference")
+    assert movers._hook("2026") == "" and movers._hook("In 2027") == "" and movers._hook("Up 2026%") == "Up 2026%"
+    assert movers._fallback_story({"headline": "SMX shows trueGold at the 2026 Dubai Precious Metals Conference"})["hook_big"] == "Moving now"
+    assert movers._fallback_story({"headline": "In 2026 Oil jumps 5% as OPEC cuts"})["hook_big"] == "5%"
     # the no-Claude hook never takes digits out of a model name ("E195-E2" -> "195")
     assert movers._fallback_story({"headline": "Latam launches the Embraer E195-E2"})["hook_big"] == "Moving now"
     assert movers._fallback_story({"headline": "Oil jumps 5% as OPEC cuts"})["hook_big"] == "5%"

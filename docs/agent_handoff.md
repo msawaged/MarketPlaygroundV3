@@ -1112,3 +1112,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 late morning ET (daily polish walk, 4th run): "Moving now" keeps today's stories; no bare-year hooks
+- No HQ messages from Murad. News feed display only: no ranking, research, gate, grading, pricing or real-money change.
+- movers.feed: a curated rebuild now keeps earlier picked stories (news < 24h old, `MP_MOVERS_CARRY_HOURS`) after the
+  new ones, up to 8 (live had 1 story at 10:24 AM ET Tuesday). Seeder/push unaffected (seeder dedupes; push uses item 0 = fresh).
+- movers._hook / _fallback_story: a bare year ("2026") is never the Story hook.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
