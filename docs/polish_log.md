@@ -1074,3 +1074,25 @@ Changed:
   _passes and the scorecard are untouched.
 - BrainPage: a group that clears says "ahead" or "behind"; "the rest could still be luck" only when there is a rest.
 - Test test_brain_forward_overlap_t_is_never_surer_than_the_plain_t.
+
+## 2026-11-17 (sixth run, ~21:30 UTC = Tue 4:30 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 360x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Close Call quotes checked against the live API (read-only GETs): NVDA/SPY/AAPL/MSFT/TSLA YES + NO costs sum to the
+spread width, breakevens = strike +/- cost, the ±move range = spot·exp(±IV·√t). All add up.
+
+Found:
+- Close Call after hours, NVDA $159.45, Fri Nov 27: "46% to close above $155" but 40% above $160 and 36% above $165.
+  The $152.50/$155 call spread read 40% while the $155/$157.50 spread read 52%: a chance of closing above that RISES
+  with the strike, i.e. out-of-step after-hours quotes. Interpolating between them gave 46%, a level 3% under the
+  stock. The existing staleness guard (10 points from the one-vol answer) missed it (8 points).
+- SPY's expected-move line: "Often that means news is due before Tue Nov 24, like an earnings report." A fund has
+  no earnings report.
+
+Changed:
+- yesno.digital_from_spread: when the left pair reads more than 2 points below the right pair, returns None and
+  reports "inverted"; quote() then uses the one-implied-vol odds and says "the spread quotes looked out of date"
+  (same fallback as the existing stale guard). Pricing of the YES/NO spreads is unchanged.
+- yesno.move_text: funds (asset_info is_etf) say "like a Fed decision or a big economic report".
+- Tests: inverted quotes in test_yesno_digital_from_call_spread; ETF wording in the expected-move test.

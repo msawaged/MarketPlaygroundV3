@@ -3999,6 +3999,9 @@ def test_yesno_expected_move_and_big_move_warning(monkeypatch):
     # a normal premium over realized: no warning; no realized history: no warning either
     assert yesno.expected_move(157.29, rows, 3 / 365, rv60=1.10)["big"] is False
     assert len(yesno.move_text("NVDA", yesno.expected_move(157.29, rows, 3 / 365, rv60=1.10), e)) == 1
+    # A fund has no earnings report: SPY's big-move line names market news instead
+    spy = yesno.move_text("SPY", m, e, is_etf=True)[1]
+    assert "earnings" not in spy and "Fed decision or a big economic report" in spy
     assert yesno.expected_move(157.29, rows, 3 / 365)["big"] is False
     # no strike within 3% of today's price (the chain slice sits around a far line): no range rather than a wrong one
     assert yesno.expected_move(120.0, rows, 3 / 365, rv60=0.5) is None
@@ -4279,6 +4282,11 @@ def test_yesno_digital_from_call_spread():
     assert yesno.odds_label([185, 187.5, 190], 186.3) == "the $185/$187.50/$190 call prices, read at the $186.30 line (skew included)"
     assert yesno.digital_from_spread([{"strike": 95, "bid": 1, "ask": 1.1}, {"strike": 105, "bid": 2, "ask": 2.1}], 100) is None  # nonsense quotes
     assert yesno.digital_from_spread([{"strike": 50, "bid": 6, "ask": 6.2}, {"strike": 150, "bid": 1, "ask": 1.1}], 100) is None   # too wide
+    # Out-of-step quotes (live after hours, NVDA $159.45): $152.50/$155 at 40% but $155/$157.50 at 52%. A chance of
+    # closing above can't rise with the strike, so no odds are read from them and the reason is passed back.
+    bad = [{"strike": 152.5, "bid": 7.0, "ask": 7.0}, {"strike": 155, "bid": 6.0, "ask": 6.0}, {"strike": 157.5, "bid": 4.69, "ask": 4.69}]
+    why = []
+    assert yesno.digital_from_spread(bad, 155, why=why) is None and why == ["inverted"]
 
 
 def test_yesno_odds_at_the_line_with_uneven_strikes():

@@ -1187,3 +1187,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   data. Scout: a new feature in FEATS no longer touches the learned models until enrich fills it; its fixed rule is
   still scored (provisional). No gate, embargo, MIN_* or NN promotion rule changed.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.
+
+## 2026-11-17 evening ET (daily polish walk, 6th run): Close Call ignores out-of-step spread quotes; ETF move wording
+- No HQ messages from Murad. No ranking, research gate, grading or real-money change.
+- yesno.digital_from_spread(..., why=None): left pair > 2 pts below the right pair -> None, "inverted" appended to why;
+  quote() treats that as stale (one-vol odds, "out of date" label). Live after hours NVDA read 46% above $155 at $159.45.
+- yesno.move_text(..., is_etf=False): funds get "like a Fed decision or a big economic report" instead of earnings.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

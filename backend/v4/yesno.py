@@ -117,7 +117,8 @@ def leg_vols(calls: list[dict], k1: float, k2: float, spot: float, years: float,
     return round(v1, 4), round(v2, 4)
 
 
-def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> Optional[tuple[float, float, float, list]]:
+def digital_from_spread(calls: list[dict], level: float, years: float = 0.0,
+                        why: Optional[list] = None) -> Optional[tuple[float, float, float, list]]:
     """Market-implied P(close > level) from listed call prices. A call spread (C(Ka) - C(Kb)) / (Kb - Ka) is the
     chance of finishing above the middle of its two strikes, (Ka + Kb) / 2, not above any line between them. So take
     the two neighbouring strike pairs whose middles sit either side of the line and read the chance at the line
@@ -127,7 +128,10 @@ def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> 
     Uses quoted mids, so the volatility skew is already in the price (a single-vol N(d2) ignores the
     -vega * dsigma/dK term a digital carries). A spread pays at expiration, so its price is the discounted chance:
     divide by exp(-r * years) (r = the same rate the option prices use). Returns (p, lowest strike used, highest
-    strike used, all strikes used), or None if quotes are missing or don't make sense."""
+    strike used, all strikes used), or None if quotes are missing or don't make sense. The chance of closing above
+    can't rise with the strike, so when the left pair reads lower than the right one the quotes are out of step
+    (seen after hours: NVDA $159.45, $152.50/$155 at 40% but $155/$157.50 at 52%, read as "46% above $155"); then
+    None, and "inverted" is added to `why` if a list is passed."""
     from .strategy import RISK_FREE
     q = _mids(calls)
     ks = sorted(q)
@@ -160,6 +164,10 @@ def digital_from_spread(calls: list[dict], level: float, years: float = 0.0) -> 
     pl = pair(*left) if left else None
     pr = pair(*right) if right else None
     if pl is not None and pr is not None and left != right:
+        if pl + 0.02 < pr:                               # 2 points of slack for bid/ask rounding
+            if why is not None:
+                why.append("inverted")
+            return None
         ml, mr = sum(left) / 2, sum(right) / 2
         p = pl + (pr - pl) * (level - ml) / (mr - ml)
         used = sorted(set(left) | set(right))
@@ -225,7 +233,7 @@ def expected_move(spot: float, rows: list[dict], years: float, rv60: Optional[fl
             "iv_rv": round(ratio, 2) if ratio else None, "big": bool(ratio and ratio > 1.35)}
 
 
-def move_text(u: str, m: dict, exp: date) -> list[str]:
+def move_text(u: str, m: dict, exp: date, is_etf: bool = False) -> list[str]:
     day = f"{exp.strftime('%a %b')} {exp.day}"
     pct = m["pct"] * 100
     pct_s = f"{pct:.1f}" if pct < 10 else f"{pct:.0f}"
@@ -234,7 +242,8 @@ def move_text(u: str, m: dict, exp: date) -> list[str]:
     if m["big"]:
         out.append(f"That's a bigger move than usual: these options are priced for {m['atm_iv'] * 100:.0f}% yearly "
                    f"volatility, while {u} actually moved {m['rv60'] * 100:.0f}% a year over the last 60 trading days "
-                   f"({m['iv_rv']:.1f}x). Often that means news is due before {day}, like an earnings report.")
+                   f"({m['iv_rv']:.1f}x). Often that means news is due before {day}, "
+                   + ("like a Fed decision or a big economic report." if is_etf else "like an earnings report."))
     return out
 
 
@@ -358,7 +367,8 @@ def _reasons(sig: dict, u: str) -> list[str]:
 
 def quote(ticker: str, level: float, expiration: str) -> dict:
     u = (ticker or "").upper().strip()
-    if not u or not market.asset_info(u):
+    info = market.asset_info(u) if u else None
+    if not info:
         raise YesNoError("That isn't a stock we can ask about.")
     try:
         level = float(level)
@@ -390,11 +400,12 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         vol_source = "estimate"
     years = max(1, (exp - t).days) / 365.0
     m_p_flat = prob_above(spot, level, years, vol)
-    dig = digital_from_spread([r for r in chain if r["type"] == "call"], level, years)
+    why: list = []
+    dig = digital_from_spread([r for r in chain if r["type"] == "call"], level, years, why=why)
     # Option-implied odds carry skew, but skew moves a near-dated digital only a few points off the one-vol
     # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
-    stale = bool(dig) and abs(dig[0] - m_p_flat) > 0.10
+    stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
     if dig and not stale:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
     else:
@@ -462,7 +473,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
             "spread_note": spread_note(u, k1, k2, width),
-            "move": dict(move, lines=move_text(u, move, exp)) if move else None}
+            "move": dict(move, lines=move_text(u, move, exp, isinstance(info, dict) and bool(info.get("is_etf")))) if move else None}
 
 
 def spread_note(u: str, k1: float, k2: float, width: float) -> str:

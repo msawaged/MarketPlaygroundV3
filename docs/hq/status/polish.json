@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T19:00:00Z",
- "last_run": "The Brain page's live test said three confidence groups were 'clear of luck' (one at t -3.5) when their gaps were about zero. The luck math broke when a group's calls fell on only 3 days; it can no longer be more sure than the simple count, so the page now says no group is clear of luck yet.",
- "working_on": "Nothing open. Builds work again, and the earlier fixes ('Moving now' shows 8 stories) are live.",
- "next": "Walk Close Call and the options card at 360 wide on the live build; keep bundling changes so build minutes last.",
+ "updated_at": "2026-11-17T22:00:00Z",
+ "last_run": "Close Call after the close told users NVDA had a 46% chance to finish above $155 while it sat at $159; the after-hours option quotes were out of step (a higher strike read MORE likely). Those quotes are now ignored and the simpler one-volatility odds are shown, labelled as such. Also SPY's 'big move' note no longer blames an earnings report a fund doesn't have.",
+ "working_on": "Nothing open.",
+ "next": "Check the chat's options card numbers and My beliefs at 360 wide; the local server can't reach market data from the sandbox, so use the live public GETs where possible.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
