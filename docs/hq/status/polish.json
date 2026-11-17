@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-16T21:55:00Z",
- "last_run": "Brain page now says plainly that the new #1 pick model picks on its own (not mixed), shows its risk-matched luck score (clears the bar), and explains that the 'none earned a vote' list is a different, nightly model. Checked a bearish options card (CMG Bear Call Spread): every number adds up.",
- "working_on": "Waiting for Render builds to come back so today's fixes go live.",
- "next": "Check the fixes on the live site once builds run; walk the bearish Long Put and the shares 'Stay out' cards.",
+ "updated_at": "2026-11-17T00:55:00Z",
+ "last_run": "Closed trades on Portfolio now show the right day (an evening close in the US showed tomorrow's date), a trade closed on its last morning no longer says 'Expired', and the bearish shares hint no longer says shares can only make money when prices rise. Checked a CMG Long Put card: every number adds up.",
+ "working_on": "Waiting for Render builds to come back so the last few days of fixes go live.",
+ "next": "Check all queued fixes on the live site once builds run; walk the shares sell flow into Closed trades and the Baskets page.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes, so no fix from any agent goes live until the build limit is raised in Render's workspace settings (or Dec 1)."
  ],

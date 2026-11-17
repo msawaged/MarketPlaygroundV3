@@ -878,3 +878,31 @@ Changed:
   future model goes live between the two.
 
 Checks: vite build passes, npm test passes, backend tests 187 passed. Verified locally against live /v4/brain data.
+
+## 2026-11-17 (early run, ~00:30 UTC = Mon 7:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /journey, /close-call on the live site at 390x844: no page
+errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from
+Murad. Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+Signed-in screens locally (offline server, throwaway SQLite) at 375, first walk of the bearish Long Put, the bearish
+shares "Stay out" card and the new Closed trades list: "Restaurants will struggle as people cut back on eating out",
+$1,000, 3 months, Options, Biggest upside -> CMG Long Put $39 @ $2.91: 3 contracts $873, breakeven $36.09, max gain
+$3,609/contract ($10,827 for 3), flat at $38 -$573, -20% +$1,707 (+196%), chart top +$3,987 at $22.80: all add up.
+Paper trade -> Portfolio -> Close -> Closed trades: set aside $873, got back $873, +$0.
+
+Found:
+- Closed trades date was a day late for US evenings: practice options stored `datetime.now()` with no offset (the
+  server's UTC clock), the phone read it as local time. A close at 7:30 PM ET Mon showed "CLOSED NOV 17".
+- An options trade closed by hand on its expiration morning would be tagged "Expired" (date-only comparison).
+- Bearish shares card said "Shares only make money when a price rises." Not true as stated (short selling); a finance
+  reader would flag it.
+
+Changed:
+- practice_options: new times stored in UTC with offset; expiry settles at 4pm New York with offset; `closed()` reads
+  older bare rows right (bare 16:00:00 = NY expiry settle, else UTC) and sends offsets; "expired" = settled at/after
+  4pm NY on expiration day. Router `_closed_trades` sends every closed_at with an offset (old share sales too).
+  Test test_closed_trade_times_carry_their_offset. Checked in a New York-timezone browser: "CLOSED NOV 16".
+- StrategyCard: "Buying shares only makes money if the price rises. To bet on a fall, tap Options."
+
+Checks: vite build passes, npm test passes, backend tests 189 passed.

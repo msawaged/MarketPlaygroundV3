@@ -437,7 +437,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           {pick.structure === 'Sell / Avoid' && basePick.alt && !FAMILY_SHARES.has(useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) && (
             <button onClick={() => setUseAlt((u) => ({ ...u, [basePick.pick_id]: !u[basePick.pick_id] }))}
               className="w-full text-left rounded-xl border border-amber-300/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
-              Shares only make money when a price rises. To bet on {pick.direction === 'volatile' ? 'a big move either way' : 'a fall'}, <span className="font-bold underline">tap Options</span>.
+              Buying shares only makes money if the price rises. To bet on {pick.direction === 'volatile' ? 'a big move either way' : 'a fall'}, <span className="font-bold underline">tap Options</span>.
             </button>
           )}
 

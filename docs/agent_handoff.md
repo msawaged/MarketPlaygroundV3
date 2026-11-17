@@ -967,3 +967,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/paper_trading.py, backend/v4/practice_options.py, backend/routes/paper_trading_router.py,
   backend/v4/tests/test_paper.py, frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 early (daily polish walk): Closed trades show the right day; "buying shares" wording
+- No HQ messages from Murad. No gate, ranking, grading or real-money change.
+- practice_options times now stored in UTC with offset (were bare server time, so a 7:30 PM ET close showed the next
+  day); expiry settles at 4pm New York with offset; older bare rows read correctly; "Expired" only for a settle at or
+  after 4pm NY on expiration day. `_closed_trades` sends every closed_at with an offset. Keep offsets on new timestamps.
+- StrategyCard bearish shares hint: "Buying shares only makes money if the price rises."
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/practice_options.py, backend/routes/paper_trading_router.py, backend/v4/tests/test_paper.py,
+  frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md, docs/hq/status/polish.json.

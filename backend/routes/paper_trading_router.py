@@ -231,6 +231,11 @@ def _closed_trades(user_id: str, limit: int = 50) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.warning(f"closed option trades skipped: {e}")
     rows.sort(key=lambda r: _when_key(r.get("closed_at")), reverse=True)
+    for r in rows:  # always send an offset, so the phone shows the right day (bare times are the server's UTC clock)
+        k = _when_key(r.get("closed_at"))
+        if k:
+            from datetime import datetime, timezone
+            r["closed_at"] = datetime.fromtimestamp(k, timezone.utc).isoformat()
     return rows[:limit]
 
 

@@ -327,3 +327,42 @@ def test_sold_positions_leave_a_closed_trade_record(tmp_path, monkeypatch):
                         3, 20, 60, 0, 60, '2026-11-01T15:00:00+00:00')""")
     old = [r for r in eng.closed_trades("u") if r["ticker"] == "OLD"][0]
     assert old["pnl"] is None and old["cost"] is None and old["proceeds"] == 60
+
+
+def test_closed_trade_times_carry_their_offset(tmp_path, monkeypatch):
+    """Closing times go to the phone with a UTC offset (a bare server time read as local time put a 7:30pm ET close
+    on the next day), older bare rows are read right, and only a 4pm-or-later settle on expiration day says Expired."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import json as _json
+    import backend.paper_trading as pt
+    from backend.routes import paper_trading_router as rt
+    from backend.v4 import practice_options as po
+    from datetime import datetime
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "tz.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    monkeypatch.setattr(rt, "paper_engine", eng)
+    eng._initialize_user("u")
+    legs = _json.dumps([{"action": "Buy", "option_type": "Put", "strike_price": 39, "expiration": "2027-02-19",
+                         "quantity": 1, "instrument": "option"}])
+    rows = [("evening", "2026-11-16T23:30:00.123456"),       # older bare row: server UTC = 6:30pm ET Nov 16
+            ("expiry", "2027-02-19T16:00:00"),               # older bare expiry settle (meant New York)
+            ("morning", "2027-02-19T15:00:00.5+00:00"),      # closed by hand at 10am ET on expiration day
+            ("new", po._now_utc())]
+    with eng._get_db_connection() as conn:
+        po.init(conn)
+        for pid, shut in rows:
+            conn.execute("""INSERT INTO option_positions (position_id, user_id, ticker, structure, legs, contracts,
+                            entry_value, set_aside, vol, belief, status, opened_at, closed_at, close_value)
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                         (pid, "u", "CMG", "Long Put", legs, 1, 2.0, 2.0, 0.3, "", "closed", "2026-11-16T20:00:00", shut, 2.0))
+    got = {r["id"]: r for r in po.closed("u")}
+    for r in got.values():
+        assert datetime.fromisoformat(r["closed_at"]).tzinfo is not None
+        assert datetime.fromisoformat(r["opened_at"]).tzinfo is not None
+    assert datetime.fromisoformat(got["evening"]["closed_at"]).astimezone(po.market.NY).date().isoformat() == "2026-11-16"
+    assert got["expiry"]["expired"] is True
+    assert datetime.fromisoformat(got["expiry"]["closed_at"]).astimezone(po.market.NY).hour == 16
+    assert got["morning"]["expired"] is False and got["evening"]["expired"] is False and got["new"]["expired"] is False
+    assert po._expiry_close(datetime(2027, 2, 19).date()).utcoffset() is not None
+    for r in rt._closed_trades("u"):
+        assert r["closed_at"].endswith("+00:00")

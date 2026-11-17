@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import math
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, time, timezone
 from decimal import Decimal
 from typing import Optional
 
@@ -175,7 +175,7 @@ def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contrac
                             set_aside, vol, belief, status, opened_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
                          (pid, user_id, q["ticker"], (structure or "Options")[:40], json.dumps(q["legs"]), contracts,
                           q["unit_value"], q["unit_set_aside"], q["vol"], (belief or "")[:300], "open",
-                          datetime.now().isoformat()))
+                          _now_utc()))
     try:  # practice options open right away, even when the market is closed (unlike practice shares): say so
         closed = not market.clock().get("is_open", True)
     except Exception:
@@ -188,13 +188,39 @@ def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contrac
                           if closed else "")}
 
 
+def _now_utc() -> str:
+    """Stored with its UTC offset: a bare server time read as the phone's local time put evening US closes on the next day."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _expiry_close(exp: date) -> datetime:
+    """4pm New York on expiration day, when an expiring trade settles."""
+    return datetime.combine(exp, time(16), tzinfo=market.NY or timezone.utc)
+
+
+def _aware(ts) -> Optional[datetime]:
+    """A stored time as an aware datetime. Older rows have no offset: an expiry settle was written as 'T16:00:00'
+    (meant New York), everything else was the server clock (UTC)."""
+    if not ts:
+        return None
+    try:
+        d = datetime.fromisoformat(str(ts).replace("Z", "+00:00").replace(" ", "T"))
+    except ValueError:
+        return None
+    if d.tzinfo:
+        return d
+    if d.time() == time(16):
+        return d.replace(tzinfo=market.NY or timezone.utc)
+    return d.replace(tzinfo=timezone.utc)
+
+
 def _settle(conn, row, value_now: float, when: Optional[str] = None) -> float:
     back = row["set_aside"] * row["contracts"] + (value_now - row["entry_value"]) * row["contracts"]
     back = max(0.0, back)
     conn.execute("UPDATE users SET cash_balance = cash_balance + ?, buying_power = buying_power + ? WHERE user_id = ?",
                  (Decimal(str(round(back, 2))), Decimal(str(round(back, 2))), row["user_id"]))
     conn.execute("UPDATE option_positions SET status = 'closed', closed_at = ?, close_value = ? WHERE position_id = ?",
-                 (when or datetime.now().isoformat(), value_now, row["position_id"]))
+                 (when or _now_utc(), value_now, row["position_id"]))
     return back
 
 
@@ -224,7 +250,7 @@ def positions(user_id: str) -> list[dict]:
                 exp = _expired(legs)
                 v = unit_value(legs, spot, r["vol"], on=exp) if exp else unit_value(legs, spot, r["vol"])
                 if exp:  # settled at what it was worth on expiration day, so that's when it closed
-                    _settle(conn, r, v, when=f"{exp.isoformat()}T16:00:00")
+                    _settle(conn, r, v, when=_expiry_close(exp).isoformat())
                     continue
                 pnl = (v - r["entry_value"]) * r["contracts"]
                 out.append({
@@ -271,12 +297,16 @@ def closed(user_id: str, limit: int = 50) -> list[dict]:
             back = max(0.0, held + ((r["close_value"] or 0.0) - r["entry_value"]) * r["contracts"])
             exps = [l["expiration"] for l in legs if l.get("instrument") == "option"]
             exp = max(exps) if exps else None
+            shut, opened = _aware(r["closed_at"]), _aware(r["opened_at"])
+            # expired = settled at (or after) 4pm New York on expiration day; a close earlier that day is a normal close
+            expired = bool(exp and shut and shut >= _expiry_close(date.fromisoformat(exp)))
             out.append({
                 "kind": "options", "id": r["position_id"], "ticker": r["ticker"], "structure": r["structure"],
                 "contracts": r["contracts"], "legs": legs, "belief": r["belief"] or None,
                 "cost": round(held, 2), "proceeds": round(back, 2), "pnl": round(back - held, 2),
                 "pnl_pct": round((back - held) / max(1.0, held) * 100, 2),
-                "expiration": exp, "expired": bool(exp and str(r["closed_at"] or "")[:10] >= exp),
-                "opened_at": r["opened_at"], "closed_at": r["closed_at"], "estimated": True,
+                "expiration": exp, "expired": expired,
+                "opened_at": opened.isoformat() if opened else r["opened_at"],
+                "closed_at": shut.isoformat() if shut else r["closed_at"], "estimated": True,
             })
     return out
