@@ -500,13 +500,19 @@ export default function BrainPage({ viewOnly = false }) {
         {d?.forward?.by_days && Object.keys(d.forward.by_days).length > 0 && (() => {
           const f = d.forward, pts = (v) => { const x = ((v || 0) * 100).toFixed(1); return x === '-0.0' || x === '0.0' ? '0.0' : `${v > 0 ? '+' : ''}${x}`; };
           const day = (iso, plus = 0) => { const t = new Date(`${iso}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + plus); return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
-          const sure = (r) => Math.abs(r.lift_t || 0) >= 2;
+          // Luck is judged on the overlap-honest t (calls made the same days share the same market moves), the
+          // same way the scorecard above counts overlap; lift_t (every call independent) is the fallback.
+          const tv = (r) => Number(r.lift_t_nw ?? r.lift_t ?? 0);
+          const sure = (r) => Math.abs(tv(r)) >= 2;
+          const cols = { 1: 'grid-cols-1', 2: 'grid-cols-2' }[Object.keys(f.by_days).length] || 'grid-cols-3';
+          const lastDays = Object.keys(f.by_days).map(Number).sort((x, y) => y - x)[0];
+          const last = f.by_days[String(lastDays)];
           const confDays = Object.keys(f.by_confidence || {}).map(Number).sort((x, y) => y - x)[0];
           const conf = confDays ? f.by_confidence[String(confDays)] : null;
           return (
             <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Live forward test · real-time calls since {f.since ? day(f.since) : '—'}</div>
-              <div className="mt-2 grid grid-cols-3 gap-2">
+              <div className={`mt-2 grid ${cols} gap-2`}>
                 {Object.entries(f.by_days).map(([days, r]) => (
                   <div key={days} className="rounded-xl bg-slate-800/60 p-2.5">
                     <div className="text-[11px] font-semibold text-slate-300">After {days} days</div>
@@ -514,10 +520,16 @@ export default function BrainPage({ viewOnly = false }) {
                     <div className="mt-1 text-lg font-extrabold tabular-nums">{Math.round(r.top_beat * 100)}%</div>
                     <div className="text-[11px] text-slate-400">#1 beat the S&P</div>
                     <div className={`text-xs font-bold tabular-nums mt-1 ${r.lift > 0 && sure(r) ? 'text-green-400' : 'text-slate-300'}`}>{pts(r.lift)} pts vs our average idea</div>
-                    <div className="text-[10px] text-slate-500">{sure(r) ? `unlikely to be luck (t ${r.lift_t.toFixed(1)})` : `could still be luck (t ${(r.lift_t || 0).toFixed(1)})`}</div>
+                    <div className="text-[10px] text-slate-500">{sure(r) ? `unlikely to be luck (t ${tv(r).toFixed(1)})` : `could still be luck (t ${tv(r).toFixed(1)})`}</div>
                   </div>
                 ))}
               </div>
+              {last && last.lift_t_nw != null && last.days > 0 && (
+                <p className="mt-2 text-[11px] text-slate-400">
+                  The luck check counts overlap: these {Number(last.beliefs).toLocaleString()} calls were made on {last.days} {last.days === 1 ? 'day' : 'days'}, and calls made close together ride the same market and news, so after {lastDays} days they're worth about {Number(last.n_eff ?? last.beliefs).toLocaleString()} independent calls.
+                  {' '}Counted that way t is {Number(last.lift_t_nw).toFixed(1)} ({Number(last.lift_t || 0).toFixed(1)} if every call were independent); we say "unlikely to be luck" at t 2 or more.
+                </p>
+              )}
               {conf && (
                 <div className="mt-3">
                   <div className="text-[11px] text-slate-400">By the #1 pick's confidence, after {confDays} days (vs our average idea)</div>
@@ -535,7 +547,7 @@ export default function BrainPage({ viewOnly = false }) {
                   {conf.all && (() => {
                     const head = f.by_days[String(confDays)];
                     const groups = ['high', 'medium', 'low'].filter((k) => conf[k]);
-                    const clear = groups.filter((k) => Math.abs(conf[k].lift_t || 0) >= 2);
+                    const clear = groups.filter((k) => sure(conf[k]));
                     return (
                       <p className="mt-2 text-[11px] text-slate-400">
                         {head && conf.all.beliefs < head.beliefs
@@ -544,7 +556,7 @@ export default function BrainPage({ viewOnly = false }) {
                         On those calls together the #1 did {pts(conf.all.lift)} pts vs our average idea{head && conf.all.beliefs < head.beliefs ? `, against ${pts(head.lift)} pts on all ${head.beliefs.toLocaleString()}` : ''}.
                         {' '}{clear.length === 0
                           ? 'No group is clear of luck yet (each needs t 2 or more), so read the split as a first look.'
-                          : `Clear of luck so far: ${clear.map((k) => `${k} (t ${conf[k].lift_t.toFixed(1)})`).join(', ')}; the rest could still be luck.`}
+                          : `Clear of luck so far: ${clear.map((k) => `${k} (t ${tv(conf[k]).toFixed(1)})`).join(', ')}; the rest could still be luck.`}
                       </p>
                     );
                   })()}

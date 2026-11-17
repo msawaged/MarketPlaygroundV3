@@ -265,18 +265,35 @@ def _forward() -> dict:
                 conf_first = t0
     out["confidence_since"] = conf_first
     groups: dict = {}
+    made: dict = {}
     for r in rows:
         groups.setdefault((int(r["d"]), r["belief_id"]), []).append((r["final_rank"], float(r["ex"])))
-    def summary(tops: list[float], lifts: list[float]) -> dict:
+        made[r["belief_id"]] = str(r.get("created_at") or "")[:10]
+
+    def summary(tops: list[float], lifts: list[float], dates: list[str], window: int) -> dict:
+        """lift_t counts every call as independent. Calls made the same day (or a few days apart) are graded over
+        the same market days and the same news, so they aren't: lift_t_nw is the same lift's t with the
+        overlap-honest error the research scorecard uses (research._se_overlap, window = the checkpoint's days),
+        `days` the distinct call days and n_eff about how many independent calls the n is worth. The page judges
+        "luck" on lift_t_nw. Reporting only: nothing here feeds ranking or a gate."""
+        import numpy as np
+        from .research import _se_overlap
         n = len(tops)
         mean = sum(lifts) / n
         sd = math.sqrt(sum((x - mean) ** 2 for x in lifts) / (n - 1)) if n > 1 else 0.0
-        return {"beliefs": n, "top_beat": round(sum(1 for x in tops if x > 0) / n, 3),
+        out_ = {"beliefs": n, "top_beat": round(sum(1 for x in tops if x > 0) / n, 3),
                 "top_avg": round(sum(tops) / n, 4), "lift": round(mean, 4),
-                "lift_t": round(mean / (sd / math.sqrt(n)), 2) if sd > 0 else 0.0}
+                "lift_t": round(mean / (sd / math.sqrt(n)), 2) if sd > 0 else 0.0,
+                "days": len(set(dates))}
+        if n > 1 and all(dates):
+            se_h = _se_overlap(np.array(lifts, dtype=float), dates, window=max(int(window), 1))
+            se_p = sd / math.sqrt(n)
+            out_["lift_t_nw"] = round(mean / se_h, 2) if se_h > 0 else 0.0
+            out_["n_eff"] = int(round(min(n, n * (se_p / se_h) ** 2))) if se_h > 0 else n
+        return out_
 
     for d in sorted({k[0] for k in groups}):
-        tops, lifts, by_c = [], [], {}
+        tops, lifts, dts, by_c = [], [], [], {}
         for (dd, bid), ideas in groups.items():
             if dd != d or len(ideas) < 2:
                 continue
@@ -286,17 +303,20 @@ def _forward() -> dict:
             lift = top[0] - sum(ex for _, ex in ideas) / len(ideas)
             tops.append(top[0])
             lifts.append(lift)
+            dts.append(made.get(bid, ""))
             if bid in conf:
-                by_c.setdefault(conf[bid], ([], []))
+                by_c.setdefault(conf[bid], ([], [], []))
                 by_c[conf[bid]][0].append(top[0])
                 by_c[conf[bid]][1].append(lift)
+                by_c[conf[bid]][2].append(made.get(bid, ""))
         if not tops:
             continue
-        out["by_days"][str(d)] = summary(tops, lifts)
+        out["by_days"][str(d)] = summary(tops, lifts, dts, d)
         if by_c:
-            out["by_confidence"][str(d)] = {c: summary(*v) for c, v in by_c.items()}
+            out["by_confidence"][str(d)] = {c: summary(*v, d) for c, v in by_c.items()}
             out["by_confidence"][str(d)]["all"] = summary([x for v in by_c.values() for x in v[0]],
-                                                          [x for v in by_c.values() for x in v[1]])
+                                                          [x for v in by_c.values() for x in v[1]],
+                                                          [x for v in by_c.values() for x in v[2]], d)
     return out
 
 

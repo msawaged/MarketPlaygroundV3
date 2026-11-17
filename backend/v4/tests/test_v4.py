@@ -3236,6 +3236,31 @@ def test_brain_forward_confidence_split_says_which_calls_it_covers():
     assert out["confidence_since"] == "2026-11-05"
 
 
+def test_brain_forward_luck_check_counts_same_day_calls_once():
+    # Calls made the same day ride the same market week and news, so 40 calls on 4 days are not 40 independent
+    # tries. The forward test keeps the plain t and adds the overlap-honest t the scorecard uses; the page judges
+    # "unlikely to be luck" on that one.
+    from backend.v4 import brain
+    rng = __import__("random").Random(3)
+    k = 0
+    for day, shared in (("2026-11-02", 0.05), ("2026-11-03", 0.04), ("2026-11-10", -0.01), ("2026-11-11", -0.005)):
+        for _ in range(10):
+            k += 1
+            bid = f"lk-{k}"
+            db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                       (bid, "u", "x", "x", f"{day}T15:00:00", day, "seed_news"))
+            for j, ex in enumerate((shared + rng.gauss(0, 0.003), 0.0)):
+                db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                           (f"{bid}-{j}", bid, f"T{j}", "bullish", day, 10.0, "{}", j))
+                db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                           (f"{bid}-{j}", 7, day, 10.0, 0.0, 0.0, ex, day))
+    r = brain._forward()["by_days"]["7"]
+    assert r["beliefs"] == 40 and r["days"] == 4
+    assert r["lift_t"] > 3                        # counted as 40 independent calls it looks clear of luck
+    assert 0 < r["lift_t_nw"] < 2 < r["lift_t"]   # counted honestly (4 call days) it isn't
+    assert r["n_eff"] < 10
+
+
 def test_time_shifted_practice_calls_are_training_only(monkeypatch):
     # augment: a practice basket re-scored a quarter earlier/later from prices only (no Claude); research uses the
     # shifted copies for training only, never for a test or a baseline

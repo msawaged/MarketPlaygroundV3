@@ -1065,3 +1065,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: frontend/src/components/PracticePage.jsx, backend/v4/benchmark.py, backend/v4/yesno.py,
   backend/v4/tests/test_benchmark.py, backend/v4/tests/test_v4.py, scripts/dev_offline_server.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-17 midday (Builder routine): Brain page forward test judges luck the way the scorecard does
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Picked a misleading claim (rule a, Brain page):
+  the live forward test said "+0.4 pts ... unlikely to be luck (t 2.1)" counting all 1,409 calls as independent,
+  while the scorecard right above it says calls made close together aren't independent and counts overlap. The
+  1,409 graded 7-day calls were made on only 14 days (Oct 28 - Nov 10), each day's calls riding the same market week.
+- brain._forward: each summary (by_days and every by_confidence group) now also sends `lift_t_nw` (same lift's t with
+  `research._se_overlap`, window = the checkpoint's days, call date = belief created_at day), `days` (distinct call
+  days) and `n_eff`. Live numbers checked with read-only SQL: t 2.0 counted that way (2.1 plain; date-clustered
+  alone 1.65), 14 days, worth ~1,254 calls. So the headline still reads "unlikely to be luck", now honestly, at t 2.0.
+- BrainPage: luck label and the confidence split's "clear of luck" use lift_t_nw (fallback lift_t); one line under
+  the boxes says how many days the calls came from, the overlap-honest t and the plain t; the per-checkpoint grid
+  uses 1/2/3 columns to match how many checkpoints exist (one box was stuck at a third of the width).
+- Information only: no ranking, research, gate, grading or real-money change. Gates still read plain t's.
+- Test: test_brain_forward_luck_check_counts_same_day_calls_once. Backend 197 passed (fresh venv), vite build passes.
+  Checked at 390 and 375 with live /v4/brain data mocked in.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.

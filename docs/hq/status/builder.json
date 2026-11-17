@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T08:06:00Z",
- "last_run": "Brain page: the forward test's High/Medium/Low confidence split now says it covers only the 190 newer calls that carry a confidence label (not all 1,409), what those calls add up to, and that no group is clear of luck yet.",
+ "updated_at": "2026-11-17T13:30:00Z",
+ "last_run": "Brain page: the live forward test's luck check now counts calls made the same days as one market week (like the scorecard above it does): t 2.0 instead of 2.1, from 1,409 calls made on 14 days. Still 'unlikely to be luck', now honestly.",
  "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
- "next": "Once live: check the Brain page split line and the queued Portfolio changes. Then the next finishing touch for Prof Brown's review.",
+ "next": "Once live: check the Brain page forward test lines and the queued Portfolio changes. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The Brain page's live forward test said the #1 pick's +0.4 pts lead was 'unlikely to be luck (t 2.1)', counting all 1,409 calls as independent. But they were made on only 14 days, and calls made the same week ride the same market, which the scorecard right above already counts honestly. The forward test now does the same: t 2.0 counted that way (still just clear of luck), with a line saying the calls came from 14 days and what the plain t was. The High/Medium/Low split uses the same check.",
+   "at": "2026-11-17T13:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The Brain page's live forward test said '+0.4 pts on 1,409 calls', and right under it High -0.1, Medium -0.4, Low +0.6 pts on only 190 calls, with no word that the split is a smaller, newer sample. A professor would ask why the parts don't add up to the whole. It now says confidence labels began Nov 8, so the split covers only those 190 calls (together 0.0 pts vs +0.4 on all 1,409), and that no group is clear of luck yet.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call showed AAPL at 50% odds to close above $360 while YES cost $204 for a $500 payout (41%): a finance professor would call that a free-money bug. Each strike is now priced at its own implied volatility, so YES costs the market's own spread price and agrees with the odds.",
    "at": "2026-11-16T08:03:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A user who saw '+9 pts' on a call had no way to tell skill from luck. My beliefs now marks each graded call on the spread of calls like it (e.g. 'in the best 1 in 10; about 1 in 10 calls do this well, so one call still says little about skill').",
-   "at": "2026-11-16T05:00:00Z"
   }
  ]
 }
