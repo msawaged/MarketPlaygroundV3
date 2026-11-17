@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-16T23:30:00Z",
- "last_run": "Portfolio now keeps a record of every sold position and closed or expired options trade (cost, what came back, gain), so a sale no longer just disappears.",
- "working_on": "Waiting for Render builds to come back (out of build minutes). Today's Builder commits go live together.",
- "next": "Once live: check Closed trades on the live Portfolio after a real practice sale. Then the next finishing touch for Prof Brown's review.",
+ "updated_at": "2026-11-17T02:05:00Z",
+ "last_run": "Portfolio now shows 'You vs the S&P 500': each practice trade next to what the same money would have made in the S&P 500 over the same days, plus the total and how many trades beat the index.",
+ "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
+ "next": "Once live: check the S&P comparison on the live Portfolio. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "A practice gain on its own says little: +$300 when the market rose 5% on the same money is worse than buying the index, and a finance professor judges every portfolio against a benchmark. Portfolio now has a 'You vs the S&P 500' card (your trades +$X, same money in the S&P 500 +$Y, ahead/behind by $Z, N of M beat the index) and each trade shows its own S&P line. Measured close to close in New York time, no look-ahead; the card says how.",
+   "at": "2026-11-17T02:05:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Selling a practice position used to make it vanish: Portfolio said 'Nothing here yet' and the gain was only buried in Account value. Portfolio now has a Closed trades list: each sale or closed/expired options trade with what it cost, what came back and the gain, plus 'Locked in: +$X on N trades'. The gains add up to the account's total.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "On a phone the strategist family tree showed only the first 5 of 11 generations, so the current leaders were off screen. It now fits the whole tree in the card, newest on the right.",
    "at": "2026-11-15T23:05:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A 42% hit rate reads like a coin flip with small stakes. The base-rate line now also shows the range: about 12 pts either way vs the S&P for a single 90-day call, from the app's own graded calls.",
-   "at": "2026-11-15T23:59:00Z"
   }
  ]
 }

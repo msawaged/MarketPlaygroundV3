@@ -35,6 +35,46 @@ const shortDate = (iso) => {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
 };
 
+// "S&P 500 same days: +$30 (+3.0%)": what the same money would have done in the index over the same days.
+function SpyLine({ v }) {
+  if (!v) return null;
+  return (
+    <div className="text-[11px] text-slate-500">
+      Same money in the S&amp;P 500: {signed(v.spy_gain)} ({fmtPct(v.spy_ret)}) ·{' '}
+      <span className={`whitespace-nowrap ${v.ahead >= 0 ? 'text-green-400/80' : 'text-red-400/80'}`}>{v.ahead >= 0 ? 'ahead' : 'behind'} by {usd(Math.abs(v.ahead))}</span>
+    </div>
+  );
+}
+
+// The whole practice record next to the S&P 500, dollar for dollar. Cash left uninvested isn't counted.
+function BenchmarkCard({ b }) {
+  if (!b) return null;
+  const ahead = b.ahead >= 0;
+  return (
+    <Card className="mt-4">
+      <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">You vs the S&amp;P 500</div>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <div>
+          <div className="text-[11px] text-slate-400">Your trades</div>
+          <div className={`text-xl font-extrabold tabular-nums ${b.gain >= 0 ? 'text-green-300' : 'text-red-300'}`}>{signed(b.gain, 0)}</div>
+        </div>
+        <div>
+          <div className="text-[11px] text-slate-400">Same money in the S&amp;P 500</div>
+          <div className={`text-xl font-extrabold tabular-nums ${b.spy_gain >= 0 ? 'text-green-300' : 'text-red-300'}`}>{signed(b.spy_gain, 0)}</div>
+        </div>
+      </div>
+      <p className="mt-2 text-sm">
+        <b className={ahead ? 'text-green-300' : 'text-red-300'}>{ahead ? 'Ahead' : 'Behind'} by {usd(Math.abs(b.ahead))}</b>
+        <span className="text-slate-300"> on {usd(b.money)} put to work in {b.trades} trade{b.trades === 1 ? '' : 's'}{b.open ? ` (${b.open} still open)` : ''}. {b.beat} of {b.trades} beat the index.</span>
+      </p>
+      <p className="mt-1.5 text-[11px] text-slate-500">
+        Each trade's money is compared with {b.symbol}, an S&amp;P 500 fund, from its last close before the trade opened to its last close before it closed (or now).
+        A trade held a few hours inside one day compares against little or no move. Cash you didn't invest isn't counted{b.skipped_short ? '; shorts are left out' : ''}.
+      </p>
+    </Card>
+  );
+}
+
 // One sold / closed / expired trade: what it cost, what came back, the gain. These are the numbers that moved the cash.
 function ClosedRow({ t }) {
   const known = t.pnl != null;
@@ -69,6 +109,7 @@ function ClosedRow({ t }) {
         )}
       </div>
       {t.belief && <p className="mt-1.5 text-xs text-slate-400 italic truncate">“{t.belief}”</p>}
+      <div className="mt-1"><SpyLine v={t.vs_spy} /></div>
     </Card>
   );
 }
@@ -175,6 +216,8 @@ export default function PracticePage() {
         </Card>
       )}
 
+      <BenchmarkCard b={s.data?.benchmark} />
+
       {mkt && !mkt.is_open && (
         <div className="mt-4 rounded-2xl bg-amber-400/10 border border-amber-300/30 px-4 py-3 text-sm text-amber-100" role="status">
           <b>The market is closed.</b> New share trades wait and fill at the opening price ({mkt.next_open_text}), just like a real broker. Prices can jump overnight. Practice options and Close Calls open right away at an estimate from the last prices.
@@ -231,6 +274,7 @@ export default function PracticePage() {
                     </div>
                   </div>
                   {p.belief && <p className="mt-2 text-sm text-slate-300 italic truncate">“{p.belief}”</p>}
+                  <div className="mt-1"><SpyLine v={p.vs_spy} /></div>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-xs text-slate-500">Worth {usd(p.market_value)}</span>
                     {confirm === p.position_id ? (
@@ -274,6 +318,7 @@ export default function PracticePage() {
                 </div>
               </div>
               {o.belief && <p className="mt-2 text-sm text-slate-300 italic truncate">“{o.belief}”</p>}
+              <div className="mt-1"><SpyLine v={o.vs_spy} /></div>
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-xs text-slate-500">Worth about {usd(o.value)} (estimated)</span>
                 {confirm === o.position_id ? (

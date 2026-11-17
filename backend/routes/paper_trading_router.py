@@ -261,6 +261,12 @@ def get_portfolio(user_id: str, force_refresh: bool = Query(True, description="B
             acc["total_pnl"] = acc["total_value"] - start
             acc["total_return_pct"] = acc["total_pnl"] / start * 100
             portfolio["summary"]["total_positions"] += len(opts)
+        try:  # each trade next to the same money in the S&P 500 over the same days (information only)
+            from backend.v4 import benchmark
+            benchmark.attach(portfolio)
+        except Exception as e:
+            logger.warning(f"S&P comparison skipped: {e}")
+            portfolio["benchmark"] = None
         return JSONResponse(
             content=portfolio,
             headers={

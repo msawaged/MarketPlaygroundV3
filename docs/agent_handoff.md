@@ -977,3 +977,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/practice_options.py, backend/routes/paper_trading_router.py, backend/v4/tests/test_paper.py,
   frontend/src/components/chat/StrategyCard.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 (Builder routine): Portfolio "You vs the S&P 500" (same money, same days)
+- No HQ messages from Murad; no "proposed" items left in feature_ideas.md. Picked a finishing touch for Prof Brown:
+  the practice account showed gains with no benchmark.
+- New `backend/v4/benchmark.py`: each measured trade's money (shares qty x avg price; options set aside) x SPY's move
+  from its last daily close before the trade opened (New York time, a close counts from 4pm) to its last close before
+  it closed, or SPY's live price if still open. Shorts, older sales with no cost, and trades with no SPY history are
+  left out; no live SPY price -> open trades left out (never a stale price). Daily closes only, no look-ahead.
+- `/api/paper-trading/portfolio/{uid}` adds `benchmark` (trades, money, gain, spy_gain, ahead, beat, open,
+  skipped_short, since) and `vs_spy` on each position / options trade / closed trade; wrapped in try (None on failure).
+- PracticePage: "You vs the S&P 500" card under Account value + one "Same money in the S&P 500: ... ahead/behind by"
+  line on each open and closed trade, with the method in a footnote. Checked at 375/390 with a mocked portfolio: the
+  per-trade S&P gains add up to the card, the trade gains add up to the account's total gain; no overflow.
+- Information only: no ranking, research, gate, grading or real-money change.
+- Test: backend/v4/tests/test_benchmark.py (3 tests). Backend 192 passed, vite build passes.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/benchmark.py, backend/routes/paper_trading_router.py, backend/v4/tests/test_benchmark.py,
+  frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.
