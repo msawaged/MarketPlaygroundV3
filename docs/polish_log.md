@@ -997,3 +997,32 @@ Changed:
   option_quote, so Close Call and options cards can be walked locally. Dev tool only.
 
 Checks: vite build passes, npm test passes, backend tests 196 passed.
+
+## 2026-11-17 (third run, ~12:30 UTC = Tue 7:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+Locally (offline server, 390 and 360 wide), first walk of an "Earn income" options card and a credit spread in Portfolio:
+- DAL Bull Put Spread 56/52, $2.06 - $0.84 = $1.22 credit, 3 contracts: collect $366, max loss 3 x ($400 - $122) =
+  $834, breakeven $54.78; -20% / flat / +20% = -$834 / +$366 / +$366 (+44% of $834). Greeks +50 sh, theta +$1.05/day,
+  vega -$9.54 (short vol: right sign). Portfolio: cash $99,166 + $834 set aside = $100,000. All add up.
+- NVDA Bull Call Spread 185/202.50 at $10.00 - $3.66: $634, max gain $1,116, breakeven $191.34, 94 days. Adds up.
+
+Found:
+- Credit trades worded their payoff as a path: "Best case: keep the +$366 if DAL stays above $56 until Feb 19, 2027"
+  (the chart and numbers are the price at expiration; a dip in between doesn't lose the credit), and the worst case
+  had no date: "-$834 if it falls below $52." Debit spreads right next to them say "at or below $185 on Feb 19, 2027".
+  Same for Bear Call Spread, Cash-Secured Put, Iron Condor, butterflies and Collar's floor.
+- MuLine on DAL: "Uptrend · 2 days" / "Trending up, the same way as this call" under a chart that fell for weeks and
+  turned up two days ago. The badge is right, the sentence oversold it.
+
+Changed:
+- payoff.js plainEnglish: credit spreads, CSP, condor/butterflies and collar say "is at or above/below $X on <date>" /
+  "ends between ... on <date>"; every worst case carries the date. Test "credit spreads at expiration" in payoff.test.mjs.
+- Glossary (Term.jsx) and strategy blurbs (library.py): "keep it all if the stock is above your strike at expiration".
+- StrategyCard MuLine: a trend 3 trading days old or younger adds "It only turned up 2 trading days ago, so the trend
+  isn't settled."
+
+Checks: vite build passes, npm test passes, backend tests 197 passed.

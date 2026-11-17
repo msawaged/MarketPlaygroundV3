@@ -1083,3 +1083,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Checked at 390 and 375 with live /v4/brain data mocked in.
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 midday (daily polish walk, 3rd run): credit trades worded at expiration; young MuLine turns flagged
+- No HQ messages from Murad. Wording only: no ranking, research, gate, grading, pricing or real-money change.
+- payoff.js plainEnglish: credit spreads / CSP / condor / butterflies / collar describe the payoff at expiration with
+  the date ("is at or above $56 on Feb 19, 2027"), not "stays above ... until"; worst cases carry the date.
+- Term.jsx + library.py blurbs for bull put / bear call spreads: "keep it all if the stock is above/below your strike
+  at expiration".
+- StrategyCard MuLine: trend age <= 3 trading days adds "It only turned up N trading days ago, so the trend isn't settled."
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, frontend/src/components/ui/Term.jsx,
+  frontend/src/components/chat/StrategyCard.jsx, backend/v4/library.py, docs/polish_log.md, docs/hq/status/polish.json.

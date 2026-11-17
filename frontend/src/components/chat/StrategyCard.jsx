@@ -152,6 +152,8 @@ function MuLine({ t, direction }) {
   const call = direction === 'bullish' ? 1 : direction === 'bearish' ? -1 : 0;
   let say = call ? (call === t.dir ? `Trending ${up ? 'up' : 'down'}, the same way as this call.`
     : `Heads-up: trending ${up ? 'up' : 'down'}, against this call.`) : `Trending ${up ? 'up' : 'down'}.`;
+  // a turn a day or three old says little yet: the chart can show a long move the other way right before it
+  if (t.age <= 3) say += ` It only turned ${up ? 'up' : 'down'} ${t.age <= 1 ? 'today' : `${t.age} trading days ago`}, so the trend isn't settled.`;
   if (t.flips >= 6) say += ' It has been choppy lately, so give it less weight.';
   else if (t.sma_dir !== t.dir) say += ' A plain 20-day average hasn\'t caught the turn yet.';
   return (

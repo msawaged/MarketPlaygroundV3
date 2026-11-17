@@ -170,3 +170,21 @@ console.log('payoff tests passed');
   assert.equal(daysToExpiry('2027-05-21', new Date('2026-11-18T03:00:00Z')), 185); // 10 PM ET on Nov 17
   assert.equal(daysToExpiry('2026-11-20', new Date('2026-11-20T18:00:00Z')), 0);
 }
+
+// Credit trades describe the payoff at expiration, with the date, like debit trades (2026-11-17): "stays above $56
+// until Feb 19" read as if a dip in between lost the credit, and the worst case had no date at all.
+{
+  const { buildModel, summarize, plainEnglish } = await import('./payoff.js');
+  const exp = '2027-02-19', T = new Date('2026-11-17T12:00:00Z');
+  const opt = (action, option_type, strike_price, est_premium) => ({ instrument: 'option', action, option_type, strike_price, est_premium, quantity: 1, expiration: exp });
+  const bps = buildModel({ type: 'Bull Put Spread', vol: 0.28, trade_legs: [opt('Sell', 'Put', 56, 2.06), opt('Buy', 'Put', 52, 0.84)] }, 58, T);
+  const t = plainEnglish(bps, summarize(bps), 3, 'DAL', 1000).map((l) => l.text);
+  assert.ok(t.includes('Best case: keep the +$366 if DAL is at or above $56 on Feb 19, 2027.'), t.join(' | '));
+  assert.ok(t.includes("Worst case: −$834 if it's at or below $52 on Feb 19, 2027."), t.join(' | '));
+  assert.ok(t.includes('You break even if DAL is at $54.78 on Feb 19, 2027.'), t.join(' | '));
+  const bcs2 = buildModel({ type: 'Bear Call Spread', vol: 0.28, trade_legs: [opt('Sell', 'Call', 60, 1.5), opt('Buy', 'Call', 64, 0.5)] }, 58, T);
+  const b = plainEnglish(bcs2, summarize(bcs2), 1, 'DAL', 1000).map((l) => l.text).join(' | ');
+  assert.ok(b.includes('keep the +$100 if DAL is at or below $60 on Feb 19, 2027.') && b.includes("−$300 if it's at or above $64 on Feb 19, 2027."), b);
+  assert.ok(!/stays (above|below)|until Feb/.test(t.join(' ') + b));
+  console.log('credit spreads at expiration ok');
+}

@@ -257,18 +257,18 @@ export function plainEnglish(model, sum, units, ticker, amount) {
     }
     case 'Bull Put Spread':
       lines[0] = { tone: 'neutral', text: `You collect about ${$(Math.round(-model.netPremium * 100 * n))} today. The most you can lose is ${$(Math.round(worst))}.` };
-      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} stays above ${$(hi)} until ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it falls below ${$(lo)}.` });
+      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} is at or above ${$(hi)} on ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)} on ${date}.` });
       break;
     case 'Bear Call Spread':
       lines[0] = { tone: 'neutral', text: `You collect about ${$(Math.round(-model.netPremium * 100 * n))} today. The most you can lose is ${$(Math.round(worst))}.` };
-      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} stays below ${$(lo)} until ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it rises above ${$(hi)}.` });
+      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} is at or below ${$(lo)} on ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or above ${$(hi)} on ${date}.` });
       break;
     case 'Cash-Secured Put':
       lines[0] = { tone: 'neutral', text: `You collect about ${$(Math.round(-model.netPremium * 100 * n))} now and set aside ${$(Math.round(cost))} in case you have to buy ${100 * n} shares at ${$(lo)}.` };
-      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} stays above ${$(lo)} until ${date}.` });
-      lines.push({ tone: 'bad', text: `If it drops below ${$(lo)}, you buy the shares at that price (cheaper than today). You lose money only if it keeps falling past ${be}.` });
+      lines.push({ tone: 'good', text: `Best case: keep the +${$(Math.round(best))} if ${ticker} is at or above ${$(lo)} on ${date}.` });
+      lines.push({ tone: 'bad', text: `If it's below ${$(lo)} on ${date}, you buy the shares at that price (cheaper than today). You lose money only if it keeps falling past ${be}.` });
       return lines;
     case 'Covered Call':
       lines[0] = { tone: 'neutral', text: `You buy ${100 * n} shares (about ${$(Math.round(cost))} after the call income) and sell a call that pays you about ${$(Math.round(-model.netPremium * 100 * n))} now.` };
@@ -284,25 +284,25 @@ export function plainEnglish(model, sum, units, ticker, amount) {
     case 'Collar':
       lines[0] = { tone: 'neutral', text: `You buy ${100 * n} shares, buy a put at ${$(lo)} and sell a call at ${$(hi)}: about ${$(Math.round(cost))} in total.` };
       lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} is at or above ${$(hi)} on ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)}. That's your floor.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it's at or below ${$(lo)} on ${date}. That's your floor.` });
       lines.push({ tone: 'neutral', text: ownedNote(model, n, ticker) });
       break;
     case 'Long Call Butterfly': {
       const mid = model.legs.find((l) => l.qty === 2)?.strike ?? (lo + hi) / 2;
       lines.push({ tone: 'good', text: `Best case: +${$(Math.round(best))} if ${ticker} ends right at ${$(mid)} on ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends below ${$(lo)} or above ${$(hi)}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends at or below ${$(lo)} or at or above ${$(hi)} on ${date}.` });
       break;
     }
     case 'Iron Butterfly': {
       const mid = model.legs.find((l) => l.sign < 0)?.strike ?? model.entry;
       lines.push({ tone: 'good', text: `Best case: keep +${$(Math.round(best))} if ${ticker} ends right at ${$(mid)} on ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends below ${$(lo)} or above ${$(hi)}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends at or below ${$(lo)} or at or above ${$(hi)} on ${date}.` });
       break;
     }
     case 'Iron Condor': {
       const inner = strikes.length >= 4 ? [strikes[1], strikes[2]] : [lo, hi];
-      lines.push({ tone: 'good', text: `Best case: keep +${$(Math.round(best))} if ${ticker} stays between ${$(inner[0])} and ${$(inner[1])} until ${date}.` });
-      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends below ${$(lo)} or above ${$(hi)}.` });
+      lines.push({ tone: 'good', text: `Best case: keep +${$(Math.round(best))} if ${ticker} ends between ${$(inner[0])} and ${$(inner[1])} on ${date}.` });
+      lines.push({ tone: 'bad', text: `Worst case: −${$(Math.round(worst))} if it ends at or below ${$(lo)} or at or above ${$(hi)} on ${date}.` });
       break;
     }
     default:
