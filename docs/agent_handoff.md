@@ -1006,3 +1006,25 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/benchmark.py, backend/paper_trading.py, backend/v4/tests/test_benchmark.py,
   frontend/src/components/PracticePage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 (Builder routine): Expired practice options settle at the expiration-day close
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Found a money-math bug (rule a): an expired
+  practice options trade (every Close Call practice trade) settled at whatever the stock traded at when the user next
+  opened Portfolio, not at the expiration-day close. Two ways it went wrong: on expiration day it settled in the
+  morning at the 10am price (stamped 4pm); a week later it settled at that week's price. A Close Call YES graded
+  "right" on Friday's close could settle as a total loss on Monday's price. A derivatives reviewer would catch it.
+- `market.session_close_on(symbol, d)`: raw (unadjusted) daily close of the last session on/before d, only once d is
+  before today in New York; cached. `practice_options.positions`: past expiry -> settle at that close
+  (`closed_at` = 4pm NY on expiration day, as before); until the close is in, the trade stays open with
+  `settling: true` at its value at the latest price. `_past_expiry` = after 4pm NY on expiration day.
+  `close()` refuses a by-hand close once expired (no after-hours price). Before 4pm on expiration day nothing changed.
+- PracticePage: "Settling" chip, P&L greyed with "≈ / est.", a line saying it settles at the official close on that
+  date and the cash comes back once that close is in; the Close button is hidden. Structure pill now wraps/truncates
+  (long "Close Call: YES NVDA > $190.00" pill was breaking into 3 lines at 390px).
+- Not changed: `yesno.grade_due` still grades on the adjusted close a day after expiry (same day's close in practice);
+  no ranking, research, gate or real-money change.
+- Test: test_expired_options_settle_at_the_expiration_day_close_not_a_later_price; two older tests now patch
+  `market.session_close_on`. Backend 194 passed, vite build passes.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/market.py, backend/v4/practice_options.py, backend/v4/tests/test_paper.py,
+  frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.

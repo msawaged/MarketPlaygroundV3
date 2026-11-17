@@ -190,6 +190,7 @@ def test_practice_options_open_value_close_and_expire(tmp_path, monkeypatch):
     assert 300 < r2["set_aside"] <= 500  # worst case of a 5-wide spread, less the credit
     today["d"] = date(2026, 6, 1) + timedelta(days=91)
     spot["v"] = 120.0  # puts expire worthless: keep the credit
+    monkeypatch.setattr(market, "session_close_on", lambda t, d: (d.isoformat(), 120.0))
     assert po.positions("u9") == []
     with eng._get_db_connection() as conn:
         cash2 = float(conn.execute("SELECT cash_balance FROM users WHERE user_id = 'u9'").fetchone()["cash_balance"])
@@ -303,6 +304,7 @@ def test_sold_positions_leave_a_closed_trade_record(tmp_path, monkeypatch):
     c = po.close("u", o1["position_id"])
     today["d"] = date.today() + timedelta(days=61)
     spot["v"] = 90.0  # expires worthless: the whole cost is lost
+    monkeypatch.setattr(market, "session_close_on", lambda t, d: (d.isoformat(), 90.0))
     assert po.positions("u") == []
     opts = {r["id"]: r for r in po.closed("u")}
     assert abs(opts[o1["position_id"]]["pnl"] - c["pnl"]) < 0.01 and opts[o1["position_id"]]["expired"] is False
@@ -366,3 +368,56 @@ def test_closed_trade_times_carry_their_offset(tmp_path, monkeypatch):
     assert po._expiry_close(datetime(2027, 2, 19).date()).utcoffset() is not None
     for r in rt._closed_trades("u"):
         assert r["closed_at"].endswith("+00:00")
+
+
+def test_expired_options_settle_at_the_expiration_day_close_not_a_later_price(tmp_path, monkeypatch):
+    """A Close Call YES ($100/$105 call spread) that was right at Friday's close must settle on Friday's close, even
+    if the stock has fallen by the time the user next opens the app. Until that close is in, the trade waits
+    ('settling') and can't be closed by hand at a later price."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.v4 import market, practice_options as po
+    from datetime import date, datetime, timedelta
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "x.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    spot = {"v": 102.0}
+    today = {"d": date(2026, 11, 16)}
+    now = {"t": datetime(2026, 11, 16, 11, 0, tzinfo=market.NY)}
+    monkeypatch.setattr(market, "latest_price", lambda t: spot["v"])
+    monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
+    monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
+    monkeypatch.setattr(market, "today", lambda: today["d"])
+    monkeypatch.setattr(market, "now_ny", lambda: now["t"])
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    closes = {}
+    monkeypatch.setattr(market, "session_close_on", lambda t, d: closes.get(d))
+    exp = date(2026, 11, 20)
+    legs = [{"action": "Buy", "option_type": "Call", "strike_price": 100, "expiration": exp.isoformat(), "quantity": 1, "instrument": "option"},
+            {"action": "Sell", "option_type": "Call", "strike_price": 105, "expiration": exp.isoformat(), "quantity": 1, "instrument": "option"}]
+    o = po.open_trade("u", "XYZ", "Close Call: YES", legs, 2)
+    cost = o["set_aside"]
+    def cash():
+        with eng._get_db_connection() as conn:
+            return float(conn.execute("SELECT cash_balance FROM users WHERE user_id = 'u'").fetchone()["cash_balance"])
+    cash0 = cash()
+
+    # expiration day, 3pm: still open, can be closed by hand
+    today["d"], now["t"] = exp, datetime(2026, 11, 20, 15, 0, tzinfo=market.NY)
+    p = po.positions("u")
+    assert len(p) == 1 and p[0]["settling"] is False
+    # 4:30pm: expired, waits for the official close, can't be closed at an after-hours price
+    now["t"] = datetime(2026, 11, 20, 16, 30, tzinfo=market.NY)
+    p = po.positions("u")
+    assert len(p) == 1 and p[0]["settling"] is True
+    with pytest.raises(po.PracticeError):
+        po.close("u", o["position_id"])
+    # next week the stock is at $95 (spread worth $0), but Friday closed at $106: full $500 a contract
+    today["d"], now["t"] = date(2026, 11, 24), datetime(2026, 11, 24, 10, 0, tzinfo=market.NY)
+    spot["v"] = 95.0
+    assert len(po.positions("u")) == 1  # the close isn't in yet: no settle at today's $95
+    closes[exp] = ("2026-11-20", 106.0)
+    assert po.positions("u") == []
+    c = po.closed("u")[0]
+    assert c["expired"] is True and abs(c["proceeds"] - 1000.0) < 0.01
+    assert abs(c["pnl"] - (1000.0 - cost)) < 0.01
+    assert abs(cash() - (cash0 + 1000.0)) < 0.01

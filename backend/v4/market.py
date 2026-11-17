@@ -142,6 +142,35 @@ def session_open_after(symbol: str, after: datetime) -> Optional[tuple[str, floa
     return None
 
 
+_settle_cache: dict = {}
+
+
+def session_close_on(symbol: str, d: date) -> Optional[tuple[str, float]]:
+    """(trading date, official close) of the last regular session on or before d, as traded that day (raw, not
+    adjusted for later splits or dividends: an option settles on the price that printed). None until that session
+    is over (d must be before today in New York) or if the bars can't be fetched. Used to settle practice options
+    at expiration; a finished day's close never changes, so successes are cached."""
+    key = (symbol.upper(), d.isoformat())
+    if key in _settle_cache:
+        return _settle_cache[key]
+    if d >= today():
+        return None
+    try:
+        r = _session.get(f"{_data_base()}/v2/stocks/{symbol.upper()}/bars", headers=_headers(), params={
+            "timeframe": "1Day", "start": (d - timedelta(days=7)).isoformat(), "end": d.isoformat(),
+            "adjustment": "raw", "feed": os.getenv("ALPACA_DATA_FEED", "iex"), "limit": 30}, timeout=10)
+    except requests.RequestException:
+        return None
+    if r.status_code != 200:
+        return None
+    bars = [b for b in (r.json().get("bars") or []) if b["t"][:10] <= d.isoformat()]
+    if not bars:
+        return None
+    out = (bars[-1]["t"][:10], float(bars[-1]["c"]))
+    _settle_cache[key] = out
+    return out
+
+
 def asset_info(symbol: str) -> Optional[dict]:
     """Return {'symbol','name','tradable','is_etf',...} or None if not a usable US equity."""
     symbol = symbol.upper().strip()

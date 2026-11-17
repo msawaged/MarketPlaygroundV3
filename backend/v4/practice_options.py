@@ -6,7 +6,8 @@ re-prices every leg itself, so the client only chooses which contracts, never wh
 
 Money: opening sets aside the trade's worst case (or its cost, whichever is larger) from practice cash.
 Closing returns that amount plus the trade's gain or loss:  cash back = set_aside + (value_now - value_at_open).
-At expiration a trade settles automatically at what it's worth on that day.
+At expiration a trade settles automatically at what it's worth at that day's official close (the stock's closing
+price on expiration day, not whatever it trades at when someone next opens the app).
 """
 from __future__ import annotations
 
@@ -230,8 +231,27 @@ def _expired(legs: list[dict]) -> Optional[date]:
     return last if last and last <= market.today() else None
 
 
+def _past_expiry(legs: list[dict]) -> Optional[date]:
+    """The expiration date once its 4pm New York close has passed (the trade can no longer be closed by hand)."""
+    exp = _expired(legs)
+    if exp and (exp < market.today() or market.now_ny() >= _expiry_close(exp)):
+        return exp
+    return None
+
+
+def _settle_price(ticker: str, exp: date) -> Optional[float]:
+    """The stock's official close on expiration day (or the last session before it, for a holiday expiry). None
+    until that day is over and its bar is in: the trade waits rather than settling at a later price."""
+    try:
+        got = market.session_close_on(ticker, exp)
+    except Exception:
+        got = None
+    return float(got[1]) if got else None
+
+
 def positions(user_id: str) -> list[dict]:
-    """Open option trades with what they're worth now. Trades past expiration settle here."""
+    """Open option trades with what they're worth now. Trades past expiration settle here, at the expiration-day
+    close; until that close is in, they show as 'settling' at their value at today's price."""
     eng = _engine()
     out = []
     with eng._lock:
@@ -241,17 +261,20 @@ def positions(user_id: str) -> list[dict]:
                                 (user_id,)).fetchall()
             for r in rows:
                 legs = json.loads(r["legs"])
+                exp = _expired(legs)
+                done = _past_expiry(legs)
+                if done and done < market.today():
+                    px = _settle_price(r["ticker"], done)
+                    if px is not None:  # settled at what it was worth at the expiration-day close
+                        _settle(conn, r, unit_value(legs, px, r["vol"], on=done), when=_expiry_close(done).isoformat())
+                        continue
                 try:
                     spot = float(market.latest_price(r["ticker"]))
                 except Exception:
                     spot = None
                 if spot is None:
                     continue
-                exp = _expired(legs)
                 v = unit_value(legs, spot, r["vol"], on=exp) if exp else unit_value(legs, spot, r["vol"])
-                if exp:  # settled at what it was worth on expiration day, so that's when it closed
-                    _settle(conn, r, v, when=_expiry_close(exp).isoformat())
-                    continue
                 pnl = (v - r["entry_value"]) * r["contracts"]
                 out.append({
                     "position_id": r["position_id"], "ticker": r["ticker"], "structure": r["structure"],
@@ -260,7 +283,7 @@ def positions(user_id: str) -> list[dict]:
                     "value": round(r["set_aside"] * r["contracts"] + pnl, 2),
                     "pnl": round(pnl, 2), "pnl_pct": round(pnl / max(1.0, r["set_aside"] * r["contracts"]) * 100, 2),
                     "expiration": max(l["expiration"] for l in legs if l["instrument"] == "option"),
-                    "opened_at": r["opened_at"], "estimated": True,
+                    "opened_at": r["opened_at"], "estimated": True, "settling": bool(done),
                 })
     return out
 
@@ -274,6 +297,9 @@ def close(user_id: str, position_id: str) -> dict:
                              (position_id, user_id)).fetchone()
             if not r:
                 raise PracticeError("That trade is already closed.")
+            if _past_expiry(json.loads(r["legs"])):
+                raise PracticeError("This trade has expired. It settles at the closing price on expiration day, "
+                                    "and the cash comes back once that price is in.")
             spot = float(market.latest_price(r["ticker"]))
             v = unit_value(json.loads(r["legs"]), spot, r["vol"])
             back = _settle(conn, r, v)

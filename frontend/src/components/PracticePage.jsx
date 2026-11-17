@@ -305,20 +305,24 @@ export default function PracticePage() {
             <Card key={o.position_id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="text-xl font-extrabold">{o.ticker}</span>
-                    <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-200">{o.structure}</span>
+                    <span className="max-w-full truncate whitespace-nowrap text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-200">{o.structure}</span>
+                    {o.settling && <span className="text-[10px] font-bold uppercase rounded-full px-2 py-0.5 bg-amber-500/15 text-amber-200">Settling</span>}
                   </div>
                   {legsText(o.legs) && <div className="text-xs text-slate-300 mt-0.5">{legsText(o.legs)}</div>}
                   <div className="text-xs text-slate-400">{o.contracts} contract{o.contracts > 1 ? 's' : ''} · expires {new Date(o.expiration + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · stock {usd(o.spot, 2)}</div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className={`text-lg font-extrabold ${up ? 'text-green-300' : 'text-red-300'}`}>{signed(o.pnl)}</div>
-                  <div className={`text-xs ${up ? 'text-green-400/80' : 'text-red-400/80'}`}>{o.pnl_pct >= 0 ? '+' : ''}{o.pnl_pct.toFixed(1)}%</div>
+                  <div className={`text-lg font-extrabold ${o.settling ? 'text-slate-300' : up ? 'text-green-300' : 'text-red-300'}`}>{o.settling ? '≈ ' : ''}{signed(o.pnl)}</div>
+                  <div className={`text-xs ${o.settling ? 'text-slate-400' : up ? 'text-green-400/80' : 'text-red-400/80'}`}>{o.pnl_pct >= 0 ? '+' : ''}{o.pnl_pct.toFixed(1)}%{o.settling ? ' est.' : ''}</div>
                 </div>
               </div>
               {o.belief && <p className="mt-2 text-sm text-slate-300 italic truncate">“{o.belief}”</p>}
               <div className="mt-1"><SpyLine v={o.vs_spy} /></div>
+              {o.settling ? (
+                <p className="mt-3 text-xs text-slate-400">Expired. It settles at {o.ticker}'s official close on {new Date(o.expiration + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, not at a later price; the cash comes back here once that close is in (usually the next morning). Until then it's shown at the latest price, about {usd(o.value)}.</p>
+              ) : (
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-xs text-slate-500">Worth about {usd(o.value)} (estimated)</span>
                 {confirm === o.position_id ? (
@@ -332,6 +336,7 @@ export default function PracticePage() {
                   <button onClick={() => setConfirm(o.position_id)} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Close</button>
                 )}
               </div>
+              )}
             </Card>
           );
         })}
