@@ -498,7 +498,7 @@ export default function BrainPage({ viewOnly = false }) {
         })()}
 
         {d?.forward?.by_days && Object.keys(d.forward.by_days).length > 0 && (() => {
-          const f = d.forward, pts = (v) => `${v >= 0 ? '+' : ''}${((v || 0) * 100).toFixed(1)}`;
+          const f = d.forward, pts = (v) => { const x = ((v || 0) * 100).toFixed(1); return x === '-0.0' || x === '0.0' ? '0.0' : `${v > 0 ? '+' : ''}${x}`; };
           const day = (iso, plus = 0) => { const t = new Date(`${iso}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + plus); return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
           const sure = (r) => Math.abs(r.lift_t || 0) >= 2;
           const confDays = Object.keys(f.by_confidence || {}).map(Number).sort((x, y) => y - x)[0];
@@ -510,7 +510,7 @@ export default function BrainPage({ viewOnly = false }) {
                 {Object.entries(f.by_days).map(([days, r]) => (
                   <div key={days} className="rounded-xl bg-slate-800/60 p-2.5">
                     <div className="text-[11px] font-semibold text-slate-300">After {days} days</div>
-                    <div className="text-[11px] text-slate-500">{r.beliefs} calls</div>
+                    <div className="text-[11px] text-slate-500">{Number(r.beliefs).toLocaleString()} calls</div>
                     <div className="mt-1 text-lg font-extrabold tabular-nums">{Math.round(r.top_beat * 100)}%</div>
                     <div className="text-[11px] text-slate-400">#1 beat the S&P</div>
                     <div className={`text-xs font-bold tabular-nums mt-1 ${r.lift > 0 && sure(r) ? 'text-green-400' : 'text-slate-300'}`}>{pts(r.lift)} pts vs our average idea</div>
@@ -530,6 +530,24 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     ))}
                   </div>
+                  {/* The split covers only calls made since confidence labels began, so it doesn't add up to the
+                      headline above. Say which calls, what they total, and that groups this small can't beat luck yet. */}
+                  {conf.all && (() => {
+                    const head = f.by_days[String(confDays)];
+                    const groups = ['high', 'medium', 'low'].filter((k) => conf[k]);
+                    const clear = groups.filter((k) => Math.abs(conf[k].lift_t || 0) >= 2);
+                    return (
+                      <p className="mt-2 text-[11px] text-slate-400">
+                        {head && conf.all.beliefs < head.beliefs
+                          ? `Confidence labels began ${f.confidence_since ? `on ${day(f.confidence_since)}` : 'later'}, so this split covers only the ${conf.all.beliefs.toLocaleString()} graded calls that carry one, not all ${head.beliefs.toLocaleString()}. `
+                          : ''}
+                        On those calls together the #1 did {pts(conf.all.lift)} pts vs our average idea{head && conf.all.beliefs < head.beliefs ? `, against ${pts(head.lift)} pts on all ${head.beliefs.toLocaleString()}` : ''}.
+                        {' '}{clear.length === 0
+                          ? 'No group is clear of luck yet (each needs t 2 or more), so read the split as a first look.'
+                          : `Clear of luck so far: ${clear.map((k) => `${k} (t ${conf[k].lift_t.toFixed(1)})`).join(', ')}; the rest could still be luck.`}
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
               <p className="mt-3 text-xs text-slate-400">

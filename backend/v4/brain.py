@@ -249,14 +249,21 @@ def _forward() -> dict:
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE b.source <> 'seed_backfill' AND p.direction IN ('bullish', 'bearish')""")
     first = db.query_one("SELECT MIN(created_at) AS t FROM beliefs WHERE source <> 'seed_backfill'") or {}
-    out = {"since": str(first.get("t") or "")[:10], "by_days": {}, "by_confidence": {}}
-    conf = {}
+    out = {"since": str(first.get("t") or "")[:10], "by_days": {}, "by_confidence": {}, "confidence_since": None}
+    # Confidence labels started later than the forward test, so the by-confidence split covers only the newer calls.
+    # "all" in each by_confidence day is the same subset taken together, so the page can show what the split adds
+    # up to (the headline above it covers every live call and is a different, larger sample).
+    conf, conf_first = {}, None
     for r in db.query(
-            """SELECT p.belief_id, p.features FROM picks p JOIN beliefs b ON b.id = p.belief_id
+            """SELECT p.belief_id, p.features, b.created_at FROM picks p JOIN beliefs b ON b.id = p.belief_id
                WHERE b.source <> 'seed_backfill' AND p.final_rank = 0 AND p.features LIKE '%rv2_conf%'"""):
         c = (db.loads(r["features"], {}) or {}).get("rv2_conf")
         if c:
             conf[r["belief_id"]] = c
+            t0 = str(r.get("created_at") or "")[:10]
+            if t0 and (conf_first is None or t0 < conf_first):
+                conf_first = t0
+    out["confidence_since"] = conf_first
     groups: dict = {}
     for r in rows:
         groups.setdefault((int(r["d"]), r["belief_id"]), []).append((r["final_rank"], float(r["ex"])))
@@ -288,6 +295,8 @@ def _forward() -> dict:
         out["by_days"][str(d)] = summary(tops, lifts)
         if by_c:
             out["by_confidence"][str(d)] = {c: summary(*v) for c, v in by_c.items()}
+            out["by_confidence"][str(d)]["all"] = summary([x for v in by_c.values() for x in v[0]],
+                                                          [x for v in by_c.values() for x in v[1]])
     return out
 
 

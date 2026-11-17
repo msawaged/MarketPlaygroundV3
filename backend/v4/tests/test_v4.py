@@ -3212,6 +3212,30 @@ def test_brain_forward_test_counts_only_live_calls():
     assert abs(f["top_avg"] - 0.01) < 1e-9 and abs(f["lift"] - (0.02 + -0.02) / 2) < 1e-9
 
 
+def test_brain_forward_confidence_split_says_which_calls_it_covers():
+    # Confidence labels started after the forward test did, so the High/Medium/Low split covers fewer calls than the
+    # headline. The split's own total ("all") and its start date are sent so the page can say what it adds up to.
+    from backend.v4 import brain
+    def add(bid, day, conf, top, other):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "u", "x", "x", f"{day}T15:00:00", day, "seed_news"))
+        for j, ex in enumerate((top, other)):
+            feats = db.dumps({"rv2_conf": conf} if conf and j == 0 else {})
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (f"{bid}-{j}", bid, f"T{j}", "bullish", day, 10.0, feats, j))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (f"{bid}-{j}", 7, day, 10.0, 0.0, 0.0, ex, day))
+    add("cf-old", "2026-10-29", None, 0.10, 0.00)     # before labels existed: in the headline only
+    add("cf-h", "2026-11-05", "high", 0.04, 0.00)
+    add("cf-l", "2026-11-06", "low", -0.02, 0.00)
+    out = brain._forward()
+    assert out["by_days"]["7"]["beliefs"] == 3
+    c = out["by_confidence"]["7"]
+    assert c["high"]["beliefs"] == 1 and c["low"]["beliefs"] == 1 and c["all"]["beliefs"] == 2
+    assert abs(c["all"]["lift"] - (0.02 + -0.01) / 2) < 1e-9
+    assert out["confidence_since"] == "2026-11-05"
+
+
 def test_time_shifted_practice_calls_are_training_only(monkeypatch):
     # augment: a practice basket re-scored a quarter earlier/later from prices only (no Claude); research uses the
     # shifted copies for training only, never for a test or a baseline

@@ -1039,3 +1039,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, frontend/src/components/chat/HowSure.jsx,
   frontend/src/components/WhatsNew.jsx, scripts/dev_offline_server.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 (Builder routine): Brain page forward test's confidence split says which calls it covers
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Picked a misleading number (rule a/c, Brain page):
+  the live forward test headline is "+0.4 pts on 1,409 calls", and right under it High/Medium/Low show -0.1/-0.4/+0.6
+  on 97+56+37 = 190 calls, with no word that the split is a different, smaller sample (confidence labels began Nov 8)
+  or that groups of 37-97 calls are nowhere near clear of luck. A reader can't make the numbers add up.
+- brain._forward: sends `confidence_since` (first labelled live call) and `by_confidence[d]["all"]` (the labelled
+  subset taken together). BrainPage: a line under the split ("Confidence labels began on Nov 8, so this split covers
+  only the 190 graded calls that carry one, not all 1,409. On those calls together the #1 did 0.0 pts..., against
+  +0.4 pts on all 1,409. No group is clear of luck yet (each needs t 2 or more)..."); no "-0.0"; call counts with commas.
+- Information only: no ranking, research, gate, grading or real-money change.
+- Test: test_brain_forward_confidence_split_says_which_calls_it_covers. Backend 195 passed, vite build passes.
+  Checked at 390 with the live /v4/brain data mocked in.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/hq/status/builder.json.

@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T05:05:00Z",
- "last_run": "Expired practice options (including every Close Call practice trade) now settle at the stock's official close on expiration day, not at a later price.",
+ "updated_at": "2026-11-17T08:06:00Z",
+ "last_run": "Brain page: the forward test's High/Medium/Low confidence split now says it covers only the 190 newer calls that carry a confidence label (not all 1,409), what those calls add up to, and that no group is clear of luck yet.",
  "working_on": "Waiting for Render builds to come back (out of build minutes until Dec 1 unless the limit is raised). My commits queue and go live together.",
- "next": "Once live: check a Close Call practice trade settles on its expiration-day close. Then the next finishing touch for Prof Brown's review.",
+ "next": "Once live: check the Brain page split line and the queued Portfolio changes. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The Brain page's live forward test said '+0.4 pts on 1,409 calls', and right under it High -0.1, Medium -0.4, Low +0.6 pts on only 190 calls, with no word that the split is a smaller, newer sample. A professor would ask why the parts don't add up to the whole. It now says confidence labels began Nov 8, so the split covers only those 190 calls (together 0.0 pts vs +0.4 on all 1,409), and that no group is clear of luck yet.",
+   "at": "2026-11-17T08:06:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Found a money bug in practice options: an expired trade (every Close Call practice trade) settled at whatever the stock was worth when you next opened Portfolio, not at the expiration-day close. On expiration morning it settled at the 10am price; a week later, at that week's price. So a Close Call YES that was right at Friday's close could show as a total loss on Monday. Now it settles at the official close on expiration day; until that close is in, Portfolio shows the trade as 'Settling' with an estimate, and it can't be closed by hand at an after-hours price.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A user who saw '+9 pts' on a call had no way to tell skill from luck. My beliefs now marks each graded call on the spread of calls like it (e.g. 'in the best 1 in 10; about 1 in 10 calls do this well, so one call still says little about skill').",
    "at": "2026-11-16T05:00:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The brain learns each news headline and its opposite. 4 in 10 opposites were bet the same way as the headline (e.g. 'I don't think the retail recovery will stall' -> Target down). Now a stock can't be bet the same way on both sides, and users who type 'I don't think...' get the opposite bet.",
-   "at": "2026-11-16T01:57:00Z"
   }
  ]
 }
