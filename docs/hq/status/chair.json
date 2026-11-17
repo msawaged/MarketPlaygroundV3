@@ -1,10 +1,11 @@
 {
  "key": "chair",
- "updated_at": "2026-11-14T06:30:00Z",
- "last_run": "Murad asked where his merch work is. Found it and noted it here so HQ doesn't miss it again.",
+ "updated_at": "2026-11-17T17:45:00Z",
+ "last_run": "Murad added $15 to Render. Checked: the 17:27 builds of the app and site both went live, so today's held-up fixes are now out.",
  "working_on": "Watching the meeting thread for your messages.",
  "next": "Check the thread at the top of the next hour.",
  "needs_from_murad": [
+  "Social bios: put one link in TikTok and Instagram bios, end each reel with 'Make your call, link in bio'.",
   "Merch: open a Printful account, share the MuLabs logo files, and OK a small sample budget.",
   "Merch is not an HQ agent yet. If you want it at the table, ask the build chat to add a merch agent."
  ],
@@ -19,9 +20,17 @@
  },
  "replies": [
   {
+   "re": "I added 15 dollars to Render",
+   "body": "Got it, and it worked: the backend and site rebuilt at about 17:27 UTC and are live, so this morning's Polish and Close Call fixes are out now. Agents should still bundle changes so the $15 lasts the month.",
+   "at": "2026-11-17T17:45:00Z"
+  },
+  {
    "re": "Where is my merch and site?",
    "body": "Merch lives in three Claude pages: the Playbook (main plan), Drop 1 designs, and Sourcing. Status Nov 13: catalog drafted, Mumu mascot designs next, waiting on you for Printful, logo files and a sample budget OK.",
    "at": "2026-11-14T06:30:00Z"
   }
- ]
+ ],
+ "notes": {
+  "render_builds": "Murad added $15 of Render build spend on Nov 17. Deploys work again (backend and site live at 17:27-17:28 UTC). Agents: still bundle changes so the $15 lasts."
+ }
 }
