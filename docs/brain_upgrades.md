@@ -630,3 +630,41 @@ If the refit ever finds no candidate passing, nothing changes: the app's own ord
 **Decision for Murad (2026-11-09 proposal): no longer needed for now.** A model alone has now cleared the unchanged
 gate against the stored #1 (look-ahead and all), so the question of moving the bar to the point-in-time app is moot
 while it keeps passing. Removed from the HQ status.
+
+## 2026-11-17 night (weekly) — Learned rankers don't train on a feature that is still being filled in
+
+**Last week's result first (2026-11-16, lone ranker goes live alone).** Deploys work again; the 07:00 UTC refit on
+2026-11-16 had `mlp_adj` active, but tonight's refit (20:21 UTC) switched ranker v2 **off** again (model shown: ridge,
+inactive). Not enough live time to re-run the 17-of-62 check meaningfully; the fix stays.
+
+**Problem (real numbers).** Why did it switch off? The 90-day data did not change: same 4,391 graded beliefs, same 2,703
+test beliefs, and every learned model uses fixed seeds. What changed is the inputs: the scout added `delay` (2026-11-16)
+and `rskew` (2026-11-17) to `FEATS`, so they entered the learned models' `ZKEYS` at once, while `enrich` fills them in
+over days. Tonight `delay` was **12.6%** filled (the other 87% carry the placeholder 0.20) and `rskew` 0%. Ridge's
+weight on `z_delay` came out **-0.0024, as large as `z_vol60` (-0.0023)** and bigger than `z_amihud` (0.001), for a
+feature whose own fixed rule shows nothing (-0.29% lift, t -0.97). Neural net risk-adjusted, yesterday vs tonight on the
+same test: lift +0.96% (t 3.14) → **+0.62% (t 1.95)**, risk-matched +1.15% (t 3.91) → +0.91% (t 2.96), raw beat
+52.6% → **51.6%** (now outside the 1-point slack vs the stored #1's 53.4%, so `_passes` fails). The models were fitting
+the fill pattern, and live calls (always fully filled) look unlike that training data. Every new scout feature would
+repeat this for the days it takes to backfill.
+
+**Change (inputs of the learned models only; no gate touched).** New `research.learn_keys(coverage)`: the learned
+rankers' inputs are `ZKEYS` minus any z-feature (and interaction built on one) under `COVERAGE_OK` (99%) coverage on the
+test-period ideas, the same coverage `run()` already reports as `low_coverage`. `run()` trains ridge / trees / nets on
+those keys and stores `learn_keys` and `learn_held_back`; `fit_production` fits ridge weights and the stored model on
+the same keys, stores them in `keys` (which `score_candidates` already reads), and `live_check` scores with them. The
+fixed rule for a new feature is still scored (marked provisional) while it fills, and the feature joins the learned
+models automatically once filled. `_passes`, `MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, the bar, the 90-day embargo, the mixes,
+`live_check`'s rule and the NN shadow/active criteria are unchanged. Memory: none.
+
+**Checks.** Backend tests: all pass (fresh venv). New `test_learned_rankers_hold_back_a_feature_that_is_still_filling_in`
+(unit test of `learn_keys`, incl. interactions; a run with `delay` on ~10% of ideas holds it back, keeps `z_mom60`,
+still scores the provisional delay rule, and `fit_production` stores matching `keys` / `w` / `mu`).
+Commit: see git log ("Ranker v2: learned models hold back features still being backfilled").
+
+**What counts as a win.** Next `research:ranker` run: `learn_held_back` = `z_delay`, `z_rskew`; ridge / gbm / net
+results return to about where they were before `delay` started filling (net risk-adjusted near +0.9–1.0% lift,
+raw beat near 52.6%), i.e. a run-to-run change only when the data changes. Whether the ranker switches back on is up to
+the unchanged gate, not this change. Later: when `delay` crosses 99% it rejoins; if the learned models then drop
+clearly again, that is the feature itself, a real result for the scout's log. A loss would be the learned models doing
+clearly worse with the features held back than with them in (more than ~0.2 points across the board).

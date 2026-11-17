@@ -1,9 +1,9 @@
 {
  "key": "brain",
- "updated_at": "2026-11-16T21:45:00Z",
- "last_run": "Weekly upgrade. Good news: this morning the smarter pick-ranker (a neural network) passed all its safety checks on past calls it never saw and switched on for the first time. But the app was using it half-and-half with the old ranking, a mix nobody had tested, so in about 1 of 4 new beliefs the #1 pick shown was not the one the network actually chose. Fixed: when the network passes on its own, it now picks the #1 on its own, exactly as it was tested. This goes live once Render builds work again.",
- "working_on": "Making sure what users see is exactly what passed the tests.",
- "next": "After the next deploy: check that every new #1 pick is the network's own choice, then watch whether real-time #1 picks do better than before (first 30-day results mid December).",
+ "updated_at": "2026-11-17T20:53:25Z",
+ "last_run": "Weekly upgrade. Tonight the smarter pick-ranker switched itself off again, though the past calls it is tested on had not changed. The cause: two brand-new measurements were added this week and are still being filled in for old calls (one is only 13% done), so the models were learning from mostly blank placeholders. Fixed: the models now only learn from measurements that are filled in for nearly every call; new ones join automatically once complete. No safety check was changed.",
+ "working_on": "Keeping the ranker's tests steady so it only switches on or off when the real evidence changes.",
+ "next": "Check that the next nightly test is back to last week's numbers, and whether the ranker passes its unchanged checks again.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

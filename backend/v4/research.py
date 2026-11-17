@@ -704,6 +704,23 @@ def provisional(fixed: dict, cov: dict, ok: float = COVERAGE_OK) -> dict:
     return out
 
 
+def learn_keys(cov: dict, ok: float = COVERAGE_OK) -> list[str]:
+    """The inputs the learned rankers (ridge, trees, neural net) may use: every z-scored feature (and interaction)
+    whose stored values cover at least `ok` of the graded ideas. A feature the scout just added is filled in over days
+    by `enrich`; until then most ideas carry a placeholder (NEUTRAL or 0), so the models fit the fill pattern, not the
+    feature, and live calls (always fully filled) look unlike training. On 2026-11-17 `delay` was 12.6% filled, ridge
+    gave z_delay a weight as large as z_vol60's, and on the same 4,391 beliefs with deterministic seeds the neural net
+    (risk-adjusted) fell from +0.96% lift (t 3.14, live since that morning) to +0.62% (t 1.95) and switched off. The
+    fixed rule for a new feature is still scored (marked provisional) while it fills; it joins the learned models once
+    filled. Never adds inputs, only holds back unfilled ones."""
+    share = (cov or {}).get("share") or {}
+    low = {k for k, v in share.items() if v < ok}
+    if not low:
+        return list(ZKEYS)
+    bad = {f"zx_{a}_{g}" for a, g in INTERACTIONS if a in low or g in low}
+    return [k for k in ZKEYS if k not in bad and not (k.startswith("z_") and k[2:] in low)]
+
+
 def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     data = load(include_aug=True) if data is None else data
     aug = [b for b in data if b.get("aug")]
@@ -770,7 +787,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         "regime-aware styles": lambda f: f["z_mom60"] * (f["reg_trend"] + 0.5 * f["reg_calm"]) - f["z_vol60"] * f["reg_crisis"]
                                          + 0.5 * f["z_mom250"] * f["reg_trend"],
     }
-    zkeys = ["z_" + k for k in FEATS if k not in ("log_horizon", "conviction")] + ["bearish"] + list(XKEYS)
+    # only features filled in on (nearly) every test-period idea, the same coverage run() reports; see learn_keys
+    zkeys = learn_keys(coverage([b for b in data if b["date"] >= dates[int(len(dates) * 0.4)]]))
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)",
                                           "neural net (learned)", "neural net (risk-adjusted)"]
                + (["gbm (+ shifted)", "gbm (risk-adjusted, + shifted)"] if aug else [])}
@@ -857,7 +875,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
            "confidence": {k: _by_confidence(res[k], v) for k, v in spreads.items() if len(v) == len(res[k]) >= 90},
            "test_from": dates[start], "results": {k: _metrics(v, cuts) for k, v in res.items()},
            "winsor": {"q": WINSOR_Q, "lo": round(cuts[0], 4), "hi": round(cuts[1], 4)} if cuts else None,
-           "ridge_weights_last": weights, "lead_only": True,
+           "ridge_weights_last": weights, "lead_only": True, "learn_keys": zkeys,
+           "learn_held_back": [k for k in ZKEYS if k not in zkeys],
            "mixed_direction": round(float(np.mean([len(_lead(b)) < len(b["cands"]) for b in data[start:]])), 4),
            "off_lead": {k: round(float(np.mean(v)), 4) for k, v in off.items() if v},
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
@@ -948,7 +967,8 @@ def _passes(m: dict, app: dict, risk: bool = False) -> bool:
                 and m.get("beat", 0) >= app.get("beat", 1) - RAW_BEAT_SLACK)
 
 
-def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None = None) -> dict:
+def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None = None,
+               keys: list[str] | None = None) -> dict:
     """Would the mix have done at least as well as the app's own #1 on calls made in real time (never practice, so no
     hindsight; all after every training outcome)? Needs min_calls such calls graded at `days`. model None = ridge."""
     days, min_calls = days or LIVE_DAYS, min_calls or LIVE_MIN_CALLS
@@ -958,7 +978,7 @@ def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None 
         return {"ok": False, "n": 0, "reason": f"{type(e).__name__}"}
     mix_p, app_p = [], []
     for b in live:
-        xb = _matrix([b], ZKEYS)
+        xb = _matrix([b], keys or ZKEYS)
         sc = model.predict(xb) if model is not None else ((xb - np.asarray(mu)) / np.asarray(sd)) @ np.asarray(w)
         app = [c.get("app", 0.0) for c in b["cands"]]
         mix_p.append(_pick(b, b["cands"][_top(b, mix_scores(app, sc, MIX_WEIGHT))]))
@@ -995,10 +1015,12 @@ def fit_production(results: dict | None = None) -> dict:
         if names[k] + MIX in res:
             cands[k + "_mix"] = (res[names[k] + MIX], cands[k][1])
             names[k + "_mix"] = names[k] + MIX
-    x, y = _xy(data, ZKEYS, "rel")
+    # the same inputs the walk-forward test scored (features still filling in are held back; see learn_keys)
+    keys = [k for k in (full.get("learn_keys") or learn_keys(coverage(data[len(data) * 2 // 5:]))) if k in ZKEYS] or list(ZKEYS)
+    x, y = _xy(data, keys, "rel")
     mu, sd = x.mean(0), x.std(0) + 1e-9
     xs = (x - mu) / sd
-    w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(ZKEYS)), xs.T @ y)
+    w = np.linalg.solve(xs.T @ xs + 5.0 * np.eye(len(keys)), xs.T @ y)
     edge = "lift_adj" if risk else "lift"
     passing = sorted((k for k, (m, _) in cands.items() if _passes(m, app, risk)),
                      key=lambda k: cands[k][0].get(edge, 0), reverse=True)
@@ -1011,7 +1033,7 @@ def fit_production(results: dict | None = None) -> dict:
             return kind_, None
         from sklearn.ensemble import HistGradientBoostingRegressor
         fit_on = data + aug if base.endswith("_aug") else data
-        xx, yy = _xy(fit_on, ZKEYS, cands[key][1])
+        xx, yy = _xy(fit_on, keys, cands[key][1])
         return kind_, (MLPRanker(xx, yy) if kind_ == "mlp" else HistGradientBoostingRegressor(
             max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
             random_state=7).fit(xx, yy))
@@ -1025,7 +1047,7 @@ def fit_production(results: dict | None = None) -> dict:
         except Exception:
             continue
         if k.endswith("_mix"):
-            live = live_check(m, mu, sd, w)
+            live = live_check(m, mu, sd, w, keys=keys)
             if not live.get("ok"):
                 continue
         best, kind, model = k, kd, m
@@ -1045,14 +1067,14 @@ def fit_production(results: dict | None = None) -> dict:
         mixes = sorted((k for k in cands if k.endswith("_mix")), key=lambda k: cands[k][0].get(edge, 0), reverse=True)
         if mixes:
             try:
-                live = {**live_check(fit(mixes[0])[1], mu, sd, w), "candidate": mixes[0]}
+                live = {**live_check(fit(mixes[0])[1], mu, sd, w, keys=keys), "candidate": mixes[0]}
             except Exception:
                 live = None
     # confidence cuts for whatever orders the live #1: this model if it is active, otherwise the app's own score —
     # judged without look-ahead, with cuts that split recent real-time calls into thirds (see _app_confidence)
     blocks = full.get("confidence") or {}
     conf = blocks.get(names.get(best, "")) if active else _app_confidence(blocks)
-    out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": ZKEYS, "mu": mu.tolist(),
+    out = {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, "model": best, "keys": keys, "mu": mu.tolist(),
            "sd": sd.tolist(), "w": w.tolist(), "oos": oos, "old": app,
            "old_pit": res.get("app, no look-ahead"), "active": active, "trained_on": len(data), "shifted": len(aug), "confidence": conf,
            "weight": MIX_WEIGHT if best.endswith("_mix") else WEIGHT, "mix": best.endswith("_mix"), "live": live,

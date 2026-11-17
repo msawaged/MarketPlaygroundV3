@@ -1177,3 +1177,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Checked at 390 and 375 (live /v4/brain JSON with mocked outlier numbers).
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-17 night (weekly brain upgrade): learned rankers hold back features still being backfilled
+- No HQ messages from Murad; no "proposed" brain items in feature_ideas.md.
+- research.learn_keys(coverage): ridge / gbm / neural-net inputs = ZKEYS minus z-features (and interactions on them)
+  under COVERAGE_OK on the test-period ideas. run() uses it and stores `learn_keys` / `learn_held_back`;
+  fit_production fits and stores `keys` from it (score_candidates already reads r["keys"]); live_check takes `keys`.
+- Why: delay (12.6% filled) got a ridge weight as big as vol60's and moved mlp_adj from passing to failing on identical
+  data. Scout: a new feature in FEATS no longer touches the learned models until enrich fills it; its fixed rule is
+  still scored (provisional). No gate, embargo, MIN_* or NN promotion rule changed.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/hq/status/brain.json.

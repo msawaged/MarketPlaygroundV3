@@ -4762,3 +4762,39 @@ def test_research_run_reports_the_outlier_check():
     assert app["lift"] > app["lift_w"] + 0.01            # the two lottery tickets carry the plain lift
     assert app["top10_share"] is None or app["top10_share"] > 0.5
     assert "clear_w" in out["luck"] and out["luck"]["app_lift_w"] == app["lift_w"]
+
+
+def test_learned_rankers_hold_back_a_feature_that_is_still_filling_in():
+    """A feature the scout just added is backfilled over days; until it covers (nearly) every graded idea the learned
+    rankers must not train on it (most ideas carry a placeholder; live calls never do). 2026-11-17: delay 12.6% filled."""
+    from backend.v4 import research
+    cov = {"share": {k: 1.0 for k in research.COV_KEYS}}
+    assert research.learn_keys(cov) == list(research.ZKEYS)
+    cov["share"].update({"delay": 0.126, "rskew": 0.0, "reg_trend": 0.5})
+    keys = research.learn_keys(cov)
+    assert "z_delay" not in keys and "z_rskew" not in keys and "z_mom60" in keys and "bearish" in keys
+    assert "zx_mom60_reg_trend" not in keys and "zx_vol60_reg_crisis" in keys  # interactions on an unfilled input too
+    assert set(keys) <= set(research.ZKEYS)
+
+    rng = random.Random(11)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(300):
+        bid = f"b-lk-{k}"
+        asof = (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            pid = f"p-lk-{k}-{j}"
+            num = {"mom60": rng.uniform(-1, 1)}
+            if k % 10 == 0:  # only ~10% of ideas backfilled so far
+                num["delay"] = rng.uniform(0, 1)
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": num}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, 0.05 * num["mom60"] + rng.gauss(0, 0.05), asof))
+    out = research.run(data=research.load())
+    assert "z_delay" in out["learn_held_back"] and "z_delay" not in out["learn_keys"]
+    assert "z_mom60" in out["learn_keys"]
+    assert "price delay premium (z_delay)" in out["provisional"]  # the fixed rule is still scored, marked provisional
+    prod = research.fit_production(out)
+    assert prod["keys"] == out["learn_keys"] and len(prod["w"]) == len(prod["keys"]) == len(prod["mu"])
