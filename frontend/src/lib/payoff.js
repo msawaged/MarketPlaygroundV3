@@ -33,8 +33,15 @@ export function shareCount(n) {
   return n < 100 ? String(Number(n.toFixed(2))) : n.toFixed(0);
 }
 
-function daysBetween(a, b) {
-  return Math.max(0, Math.round((b - a) / DAY_MS));
+// Calendar days from today (New York date) to the expiration date, the way a trader counts them and the server prices
+// them. Rounding the raw hours to 4pm on expiry put "186 days" on a 185-day option before noon.
+function nyDay(d) {
+  try { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch { return d.toISOString().slice(0, 10); }
+}
+
+export function daysToExpiry(expiration, today = new Date()) {
+  const a = Date.parse(`${nyDay(today)}T00:00:00Z`), b = Date.parse(`${String(expiration).slice(0, 10)}T00:00:00Z`);
+  return Number.isNaN(a) || Number.isNaN(b) ? 90 : Math.max(0, Math.round((b - a) / DAY_MS));
 }
 
 /**
@@ -52,8 +59,7 @@ export function buildModel(trade, entryPrice, today = new Date()) {
   if (!legs.length) {
     return { kind: 'stock', type, entry: Number(entryPrice), direction: type === 'Buy Stock' ? 1 : -1 };
   }
-  const exp = legs[0].expiration ? new Date(legs[0].expiration + 'T21:00:00Z') : null;
-  const daysToExp = exp ? daysBetween(today, exp) : 90;
+  const daysToExp = legs[0].expiration ? daysToExpiry(legs[0].expiration, today) : 90;
   const parsed = legs.map((l) => ({
     sign: l.action === 'Sell' ? -1 : 1,
     kind: String(l.option_type || '').toLowerCase() === 'put' ? 'put' : 'call',

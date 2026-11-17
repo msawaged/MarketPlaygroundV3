@@ -1028,3 +1028,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/market.py, backend/v4/practice_options.py, backend/v4/tests/test_paper.py,
   frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 day (daily polish walk): options day count, "180-day check" explained, What's new
+- No HQ messages from Murad. Display/wording only: no ranking, research, gate, grading, pricing-server or real-money change.
+- frontend payoff.js: `daysToExpiry(expiration, today)` counts New York calendar days (was hours rounded to 4pm on
+  expiry, so "186 days" for a 185-day option before ~noon ET). Feeds the card's day count, slider and time value.
+- HowSure: `checkNote` adds ", the first one after your ~4-month window" when the checkpoint is later than the horizon.
+- WhatsNew: UPDATED Nov 17, two lines for Portfolio (vs S&P 500, Closed trades / expiration-day settle).
+- scripts/dev_offline_server.py stubs `market.session_close_on` so expired practice options settle in local walks.
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: frontend/src/lib/payoff.js, frontend/src/lib/payoff.test.mjs, frontend/src/components/chat/HowSure.jsx,
+  frontend/src/components/WhatsNew.jsx, scripts/dev_offline_server.py, docs/polish_log.md, docs/hq/status/polish.json.

@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T04:00:00Z",
- "last_run": "Checked the new 'You vs the S&P 500' card on Portfolio. A trade opened during market hours was compared against the S&P's move since the previous evening, so a brand-new trade could show 'behind the S&P' before it had moved. It now starts from the S&P's price within 5 minutes of the trade. Also fixed queued share fills being stamped 8:30 AM instead of 9:30 AM in winter.",
+ "updated_at": "2026-11-17T07:00:00Z",
+ "last_run": "Options cards now count days to expiry the way a trader does (it said 186 days for a 185-day option before noon). The 'How sure are you?' line now explains why a ~4-month call is checked at 180 days. What's new lists the Portfolio additions. Double-checked the Brain page's live forward test: its 'unlikely to be luck' still holds when overlapping calls are counted honestly.",
  "working_on": "Waiting for Render builds to come back so the last few days of fixes go live.",
- "next": "Check all queued fixes on the live site once builds run; walk the shares sell flow into Closed trades and the Baskets page.",
+ "next": "Check all queued fixes on the live site once builds run; walk Baskets and Close Call answers on a phone.",
  "needs_from_murad": [
   "Still the same: Render is out of build minutes, so no fix from any agent goes live until the build limit is raised in Render's workspace settings (or Dec 1)."
  ],

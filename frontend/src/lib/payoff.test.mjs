@@ -161,3 +161,12 @@ console.log('payoff tests passed');
   const c = plainEnglish(co, summarize(co), 1, 'NVDA', 5000).map((l) => l.text).join(' | ');
   if (!c.includes('only the options are new money: about $70 (the put, less what the call pays you)')) throw new Error('collar owned: ' + c);
 }
+
+// Days to expiry are New York calendar days: a 185-day option reads 185 at 1:40 AM ET and at 5 PM ET, not 186 or 184
+{
+  const { daysToExpiry } = await import('./payoff.js');
+  assert.equal(daysToExpiry('2027-05-21', new Date('2026-11-17T06:40:00Z')), 185);
+  assert.equal(daysToExpiry('2027-05-21', new Date('2026-11-17T22:00:00Z')), 185);
+  assert.equal(daysToExpiry('2027-05-21', new Date('2026-11-18T03:00:00Z')), 185); // 10 PM ET on Nov 17
+  assert.equal(daysToExpiry('2026-11-20', new Date('2026-11-20T18:00:00Z')), 0);
+}

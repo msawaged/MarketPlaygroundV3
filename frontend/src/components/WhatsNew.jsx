@@ -2,8 +2,10 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 15';
+export const UPDATED = 'Nov 17';
 export const UPDATES = [
+  'New: Portfolio puts each practice trade next to the same money in the S&P 500 over the same days',
+  'New: Closed trades on Portfolio: what you put in, what came back, and the gain; expired options settle at the expiration-day close',
   "New: Close Call keeps your record: how often you picked the right side, next to what the market's odds expected",
   'New: "How sure are you?" on your calls, beside how often similar calls came true; later, a score of how well your confidence matched',
   'New: "I\'m wrong if...": write your own test for a call, then mark whether it happened',

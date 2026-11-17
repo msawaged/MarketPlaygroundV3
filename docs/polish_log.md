@@ -934,3 +934,37 @@ Changed:
 - Test test_a_trade_opened_during_market_hours_starts_from_spy_at_that_moment_not_the_morning.
 
 Checks: vite build passes, backend tests 193 passed.
+
+## 2026-11-17 (day run, ~06:30 UTC = Tue 1:30 AM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+Checked, nothing wrong:
+- Live forward test "+0.4 pts, unlikely to be luck (t 2.1)" uses the plain t, while the page teaches that overlap
+  shrinks t. Recomputed from Postgres with `research._se_overlap` (7-day window): 1,409 calls on 14 call dates,
+  overlap-honest t 2.03 (n_eff ~1,260; the lift vs the same belief's other ideas cancels the shared market move). The
+  label holds; not changed.
+- "Just graded: NVDA bearish ✓ -17.3%": outcome row ret -16.8%, SPY +0.54% -> -17.3%. Matches.
+- First walk of the new Settling / expired options path (offline server now stubs `market.session_close_on`, so
+  expired trades settle locally instead of sitting at "Settling"): DAL 55/60 Bull Call Spread x3, $891 set aside,
+  expired Nov 16 -> got back $1,422 (+$531, +59.6%); expired Nov 13 -> $876 (-$15). Account value, Locked in and
+  You vs the S&P 500 add up. NVDA Protective Put $170, 1 contract: $19,003 = 100 x $185 + $503, worst -$2,003,
+  breakeven $190.03, -20% / flat / +20% = -$2,003 / -$503 / +$3,197: all add up.
+
+Found:
+- Options card day count was off by one before ~noon ET: "186 days until it expires" on a May 21 option on Nov 17
+  (185 calendar days). payoff.js rounded the hours to 4pm on expiry; the slider and time value used the same count.
+- "How sure are you?" asked about "the 180-day check" right under "~4 months" with no reason given. A reader sees
+  two different horizons.
+- What's new still said Nov 15; Closed trades and You vs the S&P 500 weren't listed.
+
+Changed:
+- payoff.js `daysToExpiry`: New York calendar days from today to the expiration date (122 days for Mar 19 today).
+  Test in payoff.test.mjs (1:40 AM ET, 5 PM ET, 10 PM ET all 185; expiry day 0).
+- HowSure: "at the 180-day check, the first one after your ~4-month window" when the window falls between checks.
+- WhatsNew (Nov 17): Portfolio vs the S&P 500; Closed trades with expiration-day settlement.
+- scripts/dev_offline_server.py: offline `session_close_on` from the synthetic closes (dev tool only).
+
+Checks: vite build passes, npm test passes, backend tests 194 passed.

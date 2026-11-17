@@ -74,6 +74,18 @@ market.headlines = lambda limit=6: []
 market.clock = lambda: market._fallback_clock()
 
 
+def session_close_on(sym, d):
+    """Offline stand-in for the expiration-day close (so expired practice options settle instead of waiting forever)."""
+    if d >= market.today():
+        return None
+    days, closes = daily_closes(sym)
+    got = [(x, c) for x, c in zip(days, closes) if x <= d.isoformat()]
+    return got[-1] if got else None
+
+
+market.session_close_on = session_close_on
+
+
 class FakeClaude:
     def __init__(self):
         self.messages = self

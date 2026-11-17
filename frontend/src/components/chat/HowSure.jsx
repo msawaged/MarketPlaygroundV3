@@ -13,6 +13,14 @@ export function checkpointFor(horizonDays) {
   return CHECKPOINTS.find((c) => c >= h) || 365;
 }
 
+// When the call's window falls between checks ("~4 months" is graded at 180 days), say why the check is later.
+export function checkNote(horizonDays, cp) {
+  const h = Number(horizonDays) || 0;
+  if (!h || cp <= h) return '';
+  const w = h >= 60 ? `~${Math.round(h / 30)}-month` : `${h}-day`;
+  return `, the first one after your ${w} window`;
+}
+
 export function sureGoal(direction) {
   if (direction === 'bearish') return 'does worse than the S&P 500';
   if (direction === 'volatile') return 'moves more than the S&P 500';
@@ -167,7 +175,7 @@ export default function HowSure({ beliefId, direction, horizonDays, checkpointDa
   return (
     <div className={`mt-3 rounded-2xl border px-3 py-2.5 ${prob != null ? 'border-blue-400/30 bg-blue-500/10' : 'border-slate-700 bg-slate-900/60'}`}>
       <div className="text-sm font-semibold text-slate-100">How sure are you?</div>
-      <div className="text-xs text-slate-400">That your idea {sureGoal(direction)} at the {cp}-day check. Optional, one tap.</div>
+      <div className="text-xs text-slate-400">That your idea {sureGoal(direction)} at the {cp}-day check{checkNote(horizonDays, cp)}. Optional, one tap.</div>
       <BaseRateLine cell={base} direction={direction} cp={cp} prob={prob} />
       <div className="mt-2 grid grid-cols-4 gap-1.5" role="group" aria-label="How sure are you">
         {SURE_CHOICES.map((p) => {
