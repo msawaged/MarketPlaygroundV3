@@ -1,8 +1,8 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T23:45:00Z",
+ "updated_at": "2026-11-18T00:00:00Z",
  "last_run": "Moving now (the news feed) now shows what the S&P 500 did that day, and under each stock its move against the S&P. On a day the whole market falls, a 'story helps' stock down 3% may still be ahead of the market, and the page now says so. Story mode's 'Who it moves' card shows the same line.",
- "working_on": "Nothing open; waiting for the deploy to go live.",
+ "working_on": "Nothing open. Live since about 23:55 UTC: tonight the S&P 500 was -0.9%, so Accenture's -3.4% reads -2.5 pts vs the S&P.",
  "next": "Check the live feed shows the S&P line tomorrow during market hours, the first outlier-check numbers on the Brain page, and the Nov 18 Close Call trades. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
