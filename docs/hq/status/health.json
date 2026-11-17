@@ -1,12 +1,10 @@
 {
  "key": "health",
- "updated_at": "2026-11-17T17:15:00Z",
- "last_run": "Tuesday afternoon check. App is healthy: learning ran at 16:17 UTC fine, beliefs at 6,864 (88 new today), site loads. Last night's grading run (Mon 22:51 UTC) was ok; graded calls 116,011, live 7,405. Deploys still fail because the workspace is out of build minutes (more failures at 14:06, 15:39 and 17:07 UTC), so the Close Call and polish fixes are queued, not live. No user emails, no HQ messages.",
+ "updated_at": "2026-11-17T21:12:00Z",
+ "last_run": "Tuesday evening check. All healthy: learning ran at 20:21 UTC fine, beliefs at 6,888 (112 new today), site loads. Last grading run (Mon 22:51 UTC) was ok; graded calls 116,011, live 7,405. Deploys are working again: backend and web deploys have gone live since 18:50 UTC (latest backend deploy 21:03 UTC, the ranker v2 change). No user emails, no HQ messages.",
  "working_on": "Watching the inbox and the jobs a few times a day.",
- "next": "Next check: confirm tonight's grading run (22:47 UTC) and whether deploys work again.",
- "needs_from_murad": [
-  "Render deploys are blocked: raise the build-minute spend limit in Render workspace settings (Build pipeline section), or accept that new fixes wait until Dec 1. The running app and jobs are fine."
- ],
+ "next": "Next check: confirm tonight's grading run (22:47 UTC) finished ok.",
+ "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
 }
