@@ -3302,6 +3302,30 @@ def test_brain_forward_luck_check_counts_same_day_calls_once():
     assert r["n_eff"] < 10
 
 
+def test_brain_forward_overlap_t_is_never_surer_than_the_plain_t():
+    # A group whose calls fall on 3 days inside one 7-day window: the date sums of the residuals nearly cancel, so
+    # the raw overlap error comes out tiny and a no-edge group read t -3.5 on the live page ("clear of luck").
+    # Counting overlap can only make calls less independent, so the honest t is never bigger than the plain one.
+    from backend.v4 import brain
+    rng = __import__("random").Random(7)
+    k = 0
+    for day in ("2026-11-09", "2026-11-10", "2026-11-11"):
+        for _ in range(30):
+            k += 1
+            bid = f"ov-{k}"
+            db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                       (bid, "u", "x", "x", f"{day}T15:00:00", day, "seed_news"))
+            for j, ex in enumerate((rng.gauss(-0.001, 0.05), 0.0)):
+                db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                           (f"{bid}-{j}", bid, f"T{j}", "bullish", day, 10.0, "{}", j))
+                db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                           (f"{bid}-{j}", 7, day, 10.0, 0.0, 0.0, ex, day))
+    r = brain._forward()["by_days"]["7"]
+    assert r["days"] == 3 and r["beliefs"] == 90
+    assert abs(r["lift_t_nw"]) <= abs(r["lift_t"]) + 0.01
+    assert r["n_eff"] <= r["beliefs"]
+
+
 def test_time_shifted_practice_calls_are_training_only(monkeypatch):
     # augment: a practice basket re-scored a quarter earlier/later from prices only (no Claude); research uses the
     # shifted copies for training only, never for a test or a baseline

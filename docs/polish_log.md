@@ -1051,3 +1051,26 @@ Changed:
 - Tests: test_movers_keeps_todays_stories_when_a_rebuild_finds_few; bare-year lines in the story test.
 
 Checks: vite build passes, backend tests 200 passed (fresh venv).
+
+## 2026-11-17 (fifth run, ~18:25 UTC = Tue 1:25 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds work again (Murad added build spend): "Moving now" now shows 8 stories, so the 4th run's fix is live.
+
+Found:
+- /live forward test, "By the #1 pick's confidence": "Clear of luck so far: high (t -3.5), medium (t -3.1),
+  low (t 2.5); the rest could still be luck." /v4/brain: high lift -0.08 pts, plain t -0.11, overlap t -3.49;
+  medium plain -0.74 vs overlap -3.07; low plain 0.84 vs overlap 2.52; each group's calls fall on only 3 days.
+  The overlap-honest t was 4-30x MORE confident than the plain t. Cause: with a few call days all inside one 7-day
+  window, every date pair gets weight ~1, so the variance is ~(sum of residuals)^2 = 0 and the error collapses.
+  An expert would spot a -0.1 pt gap called "clear of luck" immediately. Also "the rest" when there is no rest,
+  and "clear of luck" for a group that is behind.
+
+Changed:
+- brain._forward summary: the overlap-honest error is never smaller than the plain one (overlap can only make calls
+  less independent), so lift_t_nw is never surer than lift_t. The groups now read t -0.1 / -0.7 / +0.8 and the page
+  says no group is clear of luck yet. Headline (14 days, t 2.0 vs 2.1) unchanged. Reporting only: research.py,
+  _passes and the scorecard are untouched.
+- BrainPage: a group that clears says "ahead" or "behind"; "the rest could still be luck" only when there is a rest.
+- Test test_brain_forward_overlap_t_is_never_surer_than_the_plain_t.

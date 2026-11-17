@@ -288,6 +288,11 @@ def _forward() -> dict:
         if n > 1 and all(dates):
             se_h = _se_overlap(np.array(lifts, dtype=float), dates, window=max(int(window), 1))
             se_p = sd / math.sqrt(n)
+            # Overlap can only make calls less independent, never more. With a handful of call days that all
+            # fall inside one window, the date sums nearly cancel (residuals sum to zero) and _se_overlap comes
+            # out far too small: on Nov 17 the 'high' group (97 calls, 3 days) read t -3.5 against a plain -0.1.
+            # So the overlap-honest error is never smaller than the plain one.
+            se_h = max(se_h, se_p)
             out_["lift_t_nw"] = round(mean / se_h, 2) if se_h > 0 else 0.0
             out_["n_eff"] = int(round(min(n, n * (se_p / se_h) ** 2))) if se_h > 0 else n
         return out_

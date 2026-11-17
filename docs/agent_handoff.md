@@ -1139,3 +1139,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/practice_options.py, backend/v4/yesno.py, backend/v4/tests/test_paper.py,
   frontend/src/components/YesNoPage.jsx, frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 afternoon ET (daily polish walk, 5th run): forward test's overlap t can't be surer than the plain t
+- No HQ messages from Murad. Reporting only: no ranking, research gate, grading, pricing or real-money change.
+- brain._forward summary: se_h = max(_se_overlap, plain se). With a few call days inside one window _se_overlap
+  collapses toward 0 (live: High group, 97 calls on 3 days, -0.1 pts, plain t -0.1, overlap t -3.5, shown as
+  "clear of luck"). research._se_overlap itself is unchanged; research/brain-upgrade sessions may want the same
+  floor in research._metrics' reporting-only tnw if they ever run it on few dates (the scorecard has 429 dates, fine).
+- BrainPage: clear groups say "ahead"/"behind"; "the rest" only when there is one.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

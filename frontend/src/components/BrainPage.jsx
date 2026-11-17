@@ -556,7 +556,7 @@ export default function BrainPage({ viewOnly = false }) {
                         On those calls together the #1 did {pts(conf.all.lift)} pts vs our average idea{head && conf.all.beliefs < head.beliefs ? `, against ${pts(head.lift)} pts on all ${head.beliefs.toLocaleString()}` : ''}.
                         {' '}{clear.length === 0
                           ? 'No group is clear of luck yet (each needs t 2 or more), so read the split as a first look.'
-                          : `Clear of luck so far: ${clear.map((k) => `${k} (t ${tv(conf[k]).toFixed(1)})`).join(', ')}; the rest could still be luck.`}
+                          : `Clear of luck so far: ${clear.map((k) => `${k} ${tv(conf[k]) > 0 ? 'ahead' : 'behind'} (t ${tv(conf[k]).toFixed(1)})`).join(', ')}${clear.length < groups.length ? '; the rest could still be luck' : ''}.`}
                       </p>
                     );
                   })()}
