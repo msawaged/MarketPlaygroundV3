@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { getTrending } from '../lib/api';
 import BottomNavigation from './BottomNavigation';
 import { themeLabel } from '../lib/text';
-import { useMovers, MoverCard, ago } from './MoversFeed';
+import { useMovers, MoverCard, MarketLine, ago } from './MoversFeed';
 import { useAccount } from '../lib/auth';
 import { signedPct } from '../lib/figures';
 
@@ -48,6 +48,7 @@ export default function TrendingPage() {
         <h1 className="text-3xl font-extrabold">Moving now</h1>
         <p className="mt-1 text-slate-300">Today's market news and the companies it touches.</p>
         {movers.data?.built_at && <p className="mt-1 text-[11px] text-slate-500">Updated {ago(movers.data.built_at)}</p>}
+        {items.length > 0 && <MarketLine bench={movers.data?.benchmark} />}
         {movers.loading && <div className="mt-6 text-slate-400">Reading today's news…</div>}
         {!movers.loading && items.length === 0 && (
           <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-400">The news feed is quiet right now. Check back soon.</div>

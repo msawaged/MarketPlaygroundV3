@@ -324,12 +324,32 @@ def feed(client: Any = None) -> dict:
             finally:
                 _lock.release()
     cur = dict(cur or {"items": [], "built_at": None, "ai": False})
-    syms = sorted({c["ticker"] for it in cur["items"] for c in it["companies"]})
+    syms = sorted({c["ticker"] for it in cur["items"] for c in it["companies"]} | {BENCH})
     snaps = _snapshots(syms)
-    cur["items"] = [dict(it, companies=[dict(c, **snaps.get(c["ticker"], {})) for c in it["companies"]])
+    bench = snaps.get(BENCH) or {}
+    cur["benchmark"] = ({"ticker": BENCH, "change": bench["change"], "change_day": bench.get("change_day")}
+                        if bench.get("change") is not None else None)
+    cur["items"] = [dict(it, companies=[_vs_market(dict(c, **snaps.get(c["ticker"], {})), bench)
+                                        for c in it["companies"]])
                     for it in cur["items"]]
     cur["market"] = market.clock()
     return cur
+
+
+BENCH = "SPY"  # the S&P 500, the same yardstick every grade in the app uses
+
+
+def _vs_market(c: dict, bench: dict) -> dict:
+    """Add vs_market: the stock's move minus the S&P 500's (SPY) over the same session, in fractions.
+
+    A whole-market day moves almost every card the same way (live 2026-11-17: ACN "story helps" at -3.4%, MSFT
+    -2.4%), so a bare "stock -3.4% today" can't tell the story's effect from the market's. Only set when both moves
+    are from the same session; a stock's own ticker stays None (SPY vs itself is 0 by definition)."""
+    ch, b = c.get("change"), (bench or {}).get("change")
+    same_day = c.get("change_day") and c.get("change_day") == (bench or {}).get("change_day")
+    c["vs_market"] = (round(ch - b, 4) if ch is not None and b is not None and same_day
+                      and c.get("ticker") != BENCH else None)
+    return c
 
 
 # ---------------------------------------------------------------------------------------------------------------

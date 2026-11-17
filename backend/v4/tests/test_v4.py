@@ -525,6 +525,35 @@ def test_movers_today_change_only_trusts_the_previous_session():
     assert movers._today_change(105.0, 0.0, {}) is None
 
 
+def test_movers_feed_shows_each_move_against_the_sp500(monkeypatch):
+    from backend.v4 import movers
+    # A whole-market selloff: ACN -3.4% on a day SPY fell 1.5% is -1.9 pts vs the market, not "-3.4% from the story".
+    item = {"headline": "H", "hunch": "x", "companies": [{"ticker": "ACN", "direction": "up", "why": "w"},
+                                                       {"ticker": "OLD", "direction": "down", "why": "w"}]}
+    monkeypatch.setattr(movers, "_stored", lambda: {"items": [item], "built_at": "x", "checked_at": "x", "ai": True})
+    monkeypatch.setattr(movers, "_age", lambda *a, **k: 0.0)
+    monkeypatch.setattr(movers.market, "clock", lambda: {"is_open": False})
+    seen = {}
+    def snaps(syms):
+        seen["syms"] = syms
+        return {"SPY": {"price": 600.0, "change": -0.015, "change_day": "2026-11-17"},
+                "ACN": {"price": 250.0, "change": -0.034, "change_day": "2026-11-17"},
+                "OLD": {"price": 10.0, "change": 0.02, "change_day": "2026-11-14"}}  # a different session
+    monkeypatch.setattr(movers, "_snapshots", snaps)
+    out = movers.feed()
+    assert "SPY" in seen["syms"]
+    assert out["benchmark"] == {"ticker": "SPY", "change": -0.015, "change_day": "2026-11-17"}
+    acn, old = out["items"][0]["companies"]
+    assert acn["vs_market"] == -0.019
+    assert old["vs_market"] is None  # never compare moves from different days
+    # no SPY quote: no benchmark line and no comparisons, the plain move still shows
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {"ACN": {"price": 250.0, "change": -0.034,
+                                                                    "change_day": "2026-11-17"}})
+    out = movers.feed()
+    assert out["benchmark"] is None and out["items"][0]["companies"][0]["vs_market"] is None
+    assert out["items"][0]["companies"][0]["change"] == -0.034
+
+
 def test_owner_can_remove_an_account(monkeypatch):
     from backend.v4 import auth
     c = _client()

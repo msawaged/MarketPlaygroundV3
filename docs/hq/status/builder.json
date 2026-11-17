@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T20:12:00Z",
- "last_run": "Research results now get an outlier check: is a way of picking the #1 ahead because many calls do a bit better, or because it owned a couple of +500% stocks? The Brain page's luck check gets a 'Without the extremes' line: the #1's lead with every result capped at the 1% extremes, how much of the lead its 10 best calls make, and how many ways still clear the bar.",
- "working_on": "Nothing open. Live since 20:09 UTC; the new numbers appear after the next research run.",
- "next": "Check the first real outlier-check numbers on the Brain page after the next research run, and the Nov 18 Close Call answers showing their trades. Then the next finishing touch for Prof Brown's review.",
+ "updated_at": "2026-11-17T23:45:00Z",
+ "last_run": "Moving now (the news feed) now shows what the S&P 500 did that day, and under each stock its move against the S&P. On a day the whole market falls, a 'story helps' stock down 3% may still be ahead of the market, and the page now says so. Story mode's 'Who it moves' card shows the same line.",
+ "working_on": "Nothing open; waiting for the deploy to go live.",
+ "next": "Check the live feed shows the S&P line tomorrow during market hours, the first outlier-check numbers on the Brain page, and the Nov 18 Close Call trades. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Tonight every card on Moving now was red (Accenture 'story helps' at -3.4%, Microsoft -2.4%) with no word that the whole market fell, so you couldn't tell the story's effect from the market's. Each card now shows the S&P 500's move for the day at the top and each stock's move against it (for example -3.4 pts vs S&P). Only compared when both moves are from the same trading day. Information only: picks, grading and prices unchanged.",
+   "at": "2026-11-17T23:45:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "90-day results have fat tails: 81 graded calls moved more than 100% (one +508%), and one such call moves a 2,700-call test by about 0.2 pts. Nothing said whether a lead was broad or a few lottery tickets, which is the first thing a finance professor checks. Each research result now also reports the lead with results capped at the 1% extremes, the median call's lead and the 10 best calls' share, and the Brain page says it in one paragraph. Reporting only: the gate and the live ranking are unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A finance professor would catch a 'Paramount' media call graded on a $3 penny stock (PARA's ticker now belongs to Parabolic Technologies), and it scored a fake 70-point win. The app now checks that each ticker is the company the idea names and drops it if not: about 25 of 1,439 real pairs were the wrong company (Philip Morris -> Picard Medical, BYD -> Boyd Gaming).",
    "at": "2026-11-16T20:00:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The brain learns each news headline and its opposite. Some opposites still bet the same way as the headline on a different stock (the opposite of 'Bitcoin's selloff may signal a longer crypto downturn' was learned as QQQ down). Now an opposite whose bets all go the headline's way is dropped; opposites with real winners and losers (publishers down, META up) are kept.",
-   "at": "2026-11-16T17:02:37Z"
   }
  ]
 }

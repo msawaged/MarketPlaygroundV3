@@ -1195,3 +1195,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   case turned out to be monotone (lumpy) quotes, not inverted, so it still shows; it's under the 10-pt stale guard.
 - yesno.move_text(..., is_etf=False): funds get "like a Fed decision or a big economic report" instead of earnings.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-17 night ET (Builder routine): Moving now shows the S&P 500's move and each stock's move against it
+- No HQ messages from Murad; no "proposed" items left in feature_ideas.md, so a finishing touch (rule a/c).
+  Information only: no ranking, research gate, grading, pricing or real-money change.
+- Why: live at Tue 5:50 PM ET every card on /trending was red (ACN "story helps" at -3.4%, MSFT -2.4%, CNI, UNP...),
+  with no word that the whole market fell, so a story's effect couldn't be told from the market's. A finance
+  professor reads any one-day move against the market first.
+- movers.feed: SPY is fetched in the same snapshot call (BENCH); response gets `benchmark` {ticker, change,
+  change_day} (None without a quote) and each company `vs_market` = change - SPY change, only when both moves are from
+  the same session (`_vs_market`). story() returns feed items, so Story mode gets it too.
+- MoversFeed: Pct shows "-3.4 pts vs S&P" under "stock -4.9% today" (VsMarket, points not %); MarketLine on
+  TrendingPage under "Updated": "S&P 500 -1.5% today. Under each stock: its move vs the S&P...". StoryViewer's
+  "Who it moves" card shows the same line. Home chips (ToolSelectorPage) unchanged. WhatsNew line added.
+- Test: test_movers_feed_shows_each_move_against_the_sp500. Checked at 390 and 375 (live feed with mocked SPY).
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/MoversFeed.jsx,
+  frontend/src/components/TrendingPage.jsx, frontend/src/components/StoryViewer.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.

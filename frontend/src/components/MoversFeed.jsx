@@ -46,12 +46,42 @@ export function sessionLabel(day) {
   return 'on ' + d.toLocaleDateString('en-US', days < 6 ? { weekday: 'short', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
-export function Pct({ v, day }) {
+export function Pct({ v, day, vs }) {
   if (v == null) return null;
   return (
-    <span className="block text-[11px] text-slate-500 tabular-nums">
-      stock <span className={`font-semibold ${TONE[pctTone(v)]}`}>{signedPct(v)}</span> {sessionLabel(day)}
+    <>
+      <span className="block text-[11px] text-slate-500 tabular-nums">
+        stock <span className={`font-semibold ${TONE[pctTone(v)]}`}>{signedPct(v)}</span> {sessionLabel(day)}
+      </span>
+      <VsMarket v={vs} />
+    </>
+  );
+}
+
+// The stock's move minus the S&P 500's on the same session: on a day the whole market falls, a "story helps" stock
+// down 3% may still be ahead of it. Points, so it never reads as a second price change.
+export function vsPts(v) {
+  const s = signedPct(v);
+  return s == null ? null : s.replace('%', '') + ' pts';
+}
+
+export function VsMarket({ v, className = 'text-[11px]' }) {
+  if (v == null) return null;
+  return (
+    <span className={`block ${className} text-slate-500 tabular-nums`}>
+      <span className={`font-semibold ${TONE[pctTone(v)]}`}>{vsPts(v)}</span> vs S&amp;P
     </span>
+  );
+}
+
+// One line for the top of the feed: what the whole market did, so each stock's move has a yardstick.
+export function MarketLine({ bench }) {
+  if (bench?.change == null) return null;
+  return (
+    <p className="mt-1 text-xs text-slate-400">
+      S&amp;P 500 <span className={`font-semibold tabular-nums ${TONE[pctTone(bench.change)]}`}>{signedPct(bench.change)}</span> {sessionLabel(bench.change_day)}.
+      {' '}Under each stock: its move vs the S&amp;P, the part the whole market doesn't explain.
+    </p>
   );
 }
 
@@ -83,7 +113,7 @@ export function MoverCard({ item, i = 0 }) {
                   {c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}
                 </span>
               )}
-              <Pct v={c.change} day={c.change_day} />
+              <Pct v={c.change} day={c.change_day} vs={c.vs_market} />
             </span>
           </li>
         ))}
