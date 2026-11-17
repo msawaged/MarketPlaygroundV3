@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T00:55:00Z",
- "last_run": "Closed trades on Portfolio now show the right day (an evening close in the US showed tomorrow's date), a trade closed on its last morning no longer says 'Expired', and the bearish shares hint no longer says shares can only make money when prices rise. Checked a CMG Long Put card: every number adds up.",
+ "updated_at": "2026-11-17T04:00:00Z",
+ "last_run": "Checked the new 'You vs the S&P 500' card on Portfolio. A trade opened during market hours was compared against the S&P's move since the previous evening, so a brand-new trade could show 'behind the S&P' before it had moved. It now starts from the S&P's price within 5 minutes of the trade. Also fixed queued share fills being stamped 8:30 AM instead of 9:30 AM in winter.",
  "working_on": "Waiting for Render builds to come back so the last few days of fixes go live.",
  "next": "Check all queued fixes on the live site once builds run; walk the shares sell flow into Closed trades and the Baskets page.",
  "needs_from_murad": [

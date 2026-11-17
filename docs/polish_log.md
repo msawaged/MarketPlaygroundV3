@@ -906,3 +906,31 @@ Changed:
 - StrategyCard: "Buying shares only makes money if the price rises. To bet on a fall, tap Options."
 
 Checks: vite build passes, npm test passes, backend tests 189 passed.
+
+## 2026-11-17 (morning run, ~03:30 UTC = Mon 10:30 PM ET)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Render builds still failing (out of build minutes): every push since 0dbdbfc is queued, including this one.
+
+Reviewed the new Portfolio "You vs the S&P 500" (ffbc03a) as a finance reader would.
+
+Found:
+- The S&P leg started at SPY's last close before the trade, even for a trade opened during market hours. A trade
+  placed at 2pm was charged with the S&P's whole move since the previous close: open a $1,000 trade at 2pm on a day
+  SPY is up 0.8% and the card instantly said "Same money in the S&P 500: +$8 · behind by $8" before the trade had a
+  chance to move. The footnote ("a trade held a few hours inside one day compares against little or no move") was
+  only true for closed trades.
+- Queued share orders filled at the open were stamped `T09:30:00-04:00` (summer offset). In November that's 8:30 AM
+  New York, an hour before the session the fill price came from.
+
+Changed:
+- benchmark: a moment inside regular hours (9:30-4pm NY on a trading day) uses SPY's 5-minute bar it falls in (its
+  open, adjusted like the daily closes; one fetch per day, cached); outside hours, or if the bars can't be fetched,
+  the last close before it, as before. `compare`/`attach` take an `at` price function (tests inject it). Max 12 days
+  fetched per portfolio load. Footnote: "from its price when the trade opened to its price when it closed (or now).
+  During market hours that's SPY's price within 5 minutes of the trade; while the market is closed, its last close."
+- paper_trading queued fills: `market._session_open_dt(day)` (right offset in winter and summer).
+- Test test_a_trade_opened_during_market_hours_starts_from_spy_at_that_moment_not_the_morning.
+
+Checks: vite build passes, backend tests 193 passed.

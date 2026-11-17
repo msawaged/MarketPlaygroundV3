@@ -68,8 +68,8 @@ function BenchmarkCard({ b }) {
         <span className="text-slate-300"> on {usd(b.money)} put to work in {b.trades} trade{b.trades === 1 ? '' : 's'}{b.open ? ` (${b.open} still open)` : ''}. {b.beat} of {b.trades} beat the index.</span>
       </p>
       <p className="mt-1.5 text-[11px] text-slate-500">
-        Each trade's money is compared with {b.symbol}, an S&amp;P 500 fund, from its last close before the trade opened to its last close before it closed (or now).
-        A trade held a few hours inside one day compares against little or no move. Cash you didn't invest isn't counted{b.skipped_short ? '; shorts are left out' : ''}.
+        Each trade's money is compared with {b.symbol}, an S&amp;P 500 fund, from its price when the trade opened to its price when it closed (or now).
+        During market hours that's {b.symbol}'s price within 5 minutes of the trade; while the market is closed, its last close. Cash you didn't invest isn't counted{b.skipped_short ? '; shorts are left out' : ''}.
       </p>
     </Card>
   );

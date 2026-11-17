@@ -551,7 +551,8 @@ class PaperTradingEngine:
                 if not hit:
                     continue
                 day, open_px = hit
-                when = f"{day}T09:30:00-04:00"
+                from backend.v4 import market as _m
+                when = _m._session_open_dt(day).isoformat()  # 9:30 New York with that day's offset (-05:00 in winter)
                 px = Decimal(str(round(open_px, 4)))
                 if o['order_type'] == 'close':
                     pos = conn.execute("SELECT * FROM positions WHERE position_id = ? AND user_id = ?",

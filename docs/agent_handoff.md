@@ -995,3 +995,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
 - Files: backend/v4/benchmark.py, backend/routes/paper_trading_router.py, backend/v4/tests/test_benchmark.py,
   frontend/src/components/PracticePage.jsx, docs/hq/status/builder.json.
+
+## 2026-11-17 morning (daily polish walk): S&P comparison starts at the trade's moment, not the previous close
+- No HQ messages from Murad. Information only: no ranking, research, gate, grading or real-money change.
+- benchmark.py: inside market hours, SPY's price comes from its 5-minute bar at the trade's open/close moment
+  (`_price_at_factory`, `level_at`); outside hours or on any fetch failure, the old last-close rule. A brand-new 2pm
+  trade no longer shows "behind the S&P" by the morning's move. `attach(..., at=)` is injectable; tests pass
+  `at=lambda ny: None` to stay offline.
+- paper_trading `_fill_queued`: fill time uses `market._session_open_dt(day)` (was hard-coded -04:00, 8:30 AM in winter).
+- Render builds still failing (out of build minutes): this queues too. Don't re-push to kick it.
+- Files: backend/v4/benchmark.py, backend/paper_trading.py, backend/v4/tests/test_benchmark.py,
+  frontend/src/components/PracticePage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
