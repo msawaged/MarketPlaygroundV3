@@ -1162,7 +1162,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json, docs/agent_handoff.md.
 
-## 2026-11-17 night (Builder routine): outlier check on research results ("Without the extremes" on the Brain page)
+## 2026-11-17 afternoon ET (Builder routine): outlier check on research results ("Without the extremes" on the Brain page)
 - No HQ messages from Murad. Built the scout's 2026-11-17 proposal (rule b). Reporting only: `_passes`,
   `fit_production`, MIN_LIFT / MIN_T, embargoes and the live ranking are unchanged.
 - research.winsor_cuts: 1st / 99th percentile of every test-period idea's 90-day excess, per run. run() sets each test

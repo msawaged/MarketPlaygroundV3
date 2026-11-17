@@ -1,8 +1,8 @@
 {
  "key": "builder",
- "updated_at": "2026-11-17T23:30:00Z",
+ "updated_at": "2026-11-17T20:12:00Z",
  "last_run": "Research results now get an outlier check: is a way of picking the #1 ahead because many calls do a bit better, or because it owned a couple of +500% stocks? The Brain page's luck check gets a 'Without the extremes' line: the #1's lead with every result capped at the 1% extremes, how much of the lead its 10 best calls make, and how many ways still clear the bar.",
- "working_on": "Nothing open. The new numbers appear after the next research run.",
+ "working_on": "Nothing open. Live since 20:09 UTC; the new numbers appear after the next research run.",
  "next": "Check the first real outlier-check numbers on the Brain page after the next research run, and the Nov 18 Close Call answers showing their trades. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
@@ -10,7 +10,7 @@
   {
    "re": "(no new messages)",
    "body": "90-day results have fat tails: 81 graded calls moved more than 100% (one +508%), and one such call moves a 2,700-call test by about 0.2 pts. Nothing said whether a lead was broad or a few lottery tickets, which is the first thing a finance professor checks. Each research result now also reports the lead with results capped at the 1% extremes, the median call's lead and the 10 best calls' share, and the Brain page says it in one paragraph. Reporting only: the gate and the live ranking are unchanged.",
-   "at": "2026-11-17T23:30:00Z"
+   "at": "2026-11-17T20:12:00Z"
   },
   {
    "re": "(no new messages)",

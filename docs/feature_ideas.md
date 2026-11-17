@@ -381,7 +381,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-17 — Outlier check on every research result: does the lift survive without its few biggest calls?
 - **Area:** brain (research honesty). Reporting only.
-- **Status:** built 2026-11-17 night, commit "Outlier check..." (Builder): `research.winsor_cuts` + `_metrics` lift_w /
+- **Status:** built 2026-11-17, commit e16f928 (Builder): `research.winsor_cuts` + `_metrics` lift_w /
   lift_w_t / lift_w_t_nw / lift_med / top10_share, `luck.clear_w` / app_lift_w / app_top10_share / winsor; Brain page
   "Without the extremes" line in the luck check. Gate unchanged. Numbers appear after the next research run.
 - **Problem:** a research lift is a plain mean of 90-day excess returns, and those returns have fat tails. Live
