@@ -490,6 +490,14 @@ the app's (52.9%).
   still in `provisional`, so not final):** lift **+0.32%**, beat **51.0%**, t **1.08** (t_nw **0.65**); risk-matched
   lift **+0.39%**, beat_adj **52.0%**, t **1.38** (t_nw **0.85**). n_eff 997. Weak, as expected; well under the luck bar
   (3.25 for 43 tries). Ridge weight on z_ltr +0.0013. Re-check once `ltr` leaves `provisional`.
+- **Result (final, run 2026-11-17 17:40 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `ltr` 100%, zero
+  share 0.5%, not in `provisional`):** lift **+0.53%**, beat **50.3%**, t **1.78** (t_nw **1.32**); risk-matched lift
+  **+0.72%**, beat_adj **51.7%**, t **2.52** (t_nw **1.76**). n_eff 1,480. Small and positive, a bit stronger once
+  risk-matched (long-term losers here were not just high-beta names), but under the luck bar (3.25 for 44 tries) on
+  every t and not in `luck.clear`. Read as: a faint long-horizon reversal, not a reason to change the ranking. Ridge
+  weight on z_ltr +0.0008. Same run: app +1.49% / 53.4% / t 4.54 (t_nw 1.91); illiquidity premium +1.21% / t 4.04
+  (t_nw 2.63; risk-matched t_nw 2.42); `clear_nw` empty; random beat 51.0%. Idea 15 (`delay`) coverage 0% at this run
+  (enrich had not started on it yet).
 
 ### 15. Price delay premium: stocks that take in market news late (Hou & Moskowitz)
 - **Added:** 2026-11-16
@@ -520,4 +528,33 @@ the app's (52.9%).
   out of `provisional` in the research kv (coverage share ≥ 99%). Data caveat for every rule: PARA picks are a
   reused ticker (Parabolic Technologies, not Paramount; see docs/feature_ideas.md 2026-11-16), a small number of bad
   rows in every result until they are flagged.
+- **Result:** pending.
+
+### 16. Realized skewness: avoid lottery-shaped return distributions (Amaya, Christoffersen, Jacobs & Vasquez)
+- **Added:** 2026-11-17
+- **Source:** Amaya, Christoffersen, Jacobs & Vasquez (2015), "Does realized skewness predict the cross-section of
+  equity returns?", Journal of Financial Economics 118(1), 135-167:
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:118:y:2015:i:1:p:135-167 (working paper:
+  https://ideas.repec.org/p/aah/create/2013-41.html)
+- **Why:** stocks whose recent returns were strongly right-skewed (long quiet stretches with rare big up days) went on
+  to earn clearly less than left-skewed ones; the paper finds a long-short weekly spread of about 19 basis points,
+  read as investors overpaying for lottery-like payoffs (in line with skewness-preference theory, e.g. Barberis &
+  Huang 2008). Not the same as the MAX effect (idea 5), which looks at the *size* of the biggest days, or volatility
+  (ideas 13, high/low vol): skewness is the *shape*, how lopsided the up and down days are, scaled by volatility.
+- **Computed as:** `rskew` = sample skewness of daily log returns over the last 63 sessions (~3 months) up to the
+  pick's own date, clipped to [-5, 5]; 0 without 40 returns or with no variation. The paper uses 5-minute intraday
+  returns over a week; we only have daily closes, so this is the daily-return version (a common simplification), over
+  a longer window so it isn't three or four days' noise and to suit our ~90-day hold: a choice, not the paper's
+  exact measure. `market.rskew` / `market.rskew_features`; stored for new picks via `market.features` and
+  `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes up to each
+  pick's own date only (other features untouched). Directional (bearish calls flip it, so the rule shorts the most
+  right-skewed stock). Research rule: `avoid right-skewed stocks (-z_rskew)`; `z_rskew` is also available to the
+  learned ridge/gbm/net.
+- **What to look at:** raw and risk-matched lift, t and t_nw, and the luck bar (now 45 tries). Compare against
+  "avoid lottery stocks (-z_max5)" and the vol rows: in this sample wild stocks have done better (ideas 5 and 13 ran
+  the "wrong" way), so a skewness rule that only repeats them adds little. The paper's effect is short-horizon
+  (weekly rebalancing) and decays over a month, so on a 90-day hold expect it to be weak.
+- **Note:** until enrich finishes backfilling older picks they read `rskew = 0`; trust the result once `rskew` is out
+  of `provisional` in the research kv (coverage share >= 99%). Idea 15 (`delay`) is backfilled first in the same loop
+  order, so `rskew` fills in alongside or just after it.
 - **Result:** pending.

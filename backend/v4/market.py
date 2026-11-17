@@ -947,6 +947,35 @@ def delay_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"delay": delay(dates, closes, sdates, scloses, i) if i >= 0 else DELAY_NEUTRAL}
 
 
+def rskew(closes: list[float], i: int, window: int = 63, min_n: int = 40) -> float:
+    """Realized skewness (Amaya, Christoffersen, Jacobs & Vasquez 2015, "Does realized skewness predict the
+    cross-section of equity returns?"): the asymmetry of a stock's recent returns. Stocks whose returns have been
+    strongly right-skewed (rare big up days, lottery-like) went on to earn less than left-skewed ones, read as
+    investors overpaying for a small chance of a big win. The paper uses intraday returns; we only have daily closes,
+    so this is the sample skewness of daily log returns over the last `window` sessions (~3 months) up to index i.
+    Uses only closes up to index i. Clipped to [-5, 5]; 0.0 without `min_n` returns or with no variation."""
+    if i >= len(closes) or i < 1:
+        return 0.0
+    rets = [math.log(closes[k] / closes[k - 1]) for k in range(max(1, i - window + 1), i + 1)
+            if closes[k - 1] > 0 and closes[k] > 0]
+    n = len(rets)
+    if n < min_n:
+        return 0.0
+    m = sum(rets) / n
+    m2 = sum((r - m) ** 2 for r in rets) / n
+    if m2 <= 1e-14:
+        return 0.0
+    m3 = sum((r - m) ** 3 for r in rets) / n
+    return max(-5.0, min(5.0, m3 / m2 ** 1.5))
+
+
+def rskew_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"rskew": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"rskew": rskew(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1056,6 +1085,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "ivol": ivol(dates, closes, sdates, scloses, i),
         "ltr": ltr(closes, i),
         "delay": delay(dates, closes, sdates, scloses, i),
+        "rskew": rskew(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

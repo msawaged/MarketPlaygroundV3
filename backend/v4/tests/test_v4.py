@@ -4591,6 +4591,63 @@ def test_price_delay_rule_and_enrich_backfill(monkeypatch):
     assert num["ltr"] == 0.4 and num["beta"] == 1.2
 
 
+def test_realized_skewness_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, math as _m, random as _r
+    rng = _r.Random(83)
+    n = 300
+    dates = [(_dt.date(2022, 1, 3) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    # right-skewed: small down days with rare big jumps up; left-skewed: the mirror image
+    up, dn, flat = [50.0], [50.0], [50.0]
+    for k in range(1, n):
+        jump = k % 13 == 0
+        up.append(up[-1] * _m.exp(0.08 if jump else -0.006 + rng.gauss(0, 0.002)))
+        dn.append(dn[-1] * _m.exp(-0.08 if jump else 0.006 + rng.gauss(0, 0.002)))
+        flat.append(flat[-1] * _m.exp(rng.gauss(0, 0.01)))
+    i = n - 1
+    assert market.rskew(up, i) > 2.0 and market.rskew(dn, i) < -2.0 and abs(market.rskew(flat, i)) < 1.0
+    assert market.rskew(up, 30) == 0.0                     # under 40 returns of history
+    assert market.rskew([10.0] * n, i) == 0.0              # no variation
+    later = up[:200] + [c * 5 for c in up[200:]]
+    assert market.rskew(later, 199) == market.rskew(up, 199)  # no look-ahead
+    assert "rskew" in research.FEATS and "rskew" in research.DIRECTIONAL
+    # planted: left-skewed stocks pay for longs, right-skewed ones pay for shorts; the rule (-z_rskew) finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-sk-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            sk = rng.uniform(-2.0, 2.0)
+            ex = sk * 0.02 if bear else -sk * 0.02
+            pid = f"p-sk-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"rskew": sk}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["avoid right-skewed stocks (-z_rskew)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills rskew as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, flat if s == "SPY" else later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features",
+                 "delay_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4, "delay": 0.3}
+    asof = dates[199]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-skx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-skx", "b-skx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-skx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-skx'")["features"])["num"]
+    assert abs(num["rskew"] - market.rskew(up, 199)) < 1e-12 and num["rskew"] > 2.0
+    assert num["delay"] == 0.3 and num["beta"] == 1.2
+
 def test_ticker_must_still_be_the_company_the_idea_names():
     # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
     # abbreviations still count as the same company.

@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-16T18:45:00Z",
- "last_run": "Added idea 15: do stocks whose prices react to market news a few weeks late make the better pick? Checked idea 14 (long-term losers): weak so far, about three quarters of the old calls are filled in. Found a data problem and wrote it up as a proposal: the ticker PARA now belongs to a different company (Parabolic Technologies), so 30 'Paramount' practice calls were graded on the wrong stock, some at prices like $215,000 a share.",
- "working_on": "Testing idea 15 (late reactors) on calls it never saw, once Render can build again; finishing idea 14's check.",
- "next": "Next run: record idea 14 when it is fully filled in, start on idea 15's result, one new idea and one feature proposal.",
+ "updated_at": "2026-11-17T19:30:00Z",
+ "last_run": "Added idea 16: is the better pick the stock whose recent ups and downs are lopsided toward losses rather than rare big jumps up (people tend to overpay for 'lottery ticket' stocks)? Finished idea 14 (long-term losers): a small edge, not strong enough to trust. Wrote a proposal: check whether each research result still holds once the handful of giant wins and losses are set aside (81 practice calls moved more than 100% in 90 days).",
+ "working_on": "Waiting for ideas 15 (late reactors) and 16 (lopsided returns) to be filled in on the older calls so they can be tested on calls they never saw.",
+ "next": "Next run: record ideas 15 and 16 once their data is complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

@@ -1149,3 +1149,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - BrainPage: clear groups say "ahead"/"behind"; "the rest" only when there is one.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+## 2026-11-17 evening (CTO scout routine): idea 16 realized skewness; idea 14 final; proposal "outlier check"
+- No HQ messages from Murad. Research only: no change to the live ranking, ranker v2's gate, grading or real money.
+- Idea 14 (long-term reversal) recorded as final in docs/research_ideas.md: +0.53% lift, t 1.78 (t_nw 1.32), under the bar.
+  Idea 15 (`delay`) was still at 0% coverage at the 17:40 UTC run; enrich fills it now that deploys are live again.
+- New feature `rskew` (skewness of daily log returns over 63 sessions; Amaya et al. 2015): market.rskew /
+  rskew_features, market.features, nn.make_features (not MODEL_NUMERIC), research.FEATS + DIRECTIONAL, research.enrich
+  backfill (as of each pick's date). New fixed rule "avoid right-skewed stocks (-z_rskew)". Luck bar now 45 tries.
+- Proposal in docs/feature_ideas.md: outlier check on research results (winsorized lift, median lift, top-10 share;
+  reporting only). 81 graded 90-day outcomes are beyond ±100%.
+- Test: test_realized_skewness_rule_and_enrich_backfill.
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json, docs/agent_handoff.md.

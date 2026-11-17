@@ -378,3 +378,39 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   flagged rows changes the research sample, so it is written up in docs/brain_upgrades.md, and gates are untouched.
   No look-ahead: the name check uses what Alpaca says at pick time for live calls; for old backfill calls it only
   removes rows, never adds information.
+
+## 2026-11-17 — Outlier check on every research result: does the lift survive without its few biggest calls?
+- **Area:** brain (research honesty). Reporting only.
+- **Status:** proposed
+- **Problem:** a research lift is a plain mean of 90-day excess returns, and those returns have fat tails. Live
+  numbers (all graded 90-day outcomes, 2026-11-17): n = 23,279, mean directional excess +1.33% but median +0.53%,
+  standard deviation 20.6%, 1st / 99th percentile -45% / +58%, **81 outcomes beyond ±100%** (max +500%, min -351%;
+  e.g. ONDS +508%, SEZL +360%, plus the 30 mis-graded PARA rows). One +500% #1 pick moves the lift of a 2,703-call test
+  by 0.18 points, about a seventh of the illiquidity rule's +1.21% (the only fixed rule that clears the plain luck
+  bar). Today nothing tells us whether a rule's lift is broad (many calls a bit better) or comes from a handful of
+  lottery tickets, or from bad data rows. The t-stat doesn't fully protect against this: a few huge values inflate the
+  mean and the spread together, and a rule that happens to own two of them can look like skill. The research log keeps
+  saying "a small number of bad rows in every result" without being able to say how much they matter.
+- **Source:** Adams, Hayunga, Mansi, Reeb & Verardi (2019), "Identifying and treating outliers in finance", Financial
+  Management 48(2): https://researchportal.unamur.be/en/publications/identifying-and-treating-outliers-in-finance
+  (outliers routinely flip finance results; report results with and without them, winsorizing at 1%/99% is the
+  common check). Bessembinder (2018), "Do stocks outperform Treasury bills?", JFE 129(3):
+  https://econpapers.repec.org/RePEc:eee:jfinec:v:129:y:2018:i:3:p:440-457 (single-stock returns are extremely
+  right-skewed: a few stocks account for most of the market's gains, so means over stock picks are fragile).
+- **Build sketch (S):** in `research._metrics`, beside the existing numbers, add (reporting only):
+  `lift_w` / `lift_w_t` = the same lift with each call's chosen and belief-mean excess winsorized at the 1st / 99th
+  percentile of all test-period candidates (cut points fixed per run from the pooled outcomes, so every rule uses the
+  same ones); `lift_med` = median per-call lift; `top10_share` = share of the total lift contributed by the rule's 10
+  best calls. Brain page / research log quote `lift_w` beside `lift`; a new `luck.clear_w` list for rules whose
+  winsorized t clears the bar. Files: backend/v4/research.py (+ a test in tests/test_v4.py), docs/research_ideas.md
+  header (one line explaining the columns), optionally BrainPage.jsx (one "without the 1% extremes" number). Data
+  needed: none new. Memory: one extra array per rule, negligible.
+- **How we'd know it worked:** each run stores the new numbers; we can then say, for example, whether the illiquidity
+  rule and the app's #1 keep most of their lift winsorized (broad edge) or lose it (a few big winners). A planted test
+  where one rule owns two +500% calls and nothing else should show a large `lift`, a near-zero `lift_w` and
+  `top10_share` near 1.
+- **Risks:** must stay reporting only: `_passes` / `fit_production` keep reading the plain t (changing the gate is
+  Murad's decision and goes in docs/brain_upgrades.md). Winsorizing hides real big winners, which a long-only user did
+  earn, so it is shown as a check beside the real number, never instead of it. Cut points from pooled test outcomes
+  are fine (no look-ahead into any rule's choice, they only rescale outcomes already graded), but must be computed
+  per run, not hard-coded.
