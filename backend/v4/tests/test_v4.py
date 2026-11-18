@@ -4112,6 +4112,34 @@ def test_yesno_record_verdict_counts_each_expiration_day_once():
     assert yesno.record_verdict([])["verdict"] == "too_early"
 
 
+def test_yesno_scorecard_lists_the_brains_questions_and_where_it_took_the_other_side():
+    from backend.v4 import yesno
+
+    def put(i, user, m, b, exp, above=None, close=None):
+        db.execute("""INSERT INTO yesno_calls (id, user_id, ticker, level, expiration, side, market_p, brain_p, spot,
+                      strikes, cost, payout, contracts, position_id, created_at, features, close_price, above, graded_at)
+                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   (f"yn-{i}", user, "SPY", 750.0, exp, "yes" if b >= 0.5 else "no", m, b, 749.0, "750.0,751.0",
+                    None, None, 0, None, f"2026-11-1{i}T15:13:00+00:00", "{}", close, above,
+                    None if above is None else "2026-11-19T00:00:00+00:00"))
+
+    put(1, "brain", 0.51, 0.54, "2026-11-18", above=0, close=733.0)    # same side as the market, wrong
+    put(2, "brain", 0.49, 0.53, "2026-11-18", above=1, close=760.0)    # took the other side, right
+    put(3, "brain", 0.47, 0.51, "2026-11-20", above=0, close=740.0)    # took the other side, wrong
+    put(4, "brain", 0.48, 0.52, "2026-11-23")                          # took the other side, still open
+    put(5, "u1", 0.40, 0.41, "2026-11-18", above=1, close=760.0)       # a user's question: never listed
+    sc = yesno.scorecard()
+    assert [r["result"] for r in sc["recent"]] == ["open", "wrong", "right", "wrong"]   # newest asked first
+    assert all(r["ticker"] == "SPY" for r in sc["recent"]) and len(sc["recent"]) == 4
+    assert [r["disagrees"] for r in sc["recent"]] == [True, True, True, False]
+    assert sc["recent"][2]["close_price"] == 760.0 and sc["recent"][0]["asked"] == "2026-11-14"
+    assert sc["disagree"] == {"n": 2, "right": 1, "days": 2}
+    assert sc["graded"] == 4
+    db.execute("DELETE FROM yesno_calls WHERE graded_at IS NOT NULL")
+    empty = yesno.scorecard()
+    assert empty["graded"] == 0 and len(empty["recent"]) == 1 and empty["open"] == 1
+
+
 def test_yesno_my_record_sets_right_against_the_market_odds():
     from backend.v4 import yesno
     def v(i, side, mp, res, exp):

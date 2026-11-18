@@ -722,8 +722,35 @@ def my_record_for(user_id: str) -> dict:
     return out
 
 
+def _disagrees(market_p, brain_p) -> bool:
+    """The brain's lean takes the other side from the market's odds (one at or above 50%, the other below). Its lean
+    is a small nudge on the market's odds, so this is the only place its side can differ from the market's."""
+    return (float(brain_p) >= 0.5) != (float(market_p) >= 0.5)
+
+
+def brain_questions(limit: int = 12) -> list[dict]:
+    """Public: the brain's own daily questions, newest asked first, each with the market's odds and the brain's at
+    the time of asking and, once graded, the expiration-day close and right / wrong. Users' questions stay private."""
+    rows = db.query("SELECT * FROM yesno_calls WHERE user_id = 'brain' ORDER BY created_at DESC LIMIT ?",
+                    (max(1, min(int(limit), 60)),))
+    out = []
+    for r in rows:
+        v = {k: r[k] for k in ("ticker", "level", "expiration", "side", "spot", "close_price")}
+        v["asked"] = str(r.get("created_at") or "")[:10]
+        v["market_p"] = round(float(r["market_p"]), 3)
+        v["brain_p"] = round(float(r["brain_p"]), 3)
+        v["disagrees"] = _disagrees(r["market_p"], r["brain_p"])
+        v["result"] = _view(r)["result"]
+        out.append(v)
+    return out
+
+
 def scorecard() -> dict:
     """Public: how the brain's lean has done against the market's odds on graded questions (all askers)."""
+    try:
+        recent = brain_questions()
+    except Exception:
+        recent = []
     rows = db.query("SELECT market_p, brain_p, above, side, user_id, expiration FROM yesno_calls WHERE graded_at IS NOT NULL")
     seen = {}
     for r in rows:
@@ -731,7 +758,8 @@ def scorecard() -> dict:
     rows = list(seen.values())
     n = len(rows)
     if not n:
-        return {"graded": 0, "open": int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL") or {}).get("n") or 0)}
+        return {"graded": 0, "recent": recent,
+                "open": int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL") or {}).get("n") or 0)}
     bm = sum(brier(float(r["market_p"]), bool(r["above"])) for r in rows) / n
     bb = sum(brier(float(r["brain_p"]), bool(r["above"])) for r in rows) / n
     lean_right = sum(1 for r in rows if (float(r["brain_p"]) >= 0.5) == bool(r["above"])) / n
@@ -739,9 +767,12 @@ def scorecard() -> dict:
     v = record_verdict(rows)
     open_n = int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL") or {}).get("n") or 0)
     users = [r for r in db.query("SELECT side, above FROM yesno_calls WHERE graded_at IS NOT NULL AND user_id NOT IN ('brain', 'anonymous')")]
+    split = [r for r in rows if _disagrees(r["market_p"], r["brain_p"])]
+    disagree = {"n": len(split), "right": sum(1 for r in split if (float(r["brain_p"]) >= 0.5) == bool(r["above"])),
+                "days": len({str(r.get("expiration") or "") for r in split})}
     st = model_status() or {}
     learning = {k: st.get(k) for k in ("active", "graded", "test_n", "brier_gain", "t", "note", "at")}
-    return {"learning": learning, "graded": n, "open": open_n, "brier_market": round(bm, 4), "brier_brain": round(bb, 4),
+    return {"learning": learning, "graded": n, "recent": recent, "disagree": disagree, "open": open_n, "brier_market": round(bm, 4), "brier_brain": round(bb, 4),
             "brain_better": v["verdict"] == "better", "brain_side_right": round(lean_right, 3),
             "market_side_right": round(market_right, 3), "days": v["days"], "brier_gain": v["gain"], "brier_se": v["se"],
             "verdict": v["verdict"], "min_days": MIN_VERDICT_DAYS,

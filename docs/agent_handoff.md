@@ -1219,3 +1219,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   each call as independent, and points to the overlap count as the stricter test (the page read "0 of 45" then
   "7 of 45" a few lines apart). If research.py later adds an overlap-counted capped t, show it here instead.
 - Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-18 early (UTC) (Builder routine): Close Call shows the brain's own questions and where it took the other side
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md, so a finishing touch (rule c). Information only:
+  odds, lean, pricing, grading and the learning gate are unchanged.
+- Why: the brain's Close Call record was a bare aggregate (and first grades land Thursday: 11 questions close Wed Nov 18).
+  Its lean only nudges the market's odds a few points, so "picked the right side X%" mostly repeats the market; the only
+  place it differs is when it takes the other side near 50%. A professor would ask to see the calls and that split.
+- yesno.brain_questions(limit=12): the brain's own questions (user_id 'brain' only; users' stay private), newest asked
+  first, with market_p / brain_p at asking, close, right/wrong/open, `disagrees`. yesno._disagrees(). scorecard() adds
+  `recent` (also when nothing is graded yet) and `disagree` {n, right, days} on graded questions.
+- YesNoPage: BrainQuestions list under "The brain's Close Call record" (6, "Show all"), amber "Took the other side
+  from the market"; pcSide keeps one decimal near 50% (49.8% vs 50.2%); a line "Where its lean took the other side...
+  right X of N". WhatsNew line.
+- Test: test_yesno_scorecard_lists_the_brains_questions_and_where_it_took_the_other_side. Checked at 390 and 375.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.

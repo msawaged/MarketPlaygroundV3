@@ -7,6 +7,8 @@ import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoMyRecord, yesn
 
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
+// Odds near 50% keep one decimal so 49.8% and 50.2% don't both read "50%" on opposite sides.
+const pcSide = (p) => { const v = Number(p || 0) * 100; return Math.round(v) === 50 && Math.abs(v - 50) >= 0.05 ? `${v.toFixed(1)}%` : `${Math.round(v)}%`; };
 const fmtDay = (iso) => { const d = new Date(`${iso}T12:00:00`); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
 // The record's verdict is clustered by closing day: 15 stocks that close the same Friday share one market move.
 const VERDICT = {
@@ -41,6 +43,40 @@ function MyRecord({ rec }) {
         <span className="shrink-0 font-bold tabular-nums text-slate-300">{rec.expected}</span>
       </div>
       <p className="mt-2 text-xs text-slate-400">When you answered, the market gave your side {pc(rec.avg_odds)} on average. {said}</p>
+    </div>
+  );
+}
+
+// The brain's own daily questions, in the open: the market's odds and the brain's when it asked, then the close and
+// right / wrong. Its lean only nudges the market's odds, so it takes the other side only near 50%; those are marked.
+function BrainQuestions({ rows }) {
+  const [all, setAll] = useState(false);
+  if (!rows || !rows.length) return null;
+  const shown = all ? rows : rows.slice(0, 6);
+  return (
+    <div className="mt-3">
+      <div className="text-xs text-slate-400 font-semibold">Its latest questions</div>
+      <div className="mt-1 divide-y divide-slate-800">
+        {shown.map((r, i) => (
+          <div key={`${r.ticker}-${r.level}-${r.expiration}-${i}`} className="py-2 flex items-center justify-between gap-2">
+            <span className="min-w-0">
+              <span className="block truncate">{r.ticker} above {usd(r.level, r.level % 1 ? 2 : 0)} · {fmtDay(r.expiration)}</span>
+              <span className="block text-[11px] text-slate-500 tabular-nums">
+                Market {pcSide(r.market_p)} yes · brain {pcSide(r.brain_p)} yes{r.close_price != null ? ` · closed ${usd(r.close_price, 2)}` : ''}
+              </span>
+              {r.disagrees && <span className="block text-[11px] text-amber-300">Took the other side from the market</span>}
+            </span>
+            <span className="shrink-0 flex items-center gap-2">
+              <b className={r.side === 'yes' ? 'text-green-300' : 'text-red-300'}>{r.side.toUpperCase()}</b>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${r.result === 'right' ? 'bg-green-500/20 text-green-200' : r.result === 'wrong' ? 'bg-red-500/20 text-red-200' : 'bg-slate-700 text-slate-300'}`}>{r.result}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      {rows.length > 6 && (
+        <button onClick={() => setAll(!all)} className="mt-1 text-xs text-blue-300">{all ? 'Show fewer' : `Show all ${rows.length}`}</button>
+      )}
+      <p className="mt-2 text-xs text-slate-400">Odds are as they stood when it asked, with the line set near that day's price. Its lean starts from the market's odds and moves them a few points, so it picks a different side only when the market is close to 50%.</p>
     </div>
   );
 }
@@ -313,11 +349,15 @@ export default function YesNoPage() {
             <>
               <p className="mt-2 text-slate-300">{score.graded.toLocaleString()} question{score.graded === 1 ? '' : 's'} graded{score.days === 1 ? (score.graded > 1 ? ', all closing on the same day' : '') : score.days ? `, closing on ${score.days} different days` : ''}.
                 The brain's lean picked the right side {pc(score.brain_side_right)} of the time{score.market_side_right != null ? `; the market's odds alone (above or below 50%) picked it ${pc(score.market_side_right)}` : ''}.</p>
+              {score.disagree?.n > 0 && (
+                <p className="mt-2 text-slate-300">Where its lean took the other side from the market's odds, it was right {score.disagree.right} of {score.disagree.n}{score.disagree.days > 1 ? ` (closing on ${score.disagree.days} days)` : score.disagree.n > 1 ? ', all closing on one day' : ''}. That is where it differs from simply following the market.</p>
+              )}
               <p className="mt-2 text-slate-300">{VERDICT[score.verdict] ? VERDICT[score.verdict](score) : VERDICT.too_early(score)} <span className="text-slate-400 tabular-nums">(Brier {score.brier_brain} vs the market's {score.brier_market}; lower is better.)</span></p>
             </>
           ) : (
             <p className="mt-2 text-slate-300">New. The brain asks itself a question on 15 big stocks every trading day; the first ones get graded after their expiration. {score.open ? `${score.open} waiting now.` : ''}</p>
           )}
+          <BrainQuestions rows={score.recent} />
         </Card>
       )}
     </Page>
