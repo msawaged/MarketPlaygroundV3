@@ -1226,3 +1226,29 @@ Changed:
 - Test: test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price (fails on the old code).
 
 Checks: vite build passes, backend tests 214 passed (fresh venv).
+
+## 2026-11-18 (sixth run, ~15:25 UTC = Wed 10:25 AM ET, market open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+In market hours, checked the new option Price check against the live API (public GETs).
+
+Found:
+- Price check showed the wrong contract on busy chains: SPY call $735 Dec 18 came back as SPY261204C00732000 (Dec 4,
+  $732); SPY put $735 Dec 31 as Dec 24. AAPL, QQQ, NVDA, TSLA matched exactly. Cause: market.option_chain_near read
+  one page of Alpaca's options snapshots (1,000 contracts, earliest expiration first) and ignored next_page_token, so
+  SPY's chain (daily expirations, $1 strikes) stopped a few expirations short. With an idea card attached, the new
+  "Card vs listed" box would then say the card's strike "isn't listed" when it is. market.option_iv (the card's own
+  "at-the-money implied volatility", practice option marks) had the same one-page cut and no strike band at all.
+- Card vs listed said "Most of the gap is volatility" even when the card's volatility points the other way (card
+  priced higher than the mid at a LOWER vol than the strike trades at).
+
+Changed:
+- market._option_snapshots follows next_page_token (up to 8 pages; a failed later page keeps what came back).
+  option_chain_near and option_iv use it. option_iv now asks only for strikes within 30% of the one it prices and
+  reuses the cached band for strikes well inside it.
+- pricecheck.card_vs_listed blames volatility only when the vol gap points the same way as the price gap.
+- Tests: test_option_snapshots_follow_every_page_so_busy_chains_reach_the_asked_expiration (fails on the old code),
+  test_price_check_only_blames_volatility_when_it_points_the_same_way.
+
+Checks: vite build passes, backend tests 217 passed (fresh venv).

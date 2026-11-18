@@ -3958,6 +3958,50 @@ def test_price_check_compares_the_cards_own_price_with_the_listed_quote(monkeypa
     assert "card" not in pricecheck._cache[("WINR", "call", 90.0, "2026-12-18")][1]
 
 
+def test_option_snapshots_follow_every_page_so_busy_chains_reach_the_asked_expiration(monkeypatch):
+    """Alpaca returns 1,000 option snapshots a page, earliest expiration first. SPY's chain (daily expirations, $1
+    strikes) ran past one page, so a Price check for SPY Dec 18 showed a Dec 4 contract (live, 2026-11-18)."""
+    from types import SimpleNamespace as NS
+    from backend.v4 import pricecheck
+    near, asked = date(2026, 12, 4), date(2026, 12, 18)
+    occ = lambda d, k, strike: f"SPY{d.strftime('%y%m%d')}{k}{int(strike * 1000):08d}"
+    pages = [{"snapshots": {occ(near, "C", 732): {"latestQuote": {"bp": 9.0, "ap": 9.2}, "impliedVolatility": 0.2}},
+              "next_page_token": "p2"},
+             {"snapshots": {occ(asked, "C", 735): {"latestQuote": {"bp": 12.0, "ap": 12.2}, "impliedVolatility": 0.21},
+                            occ(asked, "P", 735): {"latestQuote": {"bp": 14.0, "ap": 14.2}, "impliedVolatility": 0.22}},
+              "next_page_token": None}]
+    seen = []
+    def fake_get(url, headers=None, params=None, timeout=None):
+        seen.append(dict(params or {}))
+        return NS(status_code=200, json=lambda: pages[1 if (params or {}).get("page_token") == "p2" else 0])
+    monkeypatch.setattr(market._session, "get", fake_get)
+    rows = market.option_chain_near("SPY", 735, asked)
+    assert {(r["expiration"], r["strike"]) for r in rows} == {(near, 732.0), (asked, 735.0)} and len(seen) == 2
+    assert pricecheck._closest(rows, "call", 735, asked)["expiration"] == asked
+    # option_iv pages too, asks only for strikes near the one it prices, and reuses that band from its cache
+    seen.clear(); market._iv_cache.clear()
+    assert market.option_iv("SPY", "call", 735, asked) == 0.21 and len(seen) == 2
+    assert float(seen[0]["strike_price_gte"]) < 735 * 0.75 and float(seen[0]["strike_price_lte"]) > 735 * 1.25
+    assert market.option_iv("SPY", "call", 740, asked) == 0.21 and len(seen) == 2  # cached: inside the band
+    # a failing later page keeps what came back; a failing first page means unavailable
+    monkeypatch.setattr(market._session, "get", lambda url, headers=None, params=None, timeout=None:
+                        NS(status_code=200, json=lambda: pages[0]) if not (params or {}).get("page_token") else NS(status_code=500, json=lambda: {}))
+    assert len(market.option_chain_near("SPY", 735, asked)) == 1
+    monkeypatch.setattr(market._session, "get", lambda *a, **k: NS(status_code=403, json=lambda: {}))
+    assert market.option_chain_near("SPY", 735, asked) == []
+
+
+def test_price_check_only_blames_volatility_when_it_points_the_same_way():
+    """A card priced at a LOWER vol than the strike trades at can't be higher than the listed price because of vol."""
+    from backend.v4 import pricecheck
+    res = {"available": True, "underlying": "WINR", "strike": 90.0, "expiration": "2026-12-18", "spot": 100.0,
+           "bid": 1.90, "ask": 2.10, "mid": 2.0, "contract_iv": 0.36}
+    c = pricecheck.card_vs_listed(res, 2.60, 90, "2026-12-18", 0.30, "implied", 100.0)
+    assert "$0.60 higher" in c["text"] and "Most of the gap is volatility" not in c["text"]
+    c = pricecheck.card_vs_listed(res, 2.60, 90, "2026-12-18", 0.42, "implied", 100.0)
+    assert "Most of the gap is volatility" in c["text"]
+
+
 def test_price_check_vol_wording_is_plain_and_tiered():
     """Realized vol is described as yearly swings (not a % price move), and 'normal' says where in the band it sits."""
     from backend.v4 import pricecheck

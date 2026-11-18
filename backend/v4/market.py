@@ -1152,32 +1152,61 @@ _iv_cache: dict = {}
 _OCC = re.compile(r"^([A-Z.]+)(\d{6})([CP])(\d{8})$")
 
 
+OPTION_SNAPSHOT_PAGES = 8
+
+
+def _option_snapshots(underlying: str, params: dict, max_pages: int = OPTION_SNAPSHOT_PAGES) -> Optional[dict]:
+    """Alpaca options snapshots for one underlying, following next_page_token (2026-11-18). One page holds 1,000
+    contracts, listed by symbol (earliest expiration first), so a busy chain like SPY's (daily expirations, $1 strikes)
+    used to stop a few expirations short: a Price check for SPY Dec 18 showed a Dec 4 contract. {} on a later page's
+    failure keeps the pages already read; None when the first page fails."""
+    out: dict = {}
+    params = dict(params)
+    for i in range(max_pages):
+        try:
+            r = _session.get(f"{_data_base()}/v1beta1/options/snapshots/{underlying}", headers=_headers(), params=params, timeout=10)
+            if r.status_code != 200:
+                return out if i else None
+            data = r.json() or {}
+        except Exception:
+            return out if i else None
+        out.update(data.get("snapshots") or {})
+        page = data.get("next_page_token")
+        if not page:
+            break
+        params["page_token"] = page
+    return out
+
+
 def option_iv(underlying: str, kind: str, strike: float, expiration: date) -> Optional[float]:
     """The market's implied volatility for the listed contract closest to (kind, strike, expiration), from Alpaca's
     options snapshots (indicative feed). Real option prices bake in the volatility smile and skew that a single flat
     volatility misses. None when unavailable (callers fall back to historical volatility)."""
     import time as _t
     underlying = underlying.upper(); kind = kind.lower()
+    # strikes within 30% of the one asked for: a busy chain's every strike over six weeks runs to many pages. The
+    # cache keeps the band it fetched and is reused for any strike well inside it.
     key = (underlying, kind, expiration.isoformat())
     hit = _iv_cache.get(key)
-    if not hit or _t.time() - hit[0] > 1800:
+    inside = hit and len(hit) > 2 and hit[2] * 1.1 <= strike <= hit[3] / 1.1
+    if not hit or not inside or _t.time() - hit[0] > 1800:
+        lo, hi = strike * 0.7, strike * 1.3
         params = {"feed": os.getenv("ALPACA_OPTIONS_FEED", "indicative"), "type": kind, "limit": 1000,
                   "expiration_date_gte": (expiration - timedelta(days=21)).isoformat(),
-                  "expiration_date_lte": (expiration + timedelta(days=21)).isoformat()}
+                  "expiration_date_lte": (expiration + timedelta(days=21)).isoformat(),
+                  "strike_price_gte": f"{lo:.2f}", "strike_price_lte": f"{hi:.2f}"}
         rows = []
         try:
-            r = _session.get(f"{_data_base()}/v1beta1/options/snapshots/{underlying}", headers=_headers(), params=params, timeout=10)
-            if r.status_code == 200:
-                for sym, snap in ((r.json() or {}).get("snapshots") or {}).items():
-                    m = _OCC.match(sym)
-                    iv = (snap or {}).get("impliedVolatility")
-                    if not m or not iv or not (0.03 < float(iv) < 4.0):
-                        continue
-                    exp = date(2000 + int(m.group(2)[:2]), int(m.group(2)[2:4]), int(m.group(2)[4:6]))
-                    rows.append((exp, int(m.group(4)) / 1000.0, float(iv)))
+            for sym, snap in (_option_snapshots(underlying, params) or {}).items():
+                m = _OCC.match(sym)
+                iv = (snap or {}).get("impliedVolatility")
+                if not m or not iv or not (0.03 < float(iv) < 4.0):
+                    continue
+                exp = date(2000 + int(m.group(2)[:2]), int(m.group(2)[2:4]), int(m.group(2)[4:6]))
+                rows.append((exp, int(m.group(4)) / 1000.0, float(iv)))
         except Exception:
             rows = []
-        hit = (_t.time(), rows)
+        hit = (_t.time(), rows, lo, hi)
         _iv_cache[key] = hit
     rows = hit[1]
     if not rows:
@@ -1210,12 +1239,8 @@ def option_chain_near(underlying: str, strike: float, expiration: date, days: in
               "expiration_date_gte": max(date.today(), expiration - timedelta(days=days)).isoformat(),
               "expiration_date_lte": (expiration + timedelta(days=days)).isoformat(),
               "strike_price_gte": f"{strike * (1 - band):.2f}", "strike_price_lte": f"{strike * (1 + band):.2f}"}
-    try:
-        r = _session.get(f"{_data_base()}/v1beta1/options/snapshots/{underlying.upper()}", headers=_headers(), params=params, timeout=10)
-        if r.status_code != 200:
-            return []
-        snaps = (r.json() or {}).get("snapshots") or {}
-    except Exception:
+    snaps = _option_snapshots(underlying.upper(), params)
+    if not snaps:
         return []
     out = []
     for sym, snap in snaps.items():

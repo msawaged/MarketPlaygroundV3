@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-18T12:50:00Z",
- "last_run": "Before the open, Close Call's 'market's odds' for the same SPY question jumped between 59%, 65% and 74% on refreshes a minute apart, with the YES price following, because it read skew from option quotes too wide to trade. When quotes are that wide it now uses one implied volatility for both the odds and the practice price, and says why; in market hours nothing changes.",
+ "updated_at": "2026-11-18T15:55:00Z",
+ "last_run": "In market hours the option Price check showed the wrong contract for SPY (asked Dec 18, got Dec 4) because we only read the first 1,000 option quotes and SPY has far more. It now reads every page, so SPY-like busy chains get the right expiration in Price check, Close Call and card pricing. Also stopped the Price check blaming volatility when the numbers point the other way.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions (11 expire today, graded after the close) and that the record adds up.",
+ "next": "Check the first graded Close Call questions after today's close, and confirm SPY's Price check now matches its expiration live.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

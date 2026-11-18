@@ -1333,3 +1333,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/pricecheck.py, backend/v4/router.py, backend/v4/engine.py, backend/v4/tests/test_v4.py,
   frontend/src/components/chat/PriceCheck.jsx, frontend/src/components/chat/StrategyCard.jsx,
   frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-18 ~15:50 UTC (daily polish walk): option snapshots read every page (SPY Price check showed Dec 4 for Dec 18)
+- No HQ messages from Murad. Data fetch only: pricing formulas, grading, research gates unchanged.
+- market._option_snapshots follows Alpaca's next_page_token (max 8 pages). option_chain_near + option_iv use it;
+  option_iv now requests strikes within ±30% of the asked strike and caches (time, rows, lo, hi) per
+  (underlying, kind, expiration), refetching when a strike falls outside the cached band. Affects Price check, Close
+  Call chains, card ATM IV and practice option marks on busy chains (SPY/QQQ-like): they now see the right expiration.
+- pricecheck.card_vs_listed: "Most of the gap is volatility" only when the vol gap points the same way as the price gap.
+- Files: backend/v4/market.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
+  docs/hq/status/polish.json.

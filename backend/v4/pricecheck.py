@@ -296,7 +296,8 @@ def card_vs_listed(res: dict, card_premium: Optional[float], card_strike: Option
             if moved:
                 lines.append(f"Part of the gap is time: the card was priced with {res['underlying']} at {_usd(float(card_spot))}; "
                              f"it's {_usd(float(res['spot']))} now.")
-            elif card_vol and res.get("contract_iv") and abs(float(res["contract_iv"]) - float(card_vol)) >= 0.02:
+            elif card_vol and res.get("contract_iv") and abs(float(res["contract_iv"]) - float(card_vol)) >= 0.02 \
+                    and (diff > 0) == (float(card_vol) > float(res["contract_iv"])):  # a lower vol can't explain a higher price
                 lines.append(f"Most of the gap is volatility: this strike trades at {float(res['contract_iv']) * 100:.0f}% implied "
                              f"volatility vs the card's {card_vol * 100:.0f}%.")
     out["text"] = " ".join(lines)
