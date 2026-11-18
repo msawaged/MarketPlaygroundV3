@@ -1179,7 +1179,14 @@ def _option_snapshots(underlying: str, params: dict, max_pages: int = OPTION_SNA
 
 
 def option_iv(underlying: str, kind: str, strike: float, expiration: date) -> Optional[float]:
-    """The market's implied volatility for the listed contract closest to (kind, strike, expiration), from Alpaca's
+    """The market's implied volatility for the listed contract closest to (kind, strike, expiration); see
+    option_iv_row. None when unavailable (callers fall back to historical volatility)."""
+    row = option_iv_row(underlying, kind, strike, expiration)
+    return row[2] if row else None
+
+
+def option_iv_row(underlying: str, kind: str, strike: float, expiration: date) -> Optional[tuple]:
+    """(expiration, strike, iv) of the listed contract closest to the one asked for. The market's implied volatility for the listed contract closest to (kind, strike, expiration), from Alpaca's
     options snapshots (indicative feed). Real option prices bake in the volatility smile and skew that a single flat
     volatility misses. None when unavailable (callers fall back to historical volatility)."""
     import time as _t
@@ -1211,8 +1218,7 @@ def option_iv(underlying: str, kind: str, strike: float, expiration: date) -> Op
     rows = hit[1]
     if not rows:
         return None
-    best = min(rows, key=lambda x: (abs((x[0] - expiration).days) / 30.0) + abs(x[1] - strike) / max(strike, 1.0) * 10)
-    return best[2]
+    return min(rows, key=lambda x: (abs((x[0] - expiration).days) / 30.0) + abs(x[1] - strike) / max(strike, 1.0) * 10)
 
 
 def option_quote(symbol: str) -> Optional[dict]:

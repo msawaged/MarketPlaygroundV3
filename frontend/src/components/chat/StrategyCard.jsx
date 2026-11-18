@@ -590,8 +590,8 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   </div>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. Priced at ${pick.trade?.vol_source === 'implied' ? "the market's implied volatility" : "the stock's past volatility"}${pick.trade?.vol ? ` (${Math.round(pick.trade.vol * 100)}% a year)` : ''}${pick.trade?.vol_source === 'implied' ? '' : ', since there were no live option quotes'}.` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
-              {isOptions && pick.trade?.greeks && <GreeksPanel g={pick.trade.greeks} n={contracts} ticker={pick.ticker} />}
+              <p className="text-[11px] text-slate-500 -mt-2">{isOptions ? `At expiration. ${volNote(pick.trade)}` : 'Price moves at any point you sell.'} Estimates, before fees and bid/ask.</p>
+              {isOptions && pick.trade?.greeks && <GreeksPanel g={pick.trade.greeks} n={contracts} ticker={pick.ticker} vols={strikeVols(pick.trade)} />}
               {isOptions && pick.trade?.exercise?.length > 0 && (
                 <details className="group rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 -mt-1">
                   <summary className="cursor-pointer list-none flex items-center justify-between gap-2 text-xs font-semibold text-slate-200">
@@ -695,7 +695,25 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 
 // Position Greeks today (backend strategy.position_greeks: Black-Scholes at the card's own vol and expiry), scaled to
 // the chosen contract count. Plain words for each, so a beginner and a desk read the same numbers.
-function GreeksPanel({ g, n, ticker }) {
+// Each option leg's own vol when the card was priced at each strike's listed implied vol (backend
+// strategy.price_at_strike_vols, vol_source 'implied_strike'); null for one-vol cards.
+function strikeVols(trade) {
+  if (trade?.vol_source !== 'implied_strike') return null;
+  const vs = (trade.trade_legs || []).filter((l) => l.instrument === 'option' && l.vol).map((l) => Math.round(l.vol * 100));
+  return vs.length ? [Math.min(...vs), Math.max(...vs)] : null;
+}
+
+function volNote(trade) {
+  const r = strikeVols(trade);
+  if (r) {
+    const span = r[0] === r[1] ? `${r[0]}%` : `${r[0]}% to ${r[1]}%`;
+    return `Each strike priced at its own implied volatility from listed options (${span} a year), so the skew is in the price.`;
+  }
+  if (trade?.vol_source === 'implied') return `Priced at the market's at-the-money implied volatility${trade?.vol ? ` (${Math.round(trade.vol * 100)}% a year)` : ''}, one number for every strike.`;
+  return `Priced at the stock's past volatility${trade?.vol ? ` (${Math.round(trade.vol * 100)}% a year)` : ''}, since there were no live option quotes.`;
+}
+
+function GreeksPanel({ g, n, ticker, vols }) {
   const sgn = (x, d = 0) => { const r = Number(x.toFixed(d)); return `${r > 0 ? '+' : r < 0 ? '−' : ''}${Math.abs(r).toFixed(d)}`; }; // no "−0"
   const usd = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}$${Math.abs(x) >= 100 ? Math.round(Math.abs(x)).toLocaleString() : Math.abs(x).toFixed(2)}`;
   const d = g.delta * n, ga = g.gamma * n, th = g.theta * n, ve = g.vega * n;
@@ -724,7 +742,7 @@ function GreeksPanel({ g, n, ticker }) {
           </div>
         ))}
       </dl>
-      <p className="text-[10.5px] text-slate-500 mt-2">For {n} contract{n === 1 ? '' : 's'}, Black-Scholes at the card's {Math.round(g.vol * 100)}% volatility with {g.days} days to expiry. They change as the price moves and time passes; the chart shows the payoff at expiration.</p>
+      <p className="text-[10.5px] text-slate-500 mt-2">For {n} contract{n === 1 ? '' : 's'}, Black-Scholes at {vols ? (vols[0] === vols[1] ? `each strike's own ${vols[0]}% implied volatility` : `each strike's own implied volatility (${vols[0]}% to ${vols[1]}%)`) : `the card's ${Math.round(g.vol * 100)}% volatility`} with {g.days} days to expiry. They change as the price moves and time passes; the chart shows the payoff at expiration.</p>
     </details>
   );
 }

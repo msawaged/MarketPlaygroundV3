@@ -139,7 +139,6 @@ def position_greeks(legs: list[dict], spot: float, vol: float, as_of: date) -> O
     exp = date.fromisoformat(opts[0]["expiration"])
     days = max((exp - as_of).days, 1)
     t = days / 365.0
-    sq = vol * math.sqrt(t)
     disc = math.exp(-RISK_FREE * t)
     delta = gamma = theta = vega = 0.0
     for l in legs:
@@ -150,10 +149,12 @@ def position_greeks(legs: list[dict], spot: float, vol: float, as_of: date) -> O
         k = float(l["strike_price"])
         kind = l["option_type"].lower()
         m = sign * l.get("quantity", 1) * 100
-        d1 = (math.log(spot / k) + (RISK_FREE + 0.5 * vol * vol) * t) / sq
+        lv = float(l.get("vol") or vol)  # a leg priced at its own strike's implied vol keeps it here too
+        sq = lv * math.sqrt(t)
+        d1 = (math.log(spot / k) + (RISK_FREE + 0.5 * lv * lv) * t) / sq
         d2 = d1 - sq
         pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
-        decay = -spot * pdf * vol / (2 * math.sqrt(t))
+        decay = -spot * pdf * lv / (2 * math.sqrt(t))
         if kind == "call":
             dl, th = _ncdf(d1), decay - RISK_FREE * k * disc * _ncdf(d2)
         else:
@@ -164,6 +165,54 @@ def position_greeks(legs: list[dict], spot: float, vol: float, as_of: date) -> O
         vega += m * spot * pdf * math.sqrt(t) / 100.0
     return {"delta": round(delta, 1), "gamma": round(gamma, 2), "theta": round(theta, 2), "vega": round(vega, 2),
             "vol": round(vol, 4), "days": days}
+
+
+def price_at_strike_vols(trade: dict, price: float, as_of: date, iv_row) -> dict:
+    """Re-price an option card's legs at each strike's own listed implied volatility (the smile / skew), instead of
+    one at-the-money vol for every strike. Desk convention: each strike takes the out-of-the-money side's vol (puts
+    below the stock price, calls at or above it); by put-call parity the same vol prices either kind. Strikes and
+    structure are unchanged; premiums, max loss / gain, breakevens, capital and Greeks are recomputed from the new
+    premiums (the payoff is read off them, one method for every structure).
+
+    `iv_row(kind, strike, expiration) -> (expiration, strike, iv) | None` (market.option_iv_row). All or nothing:
+    every option leg needs a listed contract at its own strike (within 1%) and expiry (within 3 days) with a sane vol
+    (half to twice the card's vol); otherwise the trade comes back unchanged (one-vol pricing, labelled as before).
+    Display pricing only: grading marks every pick at the stock's realized vol (grader.structure_return)."""
+    legs = trade.get("trade_legs") or []
+    opts = [l for l in legs if l.get("instrument") == "option"]
+    base = float(trade.get("vol") or 0)
+    if not opts or base <= 0 or price <= 0:
+        return trade
+    vols = {}
+    for l in opts:
+        k = float(l["strike_price"])
+        exp = date.fromisoformat(l["expiration"])
+        side = "put" if k < price else "call"
+        try:
+            row = iv_row(side, k, exp)
+        except Exception:
+            row = None
+        if not row or abs(float(row[1]) - k) > 0.01 * k or abs((row[0] - exp).days) > 3:
+            return trade
+        iv = float(row[2])
+        if not (0.5 * base <= iv <= 2.0 * base) or not (0.03 < iv < 4.0):
+            return trade
+        vols[id(l)] = iv
+    t = max((date.fromisoformat(opts[0]["expiration"]) - as_of).days, 1) / 365.0
+    new_legs = []
+    for l in legs:
+        if id(l) in vols:
+            v = vols[id(l)]
+            l = dict(l, vol=round(v, 4), est_premium=round(bs_price(price, float(l["strike_price"]), t, v,
+                                                                   l["option_type"].lower()), 2))
+        new_legs.append(l)
+    econ = library.economics(new_legs, price)
+    out = dict(trade, trade_legs=new_legs, vol_source="implied_strike",
+               net_cost=econ["net_cost"], capital=econ["capital"], max_loss=econ["max_loss"],
+               max_profit=econ["max_profit"], break_even=econ["break_even"],
+               greeks=position_greeks(new_legs, price, base, as_of),
+               one_vol={"net_cost": trade.get("net_cost"), "vol": trade.get("vol")})
+    return out
 
 
 def strike_step(price: float) -> float:

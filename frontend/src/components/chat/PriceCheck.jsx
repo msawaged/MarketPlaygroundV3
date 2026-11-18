@@ -34,7 +34,7 @@ export default function PriceCheck({ ticker, legs, pickId, trade, spot }) {
         underlying: ticker, option_type: String(l.option_type).toLowerCase(), strike: l.strike_price,
         expiration: String(l.expiration).slice(0, 10), ...(pickId ? { pick_id: pickId } : {}),
         ...(Number(l.est_premium) > 0 ? {
-          card_premium: l.est_premium, ...(trade?.vol ? { card_vol: trade.vol } : {}),
+          card_premium: l.est_premium, ...((l.vol || trade?.vol) ? { card_vol: l.vol || trade.vol } : {}),
           ...(trade?.vol_source ? { card_vol_source: trade.vol_source } : {}), ...(spot ? { card_spot: spot } : {}),
         } : {}),
       })}`).catch((e) => ({ available: false, reason: e.message })))));

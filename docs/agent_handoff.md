@@ -1343,3 +1343,26 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - pricecheck.card_vs_listed: "Most of the gap is volatility" only when the vol gap points the same way as the price gap.
 - Files: backend/v4/market.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-18 ~17:30 UTC (Builder routine): option idea cards price each strike at its own listed implied vol
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md. Closes the expert_review.md open item (one ATM
+  IV for every strike, no skew). Checked first: grader.structure_return re-marks every pick at the stock's realized
+  vol and never reads card premiums, so grading, learning, ranking and research gates are unchanged.
+- strategy.price_at_strike_vols(trade, price, as_of, iv_row): each option leg priced at its strike's listed IV, OTM
+  side (put vol below spot, call vol at/above; parity makes either kind use it). All legs or none: listed strike within
+  1%, expiry within 3 days, vol within 0.5x-2x the ATM vol, else the trade is returned unchanged. Recomputes
+  est_premium, net_cost, capital, max loss/gain, breakevens (library.economics) and Greeks; legs carry `vol`,
+  vol_source 'implied_strike', `one_vol` keeps the old debit. position_greeks uses a leg's own `vol` when present.
+- market.option_iv_row returns (expiration, strike, iv) of the closest listed contract; option_iv wraps it (same cache).
+- engine: one `mk()` builder for the card, the budget fallback and the alt version; only live cards whose vol came
+  from the market (cvol_src 'implied', top 3) are re-priced. Backfill/practice seeding untouched.
+- pricecheck.card_vs_listed: an 'implied_strike' card says "this strike's own listed implied volatility" (no "one
+  number for every strike"). PriceCheck.jsx sends each leg's own vol.
+- StrategyCard: caption "Each strike priced at its own implied volatility from listed options (23% to 26% a year)";
+  Greeks note says the same; one-vol cards now say "one number for every strike". WhatsNew line.
+- Still open (expert_review.md): opening a practice trade from a card prices at the AVERAGE of its legs' IVs.
+- Test: test_option_cards_price_each_strike_at_its_own_listed_implied_vol. Checked at 390 and 375 (harness card).
+- Files: backend/v4/strategy.py, backend/v4/engine.py, backend/v4/market.py, backend/v4/pricecheck.py,
+  backend/v4/tests/test_v4.py, frontend/src/components/chat/StrategyCard.jsx,
+  frontend/src/components/chat/PriceCheck.jsx, frontend/src/components/WhatsNew.jsx, docs/expert_review.md,
+  docs/hq/status/builder.json.

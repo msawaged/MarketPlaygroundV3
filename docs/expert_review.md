@@ -17,9 +17,13 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   Done 2026-11-18 (Builder): option idea cards' Price check shows the card's own leg price beside the listed mid and
   bid/ask (`pricecheck.card_vs_listed`), says why they differ (one ATM vol for every strike = no skew; the stock moved
   since the card was priced; strike not listed), and totals the whole trade: card / listed mids / natural.
-  Still open: idea cards price every strike at one ATM IV. Live AAPL Bull Call Spread $350/$370 Dec 18: short $370
-  leg card $4.06 vs mid $3.04 (IV 23% vs 26%), so the card's $7.45 debit vs $8.57 at mids. Pricing each leg at its
-  own listed IV (like Close Call's leg_vols) would close it; it touches grading inputs, so decide deliberately.
+  Done 2026-11-18 (Builder): live idea cards price each strike at its own listed implied vol
+  (`strategy.price_at_strike_vols`, OTM side per strike: puts below spot, calls at/above; all legs or none, within
+  1% strike / 3 days expiry / half-to-twice the ATM vol), and premiums, max loss/gain, breakevens and Greeks follow.
+  Checked first: grading never read card premiums (`grader` re-marks every pick at the stock's realized vol), so this
+  is display pricing only. Cards without a full set of listed strikes keep one ATM vol, labelled "one number for
+  every strike". Still open: a practice trade opened from a card prices at the AVERAGE of its legs' IVs
+  (`practice_options.quote`), so its entry can differ a little from the card.
 - **American exercise, dividends, early assignment, pin risk** on short legs of spreads near expiry: mention in the
   options explainer; never claim European payoffs where they aren't.
   Done 2026-11-14 (Builder): every option card has an "Early exercise, assignment and pin risk" panel from

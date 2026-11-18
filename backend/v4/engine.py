@@ -367,15 +367,21 @@ def process_belief(
         )
         cvol, cvol_src = card_vol(v["ticker"], v["price"], date.fromisoformat(v["entry_date"]), interp["horizon_days"],
                                   v["mkt"]["vol60"], live=(not backfill) and final_rank < SHOW_TOP)
-        trade = strategy.build_trade(structure, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
-                                     interp["horizon_days"], target_price=tp if structure == "Long Call Butterfly" else 0.0)
-        trade["vol_source"] = cvol_src
+        def mk(s_, tp_=0.0, v=v, cvol=cvol, cvol_src=cvol_src):
+            # Live cards priced off the market get each strike's own implied vol (skew), when every leg is listed.
+            t_ = strategy.build_trade(s_, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
+                                      interp["horizon_days"], target_price=tp_)
+            t_["vol_source"] = cvol_src
+            if cvol_src == "implied":
+                t_ = strategy.price_at_strike_vols(
+                    t_, float(v["price"]), date.fromisoformat(v["entry_date"]),
+                    lambda kind, k, exp, tk=v["ticker"]: market.option_iv_row(tk, kind, k, exp))
+            return t_
+        trade = mk(structure, tp if structure == "Long Call Butterfly" else 0.0)
         if prefs.get("budget_usd") and not backfill:
             structure, trade, bwhy = strategy.fit_budget(
                 structure, trade, direction=v["direction"], risk=risk_profile, prefs=prefs, price=float(v["price"]),
-                build=lambda s_, v=v, cvol=cvol: strategy.build_trade(s_, v["ticker"], v["price"], cvol,
-                                                           date.fromisoformat(v["entry_date"]), interp["horizon_days"]))
-            trade["vol_source"] = cvol_src
+                build=mk)
             if bwhy:
                 why = bwhy
         alt = None
@@ -383,10 +389,7 @@ def process_belief(
                                         risk_profile, float(v["price"]))
         if alt_name:
             try:
-                alt = {"structure": alt_name, "trade": strategy.build_trade(
-                    alt_name, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
-                    interp["horizon_days"])}
-                alt["trade"]["vol_source"] = cvol_src
+                alt = {"structure": alt_name, "trade": mk(alt_name)}
             except Exception:
                 alt = None
         pick_id = f"p-{uuid.uuid4().hex[:16]}"

@@ -5113,3 +5113,61 @@ def test_learned_rankers_hold_back_a_feature_that_is_still_filling_in():
     assert "price delay premium (z_delay)" in out["provisional"]  # the fixed rule is still scored, marked provisional
     prod = research.fit_production(out)
     assert prod["keys"] == out["learn_keys"] and len(prod["w"]) == len(prod["keys"]) == len(prod["mu"])
+
+
+def test_option_cards_price_each_strike_at_its_own_listed_implied_vol():
+    """Live AAPL-like Bull Call Spread: the short OTM call trades at a lower vol than the at-the-money one the card used.
+    Re-priced at each strike's own vol (OTM side: puts below spot, calls above), the card's economics and Greeks follow
+    the new premiums; any leg without its own listed contract leaves the one-vol card unchanged (labelled as before)."""
+    from backend.v4 import library, pricecheck
+    as_of = date(2026, 11, 18)
+    t = strategy.build_trade("Bull Call Spread", "AAPL", 350.0, 0.26, as_of, 30)
+    t["vol_source"] = "implied"
+    legs = [l for l in t["trade_legs"] if l["instrument"] == "option"]
+    exp = date.fromisoformat(legs[0]["expiration"])
+    lo, hi = sorted(float(l["strike_price"]) for l in legs)
+    smile = {lo: 0.26, hi: 0.23}
+    asked = []
+
+    def iv_row(kind, k, e):
+        asked.append((kind, k))
+        return (e, k, smile[k])
+
+    out = strategy.price_at_strike_vols(t, 350.0, as_of, iv_row)
+    assert out["vol_source"] == "implied_strike" and out["vol"] == t["vol"]
+    assert {k for _, k in asked} == {lo, hi} and all(kind == "call" for kind, _ in asked)  # both at/above spot: call side
+    yrs = max((exp - as_of).days, 1) / 365.0
+    short = next(l for l in out["trade_legs"] if l.get("action") == "Sell")
+    assert short["vol"] == 0.23 and short["est_premium"] == round(strategy.bs_price(350.0, hi, yrs, 0.23, "call"), 2)
+    assert short["est_premium"] < next(l for l in t["trade_legs"] if l.get("action") == "Sell")["est_premium"]
+    # economics read off the new premiums, so the debit rises and max loss / breakeven move with it
+    econ = library.economics(out["trade_legs"], 350.0)
+    assert out["net_cost"] == econ["net_cost"] > t["net_cost"]
+    assert out["max_loss"] == econ["max_loss"] and out["break_even"] == econ["break_even"]
+    assert out["one_vol"]["net_cost"] == t["net_cost"]
+    # Greeks at each leg's own vol: delta matches a finite difference of the same per-leg prices
+    h = 0.01
+    val = lambda s: sum((1 if l["action"] == "Buy" else -1) * 100 * strategy.bs_price(s, float(l["strike_price"]), yrs, l["vol"], "call")
+                        for l in out["trade_legs"] if l["instrument"] == "option")
+    assert out["greeks"]["delta"] == pytest.approx((val(350 + h) - val(350 - h)) / (2 * h), abs=0.1)
+    assert out["greeks"]["delta"] != strategy.position_greeks(t["trade_legs"], 350.0, 0.26, as_of)["delta"]
+    # a strike below spot reads the put side's vol (out of the money)
+    t2 = strategy.build_trade("Bear Put Spread", "AAPL", 350.0, 0.26, as_of, 30)
+    asked.clear()
+    strategy.price_at_strike_vols(t2, 350.0, as_of, lambda kind, k, e: asked.append((kind, k)) or (e, k, 0.27))
+    assert dict((k, kind) for kind, k in asked)[min(k for _, k in asked)] == "put"
+    # all or nothing: a missing leg, the wrong strike/expiry or an absurd vol keeps the one-vol card
+    assert strategy.price_at_strike_vols(t, 350.0, as_of, lambda kind, k, e: None if k == hi else (e, k, 0.26)) is t
+    assert strategy.price_at_strike_vols(t, 350.0, as_of, lambda kind, k, e: (e, k + 5, 0.26)) is t
+    assert strategy.price_at_strike_vols(t, 350.0, as_of, lambda kind, k, e: (e + timedelta(days=7), k, 0.26)) is t
+    assert strategy.price_at_strike_vols(t, 350.0, as_of, lambda kind, k, e: (e, k, 0.9)) is t
+    stock = strategy.build_trade("Buy Stock", "AAPL", 350.0, 0.26, as_of, 30)
+    assert strategy.price_at_strike_vols(stock, 350.0, as_of, iv_row) is stock
+    # Price check: a per-strike card says so instead of "one number for every strike"
+    res = {"available": True, "strike": hi, "expiration": exp.isoformat(), "mid": short["est_premium"],
+           "bid": short["est_premium"] - 0.1, "ask": short["est_premium"] + 0.1, "underlying": "AAPL", "spot": 350.0,
+           "contract_iv": 0.23}
+    c = pricecheck.card_vs_listed(res, short["est_premium"], hi, exp.isoformat(), 0.23, "implied_strike", 350.0)
+    assert "own listed implied volatility" in c["text"] and "one number" not in c["text"] and c["in_spread"]
+    c1 = pricecheck.card_vs_listed(res, 4.06, hi, exp.isoformat(), 0.26, "implied", 350.0)
+    assert "one number for every strike" in c1["text"]

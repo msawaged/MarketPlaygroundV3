@@ -259,7 +259,9 @@ def card_vs_listed(res: dict, card_premium: Optional[float], card_strike: Option
     """Pure: the idea card's own option price next to the listed quote this check found (2026-11-18).
 
     A card prices every leg with Black-Scholes at ONE volatility (the at-the-money implied vol near its expiry, or the
-    stock's past volatility without live quotes), so strikes away from the money miss the skew, and the card is priced
+    stock's past volatility without live quotes), so strikes away from the money miss the skew; since 2026-11-18 a live
+    card whose every leg is listed prices each leg at its own strike's implied vol ('implied_strike', card_vol is then
+    that leg's vol), so a remaining gap is quote drift or time. The card is priced
     when it is built (cached up to a day). A reviewer comparing with his own screen should see both numbers and why
     they differ. Information only: the card, its payoff and grading are unchanged. None without a card price."""
     if not res or not res.get("available") or card_premium is None or card_premium <= 0:
@@ -268,7 +270,9 @@ def card_vs_listed(res: dict, card_premium: Optional[float], card_strike: Option
            (not card_expiration or str(card_expiration)[:10] == res["expiration"])
     mid, bid, ask = res.get("mid"), res.get("bid"), res.get("ask")
     vol_txt = ""
-    if card_vol:
+    if card_vol and card_vol_source == "implied_strike":
+        vol_txt = f" at {card_vol * 100:.0f}% volatility (this strike's own listed implied volatility when the card was built)"
+    elif card_vol:
         why = {"implied": "the market's at-the-money implied volatility, ",
                "historical": "the stock's past volatility, since there were no live option quotes; "}.get(card_vol_source or "", "")
         vol_txt = f" at {card_vol * 100:.0f}% volatility ({why}one number for every strike)"
@@ -299,7 +303,7 @@ def card_vs_listed(res: dict, card_premium: Optional[float], card_strike: Option
             elif card_vol and res.get("contract_iv") and abs(float(res["contract_iv"]) - float(card_vol)) >= 0.02 \
                     and (diff > 0) == (float(card_vol) > float(res["contract_iv"])):  # a lower vol can't explain a higher price
                 lines.append(f"Most of the gap is volatility: this strike trades at {float(res['contract_iv']) * 100:.0f}% implied "
-                             f"volatility vs the card's {card_vol * 100:.0f}%.")
+                         f"volatility {'now ' if card_vol_source == 'implied_strike' else ''}vs the card's {card_vol * 100:.0f}%.")
     out["text"] = " ".join(lines)
     return out
 

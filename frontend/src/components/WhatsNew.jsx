@@ -4,6 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 18';
 export const UPDATES = [
+  "New: option idea cards price each strike at its own implied volatility from listed options, so the skew is in the card's price, max loss and Greeks",
   "New: an option idea's Price check puts the card's own price next to the listed bid/ask for each leg, says why they differ, and totals the whole trade three ways",
   "New: Moving now says when a stock's move came before the news (overnight and weekend stories), so it isn't read as the reaction",
   "New: Close Call shows the listed bid and ask for the same spreads next to the practice price, and the odds you need to break even at the ask",
