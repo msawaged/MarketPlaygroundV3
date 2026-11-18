@@ -23,6 +23,15 @@ function ago(iso, now) {
   return h < 48 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
+// "Nov 10" for a call this year, "Nov 17, 2025" otherwise (practice calls can be dated a year back).
+function calledOn(iso, live) {
+  if (!iso) return '';
+  const t = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`); if (isNaN(t)) return '';
+  const opt = { month: 'short', day: 'numeric', timeZone: 'UTC' };
+  if (!live || t.getUTCFullYear() !== new Date().getUTCFullYear()) opt.year = 'numeric';
+  return t.toLocaleDateString('en-US', opt);
+}
+
 function CountUp({ value, dur = 1.4 }) {
   const [v, setV] = useState(0);
   const from = useRef(0);
@@ -656,9 +665,16 @@ export default function BrainPage({ viewOnly = false }) {
             <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-bold">{x.ticker} <span className="text-xs font-semibold text-slate-400">{x.direction} · after {x.days} days</span></div>
-                <div className="text-[11px] text-slate-500">{ago(x.at, now)}</div>
+                <div className="text-[11px] text-slate-500">
+                  {x.live != null && (
+                    <span className={x.live ? 'text-sky-300' : 'text-slate-400'}>
+                      {x.live ? 'Real-time call' : 'Practice call'}{calledOn(x.called_on, x.live) ? ` from ${calledOn(x.called_on, x.live)}` : ''} ·{' '}
+                    </span>
+                  )}
+                  <span className="whitespace-nowrap">graded {ago(x.at, now)}</span>
+                </div>
               </div>
-              <div className={`text-right font-extrabold ${x.right ? 'text-green-300' : 'text-red-300'}`}>
+              <div className={`text-right font-extrabold shrink-0 ${x.right ? 'text-green-300' : 'text-red-300'}`}>
                 {x.right ? '✓' : '✗'} {v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%
                 <div className="text-[10px] font-medium text-slate-500">{stock ? 'stock vs S&P 500' : x.direction === 'volatile' ? 'size of move vs S&P' : 'vs S&P 500'}</div>
               </div>
@@ -666,6 +682,9 @@ export default function BrainPage({ viewOnly = false }) {
             );
           }} />
         </div>
+        {(d?.graded || []).some((x) => x.live === false) && (
+          <p className="mt-1.5 text-[11px] text-slate-500">Real-time calls were made before the result existed. Practice calls are made as of a past date and graded at once, so a 365-day grade can land today.</p>
+        )}
 
         <h2 className="mt-8 text-xl font-extrabold">Growing every day</h2>
         <div className="mt-2 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-3.5">

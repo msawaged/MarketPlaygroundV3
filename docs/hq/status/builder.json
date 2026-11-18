@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-18T08:30:00Z",
- "last_run": "Moving now now says when a stock's price move came before the news story, so an overnight story next to yesterday's drop isn't read as the story being wrong.",
+ "updated_at": "2026-11-18T11:15:00Z",
+ "last_run": "The Brain page's 'Just graded by the market' list now says whether each grade is a real-time call or a practice call, and the date the call was made as of.",
  "working_on": "Nothing open.",
  "next": "Thursday: check the first Close Call questions (closing today, Wed Nov 18) graded right, and the bid/ask box during market hours. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The Brain page's 'Just graded by the market' list showed 'WOOD bullish, after 365 days, 2h ago' next to real-time 7-day grades. That one was a practice call dated Nov 17, 2025 and graded at once, but real-time calls only began Oct 28, so it read as a year-old live call. Each row now says 'Real-time call from Nov 10' or 'Practice call from Nov 17, 2025', with a one-line note on why a 365-day grade can land today. Display only: grading and the research checks are unchanged.",
+   "at": "2026-11-18T11:15:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Tonight every card on Moving now paired an overnight story with Tuesday's close: 'SERV, story helps' next to '-2.8% on Tue', so the red number looked like the story was already wrong, though that drop happened before the news came out. Each stock now says 'before this news' when its move is from a session that closed before the story, or 'partly before this news' when the story came out mid-day (also in Story mode). Information only: picks, grading and prices unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The Brain page's live forward test said '+0.4 pts on 1,409 calls', and right under it High -0.1, Medium -0.4, Low +0.6 pts on only 190 calls, with no word that the split is a smaller, newer sample. A professor would ask why the parts don't add up to the whole. It now says confidence labels began Nov 8, so the split covers only those 190 calls (together 0.0 pts vs +0.4 on all 1,409), and that no group is clear of luck yet.",
    "at": "2026-11-17T08:06:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Found a money bug in practice options: an expired trade (every Close Call practice trade) settled at whatever the stock was worth when you next opened Portfolio, not at the expiration-day close. On expiration morning it settled at the 10am price; a week later, at that week's price. So a Close Call YES that was right at Friday's close could show as a total loss on Monday. Now it settles at the official close on expiration day; until that close is in, Portfolio shows the trade as 'Settling' with an estimate, and it can't be closed by hand at an after-hours price.",
-   "at": "2026-11-17T05:05:00Z"
   }
  ]
 }

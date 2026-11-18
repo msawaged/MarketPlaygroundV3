@@ -80,11 +80,16 @@ def _recent_learned(limit: int = 14) -> list[dict]:
 
 def _recent_graded(limit: int = 14) -> list[dict]:
     rows = db.query(
-        """SELECT p.ticker, p.direction, o.checkpoint_days, o.dir_excess, o.ret, o.spy_ret, o.graded_at
-           FROM outcomes o JOIN picks p ON p.id = o.pick_id
+        """SELECT p.ticker, p.direction, o.checkpoint_days, o.dir_excess, o.ret, o.spy_ret, o.graded_at,
+                  b.source, b.as_of_date
+           FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            ORDER BY o.graded_at DESC, o.checkpoint_days DESC LIMIT ?""", (limit,))
     return [{"ticker": r["ticker"], "direction": r["direction"], "days": r["checkpoint_days"],
              "vs_market": round(float(r["dir_excess"]), 4), "right": float(r["dir_excess"]) > 0, "at": r["graded_at"],
+             # Which kind of call this was: a real-time call (made before the result existed, the forward test's set)
+             # or a practice call dated in the past and graded at once. "WOOD after 365 days, graded 2h ago" read as
+             # a year-old live call though real-time calls began Oct 28. called_on = the date the call is made as of.
+             "live": r["source"] != "seed_backfill", "called_on": str(r["as_of_date"] or "")[:10] or None,
              # the stock's own move minus the S&P's. The feed shows this next to "bearish"/"bullish": the signed call
              # result (vs_market) read as "FXA bearish ✗ -3.8% vs S&P", which looks like the stock lagged (a win).
              "stock_vs_market": (round(float(r["ret"]) - float(r["spy_ret"]), 4)

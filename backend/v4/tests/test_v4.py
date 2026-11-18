@@ -1713,6 +1713,25 @@ def test_brain_counts_say_how_many_grades_are_real_time():
     assert s["growth"][-1]["live"] == 1 and s["growth"][-1]["graded"] == practice + 1
 
 
+def test_brain_just_graded_feed_says_real_time_or_practice_and_the_call_date():
+    """'Just graded by the market' mixed practice calls (dated in the past, graded at once) with real-time ones and
+    showed only 'after 365 days · 2h ago', which reads as a year-old live call. Each row now says which it was and
+    the date the call is made as of."""
+    from backend.v4 import brain
+    seeder.run("backfill", n=3, years=1, concurrency=1, claude_client=FakeClaude())
+    engine.process_belief("people want cheaper food", "seed", "moderate", source="seed_news", claude_client=FakeClaude())
+    pid = db.query_one("SELECT p.id FROM picks p JOIN beliefs b ON b.id = p.belief_id WHERE b.source = 'seed_news'")["id"]
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) "
+               "VALUES (?, 7, ?, 1, 0.01, 0, 0.01, ?)", (pid, TODAY.isoformat(), "2999-01-01T00:00:00+00:00"))
+    rows = brain._recent_graded(limit=50)
+    assert rows[0]["live"] is True and rows[0]["called_on"]
+    practice = [r for r in rows if not r["live"]]
+    assert practice and all(r["called_on"] and r["called_on"] < TODAY.isoformat() for r in practice)
+    asof = {x["as_of_date"][:10] if isinstance(x["as_of_date"], str) else str(x["as_of_date"]) for x in db.query(
+        "SELECT b.as_of_date FROM beliefs b WHERE b.source = 'seed_backfill'")}
+    assert {r["called_on"] for r in practice} <= asof
+
+
 def test_expert_panel_and_market_backdrop(monkeypatch):
     from backend.v4 import interpreter
     out = interpreter._sanitize({"panel": {"economist": "Rates are falling.", "skeptic": 5, "junk": "x"}})

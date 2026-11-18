@@ -1291,3 +1291,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   Company `why` clipped at a whole word (110). KEY movers:v1 -> movers:v2 (drops the bad cached cards; first request
   after deploy rebuilds the feed, so carried older stories restart).
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-18 ~11:15 UTC (Builder routine): Brain page "Just graded" says real-time or practice, and the call date
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md, so a misleading-label fix (rule a). Display only:
+  grading, ranking, research gates and the forward test are unchanged.
+- Why: live /brain "Just graded by the market" showed "WOOD bullish · after 365 days · 2h ago" with no word it was a
+  practice call (seed_backfill, as of 2025-11-17, graded at once), mixed in with real-time 7-day grades. Real-time calls
+  began Oct 28, so a 365-day grade "2h ago" read as a year-old live call.
+- brain._recent_graded joins beliefs and adds `live` (source <> 'seed_backfill', the forward test's definition) and
+  `called_on` (as_of_date). BrainPage rows: "Real-time call from Nov 10 · graded 2h ago" / "Practice call from
+  Nov 17, 2025 · graded 2h ago", plus a one-line note under the list when a practice row is present.
+- Test: test_brain_just_graded_feed_says_real_time_or_practice_and_the_call_date. Checked at 390 and 375 (live
+  /v4/brain JSON with the new fields added).
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/hq/status/builder.json.
