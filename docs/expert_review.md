@@ -22,8 +22,10 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   1% strike / 3 days expiry / half-to-twice the ATM vol), and premiums, max loss/gain, breakevens and Greeks follow.
   Checked first: grading never read card premiums (`grader` re-marks every pick at the stock's realized vol), so this
   is display pricing only. Cards without a full set of listed strikes keep one ATM vol, labelled "one number for
-  every strike". Still open: a practice trade opened from a card prices at the AVERAGE of its legs' IVs
-  (`practice_options.quote`), so its entry can differ a little from the card.
+  every strike". Done 2026-11-18 (polish): a practice trade opened from a card reads each strike's vol the
+  card's way (`practice_options._strike_vols`, same OTM-side / 1% / 3-day / half-to-twice rule), stores it on the
+  leg (marks keep it) and opens at the card's debit; it used the AVERAGE of the legs' IVs (AAPL $350/$370 with a
+  26%/23% smile: card $809, opened at $703).
 - **American exercise, dividends, early assignment, pin risk** on short legs of spreads near expiry: mention in the
   options explainer; never claim European payoffs where they aren't.
   Done 2026-11-14 (Builder): every option card has an "Early exercise, assignment and pin risk" panel from

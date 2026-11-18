@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-18T15:55:00Z",
- "last_run": "In market hours the option Price check showed the wrong contract for SPY (asked Dec 18, got Dec 4) because we only read the first 1,000 option quotes and SPY has far more. It now reads every page, so SPY-like busy chains get the right expiration in Price check, Close Call and card pricing. Also stopped the Price check blaming volatility when the numbers point the other way.",
+ "updated_at": "2026-11-18T18:50:00Z",
+ "last_run": "Option idea cards now price each strike at its own implied volatility, but opening one as a practice trade still averaged the volatilities, so an AAPL call spread the card showed at $809 opened at $703. Practice trades now use the same per-strike volatilities as the card, so the entry matches.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions after today's close, and confirm SPY's Price check now matches its expiration live.",
+ "next": "Check the first graded Close Call questions after today's close, and walk the option card's Price check against live quotes.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

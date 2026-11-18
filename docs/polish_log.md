@@ -1252,3 +1252,26 @@ Changed:
   test_price_check_only_blames_volatility_when_it_points_the_same_way.
 
 Checks: vite build passes, backend tests 217 passed (fresh venv).
+
+## 2026-11-18 (seventh run, ~18:25 UTC = Wed 1:25 PM ET, market open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+
+Found (the expert_review.md open item left by the Builder's per-strike card pricing at 17:30 UTC):
+- Option idea cards now price each strike at its own listed IV, but "Practice this trade" re-priced the legs on the
+  server at the AVERAGE of the legs' IVs (practice_options.quote), dropping the skew the card just showed. AAPL Bull
+  Call Spread $350/$370 with a 26%/23% smile: card debit $809, practice trade opened at $703 (and "about $703 set
+  aside"), so the portfolio entry disagreed with the card by 13%.
+
+Changed:
+- practice_options._strike_vols reads each option leg's vol the card's way (OTM side: puts below spot, calls at/above;
+  listed strike within 1%, expiry within 3 days, vol half to twice the base; all legs or none). quote() stores it on
+  each leg (vol_source "strike"), so entry and every later mark use the same per-strike vols (no instant P&L). Falls
+  back to the old average when any strike isn't listed. Never from the request (client vols still dropped); Close
+  Call (keep_leg_vols / vol_override) untouched. Open message: "Each strike priced at its own implied volatility
+  from listed options, as on the card."
+- docs/expert_review.md: open item closed.
+- Test: test_practice_trade_from_a_card_opens_at_the_cards_per_strike_price (fails on the old code).
+
+Checks: vite build passes, backend tests 219 passed (fresh venv).

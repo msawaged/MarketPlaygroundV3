@@ -134,6 +134,29 @@ def _priced(legs: list[dict], spot: float, vol: float) -> list[dict]:
     return out
 
 
+def _strike_vols(ticker: str, legs: list[dict], spot: float, base: float) -> dict:
+    """{leg index: its strike's listed implied vol}, read the idea card's way: the out-of-the-money side's vol (puts
+    below the stock price, calls at or above it), listed strike within 1% and expiry within 3 days, vol within half
+    to twice the base vol. All option legs or none ({}), so a trade is never priced half one way, half the other."""
+    out = {}
+    for i, l in enumerate(legs):
+        if l["instrument"] != "option":
+            continue
+        k = float(l["strike_price"])
+        exp = date.fromisoformat(l["expiration"])
+        try:
+            row = market.option_iv_row(ticker, "put" if k < spot else "call", k, exp)
+        except Exception:
+            row = None
+        if not row or abs(float(row[1]) - k) > 0.01 * k or abs((row[0] - exp).days) > 3:
+            return {}
+        iv = float(row[2])
+        if not (0.5 * base <= iv <= 2.0 * base) or not (0.05 <= iv <= 1.5):
+            return {}
+        out[i] = round(iv, 4)
+    return out
+
+
 def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None, keep_leg_vols: bool = False) -> dict:
     ticker = (ticker or "").upper().strip()
     if not ticker or not market.asset_info(ticker):
@@ -152,6 +175,13 @@ def quote(ticker: str, legs_in: list, vol_override: Optional[float] = None, keep
                 ivs.append(iv)
     if ivs:
         vol, vol_source = min(1.5, max(0.05, sum(ivs) / len(ivs))), "market"
+    if not keep_leg_vols and not vol_override and not any(l.get("vol") for l in legs):
+        # Same rule as the idea card (strategy.price_at_strike_vols): each strike at its own listed implied vol, so
+        # the trade opens at the debit the card showed, not at one average vol (which drops the skew).
+        sv = _strike_vols(ticker, legs, spot, vol)
+        if sv:
+            legs = [dict(l, vol=sv[i]) if i in sv else l for i, l in enumerate(legs)]
+            vol_source = "strike"
     if vol_override:  # one volatility for every leg (Yes / No prices YES and NO alike, so they add up to the payout)
         vol, vol_source = min(1.5, max(0.05, float(vol_override))), "market"
     entry = unit_value(legs, spot, vol)
@@ -191,7 +221,8 @@ def open_trade(user_id: str, ticker: str, structure: str, legs_in: list, contrac
     return {"status": "success", "position_id": pid, "set_aside": round(need, 2), "market_closed": closed,
             "message": f"Opened {contracts} {q['ticker']} {structure or 'options'} contract{'s' if contracts > 1 else ''} "
                        f"with practice money (about ${need:,.0f} set aside). "
-                       + ("Priced with the market's implied volatility." if q.get("vol_source") == "market" else "Prices are estimates.")
+                       + ("Each strike priced at its own implied volatility from listed options, as on the card." if q.get("vol_source") == "strike"
+                          else "Priced with the market's implied volatility." if q.get("vol_source") == "market" else "Prices are estimates.")
                        + (" The market is closed, so it opened now at an estimate from the last prices; it doesn't wait for the open."
                           if closed else "")}
 

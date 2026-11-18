@@ -472,3 +472,46 @@ def test_close_call_answers_show_what_their_practice_trade_did(tmp_path, monkeyp
     tot = yesno.trades_total(views)
     assert tot["settled"] == 2 and tot["open"] == 0
     assert abs(tot["pnl"] - sum(c["pnl"] for c in po.closed("u"))) < 0.02
+
+
+def test_practice_trade_from_a_card_opens_at_the_cards_per_strike_price(tmp_path, monkeypatch):
+    """An idea card prices each strike at its own listed IV (strategy.price_at_strike_vols). Opening it as a practice
+    trade used the AVERAGE of the legs' IVs, so a skewed spread opened at a different debit than the card showed.
+    It now reads each strike's vol the card's way, stores it on the leg (marks keep it), and matches the card."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    from backend.v4 import market, practice_options as po, strategy
+    from datetime import date
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "o.db"))
+    monkeypatch.setattr(pt, "paper_engine", eng)
+    as_of = date(2026, 11, 18)
+    monkeypatch.setattr(market, "latest_price", lambda t: 350.0)
+    monkeypatch.setattr(market, "asset_info", lambda t: {"symbol": t})
+    monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
+    monkeypatch.setattr(market, "today", lambda: as_of)
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    card = strategy.build_trade("Bull Call Spread", "AAPL", 350.0, 0.26, as_of, 30)
+    lo, hi = sorted(float(l["strike_price"]) for l in card["trade_legs"] if l["instrument"] == "option")
+    smile = {lo: 0.26, hi: 0.21}
+    asked = []
+
+    def iv_row(u, kind, k, e):
+        asked.append(kind)
+        return (e, k, smile[k])
+    monkeypatch.setattr(market, "option_iv_row", iv_row)
+    monkeypatch.setattr(market, "option_iv", lambda u, kind, k, e: smile[k])
+    card = strategy.price_at_strike_vols(card, 350.0, as_of, lambda kind, k, e: (e, k, smile[k]))
+    assert card["vol_source"] == "implied_strike"
+    q = po.quote("AAPL", card["trade_legs"])
+    assert q["vol_source"] == "strike" and set(asked) == {"call"}
+    assert q["unit_value"] == pytest.approx(card["net_cost"] * 100, abs=0.01)  # the card's debit, to the cent
+    avg = po.unit_value([{k: v for k, v in l.items() if k != "vol"} for l in q["legs"]], 350.0, (0.26 + 0.21) / 2)
+    assert abs(avg - card["net_cost"] * 100) > 5  # the old average-vol entry was visibly off
+    r = po.open_trade("u1", "AAPL", "Bull Call Spread", card["trade_legs"], 1)
+    assert r["status"] == "success" and "own implied volatility" in r["message"]
+    pos = po.positions("u1")[0]
+    assert abs(pos["pnl"]) < 1e-6  # marked at the same per-strike vols, so no instant gain or loss
+    # a client can't set its own vols, and a missing strike falls back to the average (as before)
+    monkeypatch.setattr(market, "option_iv_row", lambda u, kind, k, e: None if k == hi else (e, k, smile[k]))
+    q2 = po.quote("AAPL", [dict(l, vol=0.9) for l in card["trade_legs"]])
+    assert q2["vol_source"] == "market" and not any(l.get("vol") for l in q2["legs"])

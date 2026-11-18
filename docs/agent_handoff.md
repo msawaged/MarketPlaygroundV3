@@ -1366,3 +1366,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   backend/v4/tests/test_v4.py, frontend/src/components/chat/StrategyCard.jsx,
   frontend/src/components/chat/PriceCheck.jsx, frontend/src/components/WhatsNew.jsx, docs/expert_review.md,
   docs/hq/status/builder.json.
+
+## 2026-11-18 ~18:45 UTC (daily polish walk): practice trades from option cards open at the card's per-strike price
+- No HQ messages from Murad. Closes the expert_review.md open item from the Builder's 17:30 entry.
+- practice_options.quote (non-Close-Call path only): new `_strike_vols` reads each leg's listed IV with the same rule
+  as strategy.price_at_strike_vols and stores `vol` on each leg (vol_source "strike"); marks reuse it. Average-IV
+  fallback when any strike isn't listed. Client-sent vols still ignored. Grading/research gates untouched.
+- Files: backend/v4/practice_options.py, backend/v4/tests/test_paper.py, docs/expert_review.md, docs/polish_log.md,
+  docs/hq/status/polish.json.
