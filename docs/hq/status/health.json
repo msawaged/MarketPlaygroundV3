@@ -1,9 +1,9 @@
 {
  "key": "health",
- "updated_at": "2026-11-17T21:12:00Z",
- "last_run": "Tuesday evening check. All healthy: learning ran at 20:21 UTC fine, beliefs at 6,888 (112 new today), site loads. Last grading run (Mon 22:51 UTC) was ok; graded calls 116,011, live 7,405. Deploys are working again: backend and web deploys have gone live since 18:50 UTC (latest backend deploy 21:03 UTC, the ranker v2 change). No user emails, no HQ messages.",
+ "updated_at": "2026-11-18T01:15:00Z",
+ "last_run": "Tuesday night check (01:15 UTC Wed). All healthy: grading ran at 22:48 UTC ok (new shadow model trained on 11,408 calls), learning ran at 00:20 UTC ok, beliefs at 6,907 (131 new today), site loads. Latest backend and web deploys (00:43 UTC, the luck-check wording) are live. The only Render emails in the last 12h are the deploy failures from Tuesday morning, already fixed before 18:50 UTC. No user emails, no HQ messages.",
  "working_on": "Watching the inbox and the jobs a few times a day.",
- "next": "Next check: confirm tonight's grading run (22:47 UTC) finished ok.",
+ "next": "Next check: confirm learning keeps running hourly and tonight's grading run finishes ok.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
