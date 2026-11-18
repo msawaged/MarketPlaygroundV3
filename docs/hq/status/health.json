@@ -1,7 +1,7 @@
 {
  "key": "health",
- "updated_at": "2026-11-18T05:15:00Z",
- "last_run": "Wednesday early check (05:15 UTC). All healthy: learning ran at 04:21 UTC ok (hourly news beliefs keep coming), grading ran at 22:48 UTC Tuesday ok (shadow model on 11,408 calls), beliefs at 6,930 and growing, site loads. No Render alert emails and no user emails in the last 12 hours, no HQ messages.",
+ "updated_at": "2026-11-18T13:20:00Z",
+ "last_run": "Wednesday midday check (13:16 UTC). All healthy: learning ran at 12:16 UTC ok, grading last ran at 22:48 UTC Tuesday ok (runs nightly), beliefs at 6,998 (68 new today) and growing, live graded calls at 8,165, site loads. No Render alert emails and no user emails in the last 12 hours, no HQ messages.",
  "working_on": "Watching the inbox and the jobs a few times a day.",
  "next": "Next check: confirm learning keeps running hourly and tonight's 22:47 UTC grading run finishes ok.",
  "needs_from_murad": [],
