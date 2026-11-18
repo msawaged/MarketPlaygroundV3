@@ -406,17 +406,24 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
     stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
-    if dig and not stale:
+    # Mids of quotes too wide to trade (the same test as the "What a real order would pay" box; usual outside market
+    # hours) are noise, not skew: live SPY $725, Wed 7:30 AM ET, read 59%, 65% and 74% on three refreshes a minute
+    # apart, the YES cost moving with it ($56 to $73). Then use the one-vol answer and price at the line IV.
+    lc = listed_costs(chain, k1, k2, exp, {})
+    wide = bool(lc and lc["wide"])
+    if dig and not stale and not wide:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
     else:
         m_p, odds_source = m_p_flat, ("one implied volatility (the spread quotes looked out of date)" if stale
+                                      else "one implied volatility (the listed quotes are too wide to read skew "
+                                           "from, usual outside market hours)" if wide and dig
                                       else "one implied volatility (no tight spread quoted)")
     calls = [r for r in chain if r["type"] == "call"]
     # Price YES / NO at the listed mids of their own two strikes, each at its own IV (skew included), so the cost
     # agrees with the market's odds above it. Not when the odds already look stale (same snapshot of quotes).
-    lv = leg_vols(calls, k1, k2, spot, years, vol) if vol_source == "market" and not stale else None
+    lv = leg_vols(calls, k1, k2, spot, years, vol) if vol_source == "market" and not stale and not wide else None
     sv = None
-    if not lv:
+    if not lv and not wide:
         sv = spread_vol(calls, k1, k2, spot, years, vol)
         # Skew moves IV only a little across one strike gap, so a fit far from the line IV means stale or noisy
         # quotes (e.g. thin $1 strikes after hours): trust the line IV instead.

@@ -4560,6 +4560,44 @@ def test_yesno_stale_spread_quotes_fall_back_to_one_vol(monkeypatch):
     assert "out of date" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
 
 
+def test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price(monkeypatch):
+    """Outside market hours the listed bid/ask gaps are wide and the mids jump: live SPY $725 (Wed 7:30 AM ET) read
+    59%, 65% and 74% on three refreshes a minute apart, the YES cost following it ($56 to $73), while the expected-move
+    line said 23% vol and the footer priced the legs at 28%. When the quotes are too wide to trade (the same test as
+    the "What a real order would pay" box), the market's odds and the practice price come from the line's one IV,
+    so they agree and don't jump; tight quotes keep reading skew from the mids."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=9)
+    yrs = 9 / 365
+    iv = lambda k: 0.35 - 0.5 * (k / spot - 1)           # equity skew in the mids
+    gap = {"v": 0.01}
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in range(int(spot * 0.9), int(spot * 1.1) + 1):
+            for t in ("call", "put"):
+                m = bs_price(spot, k, yrs, iv(k), t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(max(0.0, m - gap["v"]), 2), "ask": round(m + gap["v"], 2), "iv": round(iv(k), 4)})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    k1 = float(int(spot))
+    tight = yesno.quote("WINR", k1, exp.isoformat())
+    assert "skew included" in tight["odds_source"] and tight["market_p"] != tight["market_p_flat_vol"]
+    assert tight["listed"]["wide"] is False
+    gap["v"] = 0.40                                     # $0.80 bid/ask per leg: an after-hours chain
+    q = yesno.quote("WINR", k1, exp.isoformat())
+    assert q["listed"]["wide"] is True
+    assert "too wide" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
+    assert q["price_source"] == "line_iv" and q["leg_vols"] is None
+    df = math.exp(-RISK_FREE * yrs)
+    assert abs(q["yes"]["cost"] / 100 / df - q["market_p"]) < 0.03     # YES costs about the odds shown
+    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=0.02)
+
+
 def test_exercise_notes_american_style():
     """Option cards say what the expiry chart leaves out: American exercise, early assignment on each short leg
     (and what covers it), pin risk at short strikes, automatic exercise of in-the-money longs. Stock-only: none."""

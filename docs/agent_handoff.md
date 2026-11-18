@@ -1305,3 +1305,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   /v4/brain JSON with the new fields added).
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/hq/status/builder.json.
+
+## 2026-11-18 ~12:45 UTC (daily polish walk): Close Call odds don't read skew from quotes too wide to trade
+- No HQ messages from Murad. Pricing source only: lean, grading, learning gate and research gates are unchanged.
+- yesno.quote: if listed_costs(chain, k1, k2, exp, {})["wide"] (same test as the real-order box), market_p = the
+  one-IV answer and the practice price uses the line IV (no leg_vols / spread_vol). Pre-market live SPY $725 read
+  59% / 65% / 74% a minute apart off wide mids. Tight in-hours quotes keep the skew read.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

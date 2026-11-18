@@ -1201,3 +1201,28 @@ Changed:
 - Test: test_movers_answers_are_matched_to_their_headline_not_just_their_number.
 
 Checks: vite build passes, backend tests 212 passed (fresh venv).
+
+## 2026-11-18 (fifth run, ~12:25 UTC = Wed 7:25 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain on the live site at 390x844: no page errors, no 4xx/5xx,
+no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad. Close Call
+walked locally signed in (throwaway SQLite; the public quote endpoints proxied read-only to the live API).
+
+Found (Close Call, live /v4/yesno/quote SPY $725 Mon Nov 23, spot $733.26, pre-market):
+- The headline "Market's odds" jumped between refreshes a minute apart: 59% ("from the $724/$725/$726 call prices,
+  skew included"), 65% (one IV), 74% (call prices again), with the YES cost following it ($56.01, $64.46, $72.88).
+  The listed quotes were too wide to trade (the card's own "What a real order would pay" box said so: YES $15 bid /
+  $97 ask), so the mids were noise, not skew. The 59% reading even had skew the wrong way for SPY (below the one-vol
+  65%), and the footer priced the legs at 28.4% / 28.6% IV while the move line above said "priced for 23%".
+- (Noted, not changed: the brain's own daily questions are asked at ~10:13 AM ET, in market hours, so their logged
+  market odds use tight quotes.)
+
+Changed:
+- yesno.quote: when listed_costs says the quotes are too wide (missing bid, ask at or above the payout, or a gap over
+  20% of it: the same test as the real-order box), the market's odds come from the line's one IV and the practice
+  trade is priced at that IV (no per-strike or spread-fit vols). odds_source reads "one implied volatility (the listed
+  quotes are too wide to read skew from, usual outside market hours)"; the footer already says "priced at the line's
+  implied volatility (no tight quote on the trade's strikes)". Tight quotes still read skew from the mids.
+- Test: test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price (fails on the old code).
+
+Checks: vite build passes, backend tests 214 passed (fresh venv).
