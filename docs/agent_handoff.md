@@ -1268,3 +1268,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - YesNoPage: Risk / make amounts show cents when present (usdc).
 - Files: backend/v4/practice_options.py, backend/v4/yesno.py, backend/v4/tests/test_v4.py,
   frontend/src/components/YesNoPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-18 ~08:30 UTC (Builder routine): Moving now says when a stock's move came before the news
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md, so a misleading-label fix (rule a). Information
+  only: picks, directions, grading, prices and the learning gate are unchanged.
+- Why: live at Wed 2:50 AM ET every card on /trending paired an overnight story with Tuesday's close ("SERV ▲ story
+  helps · stock -2.8% on Tue"), so a red number read as the story already being wrong, though the move happened first.
+- movers.move_timing(created_at, change_day): 'before' (story at/after that session's 4 PM ET close), 'during' (story
+  mid-session), None (story before the open, or a time missing). feed() adds `move_timing` to each company with a move
+  (_with_timing); story() returns feed items, so Story mode gets it too. Early-close days count as a 4 PM close.
+- MoversFeed: Timing line "before this news" / "partly before this news" under the vs-S&P line (Pct); StoryViewer's
+  "Who it moves" card too. Home chips unchanged. WhatsNew line.
+- Test: test_movers_feed_says_when_the_price_move_came_before_the_news. Checked at 390 and 375 (live feed, timing
+  computed by the new code; one card forced to 'during').
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/MoversFeed.jsx,
+  frontend/src/components/StoryViewer.jsx, frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.

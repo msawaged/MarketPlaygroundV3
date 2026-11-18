@@ -4,6 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 18';
 export const UPDATES = [
+  "New: Moving now says when a stock's move came before the news (overnight and weekend stories), so it isn't read as the reaction",
   "New: Close Call shows the listed bid and ask for the same spreads next to the practice price, and the odds you need to break even at the ask",
   "New: Close Call lists the brain's own daily questions, its odds beside the market's, and marks where it took the other side",
   "New: Moving now shows the S&P 500's move, and each stock's move against it, so a market-wide day isn't read as the story",

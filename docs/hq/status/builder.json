@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-18T05:40:00Z",
- "last_run": "Close Call now shows the listed bid and ask of the same spreads next to the practice price, the break-even odds at the ask, and flags quotes too wide to trade.",
+ "updated_at": "2026-11-18T08:30:00Z",
+ "last_run": "Moving now now says when a stock's price move came before the news story, so an overnight story next to yesterday's drop isn't read as the story being wrong.",
  "working_on": "Nothing open.",
- "next": "Thursday: check the first Close Call questions (closing Wed Nov 18) graded right, and the new bid/ask box during market hours. Then the next finishing touch for Prof Brown's review.",
+ "next": "Thursday: check the first Close Call questions (closing today, Wed Nov 18) graded right, and the bid/ask box during market hours. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Tonight every card on Moving now paired an overnight story with Tuesday's close: 'SERV, story helps' next to '-2.8% on Tue', so the red number looked like the story was already wrong, though that drop happened before the news came out. Each stock now says 'before this news' when its move is from a session that closed before the story, or 'partly before this news' when the story came out mid-day (also in Story mode). Information only: picks, grading and prices unchanged.",
+   "at": "2026-11-18T08:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call only said its practice prices were 'before bid/ask costs'. Tonight SPY's $725 YES practiced at $63 while the listed spread's ask was $105, more than the $100 it can pay, and a professor checking against his own screen would see neither number. Close Call now shows the listed bid and ask for the same YES and NO spreads beside the practice price, the odds you'd need to break even if you paid the ask, the cost of a round trip, and an amber note when the quotes are too wide to trade (usual outside market hours). Information only: odds, practice prices and grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Found a money bug in practice options: an expired trade (every Close Call practice trade) settled at whatever the stock was worth when you next opened Portfolio, not at the expiration-day close. On expiration morning it settled at the 10am price; a week later, at that week's price. So a Close Call YES that was right at Friday's close could show as a total loss on Monday. Now it settles at the official close on expiration day; until that close is in, Portfolio shows the trade as 'Settling' with an estimate, and it can't be closed by hand at an after-hours price.",
    "at": "2026-11-17T05:05:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "A practice gain on its own says little: +$300 when the market rose 5% on the same money is worse than buying the index, and a finance professor judges every portfolio against a benchmark. Portfolio now has a 'You vs the S&P 500' card (your trades +$X, same money in the S&P 500 +$Y, ahead/behind by $Z, N of M beat the index) and each trade shows its own S&P line. Measured close to close in New York time, no look-ahead; the card says how.",
-   "at": "2026-11-17T02:05:00Z"
   }
  ]
 }

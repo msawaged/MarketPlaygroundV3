@@ -46,7 +46,7 @@ export function sessionLabel(day) {
   return 'on ' + d.toLocaleDateString('en-US', days < 6 ? { weekday: 'short', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
-export function Pct({ v, day, vs }) {
+export function Pct({ v, day, vs, timing }) {
   if (v == null) return null;
   return (
     <>
@@ -54,8 +54,19 @@ export function Pct({ v, day, vs }) {
         stock <span className={`font-semibold ${TONE[pctTone(v)]}`}>{signedPct(v)}</span> {sessionLabel(day)}
       </span>
       <VsMarket v={vs} />
+      <Timing t={timing} />
     </>
   );
+}
+
+// The price move shown can be from a session that ended before the story came out (overnight and weekend news),
+// so it can't be the market's reaction to it. Said plainly, so "story helps" next to a red number isn't read as
+// the story already being wrong.
+export const TIMING = { before: 'before this news', during: 'partly before this news' };
+
+export function Timing({ t, className = 'text-[11px]' }) {
+  if (!TIMING[t]) return null;
+  return <span className={`block ${className} italic text-slate-500`}>{TIMING[t]}</span>;
 }
 
 // The stock's move minus the S&P 500's on the same session: on a day the whole market falls, a "story helps" stock
@@ -113,7 +124,7 @@ export function MoverCard({ item, i = 0 }) {
                   {c.direction === 'up' ? '▲ story helps' : '▼ story hurts'}
                 </span>
               )}
-              <Pct v={c.change} day={c.change_day} vs={c.vs_market} />
+              <Pct v={c.change} day={c.change_day} vs={c.vs_market} timing={c.move_timing} />
             </span>
           </li>
         ))}

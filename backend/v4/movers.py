@@ -329,7 +329,8 @@ def feed(client: Any = None) -> dict:
     bench = snaps.get(BENCH) or {}
     cur["benchmark"] = ({"ticker": BENCH, "change": bench["change"], "change_day": bench.get("change_day")}
                         if bench.get("change") is not None else None)
-    cur["items"] = [dict(it, companies=[_vs_market(dict(c, **snaps.get(c["ticker"], {})), bench)
+    cur["items"] = [dict(it, companies=[_with_timing(_vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
+                                                     it.get("created_at"))
                                         for c in it["companies"]])
                     for it in cur["items"]]
     cur["market"] = market.clock()
@@ -349,6 +350,37 @@ def _vs_market(c: dict, bench: dict) -> dict:
     same_day = c.get("change_day") and c.get("change_day") == (bench or {}).get("change_day")
     c["vs_market"] = (round(ch - b, 4) if ch is not None and b is not None and same_day
                       and c.get("ticker") != BENCH else None)
+    return c
+
+
+def move_timing(created_at: Any, change_day: Any) -> Optional[str]:
+    """Where the story falls against the session its price move is from (New York time, regular 9:30-4:00 hours).
+
+    'before': the story came out after that session closed, so none of the move can be a reaction to it (live
+    2026-11-18 2:50 AM ET: a Wed 7 AM story showed SERV "story helps" next to "-2.8% on Tue"). 'during': it came out
+    mid-session, so part of the move came first. None: it came out before the session opened (the whole move is
+    after it) or a time is missing. Early-close days are treated as a 4 PM close."""
+    try:
+        from zoneinfo import ZoneInfo
+        t = datetime.fromisoformat(str(created_at or "").replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        d = date.fromisoformat(str(change_day or "")[:10])
+    except ValueError:
+        return None
+    ny = ZoneInfo("America/New_York")
+    opens = datetime(d.year, d.month, d.day, 9, 30, tzinfo=ny)
+    closes = datetime(d.year, d.month, d.day, 16, 0, tzinfo=ny)
+    if t >= closes:
+        return "before"
+    if t > opens:
+        return "during"
+    return None
+
+
+def _with_timing(c: dict, created_at: Any) -> dict:
+    """Add move_timing (see move_timing) to a company that has a price move."""
+    c["move_timing"] = move_timing(created_at, c.get("change_day")) if c.get("change") is not None else None
     return c
 
 

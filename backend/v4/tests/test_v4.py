@@ -554,6 +554,28 @@ def test_movers_feed_shows_each_move_against_the_sp500(monkeypatch):
     assert out["items"][0]["companies"][0]["change"] == -0.034
 
 
+def test_movers_feed_says_when_the_price_move_came_before_the_news(monkeypatch):
+    from backend.v4 import movers
+    # Tue Nov 17 2026 session: 9:30 AM-4 PM ET = 14:30-21:00 UTC
+    assert movers.move_timing("2026-11-18T07:00:00Z", "2026-11-17") == "before"   # Wed 2 AM ET story, Tue's move
+    assert movers.move_timing("2026-11-17T21:00:00Z", "2026-11-17") == "before"   # right at the close
+    assert movers.move_timing("2026-11-17T16:00:00+00:00", "2026-11-17") == "during"  # 11 AM ET
+    assert movers.move_timing("2026-11-17T12:00:00Z", "2026-11-17") is None       # before the open: all after it
+    assert movers.move_timing("2026-11-14T15:00:00Z", "2026-11-17") is None       # an older story
+    assert movers.move_timing("", "2026-11-17") is None and movers.move_timing("2026-11-17T16:00:00Z", None) is None
+    item = {"headline": "H", "hunch": "x", "created_at": "2026-11-18T07:00:00Z",
+            "companies": [{"ticker": "SERV", "direction": "up", "why": "w"}, {"ticker": "GIXI", "direction": "up", "why": "w"}]}
+    monkeypatch.setattr(movers, "_stored", lambda: {"items": [item], "built_at": "x", "checked_at": "x", "ai": True})
+    monkeypatch.setattr(movers, "_age", lambda *a, **k: 0.0)
+    monkeypatch.setattr(movers.market, "clock", lambda: {"is_open": False})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {
+        "SPY": {"price": 600.0, "change": -0.009, "change_day": "2026-11-17"},
+        "SERV": {"price": 9.0, "change": -0.028, "change_day": "2026-11-17"}})  # GIXI: no quote
+    serv, gixi = movers.feed()["items"][0]["companies"]
+    assert serv["move_timing"] == "before"
+    assert gixi["move_timing"] is None  # no move shown, nothing to say
+
+
 def test_owner_can_remove_an_account(monkeypatch):
     from backend.v4 import auth
     c = _client()
