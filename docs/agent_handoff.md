@@ -1283,3 +1283,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   computed by the new code; one card forced to 'during').
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/MoversFeed.jsx,
   frontend/src/components/StoryViewer.jsx, frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
+
+## 2026-11-18 ~09:40 UTC (daily polish walk): Moving now hunches matched to their own headline
+- No HQ messages from Murad. Live: the 4 newest /trending cards showed the neighbouring headline's hunch/companies.
+- movers: SCHEMA/PROMPT add `starts` (headline's first 5 words); _align() files answers by the headline they name
+  (number, ±1, then any), drops non-matches; old numbered-from-1 shift kept only for answers without `starts`.
+  Company `why` clipped at a whole word (110). KEY movers:v1 -> movers:v2 (drops the bad cached cards; first request
+  after deploy rebuilds the feed, so carried older stories restart).
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

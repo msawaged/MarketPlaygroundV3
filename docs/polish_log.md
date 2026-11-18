@@ -1176,3 +1176,28 @@ Changed:
   discounted); the parity asserts in two older tests tightened from ±$2 / $100.50 to the cent / the payout.
 Checked at 390 and 360 locally (signed in, throwaway SQLite, live AAPL quote with the new rounding applied): cards
 wrap cleanly, no overflow.
+
+## 2026-11-18 (fourth run, ~09:25 UTC = Wed 4:25 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+
+Found (/trending, live /v4/movers built 09:19 UTC):
+- The four newest cards each showed a neighbouring headline's hunch and companies: "Sulnox Group PLC Secures New
+  Canadian Patent" -> "Oil majors will keep struggling to buy assets in Egypt's gas fields" (XOM); "Flowtech
+  Fluidpower ... Trading Update" -> "Big private AI cloud builders..." (NVDA, CRWV, MSFT); "Tan Delta Systems Secures
+  £90,000 Order" -> "Chinese battery makers will lock in lithium supply" (ALB, SQM, TSLA); "Cirata and Tesco" ->
+  cybersecurity (CRWD, PANW). Older carried cards (07:02, 03:01) matched. Cause: movers._ask_claude filed Claude's
+  answers only by their number (plus a guess that shifts everything when no answer is numbered 0), so one numbering
+  slip moved every hunch onto the wrong story.
+- Company reasons were cut mid-word at 90 characters ("supports Sociedad Quimica's s").
+
+Changed:
+- Claude's answer now echoes each headline's first 5 words (`starts`, in the schema and prompt); movers._align files
+  each answer under the headline it names (trying its number, then one either side, then any), and drops one that
+  names no headline. Answers without `starts` keep the old number path.
+- Company reasons clipped at a whole word with "…" (110 chars; the card already clamps to 2 lines).
+- Cache key movers:v1 -> movers:v2, so the mismatched cards (which _carry would keep for 24h) are dropped on deploy.
+- Test: test_movers_answers_are_matched_to_their_headline_not_just_their_number.
+
+Checks: vite build passes, backend tests 212 passed (fresh venv).

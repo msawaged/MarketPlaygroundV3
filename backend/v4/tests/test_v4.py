@@ -1383,6 +1383,36 @@ def test_shares_lead_and_every_pick_can_switch():
     assert strategy.alternative("Buy Stock", "bullish", 60, "medium", "moderate", 5) == ""
 
 
+def test_movers_answers_are_matched_to_their_headline_not_just_their_number(monkeypatch):
+    """Live 2026-11-18: four cards carried the neighbouring headline's hunch. Answers echo the headline's start and
+    are filed under the headline they name; one naming no headline is dropped; reasons are cut at a whole word."""
+    from backend.v4 import movers
+    news = [{"headline": h, "symbols": [], "source": "x", "url": "u", "created_at": "t"} for h in (
+        "Sulnox Group PLC Secures New Canadian Patent",
+        "Egypt gas field sale stalls as oil majors balk",
+        "Private AI cloud builder raises $5 billion")]
+    monkeypatch.setattr(market, "headlines", lambda limit=6: news)
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s})
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {})
+    long_why = "Steady multi-year lithium demand from Chinese battery giants supports Sociedad Quimica's sales growth"
+    payload = {"items": [  # numbers shifted by one, as seen live
+        {"n": 0, "starts": "Egypt gas field sale stalls", "keep": True, "hunch": "Oil majors will struggle in Egypt",
+         "why": "", "companies": [{"ticker": "XOM", "direction": "down", "why": long_why + " " + long_why}]},
+        {"n": 1, "starts": "Private AI cloud builder raises", "keep": True, "hunch": "AI cloud funding boosts chips",
+         "why": "", "companies": [{"ticker": "NVDA", "direction": "up", "why": "more GPU orders"}]},
+        {"n": 2, "starts": "Totally different headline here", "keep": True, "hunch": "Made up", "why": "",
+         "companies": [{"ticker": "AAPL", "direction": "up", "why": "x"}]},
+        {"n": 2, "starts": "Sulnox Group PLC Secures New", "keep": False, "hunch": "", "why": "", "companies": []},
+    ]}
+    out = movers.build(client=FakeClaude(payload))
+    got = {it["headline"]: it["hunch"] for it in out["items"]}
+    assert got == {news[1]["headline"]: "Oil majors will struggle in Egypt", news[2]["headline"]: "AI cloud funding boosts chips"}
+    why = next(it for it in out["items"] if it["hunch"].startswith("Oil"))["companies"][0]["why"]
+    full = long_why + " " + long_why
+    assert len(why) <= 110 and why.endswith("…") and full.startswith(why[:-1]) and full[len(why) - 1] == " "
+
+
 def test_movers_feed_turns_headlines_into_hunches(monkeypatch):
     from backend.v4 import movers
     news = [

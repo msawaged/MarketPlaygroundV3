@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 TTL = int(os.getenv("MP_MOVERS_TTL_SECONDS", "1800"))  # refresh at most every 30 minutes
 MODEL = os.getenv("MP_MOVERS_MODEL", "claude-haiku-5-5")
-KEY = "movers:v1"
+KEY = "movers:v2"  # v2 (2026-11-18): v1 held cards whose hunch belonged to a neighbouring headline
 MAX_ITEMS = 8
 _lock = threading.Lock()
 _TICKER = re.compile(r"^[A-Z][A-Z.]{0,5}$")
@@ -39,9 +39,10 @@ SCHEMA: dict[str, Any] = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["n", "keep", "hunch", "why", "companies"],
+                "required": ["n", "starts", "keep", "hunch", "why", "companies"],
                 "properties": {
                     "n": {"type": "integer"},
+                    "starts": {"type": "string"},
                     "keep": {"type": "boolean"},
                     "hunch": {"type": "string"},
                     "why": {"type": "string"},
@@ -67,6 +68,7 @@ SCHEMA: dict[str, Any] = {
 PROMPT = """You turn market news into hunches a regular person could believe or doubt.
 
 For each numbered headline:
+- n: its number; starts: its first 5 words, copied exactly (this is how your answer is matched to the headline).
 - keep: false for routine noise: analyst rating or price-target changes ("maintains", "raises price target", "upgrades"),
   a single small company's earnings numbers beat/miss, dividend or buyback notices, price moves with no reason, ads,
   listicles, or anything too vague. keep: true for news about the wider world that touches several companies:
@@ -151,15 +153,55 @@ def _ask_claude(news: list[dict], client: Any = None) -> Optional[dict[int, dict
         )
         text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), "")
         data = json.loads(text)
-        out = {int(it["n"]): it for it in data.get("items", []) if isinstance(it, dict) and "n" in it}
-        if out and min(out) == 1 and 0 not in out:  # numbered from 1 instead of 0
-            out = {k - 1: v for k, v in out.items()}
+        out = _align([it for it in data.get("items", []) if isinstance(it, dict) and "n" in it], news)
         _last_error["v"] = "" if out else "Claude returned no items"
         return out or None
     except Exception as e:  # the feed must never break because of this
         log.warning("movers: Claude step failed: %s", e)
         _last_error["v"] = f"Claude: {type(e).__name__}: {str(e)[:160]}"
         return None
+
+
+def _words(s: Any) -> list[str]:
+    return re.findall(r"[a-z0-9]+", str(s or "").lower())
+
+
+def _align(raw: list[dict], news: list[dict]) -> dict[int, dict]:
+    """{headline index: Claude's answer}. Each answer echoes the start of its headline ("starts") and is filed under
+    the headline it names, not just under its number: live 2026-11-18 4 AM ET, four cards in a row carried the
+    neighbouring headline's hunch ("Sulnox Group PLC Secures New Canadian Patent" -> "Oil majors will keep
+    struggling to buy assets in Egypt's gas fields"). An answer whose "starts" matches no headline is dropped.
+    Answers without "starts" fall back to their number (with the old numbered-from-1 fix)."""
+    heads = [_words(n.get("headline")) for n in news]
+    out: dict[int, dict] = {}
+    plain = [it for it in raw if not _words(it.get("starts"))]
+    for it in raw:
+        s = _words(it.get("starts"))
+        if not s:
+            continue
+        k = min(3, len(s))
+        try:
+            hint = int(it["n"])
+        except (TypeError, ValueError):
+            hint = -9
+        order = [hint, hint - 1, hint + 1] + list(range(len(news)))
+        i = next((i for i in order if 0 <= i < len(news) and i not in out and heads[i][:k] == s[:k]), None)
+        if i is None:
+            log.warning("movers: answer %r matches no headline, dropped", it.get("starts"))
+            continue
+        out[i] = it
+    if plain:
+        by_n = {}
+        for it in plain:
+            try:
+                by_n[int(it["n"])] = it
+            except (TypeError, ValueError):
+                continue
+        if by_n and min(by_n) == 1 and 0 not in by_n:  # numbered from 1 instead of 0
+            by_n = {k - 1: v for k, v in by_n.items()}
+        for k, v in by_n.items():
+            out.setdefault(k, v)
+    return out
 
 
 def _clean_companies(raw: Any, tagged: list[str]) -> list[dict]:
@@ -171,7 +213,7 @@ def _clean_companies(raw: Any, tagged: list[str]) -> list[dict]:
         if not _TICKER.match(t) or t in seen:
             continue
         d = "down" if str(c.get("direction")).lower() == "down" else "up"
-        out.append({"ticker": t, "direction": d, "why": str(c.get("why") or "")[:90]})
+        out.append({"ticker": t, "direction": d, "why": _clip(c.get("why"), 110)})  # whole words: [:90] cut "Sociedad Quimica's s"
         seen.add(t)
         if len(out) == 4:
             break
