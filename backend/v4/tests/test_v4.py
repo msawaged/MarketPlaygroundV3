@@ -4216,7 +4216,7 @@ def test_yesno_skewed_chain_prices_each_strike_at_its_own_vol(monkeypatch):
     flat = (bs_price(spot, k1, yrs, q["vol"], "call") - bs_price(spot, k1 + 1, yrs, q["vol"], "call")) * 100
     assert q["yes"]["cost"] - flat > 2.0                                            # the old flat-vol price was cheap
     df = math.exp(-RISK_FREE * yrs)
-    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=2.0)    # put-call parity, no free money
+    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=0.02)   # put-call parity, to the cent
     # the market's odds (k1-1 / k1+1 spread, discounted) and YES's price (k1 / k1+1, a strike gap higher) now agree
     assert abs(q["yes"]["cost"] / 100 / df - q["market_p"]) < 0.04
     assert q["market_p"] == pytest.approx((mid(k1 - 1, "call") - mid(k1 + 1, "call")) / 2 / df, abs=0.01)
@@ -4309,7 +4309,32 @@ def test_yesno_sides_add_up_when_call_and_put_ivs_differ(monkeypatch):
     monkeypatch.setattr(market, "option_iv", lambda u, kind, *a, **k: 0.9 if kind == "call" else 0.2)
     e = yesno.expirations("WINR")
     q = yesno.quote("WINR", float(int(market.latest_price("WINR"))), e["expirations"][0])
-    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.5
+    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.0
+
+
+def test_yesno_yes_plus_no_never_costs_more_than_the_payout(monkeypatch):
+    # Rounding each leg to the cent moved a $250 spread by up to $1: live AAPL $350 on Fri Nov 20 read YES $112 +
+    # NO $139 = $251 for a $250 payout, breakevens $351.12 vs $351.11. The spread is now rounded once, so
+    # YES + NO = the discounted payout to the cent, both breakevens match, and the practice trade's entry is that price.
+    from backend.v4 import practice_options
+    from backend.v4.strategy import RISK_FREE
+    yesno = _fake_chain(monkeypatch)
+    spot = float(market.latest_price("WINR"))
+    for e in yesno.expirations("WINR")["expirations"][:3]:
+        for lvl in (float(int(spot)) - 1, float(int(spot)), float(int(spot)) + 1):
+            q = yesno.quote("WINR", lvl, e)
+            if q["yes"]["cost"] is None or q["yes"]["cost"] in (1.0, q["yes"]["payout"] - 1.0):
+                continue
+            yrs = q["days"] / 365.0
+            assert q["yes"]["cost"] + q["no"]["cost"] <= q["yes"]["payout"]
+            assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(q["yes"]["payout"] * math.exp(-RISK_FREE * yrs), abs=0.02)
+            assert abs(q["yes"]["breakeven"] - q["no"]["breakeven"]) <= 0.011
+            legs = practice_options._clean_legs(q["yes"]["legs"], "WINR", True)
+            assert all(l.get("whole_cents") for l in legs)
+            assert practice_options.unit_value(legs, spot, q["price_vol"]) == q["yes"]["cost"]
+    # a request can't switch it on: ordinary practice legs keep per-leg cent rounding (the idea card's prices)
+    legs = practice_options._clean_legs([dict(l, whole_cents=True) for l in q["yes"]["legs"]], "WINR", False)
+    assert not any(l.get("whole_cents") for l in legs)
 
 
 def test_hq_board_and_messages(monkeypatch, tmp_path):

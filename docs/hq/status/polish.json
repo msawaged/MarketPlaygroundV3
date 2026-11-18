@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-18T03:45:00Z",
- "last_run": "Close Call's new list of the brain's own questions cut off each question's date on phones, said '40 waiting' while counting users' questions too, and claimed 15 questions a day when repeats are skipped. Rows now wrap and show the date asked, the count is the brain's own, and the wording says repeats are skipped. Close Call prices and breakevens re-checked: all add up.",
+ "updated_at": "2026-11-18T06:50:00Z",
+ "last_run": "Close Call could price YES and NO so together they cost more than the spread pays (AAPL: $112 + $139 = $251 for $250), because each option leg was rounded separately. The spread is now rounded once, so YES + NO always come to just under the payout and both breakevens match; the page shows the cents.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions (Nov 13's expire Wed Nov 18) and how the record reads once graded; walk a bearish shares call at 360 wide.",
+ "next": "Check the first graded Close Call questions (Nov 13's expire today, Wed Nov 18) and how the record reads once graded; walk a bearish shares call at 360 wide.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

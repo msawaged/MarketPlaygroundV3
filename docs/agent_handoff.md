@@ -1259,3 +1259,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   `listed` mocked for an in-hours and an after-hours case).
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-18 ~06:45 UTC (daily polish walk): Close Call YES + NO never cost more than the payout
+- No HQ messages from Murad. Pricing precision only: odds, lean, vols, grading and the learning gate are unchanged.
+- practice_options.unit_value: legs marked `whole_cents` (set only by yesno.quote, kept by _clean_legs only when
+  keep_leg_vols=True) sum unrounded leg prices and round the trade once to the cent. Per-leg rounding let live
+  AAPL $350 read YES $112 + NO $139 = $251 on a $250 payout. Idea-card / other practice trades keep per-leg cents.
+- YesNoPage: Risk / make amounts show cents when present (usdc).
+- Files: backend/v4/practice_options.py, backend/v4/yesno.py, backend/v4/tests/test_v4.py,
+  frontend/src/components/YesNoPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

@@ -6,6 +6,8 @@ import Page, { Card } from './ui/Page';
 import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoMyRecord, yesnoScorecard } from '../lib/api';
 
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
+// Practice YES / NO prices are to the cent; show the cents so YES + NO visibly add up to (just under) the payout.
+const usdc = (v) => usd(v, Math.abs(Math.round(Number(v || 0) * 100)) % 100 ? 2 : 0);
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
 // Odds near 50% keep one decimal so 49.8% and 50.2% don't both read "50%" on opposite sides.
 const pcSide = (p) => { const v = Number(p || 0) * 100; return Math.round(v) === 50 && Math.abs(v - 50) >= 0.05 ? `${v.toFixed(1)}%` : `${Math.round(v)}%`; };
@@ -326,7 +328,7 @@ export default function YesNoPage() {
                 <div key={side} className={`rounded-2xl border p-3 ${yes ? 'border-green-400/40 bg-green-500/[0.07]' : 'border-red-400/40 bg-red-500/[0.07]'}`}>
                   <div className={`text-2xl font-black ${yes ? 'text-green-300' : 'text-red-300'}`}>{side.toUpperCase()}</div>
                   {t.cost != null ? (
-                    <div className="mt-1 text-sm text-slate-200">Risk <b>{usd(t.cost * contracts)}</b> to make <b>{usd(t.profit * contracts)}</b></div>
+                    <div className="mt-1 text-sm text-slate-200">Risk <b>{usdc(t.cost * contracts)}</b> to make <b>{usdc(t.profit * contracts)}</b></div>
                   ) : <div className="mt-1 text-sm text-slate-400">No price right now</div>}
                   {t.cost != null && t.breakeven != null && (
                     <div className="mt-0.5 text-xs text-slate-400 tabular-nums">Breaks even {yes ? 'above' : 'below'} {usd(t.breakeven, 2)}</div>

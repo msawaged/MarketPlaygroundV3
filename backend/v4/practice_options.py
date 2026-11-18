@@ -86,6 +86,8 @@ def _clean_legs(raw: list, ticker: str, keep_leg_vols: bool = False) -> list[dic
         lv = l.get("vol") if keep_leg_vols else None
         if isinstance(lv, (int, float)) and math.isfinite(lv) and 0.05 <= lv <= 1.5:
             leg["vol"] = round(float(lv), 4)
+        if keep_leg_vols and l.get("whole_cents") is True:  # Close Call: round the spread, not each leg (unit_value)
+            leg["whole_cents"] = True
         legs.append(leg)
     if not any(l["instrument"] == "option" for l in legs):
         raise PracticeError("Use the regular trade button for shares.")
@@ -103,6 +105,10 @@ def _vol(ticker: str) -> float:
 def unit_value(legs: list[dict], spot: float, vol: float, on: Optional[date] = None) -> float:
     """What one unit of the trade is worth now in dollars (bought legs +, sold legs -)."""
     on = on or market.today()
+    # Close Call's YES / NO spreads (legs marked "whole_cents", server code only) round the whole trade to the
+    # cent instead of each leg: rounding each leg moved a $250 spread by up to $1, so YES + NO could cost $251
+    # for a $250 payout (buy both, lose $1 for sure). Rounded once, YES + NO = the discounted payout to the cent.
+    whole = any(l.get("whole_cents") for l in legs)
     total = 0.0
     for l in legs:
         sign = 1 if l["action"] == "Buy" else -1
@@ -112,8 +118,9 @@ def unit_value(legs: list[dict], spot: float, vol: float, on: Optional[date] = N
         t = max(0, (date.fromisoformat(l["expiration"]) - on).days) / 365.0
         # Option prices are quoted in whole cents, the same way the idea card shows them, so a spread the card
         # prices at $3.44 - $0.99 = $245 costs $245 here too (not $246 from unrounded model prices).
-        total += sign * round(bs_price(spot, l["strike_price"], t, l.get("vol") or vol, l["option_type"].lower()), 2) * 100 * l["quantity"]
-    return total
+        px = bs_price(spot, l["strike_price"], t, l.get("vol") or vol, l["option_type"].lower())
+        total += sign * (px if whole else round(px, 2)) * 100 * l["quantity"]
+    return round(total, 2) if whole else total
 
 
 def _priced(legs: list[dict], spot: float, vol: float) -> list[dict]:

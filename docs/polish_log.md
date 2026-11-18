@@ -1152,3 +1152,27 @@ Changed:
 - Test: brain_open counts only the brain's questions (in the brain-questions scorecard test).
 
 Checks: vite build passes, backend tests 208 passed (fresh venv).
+
+## 2026-11-18 (third run, ~06:30 UTC = Wed 1:30 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Close Call quotes checked against the live API (read-only GETs) for SPY 725 Mon Nov 23, NVDA 160 Fri Nov 27,
+AAPL 350 Fri Nov 20 and AAPL 360 Fri Nov 27, including the Builder's new "What a real order would pay" box.
+
+Found:
+- YES + NO cost more than the payout: AAPL $350 on Fri Nov 20 read YES $112 + NO $139 = $251 for a spread that pays
+  $250 (buy both, lose $1 for sure), and the two breakevens disagreed ($351.12 vs $351.11). AAPL $360: $71 + $178 =
+  $249, $360.71 vs $360.72. Cause: practice_options.unit_value rounds each leg to the cent, which moves a two-leg spread
+  by up to $1 per side. A derivatives reviewer adds YES + NO first (put-call parity).
+
+Changed:
+- yesno.quote marks Close Call legs "whole_cents"; practice_options.unit_value then rounds the whole spread once
+  (entry, marks, close and settlement alike), so YES + NO = the discounted payout to the cent and both breakevens
+  match. _clean_legs keeps the flag only on the server path (keep_leg_vols), so idea-card trades keep per-leg cents.
+  Positions opened before this keep the old rounding.
+- YesNoPage: "Risk $113.73 to make $136.27" shows cents when a price has them (usdc), so the two sides visibly add up.
+- Tests: test_yesno_yes_plus_no_never_costs_more_than_the_payout (fails on the old code: $100.00 vs $99.90
+  discounted); the parity asserts in two older tests tightened from ±$2 / $100.50 to the cent / the payout.
+Checked at 390 and 360 locally (signed in, throwaway SQLite, live AAPL quote with the new rounding applied): cards
+wrap cleanly, no overflow.

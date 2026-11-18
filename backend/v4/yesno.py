@@ -446,6 +446,8 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
                 {"action": "Sell", "instrument": "option", "option_type": "call", "strike_price": k2, "expiration": exp.isoformat(), "quantity": 1}]
     no_legs = [{"action": "Buy", "instrument": "option", "option_type": "put", "strike_price": k2, "expiration": exp.isoformat(), "quantity": 1},
                {"action": "Sell", "instrument": "option", "option_type": "put", "strike_price": k1, "expiration": exp.isoformat(), "quantity": 1}]
+    for l in yes_legs + no_legs:  # priced as one spread, rounded once, so YES + NO never tops the payout
+        l["whole_cents"] = True
     if lv:
         kv = {k1: lv[0], k2: lv[1]}
         for l in yes_legs + no_legs:
