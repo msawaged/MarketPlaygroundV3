@@ -1212,3 +1212,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/MoversFeed.jsx,
   frontend/src/components/TrendingPage.jsx, frontend/src/components/StoryViewer.jsx,
   frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
+
+## 2026-11-18 early (UTC) (daily polish walk): luck check's "Without the extremes" line says its t is plain
+- No HQ messages from Murad. Wording only; no ranking, research gate, grading or real-money change.
+- BrainPage "Without the extremes": names its sample (the luck check's n test calls), says app_lift_w_t / clear_w count
+  each call as independent, and points to the overlap count as the stricter test (the page read "0 of 45" then
+  "7 of 45" a few lines apart). If research.py later adds an overlap-counted capped t, show it here instead.
+- Files: frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

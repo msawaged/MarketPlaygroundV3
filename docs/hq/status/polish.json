@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-17T22:20:00Z",
- "last_run": "SPY's 'bigger move than usual' note on Close Call said news like 'an earnings report' was due; a fund has none, so funds now say 'a Fed decision or a big economic report' (live). Also added a guard so Close Call never reads odds from option quotes that contradict each other (a higher price looking more likely); today's odd-looking NVDA after-hours number turned out to be noisy but consistent quotes, so it was left alone.",
+ "updated_at": "2026-11-18T00:50:00Z",
+ "last_run": "On the Brain page's luck check, the 'Without the extremes' line said 7 of 45 ways clear the bar right after the overlap check said 0 of 45, without saying it counts each call as independent. It now says which sample and which count it uses, and that the overlap count is the stricter test. Also re-checked the options card, portfolio and My beliefs numbers locally: all add up.",
  "working_on": "Nothing open.",
- "next": "Check the chat's options card numbers and My beliefs at 360 wide; the local server can't reach market data from the sandbox, so use the live public GETs where possible.",
+ "next": "Walk Close Call and a bearish shares call on the phone at 360 wide; recheck the live forward test text once more days are graded.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

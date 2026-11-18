@@ -449,10 +449,10 @@ export default function BrainPage({ viewOnly = false }) {
                       <div className="mt-2 text-xs text-slate-300">
                         <span className="font-semibold text-slate-200">Without the extremes.</span>
                         {' '}A few calls move more than 100% in {sk.days || 90} days, and a handful like that can carry an average.
-                        {' '}With every result capped at the 1% extremes (below {pct(sk.luck.winsor.lo)} or above {pct(sk.luck.winsor.hi)}), {who} beats our other ideas by {pts(W)} pts instead of {pts(L)} pts (t {Number(sk.luck.app_lift_w_t || 0).toFixed(1)})
+                        {' '}With every result capped at the 1% extremes (below {pct(sk.luck.winsor.lo)} or above {pct(sk.luck.winsor.hi)}), {sk.luck.n ? `on the same ${Number(sk.luck.n).toLocaleString()} test calls ` : ''}{who} beats our other ideas by {pts(W)} pts instead of {pts(L)} pts (t {Number(sk.luck.app_lift_w_t || 0).toFixed(1)}, counting each call as independent)
                         {sh != null && L > 0 ? `; its 10 best calls make ${Math.round(sh * 100)}% of its lead` : ''}.
                         {verdict}
-                        {' '}{nw} of {sk.luck.tries_ever} ways {nw === 1 ? 'clears' : 'clear'} the bar counted that way.
+                        {' '}Capped, and counting each call as independent, {nw} of {sk.luck.tries_ever} ways {nw === 1 ? 'clears' : 'clear'} the bar{sk.luck.app_t_nw != null ? '; the overlap count above is the stricter test' : ''}.
                       </div>
                     );
                   })()}

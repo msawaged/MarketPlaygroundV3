@@ -1100,3 +1100,28 @@ Changed:
 
 Verified live after deploy: SPY's move note now says "like a Fed decision or a big economic report". Correction to
 the NVDA finding above recorded the same run (commit after 526abaa).
+
+## 2026-11-18 (first run, ~00:45 UTC = Tue 7:45 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Moving now's new S&P line checks out: S&P -0.9%, PEP -3.0% -> -2.1 pts, KO -0.8% -> +0.1 pts.
+Signed-in screens locally (offline server, throwaway SQLite) at 390 and 360: Bold, $5,000, 1 year, Options, Any
+options strategy -> NVDA Long Call $180 @ $24.01 x2 = $4,802, breakeven $204.01, flat -$3,802, +20% +$3,598, chart top
++$10,998 at $259, delta +131 sh / theta -$6.64/day (re-derived by Black-Scholes at 24%): all add up. DAL Bull Call
+Spread 58/64 $2.17 x2 = $434, max +$766, breakeven $60.17: adds up. Paper trade -> Portfolio (Invested $4,802 + cash
+$95,198) and My beliefs (75% saved): consistent.
+
+Found:
+- /live and /brain luck check, right after "Counting overlap honestly ... 0 of 45 ways do", the "Without the
+  extremes" line said "+1.2 pts instead of +1.5 pts (t 4.8) ... 7 of 45 ways clear the bar counted that way."
+  /v4/brain: app_lift_w_t 4.75 and clear_w are plain t (each call independent), not overlap-counted, so the page read
+  0 of 45 and 7 of 45 a few lines apart with no word why. "+1.2 instead of +1.5" also clashed with the scorecard's
+  headline "+1.2 pts" (that one is on 4,398 graded #1 picks; this one on the 2,703 test calls).
+
+Changed (frontend wording only; research.py, gates and numbers untouched):
+- BrainPage "Without the extremes": names the sample ("on the same 2,703 test calls"), labels the t "counting each
+  call as independent", and the count now reads "Capped, and counting each call as independent, 7 of 45 ways clear
+  the bar; the overlap count above is the stricter test." Checked at 375 against live /v4/brain data.
+
+Checks: vite build passes, backend tests 207 passed (fresh venv).
