@@ -11,6 +11,9 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   line. Show strikes and the in-between zone (already on the screen).
 - **Costs and fills.** Practice prices use mid / model vol. Say "before bid/ask costs"; real orders use the
   natural/mid limit (`real_money_order`).
+  Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price
+  (`yesno.listed_costs`), the odds needed to break even at the ask, the round-trip cost, and an amber note when the
+  quotes are too wide to trade (ask at/above the payout, no bid, or gap over 20% of the payout).
 - **American exercise, dividends, early assignment, pin risk** on short legs of spreads near expiry: mention in the
   options explainer; never claim European payoffs where they aren't.
   Done 2026-11-14 (Builder): every option card has an "Early exercise, assignment and pin risk" panel from

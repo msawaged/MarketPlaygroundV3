@@ -4272,6 +4272,36 @@ def test_yesno_real_money_order_is_ready_but_off(monkeypatch):
     assert rm["yes"]["max_loss"] + rm["yes"]["max_gain"] == pytest.approx(100.0)
 
 
+def test_yesno_listed_costs_show_the_real_bid_ask_next_to_the_practice_price(monkeypatch):
+    from backend.v4 import yesno
+    e = date(2026, 11, 23)
+
+    def row(t, k, bid, ask):
+        return {"symbol": f"X{k}{t}", "type": t, "strike": k, "expiration": e, "bid": bid, "ask": ask, "iv": 0.2}
+    # in-hours SPY-like quotes on a $1 spread: 725C 9.10/9.14, 726C 8.45/8.49; 726P 2.30/2.34, 725P 2.02/2.06
+    chain = [row("call", 725.0, 9.10, 9.14), row("call", 726.0, 8.45, 8.49),
+             row("put", 726.0, 2.30, 2.34), row("put", 725.0, 2.02, 2.06)]
+    sides = {"yes": {"cost": 63.0}, "no": {"cost": 37.0}}
+    c = yesno.listed_costs(chain, 725.0, 726.0, e, sides)
+    y, n = c["yes"], c["no"]
+    assert (y["bid"], y["ask"], y["mid"]) == (61.0, 69.0, 65.0)       # 9.10-8.49, 9.14-8.45
+    assert (n["bid"], n["ask"]) == (24.0, 32.0)                       # 2.30-2.06, 2.34-2.02
+    assert y["odds_at_ask"] == pytest.approx(0.69) and y["odds_at_practice"] == pytest.approx(0.63)
+    assert c["payout"] == 100.0 and not c["wide"]
+    # after hours: the YES ask is above what the spread can pay -> wide
+    chain[0] = row("call", 725.0, 8.0, 10.5)
+    c = yesno.listed_costs(chain, 725.0, 726.0, e, sides)
+    assert c["yes"]["ask"] == 205.0 and c["yes"]["wide"] and c["wide"] and c["yes"]["odds_at_ask"] == 1.0
+    # a leg with no quote -> nothing to show
+    chain[1] = row("call", 726.0, 0.0, 0.0)
+    assert yesno.listed_costs(chain, 725.0, 726.0, e, sides) is None
+    # quote() sends it and the practice prices are unchanged by it
+    yn = _fake_chain(monkeypatch)
+    lvl = float(int(market.latest_price("WINR")))
+    q = yn.quote("WINR", lvl, (TODAY + timedelta(days=9)).isoformat())
+    assert q["listed"]["yes"]["practice"] == q["yes"]["cost"] and q["listed"]["yes"]["ask"] == 10.0
+
+
 def test_yesno_sides_add_up_when_call_and_put_ivs_differ(monkeypatch):
     # After hours the feed's call and put IVs can disagree; pricing each side with its own legs' IV let YES + NO cost
     # less than the payout (buy both = free practice money). Both sides now use the line's IV.

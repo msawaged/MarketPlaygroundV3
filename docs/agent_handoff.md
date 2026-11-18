@@ -1243,3 +1243,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   date; intro says seed_daily skips questions already open; "Show the latest 12".
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-18 ~05:30 UTC (Builder routine): Close Call shows the real bid/ask next to the practice price
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md, so a finishing touch (rule a/c). Information
+  only: odds, lean, practice prices, grading and the learning gate are unchanged.
+- Why: Close Call said only "before bid/ask costs". Live at Tue 11:50 PM ET, SPY $725/$726 YES practiced at $63 while
+  the listed spread was mid $74 / ask $105 (more than the $100 it can pay): a derivatives reviewer would price-check
+  it against his screen and see neither number. A digital's odds are read at mid but paid at the ask.
+- yesno.listed_costs(chain, k1, k2, exp, sides): per side bid (buy bid - sell ask, floor 0), ask (buy ask - sell bid),
+  mid, practice, odds_at_ask (ask / payout), odds_at_practice, wide (no bid, ask >= payout, or gap > 20% of payout);
+  None when a leg has no quote. quote() returns it as `listed`.
+- YesNoPage ListedCosts box under Contracts: "$61 bid / $69 ask · practice $63" per side, break-even odds at the ask,
+  round-trip cost; amber "too wide to trade as shown" note otherwise. WhatsNew line; docs/expert_review.md note.
+- Test: test_yesno_listed_costs_show_the_real_bid_ask_next_to_the_practice_price. Checked at 390 and 375 (live quote,
+  `listed` mocked for an in-hours and an after-hours case).
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.

@@ -145,6 +145,41 @@ function OddsBar({ label, p, tone }) {
 
 // The range option prices put about a 2-in-3 chance on by the expiration, with today's price and the line on it,
 // so "Will it close above $160?" sits next to how far the market thinks it could go. Information only.
+// The same spreads on the listed quotes right now, next to the practice price. A desk reads a digital's odds off the
+// mid but pays the ask, so this says what the odds must be to break even at the ask, and when quotes are too wide to use.
+function ListedCosts({ c }) {
+  if (!c || !c.yes || !c.no) return null;
+  const sides = [['yes', 'YES', 'text-green-300'], ['no', 'NO', 'text-red-300']];
+  const outside = sides.map(([k, label]) => {
+    const s = c[k];
+    if (s.wide || s.practice == null) return null;
+    if (s.practice < s.bid) return `Practice ${label} at ${usd(s.practice)} is below the listed bid, cheaper than a real fill right now.`;
+    if (s.practice > s.ask) return `Practice ${label} at ${usd(s.practice)} is above the listed ask, dearer than a real fill right now.`;
+    return null;
+  }).filter(Boolean);
+  const over = sides.filter(([k]) => c[k].ask >= c.payout).map(([, label]) => label);
+  return (
+    <div className="mt-4 rounded-2xl border border-slate-700/70 bg-slate-900/60 p-3">
+      <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">What a real order would pay</div>
+      <div className="text-[11px] text-slate-500">Listed quotes for the same spreads right now, per contract</div>
+      <div className="mt-2 space-y-1">
+        {sides.map(([k, label, tone]) => (
+          <div key={k} className="flex items-baseline gap-3 text-sm tabular-nums">
+            <span className={`w-8 shrink-0 font-bold ${tone}`}>{label}</span>
+            <span className="text-slate-200"><span className="whitespace-nowrap">{usd(c[k].bid)} bid / {usd(c[k].ask)} ask</span> <span className="whitespace-nowrap text-slate-400">· practice {c[k].practice != null ? usd(c[k].practice) : 'n/a'}</span></span>
+          </div>
+        ))}
+      </div>
+      {c.wide ? (
+        <p className="mt-2 text-xs text-amber-300">These quotes are too wide to trade as shown{over.length ? ` (the ${over.join(' and ')} ask is at or above the ${usd(c.payout)} the spread can pay)` : ''}. That's usual outside market hours (9:30 AM to 4 PM ET). Read the practice price as a fair-value estimate, not a fill you could get now.</p>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400">Practice trades fill at the practice price. A real order to buy pays up to the ask: there, YES needs a {pc(c.yes.odds_at_ask)} chance to break even{c.yes.odds_at_practice != null ? ` (not ${pc(c.yes.odds_at_practice)})` : ''} and NO {pc(c.no.odds_at_ask)}{c.no.odds_at_practice != null ? ` (not ${pc(c.no.odds_at_practice)})` : ''}. Selling before expiration gets the bid, so a round trip costs about {usd(c.yes.ask - c.yes.bid)} on YES and {usd(c.no.ask - c.no.bid)} on NO.</p>
+      )}
+      {outside.length > 0 && <p className="mt-1 text-xs text-slate-400">{outside.join(' ')}</p>}
+    </div>
+  );
+}
+
 function MoveRange({ m, spot, level }) {
   if (!m || !m.lines) return null;
   const lo = Math.min(m.low, level, spot);
@@ -311,6 +346,7 @@ export default function YesNoPage() {
               <button onClick={() => setContracts((c) => Math.min(50, c + 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700">+</button>
             </div>
           </div>
+          <ListedCosts c={q.listed} />
           <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options. The odds are risk-neutral (what option prices imply, not a forecast); over days or weeks they sit close to real-world odds. {q.price_source === 'strikes' && q.leg_vols ? `Practice trades cost the listed mid prices of the $${q.strikes[0]} and $${q.strikes[1]} options, each at its own implied volatility (${(q.leg_vols[0] * 100).toFixed(1)}% and ${(q.leg_vols[1] * 100).toFixed(1)}%, so skew is included), before bid/ask costs.` : q.price_source === 'spread' ? `Practice trades cost the listed mid price of the same $${q.strikes[0]}/$${q.strikes[1]} spreads (skew included), before bid/ask costs.` : q.price_source === 'line_iv' ? "Practice trades are priced at the line's implied volatility (no tight quote on the trade's strikes), before bid/ask costs." : 'Practice trades are priced at an estimated volatility (no live option quotes), before bid/ask costs.'} Practice money. Not investment advice.</p>
         </Card>
       )}

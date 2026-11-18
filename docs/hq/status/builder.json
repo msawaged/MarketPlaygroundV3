@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-18T02:20:00Z",
- "last_run": "Close Call's 'brain's record' now lists the brain's own daily questions: the market's odds and the brain's when it asked, the close and right/wrong, and an amber mark where its lean took the other side from the market. Once graded, it also says how often it was right on those other-side calls.",
+ "updated_at": "2026-11-18T05:40:00Z",
+ "last_run": "Close Call now shows the listed bid and ask of the same spreads next to the practice price, the break-even odds at the ask, and flags quotes too wide to trade.",
  "working_on": "Nothing open.",
- "next": "Thursday: check the first 11 Close Call questions (closing Wed Nov 18) grade and show right on the live page. Then the next finishing touch for Prof Brown's review.",
+ "next": "Thursday: check the first Close Call questions (closing Wed Nov 18) graded right, and the new bid/ask box during market hours. Then the next finishing touch for Prof Brown's review.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call only said its practice prices were 'before bid/ask costs'. Tonight SPY's $725 YES practiced at $63 while the listed spread's ask was $105, more than the $100 it can pay, and a professor checking against his own screen would see neither number. Close Call now shows the listed bid and ask for the same YES and NO spreads beside the practice price, the odds you'd need to break even if you paid the ask, the cost of a round trip, and an amber note when the quotes are too wide to trade (usual outside market hours). Information only: odds, practice prices and grading unchanged.",
+   "at": "2026-11-18T05:40:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The brain's Close Call record was only a summary, and its lean just nudges the market's odds by a few points, so 'right X% of the time' mostly repeats the market. A professor would want to see the actual calls and the few where the brain disagreed. Close Call now lists the brain's latest questions with both sets of odds, the close and right/wrong, marks the ones where it took the other side, and (once graded) how often those were right. First grades land Thursday. Information only: odds and grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "A practice gain on its own says little: +$300 when the market rose 5% on the same money is worse than buying the index, and a finance professor judges every portfolio against a benchmark. Portfolio now has a 'You vs the S&P 500' card (your trades +$X, same money in the S&P 500 +$Y, ahead/behind by $Z, N of M beat the index) and each trade shows its own S&P line. Measured close to close in New York time, no look-ahead; the card says how.",
    "at": "2026-11-17T02:05:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Selling a practice position used to make it vanish: Portfolio said 'Nothing here yet' and the gain was only buried in Account value. Portfolio now has a Closed trades list: each sale or closed/expired options trade with what it cost, what came back and the gain, plus 'Locked in: +$X on N trades'. The gains add up to the account's total.",
-   "at": "2026-11-16T23:30:00Z"
   }
  ]
 }

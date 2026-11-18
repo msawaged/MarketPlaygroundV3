@@ -472,8 +472,39 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
+            "listed": listed_costs(chain, k1, k2, exp, sides),
             "spread_note": spread_note(u, k1, k2, width),
             "move": dict(move, lines=move_text(u, move, exp, isinstance(info, dict) and bool(info.get("is_etf")))) if move else None}
+
+
+def listed_costs(chain: list[dict], k1: float, k2: float, exp: date, sides: dict) -> Optional[dict]:
+    """What the same spreads cost on the listed quotes right now, next to the practice price. Information only:
+    practice trades keep filling at the practice price. Per side (per contract, $): bid = what selling the spread
+    would get (buy leg's bid - sell leg's ask, floored at 0), ask = what paying up costs (buy leg's ask - sell leg's
+    bid), mid, practice, and the odds YES/NO must beat to break even at the ask (ask / payout). `wide` when the quotes
+    can't be traded as shown: a missing bid, an ask at or above the payout, or a bid/ask gap over 20% of the payout
+    (usual outside market hours). None when either leg has no quote."""
+    width = round((k2 - k1) * 100, 2)
+    if width <= 0:
+        return None
+
+    def leg(kind, k):
+        return next((r for r in chain if r["type"] == kind and r["strike"] == k and r["expiration"] == exp), None)
+    out = {}
+    for side, buy, sell in (("yes", leg("call", k1), leg("call", k2)), ("no", leg("put", k2), leg("put", k1))):
+        if not buy or not sell or buy["ask"] <= 0 or sell["ask"] <= 0:
+            return None
+        ask = round((buy["ask"] - sell["bid"]) * 100, 2)
+        bid = round(max(0.0, buy["bid"] - sell["ask"]) * 100, 2)
+        mid = round((bid + ask) / 2, 2) if bid > 0 else None
+        practice = (sides.get(side) or {}).get("cost")
+        wide = bid <= 0 or ask >= width or (ask - bid) > 0.2 * width
+        out[side] = {"bid": bid, "ask": ask, "mid": mid, "practice": practice, "wide": wide,
+                     "odds_at_ask": round(min(1.0, ask / width), 4),
+                     "odds_at_practice": round(practice / width, 4) if practice is not None else None}
+    out["payout"] = width
+    out["wide"] = out["yes"]["wide"] or out["no"]["wide"]
+    return out
 
 
 def spread_note(u: str, k1: float, k2: float, width: float) -> str:

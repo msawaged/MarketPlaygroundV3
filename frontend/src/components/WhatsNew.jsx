@@ -4,6 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 18';
 export const UPDATES = [
+  "New: Close Call shows the listed bid and ask for the same spreads next to the practice price, and the odds you need to break even at the ask",
   "New: Close Call lists the brain's own daily questions, its odds beside the market's, and marks where it took the other side",
   "New: Moving now shows the S&P 500's move, and each stock's move against it, so a market-wide day isn't read as the story",
   "New: the Brain page's luck check shows whether the #1 pick's lead survives without the few giant wins and losses",
