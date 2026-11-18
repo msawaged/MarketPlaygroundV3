@@ -131,6 +131,7 @@ def make_features(
         "delay": market.get("delay", 0.20),
         # realized skewness, daily log returns over ~3 months (research + ranker v2 only; not MODEL_NUMERIC)
         "rskew": market.get("rskew", 0.0),
+        "coskew": market.get("coskew", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

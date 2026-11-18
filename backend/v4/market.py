@@ -976,6 +976,52 @@ def rskew_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"rskew": rskew(closes, i) if i >= 0 else 0.0}
 
 
+def coskew(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int,
+           window: int = 252, min_n: int = 150) -> float:
+    """Coskewness (Harvey & Siddique 2000, "Conditional Skewness in Asset Pricing Tests"): how a stock moves when the
+    market makes big moves either way. Standardized coskewness E[e * m^2] / (sqrt(E[e^2]) * E[m^2]), where e is the
+    stock's residual from a market-model fit on SPY and m is SPY's demeaned return. Negative: the stock does worst
+    exactly when the market swings hardest (it adds left tail to a portfolio), so investors demand a premium for it;
+    the paper finds negatively coskewed stocks earned about 3.6% a year more. The paper uses 60 monthly returns; we use
+    daily returns over the last `window` sessions (~1 year) up to index i. Uses only closes up to index i.
+    Clipped to [-3, 3]; 0.0 without `min_n` matched days or with no variation."""
+    if i < 1 or i >= len(closes) or not sdates:
+        return 0.0
+    spx = {d: c for d, c in zip(sdates, scloses)}
+    rs: list[float] = []
+    ms: list[float] = []
+    for k in range(max(1, i - window + 1), i + 1):
+        a, b = closes[k - 1], closes[k]
+        sa, sb = spx.get(dates[k - 1]), spx.get(dates[k])
+        if a <= 0 or b <= 0 or not sa or not sb or sa <= 0:
+            continue
+        rs.append(b / a - 1.0)
+        ms.append(sb / sa - 1.0)
+    n = len(rs)
+    if n < min_n:
+        return 0.0
+    mr, mm = sum(rs) / n, sum(ms) / n
+    dm = [m - mm for m in ms]
+    vm = sum(d * d for d in dm) / n
+    if vm <= 1e-14:
+        return 0.0
+    b = sum((r - mr) * d for r, d in zip(rs, dm)) / n / vm
+    e = [(r - mr) - b * d for r, d in zip(rs, dm)]
+    ve = sum(x * x for x in e) / n
+    if ve <= 1e-14:
+        return 0.0
+    c = sum(x * d * d for x, d in zip(e, dm)) / n / (math.sqrt(ve) * vm)
+    return max(-3.0, min(3.0, c))
+
+
+def coskew_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"coskew": ...} using closes (stock and SPY) up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    sdates, scloses = daily_closes("SPY")
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"coskew": coskew(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1086,6 +1132,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "ltr": ltr(closes, i),
         "delay": delay(dates, closes, sdates, scloses, i),
         "rskew": rskew(closes, i),
+        "coskew": coskew(dates, closes, sdates, scloses, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

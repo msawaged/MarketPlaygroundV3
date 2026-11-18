@@ -533,7 +533,12 @@ the app's (52.9%).
   out of `provisional` in the research kv (coverage share ≥ 99%). Data caveat for every rule: PARA picks are a
   reused ticker (Parabolic Technologies, not Paramount; see docs/feature_ideas.md 2026-11-16), a small number of bad
   rows in every result until they are flagged.
-- **Result:** pending.
+- **Result (final, run 2026-11-18 17:19 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `delay` 100%, zero
+  share 0.2%, not in `provisional`):** lift **-0.20%**, beat **50.1%**, t **-0.67** (t_nw **-0.59**); risk-matched lift
+  **+0.21%**, beat_adj **52.5%**, t **0.72** (t_nw **0.59**). Outlier check: lift_w -0.44% (t -1.82), median per-call
+  lift -0.48%. n_eff 2,062. Nothing: the slow-reacting stock was no better a #1 than its belief's average idea, and
+  it adds nothing beside the illiquidity rule (same run +1.21% / t 4.04 / t_nw 2.63 / lift_w +0.73%). Read as: price
+  delay is not a usable signal on our mostly large-cap ideas. Ridge weight on z_delay +0.0013.
 
 ### 16. Realized skewness: avoid lottery-shaped return distributions (Amaya, Christoffersen, Jacobs & Vasquez)
 - **Added:** 2026-11-17
@@ -562,4 +567,45 @@ the app's (52.9%).
 - **Note:** until enrich finishes backfilling older picks they read `rskew = 0`; trust the result once `rskew` is out
   of `provisional` in the research kv (coverage share >= 99%). Idea 15 (`delay`) is backfilled first in the same loop
   order, so `rskew` fills in alongside or just after it.
+- **Result (final, run 2026-11-18 17:19 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `rskew` 100%, zero
+  share 0%, not in `provisional`):** lift **+1.45%**, beat **53.4%**, t **4.96** (t_nw **2.90**); risk-matched lift
+  **+1.51%**, beat_adj **55.0%**, t **5.43** (t_nw **3.38**). Outlier check: lift_w **+1.26%** (t 5.01, t_nw 2.57),
+  median per-call lift +1.13%, top-10 share 24%. n_eff 922. The strongest fixed rule in the log so far: it is in
+  `luck.clear`, `clear_adj`, `clear_w` and, alone among fixed rules, `clear_adj_nw` (risk-matched t_nw 3.38 over the
+  3.26 bar for 45 tries); not a few lottery tickets (lift_w barely moves, median well above zero). The paper's side
+  wins here, unlike MAX (5) and IVOL (13), which ran the other way: the shape of the returns, not their size, is what
+  helped. Caveats before reading it as an edge: (a) its raw numbers sit almost on top of the app's own #1 (app +1.49% /
+  53.4% / t 4.54 / t_nw 1.91 / lift_w +1.24%), so part of it may be the same picks; there is no agreement measure yet
+  (proposed in docs/feature_ideas.md 2026-11-18); (b) 45 rules tried, so one clearing the bar by a small margin is
+  still possible luck; (c) fixed rules do not go live; only ranker v2's learned models can use z_rskew, and only through
+  `fit_production`'s gate (ridge weight on z_rskew -0.0037, mid-sized: z_max5 +0.0059, z_beta +0.0041).
+  Same run: `clear_nw` = gbm, gbm (+ shifted); `clear_adj_nw` = gbm (risk-adjusted), this rule, neural net
+  (risk-adjusted); random beat 51.0%. Idea 17 (coskewness) tests whether the market-linked part of skewness carries it.
+
+### 17. Coskewness: stocks that fall hardest when the market swings (Harvey & Siddique)
+- **Added:** 2026-11-18
+- **Source:** Harvey & Siddique (2000), "Conditional Skewness in Asset Pricing Tests", Journal of Finance 55(3),
+  1263-1295: https://econpapers.repec.org/RePEc:bla:jfinan:v:55:y:2000:i:3:p:1263-1295 (author copy:
+  https://people.duke.edu/~charvey/Research/Published_Papers/P56_Conditional_skewness_in.pdf)
+- **Why:** investors dislike stocks that add left tail to a portfolio, ones that do worst exactly when the market makes
+  its biggest moves; the paper finds those negatively coskewed stocks earn a premium (about 3.6% a year in its
+  momentum and size portfolios) and that systematic skewness explains part of the momentum effect. The natural
+  follow-up to idea 16: realized skewness (`rskew`) is the stock's *own* lopsidedness and was the strongest fixed rule
+  yet; coskewness is the *market-linked* part. If coskewness carries the effect, rskew is a priced risk; if it doesn't,
+  rskew is more likely the lottery-preference story (or overlap with the app's own #1).
+- **Computed as:** daily simple returns of the stock and SPY over the last 252 sessions (~1 year) up to the pick's own
+  date; residuals e from a market-model fit on that window, m = SPY's demeaned return; `coskew` = mean(e * m^2) /
+  (sqrt(mean(e^2)) * mean(m^2)) (the paper's standardized coskewness, beta_SKD), clipped to [-3, 3]; 0 without 150
+  matched days or with no variation. The paper uses 60 monthly returns; we use a year of daily returns (data and
+  hold-length choice, not the paper's exact measure). `market.coskew` / `market.coskew_features`; stored for new picks
+  via `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by `research.enrich`
+  using closes up to each pick's own date only (other features untouched). Directional (bearish calls flip it, so the
+  rule shorts the most positively coskewed stock). Research rule: `negative coskewness premium (-z_coskew)`;
+  `z_coskew` is also available to the learned ridge/gbm/net once its coverage passes (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w and the luck bar (now 46 tries); compare against
+  idea 16 (rskew) and betting against beta (4) / downside beta (11), which also read how a stock moves with SPY. Daily
+  coskewness is noisy and the paper's premium is modest, so expect it to be weak; a weak result plus a strong rskew
+  points toward the lottery reading of idea 16.
+- **Note:** until enrich finishes backfilling older picks they read `coskew = 0`; trust the result once `coskew` is out
+  of `provisional` in the research kv (coverage share >= 99%).
 - **Result:** pending.

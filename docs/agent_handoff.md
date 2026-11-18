@@ -1374,3 +1374,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   fallback when any strike isn't listed. Client-sent vols still ignored. Grading/research gates untouched.
 - Files: backend/v4/practice_options.py, backend/v4/tests/test_paper.py, docs/expert_review.md, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-18 ~20:30 UTC (CTO scout routine): idea 17 coskewness; ideas 15/16 results; "Is it new?" proposal
+- No HQ messages from Murad. Research only: ranker v2's gate (`_passes`, `fit_production`) unchanged.
+- Results recorded in docs/research_ideas.md (run 2026-11-18 17:19 UTC, delay and rskew 100% covered): idea 15 price
+  delay = nothing (lift -0.20%, t -0.67); idea 16 realized skewness = strongest fixed rule so far (lift +1.45%, t 4.96,
+  t_nw 2.90; risk-matched t_nw 3.38, in `clear_adj_nw`; lift_w +1.26%), but its numbers sit almost on the app's own #1.
+- New feature `coskew` (Harvey & Siddique 2000 standardized coskewness, daily returns vs SPY over ~1 year):
+  market.coskew / coskew_features, market.features, nn.make_features num (not MODEL_NUMERIC), research.FEATS +
+  DIRECTIONAL, research.enrich backfill (as of each pick's date), rule `negative coskewness premium (-z_coskew)`.
+  Result pending until `coskew` leaves `provisional`.
+- Test fix (no behaviour change): test_lineages_pick_the_number_one_within_the_beliefs_own_direction compared a float
+  with == (ten 0.02s average to 0.019999999999999997) and failed on the branch before this commit; now uses a 1e-9
+  tolerance like the asserts above it.
+- Proposal (docs/feature_ideas.md, proposed): per-rule agreement with the app's #1 and the head-to-head lift where
+  they differ (reporting only).
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

@@ -416,3 +416,37 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   earn, so it is shown as a check beside the real number, never instead of it. Cut points from pooled test outcomes
   are fine (no look-ahead into any rule's choice, they only rescale outcomes already graded), but must be computed
   per run, not hard-coded.
+
+## 2026-11-18 — "Is it new?": how often each research rule picks the same #1 as the app, and its lift where they differ
+- **Area:** brain (research honesty). Reporting only.
+- **Status:** proposed.
+- **Problem:** the research log judges each of 46 fixed rules against zero and the luck bar, never against what the
+  app already does. Today's run (2026-11-18 17:19 UTC, n = 2,703) shows why that matters: the strongest fixed rule
+  yet, "avoid right-skewed stocks (-z_rskew)", has lift +1.45% / beat 53.4% / lift_w +1.26%, almost exactly the app's
+  own #1 (+1.49% / 53.4% / lift_w +1.24%). If the two mostly choose the same stock, the rule is a re-description of
+  the current ranking, not a new edge, and its clearing the risk-matched overlap-honest bar says little about whether
+  ranker v2 should ever lean on it. The same question hangs over the illiquidity rule (+1.21%) and over "high vol" in
+  `clear_w`. Nothing stored today can answer it: results hold each rule's own averages only.
+- **Source:** Feng, Giglio & Xiu (2020), "Taming the Factor Zoo: A Test of New Factors", Journal of Finance 75(3),
+  1327-1370: https://econpapers.repec.org/RePEc:bla:jfinan:v:75:y:2020:i:3:p:1327-1370 (working paper:
+  https://www.nber.org/papers/w25481): a new factor should be judged by what it adds *given* the factors already in
+  hand, and most of the hundreds proposed add nothing. Harvey & Siddique (2000) (idea 17's source) is itself an example:
+  coskewness partly explains momentum rather than standing beside it.
+- **Build sketch (S):** in `research.run`, for every rule record per test call whether its chosen #1 is the same pick
+  as the app's #1 (both chosen within the belief's lead direction, as now). In `_metrics` (or a small helper beside
+  it) add, reporting only: `same_as_app` = share of calls where the two #1s agree; `n_diff` = calls where they
+  differ; `lift_diff` / `lift_diff_t` (and `_t_nw` via the existing `_se_overlap`) = the rule's #1 excess minus the
+  app's #1 excess on those calls only, the direct head-to-head where it matters. Files: backend/v4/research.py, one
+  planted test in backend/v4/tests/test_v4.py (a rule that copies the app should show `same_as_app` = 1 and no
+  `n_diff`; a rule planted to beat the app on disagreements should show `lift_diff_t` > 3), one header line in
+  docs/research_ideas.md; optionally one "agrees with the app N% of the time" note per row on the Brain page. Data
+  needed: none new (the app's #1 per test call is already computed for the "app (current #1)" row). Memory: one
+  boolean and one float per rule per call, negligible on the 512Mi job.
+- **How we'd know it worked:** the next run says, for example, "rskew agrees with the app on X% of calls; where they
+  differ it is +Y% (t_nw Z)". A high agreement with lift_diff near zero means the rule is the app restated; a
+  meaningful lift_diff on disagreements is the first evidence a rule adds something the ranking doesn't have, which is
+  what ranker v2's learned models would need to exploit. Research log entries quote it beside lift.
+- **Risks:** must stay reporting only: `_passes` / `fit_production` and the luck bar are untouched (changing the gate
+  is Murad's decision, written up in docs/brain_upgrades.md). `lift_diff` on few disagreements is noisy, so report
+  `n_diff` with it and don't quote it under ~100 calls. The app's #1 baseline must be the same no-look-ahead version
+  the "app (current #1)" row uses, or the comparison inherits its leak.

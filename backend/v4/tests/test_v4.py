@@ -1978,7 +1978,7 @@ def test_lineages_pick_the_number_one_within_the_beliefs_own_direction():
     risky, calm = lineages.score({"vol60": 1.0}, beliefs), lineages.score({"vol60": -1.0}, beliefs)
     assert abs(risky["fitness"] + 0.02) < 1e-9  # its #1 is the riskier long, not the short (+12%) it liked best
     assert abs(calm["fitness"] - 0.02) < 1e-9 and calm["fitness"] > risky["fitness"]
-    assert lineages._baseline(beliefs)["fitness"] == 0.02  # the app's #1 (rank 0) is the calm long
+    assert abs(lineages._baseline(beliefs)["fitness"] - 0.02) < 1e-9  # the app's #1 (rank 0) is the calm long
 
 
 def test_champion_moves_ranking_but_never_breaks_a_belief(monkeypatch):
@@ -4962,6 +4962,66 @@ def test_realized_skewness_rule_and_enrich_backfill(monkeypatch):
     num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-skx'")["features"])["num"]
     assert abs(num["rskew"] - market.rskew(up, 199)) < 1e-12 and num["rskew"] > 2.0
     assert num["delay"] == 0.3 and num["beta"] == 1.2
+
+def test_coskewness_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(91)
+    n = 320
+    dates = [(_dt.date(2022, 1, 3) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    spy, neg, pos, ind = [400.0], [50.0], [50.0], [50.0]
+    for k in range(1, n):
+        m = rng.gauss(0, 0.01) * (4.0 if k % 17 == 0 else 1.0)   # SPY with occasional big days either way
+        big = (m * m) / 1e-4                                       # ~1 on ordinary days, ~16 on big ones
+        spy.append(spy[-1] * (1 + m))
+        neg.append(neg[-1] * (1 + m - 0.004 * (big - 1.5) + rng.gauss(0, 0.004)))  # falls when SPY swings hard
+        pos.append(pos[-1] * (1 + m + 0.004 * (big - 1.5) + rng.gauss(0, 0.004)))  # rises when SPY swings hard
+        ind.append(ind[-1] * (1 + m + rng.gauss(0, 0.01)))
+    i = n - 1
+    cn, cp, ci = (market.coskew(dates, c, dates, spy, i) for c in (neg, pos, ind))
+    assert cn < -1.5 and cp > 1.5 and abs(ci) < 1.0, (cn, cp, ci)
+    assert market.coskew(dates, neg, dates, spy, 100) == 0.0              # under 150 matched days
+    assert market.coskew(dates, [10.0] * n, dates, spy, i) == 0.0         # no variation
+    later = neg[:250] + [c * 3 for c in neg[250:]]
+    assert market.coskew(dates, later, dates, spy, 249) == market.coskew(dates, neg, dates, spy, 249)  # no look-ahead
+    assert "coskew" in research.FEATS and "coskew" in research.DIRECTIONAL
+    # planted: negatively coskewed stocks pay for longs, positively coskewed ones pay for shorts; -z_coskew finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-ck-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            ck = rng.uniform(-1.0, 1.0)
+            ex = ck * 0.04 if bear else -ck * 0.04
+            pid = f"p-ck-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"coskew": ck}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["negative coskewness premium (-z_coskew)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills coskew as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, spy if s == "SPY" else later))
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features",
+                 "delay_features", "rskew_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4, "delay": 0.3, "rskew": 0.7}
+    asof = dates[249]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-ckx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-ckx", "b-ckx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-ckx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-ckx'")["features"])["num"]
+    assert abs(num["coskew"] - market.coskew(dates, neg, dates, spy, 249)) < 1e-12 and num["coskew"] < -1.0
+    assert num["rskew"] == 0.7 and num["beta"] == 1.2
+
 
 def test_ticker_must_still_be_the_company_the_idea_names():
     # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
