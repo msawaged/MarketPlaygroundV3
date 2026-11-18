@@ -147,7 +147,8 @@ def _atm(chain: list[dict], spot: float, target: date) -> tuple[Optional[float],
     return (sum(ivs) / len(ivs) if ivs else None), (exp - date.today()).days, (p - c if c and p else None)
 
 
-def check(underlying: str, option_type: str, strike: float, expiration: str, pick_id: Optional[str] = None) -> dict:
+def check(underlying: str, option_type: str, strike: float, expiration: str, pick_id: Optional[str] = None,
+          card: Optional[dict] = None) -> dict:
     u = underlying.upper().strip()
     kind = (option_type or "").lower()
     if kind not in ("call", "put"):
@@ -171,6 +172,14 @@ def check(underlying: str, option_type: str, strike: float, expiration: str, pic
                         datetime.now(timezone.utc).isoformat()))
         except Exception:
             pass
+    if card and res.get("available"):  # per request, never cached or logged: the card's own estimate vs the quote
+        try:
+            cmp_ = card_vs_listed(res, card.get("premium"), strike, expiration, card.get("vol"), card.get("vol_source"),
+                                  card.get("spot"))
+        except Exception:
+            cmp_ = None
+        if cmp_:
+            res = dict(res, card=cmp_)
     return res
 
 
@@ -238,6 +247,60 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
                  "US stock options are American-style, so dividends and early exercise can explain a gap. " if par else "")
                  + "A guide, not a guarantee."),
     }
+
+
+def _usd(x: float) -> str:
+    return f"${x:,.2f}"
+
+
+def card_vs_listed(res: dict, card_premium: Optional[float], card_strike: Optional[float] = None,
+                   card_expiration: Optional[str] = None, card_vol: Optional[float] = None,
+                   card_vol_source: Optional[str] = None, card_spot: Optional[float] = None) -> Optional[dict]:
+    """Pure: the idea card's own option price next to the listed quote this check found (2026-11-18).
+
+    A card prices every leg with Black-Scholes at ONE volatility (the at-the-money implied vol near its expiry, or the
+    stock's past volatility without live quotes), so strikes away from the money miss the skew, and the card is priced
+    when it is built (cached up to a day). A reviewer comparing with his own screen should see both numbers and why
+    they differ. Information only: the card, its payoff and grading are unchanged. None without a card price."""
+    if not res or not res.get("available") or card_premium is None or card_premium <= 0:
+        return None
+    same = (card_strike is None or abs(float(res["strike"]) - float(card_strike)) < 0.005) and \
+           (not card_expiration or str(card_expiration)[:10] == res["expiration"])
+    mid, bid, ask = res.get("mid"), res.get("bid"), res.get("ask")
+    vol_txt = ""
+    if card_vol:
+        why = {"implied": "the market's at-the-money implied volatility, ",
+               "historical": "the stock's past volatility, since there were no live option quotes; "}.get(card_vol_source or "", "")
+        vol_txt = f" at {card_vol * 100:.0f}% volatility ({why}one number for every strike)"
+    out = {"premium": round(float(card_premium), 2), "same_contract": same, "mid": mid, "diff": None, "diff_pct": None,
+           "in_spread": None}
+    lines = [f"This card prices it at {_usd(card_premium)} a share{vol_txt}."]
+    if not same:
+        k = float(card_strike) if card_strike is not None else float(res["strike"])
+        lines.append(f"The card's ${k:g} strike{' on ' + str(card_expiration)[:10] if card_expiration else ''} isn't listed, so this check "
+                     f"uses the closest listed contract (${float(res['strike']):g}, {res['expiration']}): a different "
+                     "contract, so its price isn't comparable one for one. A real order would use a listed contract.")
+    elif not mid:
+        lines.append("There's no two-sided listed quote right now to compare it with.")
+    else:
+        diff = float(card_premium) - float(mid)
+        half = (float(ask) - float(bid)) / 2
+        out.update(diff=round(diff, 2), diff_pct=round(diff / mid, 4), in_spread=abs(diff) <= half + 0.005)
+        quote = f"{_usd(mid)} ({_usd(bid)} bid / {_usd(ask)} ask)"
+        if out["in_spread"]:
+            lines.append(f"The listed mid is {quote}, so the card's price is inside the bid-ask spread: in line with the market.")
+        else:
+            lines.append(f"The listed mid is {quote}, so the card is {_usd(abs(diff))} {'higher' if diff > 0 else 'lower'} "
+                         f"({abs(diff / mid) * 100:.0f}%). A real buy pays near the ask, a real sale gets near the bid.")
+            moved = card_spot and res.get("spot") and abs(float(res["spot"]) / float(card_spot) - 1) >= 0.01
+            if moved:
+                lines.append(f"Part of the gap is time: the card was priced with {res['underlying']} at {_usd(float(card_spot))}; "
+                             f"it's {_usd(float(res['spot']))} now.")
+            elif card_vol and res.get("contract_iv") and abs(float(res["contract_iv"]) - float(card_vol)) >= 0.02:
+                lines.append(f"Most of the gap is volatility: this strike trades at {float(res['contract_iv']) * 100:.0f}% implied "
+                             f"volatility vs the card's {card_vol * 100:.0f}%.")
+    out["text"] = " ".join(lines)
+    return out
 
 
 def log_daily(limit: int = 60, force: bool = False) -> dict:

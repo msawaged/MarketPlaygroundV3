@@ -386,6 +386,7 @@ def process_belief(
                 alt = {"structure": alt_name, "trade": strategy.build_trade(
                     alt_name, v["ticker"], v["price"], cvol, date.fromisoformat(v["entry_date"]),
                     interp["horizon_days"])}
+                alt["trade"]["vol_source"] = cvol_src
             except Exception:
                 alt = None
         pick_id = f"p-{uuid.uuid4().hex[:16]}"

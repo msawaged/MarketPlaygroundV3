@@ -1312,3 +1312,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
   one-IV answer and the practice price uses the line IV (no leg_vols / spread_vol). Pre-market live SPY $725 read
   59% / 65% / 74% a minute apart off wide mids. Tight in-hours quotes keep the skew read.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-18 ~14:30 UTC (Builder routine): option Price check compares the card's own price with the listed quote
+- No HQ messages from Murad; no "proposed" items in feature_ideas.md, so a misleading-number fix (rule a). Information
+  only: card prices, payoffs, Greeks, grading and the learning gate are unchanged.
+- Why: option idea cards price every leg with Black-Scholes at one at-the-money IV (no skew) and show "$350 strike ·
+  $11.51", but the Price check never mentioned that number, so a desk reviewer comparing with his screen saw two
+  prices and no link. Live AAPL Bull Call Spread $350/$370 Dec 18: short $370 card $4.06 vs listed mid $3.04 (the
+  strike trades at 23% IV vs the card's 26%), so the card's $7.45 debit vs $8.57 at mids, $9.84 paying the ask.
+- pricecheck.card_vs_listed(res, premium, strike, exp, vol, vol_source, spot): same_contract, mid, diff, diff_pct,
+  in_spread, text (in line / higher-lower by $ and %; then "the stock moved since the card was priced" or "this strike
+  trades at X% IV vs the card's Y%"; a card strike that isn't listed gets no one-for-one comparison). check() adds it
+  as `card` per request (never cached or written to feature_log). /v4/price_check takes card_premium, card_vol,
+  card_vol_source, card_spot. engine: alt trades now carry vol_source too.
+- PriceCheck.jsx: "Card vs listed" box per leg (amber when 10%+ off), and "Whole trade, per share" (card estimate,
+  listed mids, ask/bid natural) when every option leg (2 max) matched its listed contract. StrategyCard passes trade +
+  price. WhatsNew line. docs/expert_review.md: open item, cards price every strike at one IV (decide deliberately).
+- Test: test_price_check_compares_the_cards_own_price_with_the_listed_quote. Checked at 390 and 375 (live AAPL quotes
+  as fixtures in a throwaway harness).
+- Files: backend/v4/pricecheck.py, backend/v4/router.py, backend/v4/engine.py, backend/v4/tests/test_v4.py,
+  frontend/src/components/chat/PriceCheck.jsx, frontend/src/components/chat/StrategyCard.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.

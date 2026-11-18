@@ -3918,6 +3918,46 @@ def test_price_check_parity_vol_and_log(monkeypatch):
     assert pricecheck.log_daily(limit=2, force=True)["logged"] >= 1
 
 
+def test_price_check_compares_the_cards_own_price_with_the_listed_quote(monkeypatch):
+    """The card prices every leg at one vol; the price check shows that estimate beside the listed mid and says why
+    they differ (skew, the stock having moved, or a strike that isn't listed). Per request, never cached/logged."""
+    from backend.v4 import pricecheck
+    exp = date(2026, 12, 18)
+    res = {"available": True, "underlying": "WINR", "strike": 90.0, "expiration": exp.isoformat(), "spot": 100.0,
+           "bid": 1.90, "ask": 2.10, "mid": 2.0, "contract_iv": 0.36}
+    # in line: inside the spread
+    c = pricecheck.card_vs_listed(res, 2.05, 90, "2026-12-18", 0.30, "implied", 100.0)
+    assert c["same_contract"] and c["in_spread"] and "in line with the market" in c["text"]
+    assert "one number for every strike" in c["text"]
+    # card too cheap: the strike's own IV explains it (skew)
+    c = pricecheck.card_vs_listed(res, 1.50, 90, "2026-12-18", 0.30, "implied", 100.0)
+    assert c["diff"] == -0.5 and c["diff_pct"] == -0.25 and not c["in_spread"]
+    assert "$0.50 lower (25%)" in c["text"] and "36% implied volatility vs the card's 30%" in c["text"]
+    # the stock moved since the card was priced: say that first
+    c = pricecheck.card_vs_listed(res, 1.50, 90, "2026-12-18", 0.30, "implied", 104.0)
+    assert "card was priced with WINR at $104.00" in c["text"] and "implied volatility vs" not in c["text"]
+    # a strike that isn't listed: no one-for-one comparison
+    c = pricecheck.card_vs_listed(res, 1.50, 91, "2026-12-18", 0.30, "historical", 100.0)
+    assert not c["same_contract"] and c["diff"] is None and "isn't listed" in c["text"] and "past volatility" in c["text"] and "one number for every strike" in c["text"]
+    assert pricecheck.card_vs_listed(res, None) is None and pricecheck.card_vs_listed({"available": False}, 2.0) is None
+
+    # end to end: the card fields ride on the cached check without changing it or the feature log
+    call = {"type": "call", "strike": 90.0, "expiration": exp, "bid": 1.90, "ask": 2.10, "iv": 0.36, "symbol": "WINR261218C00090000"}
+    put = {"type": "put", "strike": 90.0, "expiration": exp, "bid": 0.4, "ask": 0.5, "iv": 0.37, "symbol": "WINR261218P00090000"}
+    monkeypatch.setattr(market, "option_chain_near", lambda *a, **k: [call, put])
+    monkeypatch.setattr(market, "latest_price", lambda s: 100.0)
+    monkeypatch.setattr(market, "is_open", lambda: False)
+    pricecheck._cache.clear()
+    plain = _client().get("/v4/price_check", params={"underlying": "WINR", "option_type": "call", "strike": 90,
+                                                     "expiration": "2026-12-18"}).json()
+    assert plain["available"] and "card" not in plain
+    r = _client().get("/v4/price_check", params={"underlying": "WINR", "option_type": "call", "strike": 90,
+                                                 "expiration": "2026-12-18", "card_premium": 1.5, "card_vol": 0.3,
+                                                 "card_vol_source": "implied", "card_spot": 100}).json()
+    assert r["card"]["mid"] == 2.0 and r["card"]["diff"] == -0.5 and r["lines"] == plain["lines"]
+    assert "card" not in pricecheck._cache[("WINR", "call", 90.0, "2026-12-18")][1]
+
+
 def test_price_check_vol_wording_is_plain_and_tiered():
     """Realized vol is described as yearly swings (not a % price move), and 'normal' says where in the band it sits."""
     from backend.v4 import pricecheck

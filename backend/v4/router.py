@@ -439,11 +439,16 @@ async def broker_exit_cancel(eid: str, authorization: Optional[str] = Header(Non
 
 
 @router.get("/price_check")
-async def price_check(underlying: str, option_type: str, strike: float, expiration: str, pick_id: Optional[str] = None):
+async def price_check(underlying: str, option_type: str, strike: float, expiration: str, pick_id: Optional[str] = None,
+                      card_premium: Optional[float] = None, card_vol: Optional[float] = None,
+                      card_vol_source: Optional[str] = None, card_spot: Optional[float] = None):
     """Public: is this option fairly priced (put-call parity), cheap or expensive (implied vs realized vol), and what
-    does it cost to trade (spread)? Cached 10 minutes per contract."""
+    does it cost to trade (spread)? Cached 10 minutes per contract. With card_premium (the idea card's own estimate),
+    also says how the card's price compares with the listed quote."""
     from backend.v4 import pricecheck
-    return await run_in_threadpool(pricecheck.check, underlying[:10], option_type, strike, expiration, pick_id)
+    card = {"premium": card_premium, "vol": card_vol, "vol_source": (card_vol_source or "")[:20], "spot": card_spot} \
+        if card_premium else None
+    return await run_in_threadpool(pricecheck.check, underlying[:10], option_type, strike, expiration, pick_id, card)
 
 
 class HQMessage(BaseModel):

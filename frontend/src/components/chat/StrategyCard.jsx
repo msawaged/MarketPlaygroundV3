@@ -485,7 +485,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             )}
           </div>
 
-          {isOptions && <PriceCheck ticker={pick.ticker} legs={legs} pickId={pick.pick_id} />}
+          {isOptions && <PriceCheck ticker={pick.ticker} legs={legs} pickId={pick.pick_id} trade={pick.trade} spot={pick.price} />}
 
           {plain.length > 0 && (
             <div className="rounded-2xl border border-blue-400/25 bg-blue-500/[0.07] p-3.5">

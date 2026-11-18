@@ -14,6 +14,12 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price
   (`yesno.listed_costs`), the odds needed to break even at the ask, the round-trip cost, and an amber note when the
   quotes are too wide to trade (ask at/above the payout, no bid, or gap over 20% of the payout).
+  Done 2026-11-18 (Builder): option idea cards' Price check shows the card's own leg price beside the listed mid and
+  bid/ask (`pricecheck.card_vs_listed`), says why they differ (one ATM vol for every strike = no skew; the stock moved
+  since the card was priced; strike not listed), and totals the whole trade: card / listed mids / natural.
+  Still open: idea cards price every strike at one ATM IV. Live AAPL Bull Call Spread $350/$370 Dec 18: short $370
+  leg card $4.06 vs mid $3.04 (IV 23% vs 26%), so the card's $7.45 debit vs $8.57 at mids. Pricing each leg at its
+  own listed IV (like Close Call's leg_vols) would close it; it touches grading inputs, so decide deliberately.
 - **American exercise, dividends, early assignment, pin risk** on short legs of spreads near expiry: mention in the
   options explainer; never claim European payoffs where they aren't.
   Done 2026-11-14 (Builder): every option card has an "Early exercise, assignment and pin risk" panel from
