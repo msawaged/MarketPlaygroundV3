@@ -9,6 +9,7 @@ const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFr
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
 // Odds near 50% keep one decimal so 49.8% and 50.2% don't both read "50%" on opposite sides.
 const pcSide = (p) => { const v = Number(p || 0) * 100; return Math.round(v) === 50 && Math.abs(v - 50) >= 0.05 ? `${v.toFixed(1)}%` : `${Math.round(v)}%`; };
+const fmtShort = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const fmtDay = (iso) => { const d = new Date(`${iso}T12:00:00`); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
 // The record's verdict is clustered by closing day: 15 stocks that close the same Friday share one market move.
 const VERDICT = {
@@ -60,9 +61,11 @@ function BrainQuestions({ rows }) {
         {shown.map((r, i) => (
           <div key={`${r.ticker}-${r.level}-${r.expiration}-${i}`} className="py-2 flex items-center justify-between gap-2">
             <span className="min-w-0">
-              <span className="block truncate">{r.ticker} above {usd(r.level, r.level % 1 ? 2 : 0)} · {fmtDay(r.expiration)}</span>
+              <span className="block">{r.ticker} above {usd(r.level, r.level % 1 ? 2 : 0)} <span className="whitespace-nowrap">on {fmtDay(r.expiration)}</span></span>
               <span className="block text-[11px] text-slate-500 tabular-nums">
-                Market {pcSide(r.market_p)} yes · brain {pcSide(r.brain_p)} yes{r.close_price != null ? ` · closed ${usd(r.close_price, 2)}` : ''}
+                {r.asked && <><span className="whitespace-nowrap">Asked {fmtShort(r.asked)}</span>{' · '}</>}
+                <span className="whitespace-nowrap">market {pcSide(r.market_p)} yes</span>{' · '}<span className="whitespace-nowrap">brain {pcSide(r.brain_p)} yes</span>
+                {r.close_price != null && <>{' · '}<span className="whitespace-nowrap">closed {usd(r.close_price, 2)}</span></>}
               </span>
               {r.disagrees && <span className="block text-[11px] text-amber-300">Took the other side from the market</span>}
             </span>
@@ -74,7 +77,7 @@ function BrainQuestions({ rows }) {
         ))}
       </div>
       {rows.length > 6 && (
-        <button onClick={() => setAll(!all)} className="mt-1 text-xs text-blue-300">{all ? 'Show fewer' : `Show all ${rows.length}`}</button>
+        <button onClick={() => setAll(!all)} className="mt-1 text-xs text-blue-300">{all ? 'Show fewer' : `Show the latest ${rows.length}`}</button>
       )}
       <p className="mt-2 text-xs text-slate-400">Odds are as they stood when it asked, with the line set near that day's price. Its lean starts from the market's odds and moves them a few points, so it picks a different side only when the market is close to 50%.</p>
     </div>
@@ -326,7 +329,7 @@ export default function YesNoPage() {
             {mine.slice(0, 12).map((c) => (
               <div key={c.id} className="py-2 flex items-center justify-between text-sm">
                 <span className="min-w-0">
-                  <span className="block truncate">{c.ticker} above {usd(c.level, c.level % 1 ? 2 : 0)} · {fmtDay(c.expiration)}</span>
+                  <span className="block">{c.ticker} above {usd(c.level, c.level % 1 ? 2 : 0)} <span className="whitespace-nowrap">on {fmtDay(c.expiration)}</span></span>
                   {c.market_p != null && (
                     <span className="block text-[11px] text-slate-500 tabular-nums">Market gave {c.side.toUpperCase()} {pc(c.side === 'yes' ? c.market_p : 1 - c.market_p)}{c.close_price != null ? ` · closed ${usd(c.close_price, 2)}` : ''}</span>
                   )}
@@ -355,7 +358,7 @@ export default function YesNoPage() {
               <p className="mt-2 text-slate-300">{VERDICT[score.verdict] ? VERDICT[score.verdict](score) : VERDICT.too_early(score)} <span className="text-slate-400 tabular-nums">(Brier {score.brier_brain} vs the market's {score.brier_market}; lower is better.)</span></p>
             </>
           ) : (
-            <p className="mt-2 text-slate-300">New. The brain asks itself a question on 15 big stocks every trading day; the first ones get graded after their expiration. {score.open ? `${score.open} waiting now.` : ''}</p>
+            <p className="mt-2 text-slate-300">New. Every trading day the brain asks itself one question on each of 15 big stocks (skipping any it already has open); each is graded after its expiration. {score.brain_open ? `${score.brain_open} of its questions are waiting now.` : ''}</p>
           )}
           <BrainQuestions rows={score.recent} />
         </Card>

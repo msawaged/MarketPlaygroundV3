@@ -4134,10 +4134,12 @@ def test_yesno_scorecard_lists_the_brains_questions_and_where_it_took_the_other_
     assert [r["disagrees"] for r in sc["recent"]] == [True, True, True, False]
     assert sc["recent"][2]["close_price"] == 760.0 and sc["recent"][0]["asked"] == "2026-11-14"
     assert sc["disagree"] == {"n": 2, "right": 1, "days": 2}
-    assert sc["graded"] == 4
+    assert sc["graded"] == 4 and sc["brain_open"] == 1
+    put(6, "u2", 0.55, 0.56, "2026-11-25")                              # a user's open question
     db.execute("DELETE FROM yesno_calls WHERE graded_at IS NOT NULL")
     empty = yesno.scorecard()
-    assert empty["graded"] == 0 and len(empty["recent"]) == 1 and empty["open"] == 1
+    assert empty["graded"] == 0 and len(empty["recent"]) == 1 and empty["open"] == 2
+    assert empty["brain_open"] == 1  # "N of its questions are waiting" counts the brain's own, not users'
 
 
 def test_yesno_my_record_sets_right_against_the_market_odds():

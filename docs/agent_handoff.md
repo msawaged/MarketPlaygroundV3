@@ -1235,3 +1235,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_yesno_scorecard_lists_the_brains_questions_and_where_it_took_the_other_side. Checked at 390 and 375.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/hq/status/builder.json.
+
+## 2026-11-18 ~03:30 UTC (daily polish walk): Close Call brain list readable on phones, honest open count
+- No HQ messages from Murad. Wording/layout only; odds, lean, pricing, grading and the learning gate are unchanged.
+- yesno.scorecard() adds `brain_open` (brain's own open questions); the page uses it instead of `open` (all askers).
+- YesNoPage: brain question rows and Your answers rows wrap instead of truncating the expiry; brain rows show the asked
+  date; intro says seed_daily skips questions already open; "Show the latest 12".
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.

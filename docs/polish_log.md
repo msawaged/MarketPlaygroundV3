@@ -1125,3 +1125,30 @@ Changed (frontend wording only; research.py, gates and numbers untouched):
   the bar; the overlap count above is the stricter test." Checked at 375 against live /v4/brain data.
 
 Checks: vite build passes, backend tests 207 passed (fresh venv).
+
+## 2026-11-18 (second run, ~03:30 UTC = Tue 10:30 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Close Call signed in locally (offline server, throwaway SQLite; the public yesno GETs routed to the live backend) at
+390 and 360: SPY $733.26, $725 line Mon Nov 23: YES $63 / NO $37 on the $725/$726 spread = $100, breakeven $725.63,
+market 64% from one implied vol: all add up. Brain list checked against the DB (read-only): sides follow brain_p,
+"took the other side" only on COST (market 48% vs brain 55%): correct.
+
+Found (the Builder's new "The brain's Close Call record" list):
+- Every row's expiry was cut off at 360 and most at 390 ("AVGO above $340 · Mon, No..."): the date is half the question.
+  Same truncation on the user's own "Your answers" rows.
+- "40 waiting now" right after "The brain asks itself..." counted every asker's open questions (DB: 39 brain + 1 user).
+- "asks itself a question on 15 big stocks every trading day", but Nov 17 has 9: seed_daily skips a question it
+  already has open (same ticker, line and expiration). And "Show all 12" while 39 are open.
+- No asked date on the rows, so once several days are listed you can't tell which day's odds you are reading.
+
+Changed:
+- yesno.scorecard(): adds `brain_open` (the brain's own open questions); `open` unchanged.
+- YesNoPage: question rows wrap ("AVGO above $340 / on Mon, Nov 23") instead of truncating (brain list and Your answers);
+  brain rows' second line "Asked Nov 17 · market 53% yes · brain 57% yes" with unbreakable pieces; intro "Every trading
+  day the brain asks itself one question on each of 15 big stocks (skipping any it already has open)... 39 of its
+  questions are waiting now."; button "Show the latest 12".
+- Test: brain_open counts only the brain's questions (in the brain-questions scorecard test).
+
+Checks: vite build passes, backend tests 208 passed (fresh venv).

@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-18T00:50:00Z",
- "last_run": "On the Brain page's luck check, the 'Without the extremes' line said 7 of 45 ways clear the bar right after the overlap check said 0 of 45, without saying it counts each call as independent. It now says which sample and which count it uses, and that the overlap count is the stricter test. Also re-checked the options card, portfolio and My beliefs numbers locally: all add up.",
+ "updated_at": "2026-11-18T03:45:00Z",
+ "last_run": "Close Call's new list of the brain's own questions cut off each question's date on phones, said '40 waiting' while counting users' questions too, and claimed 15 questions a day when repeats are skipped. Rows now wrap and show the date asked, the count is the brain's own, and the wording says repeats are skipped. Close Call prices and breakevens re-checked: all add up.",
  "working_on": "Nothing open.",
- "next": "Walk Close Call and a bearish shares call on the phone at 360 wide; recheck the live forward test text once more days are graded.",
+ "next": "Check the first graded Close Call questions (Nov 13's expire Wed Nov 18) and how the record reads once graded; walk a bearish shares call at 360 wide.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
