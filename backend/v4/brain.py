@@ -98,14 +98,20 @@ def _recent_graded(limit: int = 14) -> list[dict]:
 
 
 def _next_runs(now: datetime) -> dict:
-    """When the brain next learns (hourly at :13) and next gets graded (22:47 UTC on weekdays). Matches render.yaml."""
+    """When the brain next learns (hourly at :13) and when picks next get graded.
+
+    The grader only uses closes from before today's New York date (grader.grade skips tk[0] >= today), so a
+    trading day's close is graded by the first hourly run after midnight ET: 12:13 AM ET Tuesday to Saturday.
+    The 22:47 UTC grade-and-train job runs before midnight ET, so it grades nothing new (it retrains)."""
     nxt = now.replace(minute=13, second=0, microsecond=0)
     if nxt <= now:
         nxt += timedelta(hours=1)
-    g = now.replace(hour=22, minute=47, second=0, microsecond=0)
-    while g <= now or g.weekday() >= 5:
-        g += timedelta(days=1)
-        g = g.replace(hour=22, minute=47)
+    g = nxt
+    for _ in range(24 * 8):
+        ny = g.astimezone(market.NY) if market.NY else g - timedelta(hours=5)
+        if ny.hour == 0 and 1 <= ny.weekday() <= 5:  # just after midnight following Mon..Fri
+            break
+        g += timedelta(hours=1)
     return {"learning": nxt.isoformat(), "grading": g.isoformat()}
 
 

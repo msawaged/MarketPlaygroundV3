@@ -274,8 +274,10 @@ export default function BrainPage({ viewOnly = false }) {
           const h = d.health.learning, g = d.health.grading;
           const age = h?.at ? (now - Date.parse(h.at)) / 3600000 : null;
           const good = h && h.ok && age < 2.5;
-          // Picks are graded by the daily job and by the hourly catch-up; show the latest of either so this line matches the activity feed.
-          const gradedTimes = [g?.at, ...((d.activity || []).filter((e) => e.kind === 'graded').map((e) => e.at))].filter(Boolean);
+          // Picks are graded by the first hourly run after midnight ET; the evening grade-and-train job (g) retrains and
+          // grades nothing new. So the time comes from the feed's real gradings, falling back to g only when none is listed.
+          const fed = (d.activity || []).filter((e) => e.kind === 'graded' && e.n > 0).map((e) => e.at).filter(Boolean);
+          const gradedTimes = fed.length ? fed : [g?.at].filter(Boolean);
           const lastGrade = gradedTimes.length ? gradedTimes.reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a)) : null;
           return (
             <div className={`mt-3 rounded-2xl border px-3.5 py-2.5 text-xs ${good ? 'border-green-500/30 bg-green-500/[0.06] text-green-100' : 'border-amber-300/40 bg-amber-400/10 text-amber-100'}`}>
@@ -318,7 +320,7 @@ export default function BrainPage({ viewOnly = false }) {
             <div className="rounded-2xl border border-green-400/25 bg-green-500/[0.07] p-3">
               <div className="text-[11px] uppercase tracking-wider text-green-200 font-semibold">Next market grading</div>
               <div className="mt-0.5 text-2xl font-extrabold tabular-nums">{until(d.next.grading, now)}</div>
-              <div className="text-[11px] text-slate-400">{new Date(d.next.grading).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET, after the 4 PM ET close</div>
+              <div className="text-[11px] text-slate-400">{new Date(d.next.grading).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET, once {new Date(Date.parse(d.next.grading) - 86400000).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/New_York' })}'s close is final</div>
             </div>
           </div>
         )}

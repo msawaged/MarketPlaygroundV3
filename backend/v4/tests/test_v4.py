@@ -1756,8 +1756,21 @@ def test_brain_activity_never_shows_peoples_words_and_schedule():
     kinds = {e["kind"] for e in s["activity"]}
     assert {"person", "news"} <= kinds
     assert "private" not in json.dumps(s["activity"])
-    nr = brain._next_runs(datetime(2026, 10, 30, 22, 50, tzinfo=timezone.utc))  # a Friday, after grading
-    assert nr["learning"].startswith("2026-10-30T23:13") and nr["grading"].startswith("2026-11-02T22:47")  # Monday
+    nr = brain._next_runs(datetime(2026, 10, 30, 22, 50, tzinfo=timezone.utc))  # a Friday 6:50 PM ET (EDT)
+    assert nr["learning"].startswith("2026-10-30T23:13")
+    # Friday's close is graded by the first hourly run after midnight ET (Sat 12:13 AM EDT = 04:13 UTC), not Monday.
+    assert nr["grading"].startswith("2026-10-31T04:13")
+
+
+def test_next_market_grading_is_the_first_run_after_midnight_et_following_a_trading_day():
+    from datetime import datetime, timezone
+    from backend.v4 import brain
+    # Fri Nov 20 2026, 10:23 PM ET (EST): Friday's close is graded at Sat 12:13 AM ET = 05:13 UTC.
+    assert brain._next_runs(datetime(2026, 11, 21, 3, 23, tzinfo=timezone.utc))["grading"].startswith("2026-11-21T05:13")
+    # Sat 1 AM ET, after that run: nothing new until Monday's close, graded Tue 12:13 AM ET.
+    assert brain._next_runs(datetime(2026, 11, 21, 6, 0, tzinfo=timezone.utc))["grading"].startswith("2026-11-24T05:13")
+    # Tue 3 PM ET: Tuesday's close is graded Wed 12:13 AM ET.
+    assert brain._next_runs(datetime(2026, 11, 24, 20, 0, tzinfo=timezone.utc))["grading"].startswith("2026-11-25T05:13")
 
 
 def test_job_health_is_recorded_and_public_view_hides_errors(monkeypatch):

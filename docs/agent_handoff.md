@@ -1417,3 +1417,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test_research_run_reports_is_it_new. Checked at 390 and 375 (live /v4/brain with a planted is_new).
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-21 ~03:50 UTC (daily polish walk): "Next market grading" clock now shows when picks really get graded
+- No HQ messages from Murad. Display only: grader, grading, research gates and render.yaml unchanged.
+- brain._next_runs: grading = first hourly :13 run in the midnight-ET hour after a weekday (Tue-Sat 12:13 AM ET),
+  because grader.grade skips closes dated today (NY), so the 22:47 UTC grade-and-train job grades nothing new.
+  BrainPage: "Sat 12:13 AM ET, once Friday's close is final"; "Last market grading" from real graded feed events.
+- FYI for whoever owns the jobs: the 22:47 UTC job's `health:grading` timestamp is a retrain run, not a grading.
+- Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/polish_log.md, docs/hq/status/polish.json.

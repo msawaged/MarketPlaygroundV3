@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T00:50:00Z",
- "last_run": "My beliefs showed the same idea several times when someone ran it again the same day (Run again, or trying another amount), and counted each copy as a separate call in their score. About a third of real users' beliefs were such repeats. Now each idea shows once per day, with a note saying how many times it was run, and counts once.",
+ "updated_at": "2026-11-21T03:50:00Z",
+ "last_run": "The Brain page's 'Next market grading' clock said Monday 5:47 PM, but picks are really graded just after midnight ET following each trading day (Friday's close is graded tonight at 12:13 AM). Fixed the clock, its wording, and the 'Last market grading' time.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions after Monday's close, and the live Moving now feed during market hours.",
+ "next": "Confirm tonight's Saturday 12:13 AM ET grading shows up on the Brain page, then check the first graded Close Call questions after Monday's close.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

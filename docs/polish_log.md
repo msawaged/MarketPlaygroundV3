@@ -1302,3 +1302,30 @@ Changed:
 - Test: test_my_beliefs_shows_and_counts_the_same_idea_run_twice_in_a_day_once (fails on the old code).
 
 Checks: vite build passes, backend tests 221 passed (fresh venv). Checked at 375 locally.
+
+## 2026-11-21 (second run, ~03:25 UTC = Fri 10:25 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Moving now's "vs S&P" adds up (S&P -3.1%: CSCO -4.2% = -1.1 pts, CRWD -14.0% = -10.9 pts); regime box consistent
+with its own rule (vol 26.2% < 28%, 11.3% off the high < 12% -> In between).
+
+Found (/live and /brain, the clock boxes):
+- "Next market grading: 67h 22m, Mon 5:47 PM ET, after the 4 PM ET close" was wrong. Picks are actually graded by the
+  first hourly run after midnight ET: live DB `outcomes.graded_at` since Nov 5 is all in the 05 UTC hour (plus a few
+  at 08-09), Tue-Sat, and never in the 22 UTC hour of the grade-and-train job. Cause: grader.grade skips any close
+  dated today (NY date), so the 5:47 PM ET job can't grade that day's close; it only retrains. Friday's close gets
+  graded tonight at ~12:13 AM ET Saturday, not Monday evening.
+- "Last market grading 5h ago" took the grade-and-train job's run time (graded 0 picks), while the feed below said
+  the last real grading (695 picks) was 18h ago.
+
+Changed:
+- brain._next_runs: next grading = first :13 hourly run that is in the midnight hour ET right after a weekday
+  (Tue-Sat, 12:13 AM ET; DST-aware via market.NY). Docstring says why.
+- BrainPage: subtitle "Sat 12:13 AM ET, once Friday's close is final"; "Last market grading" uses the feed's real
+  gradings (n > 0), falling back to the job's time only when the feed lists none.
+- Tests: test_v4 activity test's Friday case now expects Sat 04:13 UTC (EDT);
+  test_next_market_grading_is_the_first_run_after_midnight_et_following_a_trading_day.
+- Not changed: render.yaml / the 22:47 job (Render settings are Murad's); it still retrains nightly.
+
+Checks: vite build passes, backend tests 224 passed (fresh venv). Checked at 375 locally against the live /v4/brain.
