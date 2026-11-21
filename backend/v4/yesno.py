@@ -470,6 +470,14 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
     stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
+    # When the trade's strikes sit the same distance either side of the line, read the odds off that very spread
+    # ((C(k1) - C(k2)) / (k2 - k1), the chance at its middle = the line), so YES's price is the odds shown. On an
+    # even grid this is the same number as the reading above; on an uneven one (live SPY $699/$700/$705, trade
+    # $695/$705) the finer pairs read 46.7% while the trade's own spread cost 50.2% of its payout.
+    if dig and not stale and abs((k1 + k2) / 2 - level) <= 1e-6:
+        own = digital_from_spread([r for r in chain if r["type"] == "call" and r["strike"] in (k1, k2)], level, years)
+        if own and abs(own[0] - m_p_flat) <= 0.10:
+            dig = own
     # Mids of quotes too wide to trade (the same test as the "What a real order would pay" box; usual outside market
     # hours) are noise, not skew: live SPY $725, Wed 7:30 AM ET, read 59%, 65% and 74% on three refreshes a minute
     # apart, the YES cost moving with it ($56 to $73). Then use the one-vol answer and price at the line IV.

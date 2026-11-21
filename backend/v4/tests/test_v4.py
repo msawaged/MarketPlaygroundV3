@@ -4216,6 +4216,26 @@ def test_yesno_uneven_strikes_still_centre_the_spread_on_the_line(monkeypatch):
     assert abs(q["yes"]["breakeven"] - lvl) < 0.15 and abs(q["no"]["breakeven"] - lvl) < 0.15
     assert "$5.00 either side of the" in q["spread_note"]
 
+    # Real quotes with skew on that uneven grid: the odds are read off the trade's own centred spread, so YES's
+    # price is the odds shown (the finer $lvl-1/$lvl/$lvl+5 pairs read a different number on skewed quotes).
+    from backend.v4.strategy import bs_price
+    spot = market.latest_price("WINR")
+    yrs = max(1, (date.fromisoformat(e) - yesno._today()).days) / 365.0
+
+    def skewed(*a, **k):
+        out = []
+        for r in full(*a, **k):
+            if r["strike"] in gap:
+                continue
+            v = 0.4 + 0.8 * (lvl - r["strike"]) / lvl
+            mid = bs_price(spot, r["strike"], yrs, v, r["type"])
+            out.append(dict(r, bid=round(max(0.01, mid - 0.02), 2), ask=round(mid + 0.02, 2), iv=v))
+        return out
+    monkeypatch.setattr(market, "option_chain_near", skewed)
+    q = yesno.quote("WINR", lvl, e)
+    assert q["strikes"] == [lvl - 5, lvl + 5] and "call spread" in q["odds_source"]
+    assert abs(q["yes"]["cost"] / q["yes"]["payout"] - q["market_p"]) < 0.005
+
 
 def test_yesno_expected_move_and_big_move_warning(monkeypatch):
     from backend.v4 import yesno

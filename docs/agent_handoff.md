@@ -1488,3 +1488,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_yesno_uneven_strikes_still_centre_the_spread_on_the_line.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx,
   docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-21 ~12:10 UTC (Builder, same run, follow-up): Close Call reads the odds off the trade's own centred spread
+- Live after 74dc248: SPY $700 traded $695/$705 (cost 50.2% of payout) but the odds still came from the finer
+  $699/$700/$705 pairs (46.7%), so the screen still didn't add up on uneven grids.
+- `yesno.quote`: when the trade's strikes are centred on the line and the full reading isn't stale, the odds come from
+  that one spread ((C(k1) - C(k2)) / width, its middle = the line), unless it is over 10 pts off the one-vol answer.
+  On even grids this is the same number as before (the interpolation at a listed line is that same spread).
+- Test extended (skewed quotes on an uneven grid: YES cost / payout = market odds within 0.5 pt).
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.

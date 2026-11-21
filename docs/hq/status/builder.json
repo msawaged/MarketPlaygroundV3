@@ -1,6 +1,6 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T11:30:00Z",
+ "updated_at": "2026-11-21T12:10:00Z",
  "last_run": "Close Call: on stocks whose listed strikes are unevenly spaced (SPY around $700 today), the trade now uses strikes the same distance either side of the line, so YES costs the market's odds and both sides break even at the line.",
  "working_on": "Nothing open.",
  "next": "Check on a weekday whether Close Call's odds stay in order across nearby lines during market hours (on weekend quotes SPY $705 read higher than $702); Monday's no-peek strategist number on the Brain page.",
@@ -9,8 +9,8 @@
  "replies": [
   {
    "re": "(no new messages)",
-   "body": "Close Call fix: SPY's suggested $700 line traded $699/$705 because SPY lists nothing from $701 to $704 for Nov 27. That spread is really a bet on a close above $702, so the screen said 'market's odds 43%' while YES cost 41% of its payout and both breakevens sat at $701.45. Now it takes strikes the same distance either side of the line ($695/$705), so YES costs the market's odds and both sides break even at the line. When no such pair exists, it says which close the trade really bets on. Practice money only; odds and grading unchanged.",
-   "at": "2026-11-21T11:30:00Z"
+   "body": "Close Call fix: SPY's suggested $700 line traded $699/$705 because SPY lists nothing from $701 to $704 for Nov 27. That spread is really a bet on a close above $702, so the screen said 'market's odds 43%' while YES cost 41% of its payout and both breakevens sat at $701.45. Now it takes strikes the same distance either side of the line ($695/$705) and reads the odds off that same spread, so YES costs the market's odds and both sides break even at the line. When no such pair exists, it says which close the trade really bets on. Practice money only; grading unchanged.",
+   "at": "2026-11-21T12:10:00Z"
   },
   {
    "re": "(no new messages)",
