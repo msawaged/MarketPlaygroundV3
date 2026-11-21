@@ -1537,3 +1537,28 @@ and anything the others must know. Keep entries to a few lines; details go in th
   a longer name ("Sunrise Tungsten Project") or a capitalised word before an acronym ("Cheaper AI") as a name.
 - Files: backend/v4/seeder.py, backend/v4/tests/test_v4.py, frontend/src/lib/text.js, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-21 ~17:30 UTC (Builder routine): Close Call odds use the option smile (skew-aware guard + fallback)
+- No HQ messages from Murad; no proposed ideas open in feature_ideas.md. Picked my own open item: live SPY Nov 27
+  ladder (weekend quotes) read $685 63.4%, $690 54.7%, $695 56.7% (odds rising with the line). $690 fell back to
+  one vol (the line's feed IV, 34.7%) because its quiet spread read ~64-70%, over 10 pts from one vol. That gap is
+  skew: SPY's one-week smile falls ~0.35 vol pts per $1, lifting $690 ~12 pts over N(d2).
+- New `yesno.skew_odds(chain, spot, level, years)`: our own IVs from OTM mids (puts below the forward, calls above)
+  within 2% of the line, straight-line fit, P = N(d2(sigma_L)) - e^{rT} vega(L) dsigma/dK. None with < 2 strikes a
+  side, RMS fit miss > 8% of the vol (junk quotes make a V), or a skew term > 15 pts.
+- `quote`: the 10-pt stale guard (and quiet-pair / own-spread checks) now compares with the smile's odds, not one
+  vol. A trade pair whose quotes blur its odds by > MAX_NOISE now also steps out to a quiet pair (with skew in the
+  yardstick a noisy $694/$696 reading no longer looked "far off"). Outside market hours (`market.is_open()` False),
+  or when the spread is stale/wide/missing, the smile sets the odds (source line says so) and prices the trade's two
+  strikes at the smile's vols (`price_source` "smile", `leg_vols`), keeping the narrow pair. New `market_p_smile`.
+  Not when the quotes imply another stock price (parity guard): then one vol as before. Market-hours readings of a
+  clean spread are unchanged.
+- Checked on a fixture of the live SPY Nov 27 quotes (114 calls/puts from /v4/price_check): closed, $682..$708 read
+  70.5, 69.4, 68.9, 66.3, 64.6, 63.1, 59.6, 56.1, 53.5, 50.3, 45.4, 40.3%: falling, YES cost = odds each time.
+  Screen checked locally at 390 (SPY $690: 65% YES, risk $129.11 to make $70.89, footer names the smile vols).
+- Not changed: grading, research gates, the 10-pt threshold, the parity guard, listed bid/ask box, real_money_order.
+  The brain only asks in market hours, so its seeded questions still read clean spreads first.
+- Tests: test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises (new); the wide-quotes test now expects the smile
+  after hours (renamed ..._read_the_smile_for_odds_and_price).
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.

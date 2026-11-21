@@ -4755,12 +4755,13 @@ def test_yesno_stale_spread_quotes_fall_back_to_one_vol(monkeypatch):
     assert "out of date" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
 
 
-def test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price(monkeypatch):
+def test_yesno_quotes_too_wide_to_trade_read_the_smile_for_odds_and_price(monkeypatch):
     """Outside market hours the listed bid/ask gaps are wide and the mids jump: live SPY $725 (Wed 7:30 AM ET) read
     59%, 65% and 74% on three refreshes a minute apart, the YES cost following it ($56 to $73), while the expected-move
     line said 23% vol and the footer priced the legs at 28%. When the quotes are too wide to trade (the same test as
-    the "What a real order would pay" box), the market's odds and the practice price come from the line's one IV,
-    so they agree and don't jump; tight quotes keep reading skew from the mids."""
+    the "What a real order would pay" box), the market's odds and the practice price come from the smile fitted
+    through many strikes (skew kept, noise averaged out), so they agree and don't jump; tight quotes keep reading
+    skew from the mids. (Before Nov 21 they came from one IV, which dropped the skew.)"""
     from backend.v4 import yesno
     from backend.v4.strategy import bs_price, RISK_FREE
     spot = market.latest_price("WINR")
@@ -4785,9 +4786,14 @@ def test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price(monkeypat
     assert tight["listed"]["wide"] is False
     gap["v"] = 0.40                                     # $0.80 bid/ask per leg: an after-hours chain
     q = yesno.quote("WINR", k1, exp.isoformat())
-    assert q["listed"]["wide"] is True
-    assert "too wide" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
-    assert q["price_source"] == "line_iv" and q["leg_vols"] is None
+    assert q["listed"]["wide"] is True or q["strikes"] != tight["strikes"]   # open: steps out to a quieter pair
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})          # after hours: the smile, narrow pair
+    q = yesno.quote("WINR", k1, exp.isoformat())
+    assert q["listed"]["wide"] is True and q["strikes"] == tight["strikes"]
+    assert "option smile" in q["odds_source"] and q["market_p"] == q["market_p_smile"]
+    assert abs(q["market_p"] - tight["market_p"]) < 0.02                      # skew kept: same odds as tight quotes
+    assert q["market_p"] - q["market_p_flat_vol"] > 0.02                        # (one vol would drop it)
+    assert q["price_source"] == "smile" and q["leg_vols"][0] > q["leg_vols"][1]
     df = math.exp(-RISK_FREE * yrs)
     assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.03     # YES costs about the odds shown
     assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(q["yes"]["payout"] * df, abs=0.02)
@@ -5489,3 +5495,55 @@ def test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread(monkeypatch
     q = yesno.quote("WINR", 695.0 + shift, exp.isoformat())
     assert q["strikes"] == [690 + shift, 700 + shift] and "call spread" in q["odds_source"]
     assert abs(q["market_p"] - (15.95 - 10.34) / 10) < 0.01                  # about 56%, from the market's quotes
+
+
+def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
+    """Live Sat Nov 21, SPY $693.89, Nov 27: one-week skew lifted the $690 line ~12 points over one vol, so the old
+    stale guard (10 points off one vol) refused a correct quiet-spread reading and showed one vol's 54.7% beside
+    56.7% for $695 (odds rising with the line), while the one-vol fallback beside spread readings made the weekend
+    ladder jump around. The yardstick is now the smile fitted through the strikes near the line, and outside market
+    hours (or when the trade's spread can't be read) the smile sets the odds and the practice price."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=6)
+    yrs = 6 / 365
+    iv = lambda k: 0.40 - 0.0035 * 693.89 / spot * (k - spot)           # SPY's weekend skew, scaled to WINR
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in range(int(spot * 0.9), int(spot * 1.1) + 1):
+            for t in ("call", "put"):
+                m = bs_price(spot, k, yrs, iv(k), t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(max(0.0, m - 0.02), 2), "ask": round(m + 0.02, 2), "iv": 0.36})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+
+    # The smile's odds match the true skewed digital: -dC/dK, read off the calls at their own vols.
+    lvl = float(round(spot)) - 4
+    h = 0.05
+    true_p = -(bs_price(spot, lvl + h, yrs, iv(lvl + h), "call") - bs_price(spot, lvl - h, yrs, iv(lvl - h), "call")) \
+        / (2 * h) * math.exp(RISK_FREE * yrs)
+    sk = yesno.skew_odds(chain("WINR", lvl, exp), spot, lvl, yrs)
+    assert abs(sk["p"] - true_p) < 0.01 and sk["p"] - sk["flat"] > 0.08       # skew lifts it well over one vol
+    junk = [{"type": t, "strike": float(k), "bid": 1.0, "ask": 1.1} for k in range(int(spot) - 20, int(spot) + 20)
+            for t in ("call", "put")]
+    assert yesno.skew_odds(junk, spot, lvl, yrs) is None                        # same price everywhere: a V, not a line
+
+    # Market open: a clean spread reading 10+ points over one vol is skew, not stale quotes, and is kept.
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    assert "call spread" in q["odds_source"] and q["market_p"] - q["market_p_flat_vol"] > 0.10
+    assert abs(q["market_p"] - true_p) < 0.02
+
+    # Market closed: the smile sets odds and price on every line; odds fall as the line rises, YES costs the odds.
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
+    df = math.exp(-RISK_FREE * yrs)
+    ps = []
+    for d in (-10, -6, -4, -1, 0, 2, 5, 9):
+        q = yesno.quote("WINR", float(round(spot)) + d, exp.isoformat())
+        assert "option smile" in q["odds_source"] and q["price_source"] == "smile"
+        assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.02
+        ps.append(q["market_p"])
+    assert all(a > b for a, b in zip(ps, ps[1:]))

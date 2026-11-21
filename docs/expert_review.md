@@ -21,6 +21,12 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   is inverted or >10 pts off steps out to the narrowest centred pair whose quotes blur it by <= 3 pts ($690/$700).
   Note for reviewers: $700 at 50% with SPY $693.89 is skew, not an error (digital = N(d2) - vega * dsigma/dK).
   Also a put-call parity guard: if the quotes imply a stock price over 0.1 sd from the last price, one-vol is shown.
+  Done 2026-11-21 evening (Builder): the smile. The sanity yardstick for a spread's reading is now the digital with
+  its skew term, N(d2(sigma_L)) - e^{rT} vega dsigma/dK, from a straight line through our own IVs backed out of the
+  OTM mids within 2% of the line (`yesno.skew_odds`; feed IVs aren't used: Alpaca's call/put IVs at one strike were
+  ~10 vol pts apart while parity held). SPY's one-week skew lifts $690 ~12 pts over one vol, which the old one-vol
+  yardstick called stale. Outside market hours, or when the trade's own spread can't be read, the smile sets the
+  odds and prices both strikes at its vols (YES = the odds), so the ladder of lines falls as the line rises.
 - **Costs and fills.** Practice prices use mid / model vol. Say "before bid/ask costs"; real orders use the
   natural/mid limit (`real_money_order`).
   Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price

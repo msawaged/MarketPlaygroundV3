@@ -158,6 +158,61 @@ def quotes_out_of_step(spot: float, fwd: Optional[tuple[float, float]], vol: flo
     return gap > band or gap < -(band + 0.02 * spot)
 
 
+SKEW_BAND = 0.02          # strikes within 2% of the line feed the local skew fit
+MAX_SKEW_TERM = 0.15      # a skew term over 15 points of odds is a bad fit, not skew
+MAX_SMILE_MISS = 0.08     # the strikes' vols must sit near one straight line (RMS miss under 8% of the vol)
+
+
+def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Optional[dict]:
+    """What the option smile near the line says the odds should be, as a check on a spread's reading. Backs an
+    implied vol out of each out-of-the-money mid within SKEW_BAND of the line (puts below the forward, calls above:
+    the liquid side, the way a desk reads the smile) with our own Black-Scholes, fits a straight line sigma(K) through
+    them, and returns the digital with its skew term: P(close > L) = N(d2(sigma_L)) - exp(r T) * vega(L) * dsigma/dK.
+    Equity skew (dsigma/dK < 0) lifts the odds above one vol's N(d2). Live Sat Nov 21, SPY $693.89, Nov 27: sigma
+    falls ~0.35 vol pts per $1, which lifts the $690 line from 54% to 66%, so the quiet $687/$693 spread's 64% was
+    right and the old guard (10 points off the one-vol answer) refused it, leaving $690 at 54.7% under $695's 56.7%.
+    Feed IVs aren't used: Alpaca's call and put IVs at one strike disagreed by ~10 vol pts while parity held.
+    None with fewer than two usable strikes on either side of the line, vols that don't sit near one straight line
+    (RMS miss over MAX_SMILE_MISS of the vol: junk quotes, e.g. every strike at the same price, make a V), or a skew
+    term over MAX_SKEW_TERM."""
+    from .strategy import RISK_FREE
+    if spot <= 0 or level <= 0 or years <= 0:
+        return None
+    fwd = spot * math.exp(RISK_FREE * years)
+    mids = {"call": _mids([r for r in chain if r["type"] == "call"]),
+            "put": _mids([r for r in chain if r["type"] == "put"])}
+    pts = []
+    for k in sorted(set(mids["call"]) | set(mids["put"])):
+        if abs(k - level) > SKEW_BAND * level:
+            continue
+        kind = "put" if k < fwd else "call"
+        m = mids[kind].get(k)
+        v = strike_vol(m, spot, k, years, kind) if m else None
+        if v:
+            pts.append((k, v))
+    if sum(1 for k, _ in pts if k <= level) < 2 or sum(1 for k, _ in pts if k >= level) < 2:
+        return None
+    mk = sum(k for k, _ in pts) / len(pts)
+    mv = sum(v for _, v in pts) / len(pts)
+    sxx = sum((k - mk) ** 2 for k, _ in pts)
+    if sxx <= 0:
+        return None
+    slope = sum((k - mk) * (v - mv) for k, v in pts) / sxx
+    sig = mv + slope * (level - mk)
+    rms = math.sqrt(sum((v - mv - slope * (k - mk)) ** 2 for k, v in pts) / len(pts))
+    if sig <= 0 or rms > MAX_SMILE_MISS * sig:
+        return None
+    sq = sig * math.sqrt(years)
+    d1 = (math.log(spot / level) + (RISK_FREE + 0.5 * sig * sig) * years) / sq
+    flat = _ncdf(d1 - sq)
+    vega = spot * math.sqrt(years) * math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+    term = -math.exp(RISK_FREE * years) * vega * slope
+    if abs(term) > MAX_SKEW_TERM:
+        return None
+    return {"p": min(0.99, max(0.01, flat + term)), "flat": flat, "vol": sig, "slope": slope, "n": len(pts),
+            "miss": rms}
+
+
 def digital_from_spread(calls: list[dict], level: float, years: float = 0.0,
                         why: Optional[list] = None) -> Optional[tuple[float, float, float, list]]:
     """Market-implied P(close > level) from listed call prices. A call spread (C(Ka) - C(Kb)) / (Kb - Ka) is the
@@ -541,21 +596,36 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         vol_source = "estimate"
     years = max(1, (exp - t).days) / 365.0
     m_p_flat = prob_above(spot, level, years, vol)
+    # The yardstick a spread's reading is checked against: the smile's own odds near the line (skew included) when
+    # the quotes give a usable fit, else the one-vol answer.
+    sk = skew_odds(chain, spot, level, years)
+    ref = sk["p"] if sk else m_p_flat
     why: list = []
     dig = digital_from_spread([r for r in chain if r["type"] == "call"], level, years, why=why)
-    # Quotes too noisy for a fine spread (thin $1 strikes, weekend quotes) read as inverted or far off: step out to a
-    # wider centred pair whose quotes can read the odds, trade that pair, and read the odds off it.
-    if "inverted" in why or (dig and abs(dig[0] - m_p_flat) > 0.10):
+    # Quotes too noisy for a fine spread (thin $1 strikes, weekend quotes) read as inverted, far off, or blur the
+    # trade's own pair by over MAX_NOISE: step out to a wider centred pair whose quotes can read the odds, trade that
+    # pair, and read the odds off it. (With skew in the yardstick, a noisy $694/$696 reading of 64% sat within 10
+    # points of the smile's 60%, so "far off" alone no longer caught it.)
+    # Outside market hours the smile sets the odds anyway (below), so the trade keeps its narrow pair.
+    try:
+        closed = not market.is_open()
+    except Exception:
+        closed = False
+    noise = spread_noise([r for r in chain if r["type"] == "call"], k1, k2)
+    if not (closed and sk) and ("inverted" in why or (dig and (abs(dig[0] - ref) > 0.10
+                                                             or (noise is not None and noise > MAX_NOISE)))):
         w1, w2 = quiet_pair([r for r in chain if r["type"] == "call"], level, (k1, k2))
         if (w1, w2) != (k1, k2):
             wide_dig = digital_from_spread([r for r in chain if r["type"] == "call" and r["strike"] in (w1, w2)],
                                            level, years)
-            if wide_dig and abs(wide_dig[0] - m_p_flat) <= 0.10:
+            if wide_dig and abs(wide_dig[0] - ref) <= 0.10:
                 k1, k2, dig, why = w1, w2, wide_dig, []
-    # Option-implied odds carry skew, but skew moves a near-dated digital only a few points off the one-vol
-    # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
-    # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
-    stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
+    # A reading over 10 points from the yardstick (the smile's skew-included odds, or one vol without a usable
+    # smile) means the spread quotes are stale or out of step with the stock price (seen after hours: SPY at $752
+    # with "61% to close above $755"), so use the one-vol answer and say so. Skew itself is in the yardstick: SPY's
+    # one-week smile lifts a line just below the price ~12 points over one vol, which the old one-vol yardstick
+    # mistook for stale quotes.
+    stale = (bool(dig) and abs(dig[0] - ref) > 0.10) or "inverted" in why
     # Put-call parity: if the quotes imply a stock price well away from the last price, the spread's odds describe
     # a close relative to that other price. Then use the one-vol answer at the last price, and say what the quotes
     # imply. (A guard: on consistent quotes, e.g. live SPY Sat Nov 21, it stays quiet.)
@@ -568,15 +638,32 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # $695/$705) the finer pairs read 46.7% while the trade's own spread cost 50.2% of its payout.
     if dig and not stale and abs((k1 + k2) / 2 - level) <= 1e-6:
         own = digital_from_spread([r for r in chain if r["type"] == "call" and r["strike"] in (k1, k2)], level, years)
-        if own and abs(own[0] - m_p_flat) <= 0.10:
+        if own and abs(own[0] - ref) <= 0.10:
             dig = own
     # Mids of quotes too wide to trade (the same test as the "What a real order would pay" box; usual outside market
     # hours) are noise, not skew: live SPY $725, Wed 7:30 AM ET, read 59%, 65% and 74% on three refreshes a minute
     # apart, the YES cost moving with it ($56 to $73). Then use the one-vol answer and price at the line IV.
     lc = listed_costs(chain, k1, k2, exp, {})
     wide = bool(lc and lc["wide"])
-    if dig and not stale and not wide:
+    # When the trade's own spread can't be read (quotes too wide, out of date or inverted), the smile still can: a
+    # straight line through ~10-30 strikes' implied vols averages out the noise one $1 spread can't. Use its odds,
+    # and price the trade's two strikes at the smile's vols, so YES still costs about the odds shown and the ladder
+    # of lines falls as the line rises (live SPY Nov 27, weekend quotes: one-vol 60% at $685 beside a spread's 70% at
+    # $690). Not when the quotes imply another stock price (off_step): the smile would describe that price too.
+    # Outside market hours the smile is used even when one spread reads cleanly: the quotes are the last session's,
+    # and a weekend reading of one spread drifts a few points with its quote noise (live Sat Nov 21, SPY Nov 27:
+    # $690 read 69.7% from $687/$693 but $692 read 58.7% from $685/$699, the smile 65% and 63%).
+    spread_ok = bool(dig) and not stale and not wide
+    smile = bool(sk) and not off_step and (closed or not spread_ok)
+    if spread_ok and not smile:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
+    elif smile:
+        why_not = ("the market is closed, and one spread's last quotes can blur its odds a few points" if closed
+                   else "the spread quotes looked out of step" if stale
+                   else "the trade's own quotes are too wide to read alone, usual outside market hours" if wide and dig
+                   else "no tight spread quoted on the trade's strikes")
+        m_p, odds_source = sk["p"], (f"the option smile near the line: implied volatilities of {sk['n']} listed "
+                                     f"{u} options within 2% of {_money(level)} (skew included; {why_not})")
     else:
         from .strategy import RISK_FREE
         implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else None
@@ -592,13 +679,17 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # Price YES / NO at the listed mids of their own two strikes, each at its own IV (skew included), so the cost
     # agrees with the market's odds above it. Not when the odds already look stale (same snapshot of quotes).
     lv = leg_vols(calls, k1, k2, spot, years, vol) if vol_source == "market" and not stale and not wide else None
+    if smile:
+        lv = tuple(round(max(0.02, sk["vol"] + sk["slope"] * (k - level)), 4) for k in (k1, k2))
     sv = None
-    if not lv and not wide:
+    if not lv and not wide and not stale:
         sv = spread_vol(calls, k1, k2, spot, years, vol)
         # Skew moves IV only a little across one strike gap, so a fit far from the line IV means stale or noisy
         # quotes (e.g. thin $1 strikes after hours): trust the line IV instead.
         sv = round(sv, 4) if sv and vol_source == "market" and abs(sv / vol - 1) <= 0.2 else None
-    if lv:
+    if smile:
+        price_vol, price_source = round(sk["vol"], 4), "smile"
+    elif lv:
         price_vol, price_source = round(vol, 4), "strikes"
     else:
         price_vol, price_source = (sv, "spread") if sv else ((vol, "line_iv") if vol_source == "market" else (None, "estimate"))
@@ -649,6 +740,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "market_p": round(m_p, 4), "brain_p": round(b_p, 4), "tilt": round(tilt, 3),
             "vol": round(vol, 4), "vol_source": vol_source, "strikes": [k1, k2],
             "odds_source": odds_source, "market_p_flat_vol": round(m_p_flat, 4),
+            "market_p_smile": round(sk["p"], 4) if sk else None,
             "price_vol": price_vol, "price_source": price_source, "leg_vols": list(lv) if lv else None,
             "reasons": _reasons(sig, u) + ([f"Its weights were learned from {model['n']} graded yes/no questions."] if model else []),
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
