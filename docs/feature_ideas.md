@@ -453,7 +453,9 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-21 — "Does it hold every year?": each research result split into time blocks, with a sign-consistency count
 - **Area:** brain (research honesty). Reporting only.
-- **Status:** proposed.
+- **Status:** built 2026-11-21, 04f466f (Builder): `research._time_blocks` + `_metrics` blocks / pos_blocks /
+  n_blocks / last_block_lift / block_spread, `luck.steady` / `steady_nw` / app_blocks / app_pit_blocks; Brain page
+  "Through time." line in the luck check. Gate unchanged. Numbers appear after the next research run.
 - **Problem:** every research number is one average over the whole test period (2024-12-03 on, 429 call dates,
   n = 2,703). An edge that lived in one stretch (one rally, one sell-off, one hot theme) and vanished since looks the
   same as one that held throughout, and the outlier check (lift_w, top-10 share) can't tell them apart because it

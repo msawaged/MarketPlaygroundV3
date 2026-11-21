@@ -5617,3 +5617,36 @@ def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
         assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.02
         ps.append(q["market_p"])
     assert all(a > b for a, b in zip(ps, ps[1:]))
+
+
+def test_research_time_blocks_flag_a_rule_carried_by_one_stretch():
+    """"Does it hold every year?" (McLean & Pontiff 2016): each result is split into 4 chronological stretches cut on
+    call dates. A rule whose whole lift sits in the first quarter of dates is ahead in 1 of 4 and stays out of
+    luck.steady even though it clears the bar; an even rule is ahead in 4 of 4. Reporting only: the gate is unchanged."""
+    from backend.v4 import research
+    import datetime as _dt
+    rng = random.Random(11)
+    d0 = _dt.date(2025, 1, 1)
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(200)]
+    early, even = [], []
+    for k, d in enumerate(dates):
+        for _ in range(3):
+            mean = rng.gauss(0, 0.002)
+            early.append((mean + (0.08 if k < 50 else -0.003) + rng.gauss(0, 0.01), mean, 0.0, 0.0, d))
+            even.append((mean + 0.02 + rng.gauss(0, 0.01), mean, 0.0, 0.0, d))
+    e, v = research._metrics(early), research._metrics(even)
+    assert e["n_blocks"] == v["n_blocks"] == 4 and sum(b["n"] for b in e["blocks"]) == 600
+    assert e["blocks"][0]["from"] == dates[0] and e["blocks"][-1]["to"] == dates[-1]
+    for b in e["blocks"]:  # calls on one date never split across stretches
+        assert b["n"] % 3 == 0
+    assert e["lift"] > 0.015 and e["pos_blocks"] == 1 and e["last_block_lift"] < 0 and e["block_spread"] > 0.07
+    assert v["pos_blocks"] == 4 and v["last_block_lift"] > 0
+    res = {"app (current #1)": {**v, "lift_adj_t": v["lift_t"]}, "early only": {**e, "lift_adj_t": e["lift_t"]}}
+    lk = research.luck(res)
+    assert "early only" in lk["clear"] and "early only" not in lk["steady"] and "app (current #1)" in lk["steady"]
+    assert lk["app_blocks"]["pos_blocks"] == 4 and lk["steady_min"] == 3
+    # no dates or too few calls: no stretches reported
+    assert "blocks" not in research._metrics([p[:4] for p in early]) and "blocks" not in research._metrics(early[:6])
+    app = {"beat": 0.0, "beat_adj": 0.0}
+    strip = {k: x for k, x in e.items() if k not in ("blocks", "pos_blocks", "n_blocks", "last_block_lift", "block_spread")}
+    assert research._passes(e, app) == research._passes(strip, app)

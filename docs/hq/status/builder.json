@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T18:10:00Z",
- "last_run": "Close Call now reads the option smile (skew) across many strikes to check its odds, and uses it outside market hours, so odds fall as the line rises (SPY Nov 27 had read 55% above $690 beside 57% above $695).",
+ "updated_at": "2026-11-21T21:00:00Z",
+ "last_run": "Research results are now also split into four stretches of time, so the Brain page can say whether the #1 pick's lead (and each research rule's) held in every stretch or came from one good spell.",
  "working_on": "Nothing open.",
- "next": "Monday in market hours: check SPY and a few stocks read clean spreads close to the smile and the ladder still falls. Then NVDA: its weekend quotes imply $126 while the last price is $129, and the guard's 2% dividend allowance lets that through; NVDA $118 shows 62% odds beside a YES costing 65%.",
+ "next": "After the next research run, check the Brain page's 'Through time.' line reads real numbers. Monday in market hours: Close Call SPY ladder check, then NVDA's parity guard (2% dividend allowance let a 2.3% gap through) and NVDA $118 odds 62% beside a YES costing 65%.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Every research number was one average over nearly two years of test calls, so an edge that lived in one rally and vanished looked the same as one that held throughout. Each result now also splits its test calls into four stretches of time (cut on call dates, never on outcomes) and records how many stretches it was ahead in and its latest stretch. The Brain page's luck check gets a 'Through time.' line: the #1 pick's lead in each stretch, the same without the peek, and how many of the ways that cleared the luck bar held in at least 3 of 4. Reporting only: no gate or grading changed. Numbers appear after the next research run.",
+   "at": "2026-11-21T21:00:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call fix: this weekend SPY's Nov 27 questions read 63% above $685, 55% above $690 and 57% above $695, so the odds rose with the line again. The cause: the app checked each spread's odds against a single-volatility answer and threw out anything more than 10 points away. But SPY's one-week skew really does lift the odds near the price by about 12 points, so the correct $690 reading was thrown out as 'stale'. Now the check uses the option smile itself: implied volatilities of the listed options within 2% of the line, fitted as a straight line, which carries the skew. Outside market hours, or when the trade's own quotes can't be read, Close Call takes its odds and practice price from that smile, so the odds fall steadily as the line rises and YES costs the odds shown. On this weekend's SPY quotes: $685 69%, $690 65%, $695 60%, $700 53%, $705 45%. Practice money only; grading and research checks unchanged.",
@@ -44,18 +49,13 @@
   },
   {
    "re": "(no new messages)",
-   "body": "Option idea cards price each leg at one implied volatility and show a price like '$370 strike \u00b7 $4.06', but the 'Is this a fair price?' check never mentioned that number, so a professor comparing with his own screen would see two prices and no explanation. The check now puts the card's price beside the listed mid and bid/ask for each leg, says why they differ (this morning AAPL's $370 call was $4.06 on the card vs $3.04 listed, because that strike trades at a lower volatility than the one the card uses), and totals the whole trade: card $7.45, at listed mids $8.57, paying the ask $9.84. Information only: card prices and grading unchanged.",
+   "body": "Option idea cards price each leg at one implied volatility and show a price like '$370 strike · $4.06', but the 'Is this a fair price?' check never mentioned that number, so a professor comparing with his own screen would see two prices and no explanation. The check now puts the card's price beside the listed mid and bid/ask for each leg, says why they differ (this morning AAPL's $370 call was $4.06 on the card vs $3.04 listed, because that strike trades at a lower volatility than the one the card uses), and totals the whole trade: card $7.45, at listed mids $8.57, paying the ask $9.84. Information only: card prices and grading unchanged.",
    "at": "2026-11-18T14:30:00Z"
   },
   {
    "re": "(no new messages)",
    "body": "The Brain page's 'Just graded by the market' list showed 'WOOD bullish, after 365 days, 2h ago' next to real-time 7-day grades. That one was a practice call dated Nov 17, 2025 and graded at once, but real-time calls only began Oct 28, so it read as a year-old live call. Each row now says 'Real-time call from Nov 10' or 'Practice call from Nov 17, 2025', with a one-line note on why a 365-day grade can land today. Display only: grading and the research checks are unchanged.",
    "at": "2026-11-18T11:15:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Tonight every card on Moving now paired an overnight story with Tuesday's close: 'SERV, story helps' next to '-2.8% on Tue', so the red number looked like the story was already wrong, though that drop happened before the news came out. Each stock now says 'before this news' when its move is from a session that closed before the story, or 'partly before this news' when the story came out mid-day (also in Story mode). Information only: picks, grading and prices unchanged.",
-   "at": "2026-11-18T08:30:00Z"
   }
  ]
 }

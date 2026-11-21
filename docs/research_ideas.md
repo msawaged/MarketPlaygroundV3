@@ -26,6 +26,16 @@ app's #1 excess on those calls only. `luck.is_new` lists the 3 strongest methods
 lift_diff (with n_diff; not under ~100) beside lift: high agreement with lift_diff near zero is the app restated.
 Reporting only: gates unchanged.
 
+Since 2026-11-21 (evening) each result with call dates also has **"does it hold every year?"** (`research._time_blocks`,
+McLean & Pontiff 2016): the test calls split into 4 chronological stretches of about equal call count, cut on call dates
+(one date never splits). `blocks` = per-stretch from/to/n/lift/beat, `pos_blocks` (of `n_blocks`) = stretches with
+lift > 0, `last_block_lift`, `block_spread` = best minus worst stretch; `luck.steady` (/ `steady_nw`) = methods that
+clear the bar and are ahead in 3+ of 4; `luck.app_blocks` / `app_pit_blocks` for the app as stored / without the peek.
+Quote pos_blocks and last_block_lift beside lift: a rule ahead in one stretch is an episode, not an edge. Each stretch
+has only ~100 dates, so one negative stretch alone is not a failure. Reporting only: gates unchanged. (On the coskew
+row's n_eff = n with t_nw > t: `_se_overlap` can come out below the plain se when residuals on nearby dates lean
+opposite ways; n_eff is capped at n, so that reads as n_eff = n. Not a bug.)
+
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 
 | Method | Lift | Beat | t |

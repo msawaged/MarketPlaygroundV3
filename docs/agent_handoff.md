@@ -1588,3 +1588,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Not changed: gates, `_passes`, `fit_production`, luck bar.
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-21 ~21:00 UTC (Builder routine): "Does it hold every year?" — research results split into time stretches
+- No HQ messages from Murad. Built the scout's proposal (docs/feature_ideas.md, 2026-11-21), reporting only.
+- `research._time_blocks`: each method's test calls split into 4 chronological stretches of ~equal call count, cut on
+  call dates (a date never splits; outcomes never decide a cut). `_metrics` (when calls carry dates) adds `blocks`
+  (from/to/n/lift/beat), `pos_blocks`, `n_blocks`, `last_block_lift`, `block_spread`. `luck` adds `steady` /
+  `steady_nw` (cleared the bar and ahead in 3+ of 4), `steady_min`, `app_blocks` (app as stored) and `app_pit_blocks`
+  (no look-ahead). `is_new` rows carry pos_blocks / last_block_lift.
+- Brain page luck check: new "Through time." line (stretch lifts with month ranges, the no-peek count, how many of
+  the cleared ways held in 3+ of 4). Checked at 390 with the live /v4/brain plus injected blocks: no overflow.
+- Scout's side note (coskew n_eff = n with t_nw > t): `_se_overlap` can be below the plain se when nearby dates'
+  residuals lean opposite ways and n_eff is capped at n; not a bug, noted in docs/research_ideas.md.
+- Not changed: `_passes`, `fit_production`, luck bar thresholds, MIN_LIFT/MIN_T, grading. Numbers appear after the
+  next research run.
+- Test: test_research_time_blocks_flag_a_rule_carried_by_one_stretch.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/builder.json.

@@ -470,6 +470,28 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     );
                   })()}
+                  {(sk.luck.app_blocks?.blocks || []).length > 1 && (() => {
+                    // "Does it hold every year?" (research._time_blocks, reporting only): the same test calls split into
+                    // chronological stretches, cut on call dates. An edge ahead in only one stretch may be an episode.
+                    const A = sk.luck.app_blocks, P = sk.luck.app_pit_blocks;
+                    const K = A.n_blocks || A.blocks.length;
+                    const mon = (d) => {
+                      const [y, m] = String(d).split('-').map(Number);
+                      return `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} '${String(y).slice(2)}`;
+                    };
+                    const who = sk.ranker?.active ? 'the old way of picking the #1' : (peek ? 'the #1 as stored' : 'our #1 pick');
+                    const nc = (sk.luck.clear || []).length, ns = (sk.luck.steady || []).length;
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-slate-200">Through time.</span>
+                        {' '}Split into {K} stretches of about {Math.round(A.blocks.reduce((s, b) => s + b.n, 0) / K).toLocaleString()} calls each, {who} was ahead of our other ideas in {A.pos_blocks} of {K}:
+                        {' '}{A.blocks.map((b) => `${mon(b.from)}–${mon(b.to)} ${pts(b.lift)}`).join(', ')} pts.
+                        {peek && P?.pos_blocks != null && ` Rebuilt without the peek, ahead in ${P.pos_blocks} of ${P.n_blocks || K}, latest stretch ${pts(P.last_block_lift || 0)} pts.`}
+                        {nc > 0 && ` Of the ${nc} ${nc === 1 ? 'way' : 'ways'} that cleared the bar counting each call as independent, ${ns} ${ns === 1 ? 'was' : 'were'} ahead in at least ${sk.luck.steady_min || 3} of ${K} stretches.`}
+                        {' '}A result ahead in only one or two stretches may be one good spell, not an edge. Each stretch is only a few months, so one weak stretch alone isn't a failure.
+                      </div>
+                    );
+                  })()}
                   {(sk.luck.is_new || []).length > 0 && (() => {
                     // "Is it new?" (research.is_new, reporting only): does the strongest other way pick a different #1
                     // from ours, and is it ahead on the calls where it does? Compared with our #1 rebuilt without the peek.

@@ -410,7 +410,9 @@ def _metrics(picks: list[tuple], cuts: tuple[float, float] | None = None) -> dic
     fit_production read the plain t's, exactly as before.
     Outlier check (always): lift_med = median per-call lift; top10_share = share of the summed lift that the 10 best
     calls contribute (None unless the summed lift is positive). With `cuts` and winsorized belief means (6th item):
-    lift_w / lift_w_t (/ lift_w_t_nw) = the same lift with every outcome clipped to the cuts. Reporting only."""
+    lift_w / lift_w_t (/ lift_w_t_nw) = the same lift with every outcome clipped to the cuts. Reporting only.
+    Time blocks (with dates, _time_blocks): blocks = per-stretch n / lift / beat, pos_blocks = stretches with lift > 0
+    (of n_blocks), last_block_lift, block_spread = best minus worst stretch. Reporting only."""
     if not picks:
         return {"n": 0}
     def tstat(x):
@@ -435,12 +437,47 @@ def _metrics(picks: list[tuple], cuts: tuple[float, float] | None = None) -> dic
         se_h = _se_overlap(lift, dts)
         out.update({"lift_t_nw": tnw(lift), "dates": len(set(dts)),
                     "n_eff": int(round(min(len(lift), len(lift) * (se_p / se_h) ** 2))) if se_h > 0 else len(lift)})
+        bl = _time_blocks(lift, ex, dts)
+        if bl:  # "does it hold every year?" (reporting only)
+            ls = [b["lift"] for b in bl]
+            out.update({"blocks": bl, "pos_blocks": sum(1 for v in ls if v > 0), "n_blocks": len(bl),
+                        "last_block_lift": ls[-1], "block_spread": round(max(ls) - min(ls), 4)})
     if len(picks[0]) >= 4:
         exa = np.array([p[2] for p in picks]); lifta = np.array([p[2] - p[3] for p in picks])
         out.update({"beat_adj": round(float((exa > 0).mean()), 4), "avg_adj": round(float(exa.mean()), 4),
                     "lift_adj": round(float(lifta.mean()), 4), "lift_adj_t": tstat(lifta)})
         if dts:
             out["lift_adj_t_nw"] = tnw(lifta)
+    return out
+
+
+TIME_BLOCKS = 4  # "does it hold every year?": each result is also split into this many chronological stretches
+STEADY_MIN = 3  # stretches (of TIME_BLOCKS) a cleared result must be ahead in to count as steady
+
+
+def _time_blocks(lift: np.ndarray, ex: np.ndarray, dates: list[str], k: int = TIME_BLOCKS) -> list[dict]:
+    """Split the calls into k chronological stretches of about equal call count, cut on call dates (all calls made on
+    one date stay in one stretch; outcomes never decide a cut). Per stretch: its first and last call date, n, the
+    lift and beat rate. McLean & Pontiff (2016): an average over a long window can hide an edge that lived in one
+    stretch and is gone. Reporting only."""
+    if len(lift) < 2 * k:
+        return []
+    cnt: dict[str, int] = {}
+    for d in dates:
+        cnt[d] = cnt.get(d, 0) + 1
+    n, seen, blk = len(dates), 0, {}
+    for d in sorted(cnt):
+        blk[d] = min(k - 1, int((seen + cnt[d] / 2) * k / n))  # a date goes where its middle call falls
+        seen += cnt[d]
+    idx = np.array([blk[d] for d in dates])
+    out = []
+    for j in range(k):
+        m = idx == j
+        if not m.any():
+            continue
+        ds = sorted({d for d, keep in zip(dates, m) if keep})
+        out.append({"from": ds[0], "to": ds[-1], "n": int(m.sum()), "lift": round(float(lift[m].mean()), 4),
+                    "beat": round(float((ex[m] > 0).mean()), 4)})
     return out
 
 
@@ -478,7 +515,8 @@ def is_new(results: dict, k: int = 3) -> list[dict]:
             if n not in ("app (current #1)", VS_APP_BASE) and (m or {}).get("n") and m.get("same_as_app") is not None]
     t = lambda m: float(m.get("lift_t_nw") if m.get("lift_t_nw") is not None else m.get("lift_t") or 0)
     rows.sort(key=lambda r: -t(r[1]))
-    keys = ("lift", "lift_t", "lift_t_nw", "same_as_app", "n_diff", "lift_diff", "lift_diff_t", "lift_diff_t_nw")
+    keys = ("lift", "lift_t", "lift_t_nw", "same_as_app", "n_diff", "lift_diff", "lift_diff_t", "lift_diff_t_nw",
+            "pos_blocks", "n_blocks", "last_block_lift")
     return [{"name": n, **{q: m.get(q) for q in keys}} for n, m in rows[:k]]
 
 
@@ -676,6 +714,15 @@ def luck(results: dict, tries_ever: int | None = None) -> dict:
         out.update({"clear_w": sorted(c_w, key=lambda k: -w[k]), "app_clears_w": "app (current #1)" in c_w,
                     "app_lift": app.get("lift"), "app_lift_w": app.get("lift_w"), "app_lift_w_t": app.get("lift_w_t"),
                     "app_lift_med": app.get("lift_med"), "app_top10_share": app.get("top10_share")})
+    # does it hold in every stretch of time? a cleared result ahead in fewer than STEADY_MIN stretches may be an episode
+    bl = {k: results[k] for k in names if results[k].get("pos_blocks") is not None}
+    if bl:
+        ok = lambda k: k in bl and bl[k]["pos_blocks"] >= min(STEADY_MIN, bl[k].get("n_blocks") or TIME_BLOCKS)
+        pick = lambda r: {q: (r or {}).get(q) for q in ("blocks", "pos_blocks", "n_blocks", "last_block_lift", "block_spread")}
+        out.update({"steady": [k for k in out["clear"] if ok(k)], "steady_min": STEADY_MIN,
+                    "app_blocks": pick(results.get("app (current #1)")), "app_pit_blocks": pick(results.get(VS_APP_BASE))})
+        if "clear_nw" in out:
+            out["steady_nw"] = [k for k in out["clear_nw"] if ok(k)]
     return out
 
 
