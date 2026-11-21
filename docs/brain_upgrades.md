@@ -746,3 +746,19 @@ grades"; the SQL `abs(ret) > 0.4` on ITA/SOXX real-time grades returns 0 rows; b
 real-time pool reaches 300 (~Dec 2), `live_veto` decides on real moves only. A loss would be a repaired row whose
 new return is clearly wrong (check a few against the price chart), or `suspect` counts above ~1% of a day's picks
 (the 35% / 7% bands are too tight).
+
+## 2026-11-22 ~00:30 UTC (third run today, woken by the chair) — Nothing built: no clear safe win in the data
+
+**Checked.** Health OK; no grading since the split fix was pushed (next run Nov 24 05:13 UTC), so the numbers are
+unchanged. Tested one more suspicion with read-only SQL: do calls made while the market is closed (nights, weekends)
+get credit for news that moves the stock before it can be bought? Real-time 7-day #1-vs-rest lift by when the call was
+made (ITA/SOXX excluded): night 1,128 beliefs **-0.40% (t -1.68)**, market hours 289 **+0.19% (t 0.35)**, weekend
+415 **+0.26% (t 0.74)**. No inflation from closed-market entries, so no change. Also seen: AMD entries on Nov 5 at
+$412-415 next to $491 the same day (earnings gap; entries dated by when the call was made, priced at the last trade),
+consistent with real prices, not a bug.
+
+**What would most move the numbers, and what it needs.** (1) Real-time calls graded at 30 days, from ~Nov 28: the
+first clean test of ranker v2 (the live veto) and the only labels without practice-call hindsight. It needs time
+only. (2) Confirm the split repair on Nov 24 (ITA/SOXX real-time grades over 40% → 0 rows). (3) The real-time 7-day
+#1 pick is not beating the belief's other ideas yet (lift about 0 across sessions), so the next upgrade should come
+from the 30-day real-time results, not from more practice-call tuning.

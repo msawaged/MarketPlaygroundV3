@@ -1,10 +1,16 @@
 {
  "key": "brain",
- "updated_at": "2026-11-21T23:40:00Z",
- "last_run": "Extra upgrade tonight (the chair woke me for the all-hands). Found that stock splits were wrecking grades: when ITA and SOXX split 3-for-1, 76 real-time calls were scored as if those funds had crashed about 66% in a week. Grading now spots a split and scores the real move, the bad old grades get fixed once at the next grading run (Tuesday morning), and 'My calls' no longer shows those picks as down 67%. No safety check was loosened.",
- "working_on": "Keeping the real-time results clean, since they will soon decide whether the smarter pick-ranker stays on.",
- "next": "After Tuesday's grading run: check the bad ITA/SOXX grades are gone. Early December: the first real-time check of the pick-ranker (about 300 calls).",
+ "updated_at": "2026-11-22T00:30:00Z",
+ "last_run": "Third run today. I looked for another safe upgrade and found none the data backs, so I built nothing. I checked whether calls made at night or on weekends get unfair credit for news the market hadn't traded yet. They don't: those calls do no better than daytime ones.",
+ "working_on": "Waiting on two things that matter more than another tweak: Tuesday's grading run (fixes the bad split grades) and the first 30-day real-time results.",
+ "next": "Nov 24: confirm the ITA/SOXX split grades are fixed. From about Nov 28: read the first real-time 30-day results, the first honest test of the pick-ranker. The next upgrade should come from those.",
  "needs_from_murad": [],
  "read_up_to": 0,
- "replies": []
+ "replies": [
+  {
+   "re": "chat",
+   "at": "2026-11-22T00:30:00Z",
+   "body": "Back at it. Tonight I shipped a fix so stock splits stop showing up as fake 66% crashes in the grades. The next big gain needs real 30-day results, which start arriving around Nov 28. Until then, more tuning would just be guessing."
+  }
+ ]
 }
