@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T14:30:00Z",
+ "updated_at": "2026-11-21T15:10:00Z",
  "last_run": "Close Call: when the nearest strikes are quoted too loosely to read (SPY's $1 strikes this weekend), it now reads the odds and trades a wider spread centred on the line, so the odds no longer rise with the line. Added a put-call parity safety check.",
  "working_on": "Nothing open.",
- "next": "On Monday in market hours, check that the parity check stays quiet on live quotes (SPY, NVDA, AAPL) and that odds fall as the line rises; Monday's no-peek strategist number on the Brain page.",
+ "next": "Close Call's $690 SPY line still falls back to one volatility (54.7%) because its readable spreads show about 64%, which looks like real skew but is beyond the 10-point safety guard. Next: a guard that allows for skew measured from the quotes. Also check Monday in market hours that odds fall as the line rises.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [

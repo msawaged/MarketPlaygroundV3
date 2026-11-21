@@ -1525,3 +1525,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread. WhatsNew line.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx,
   docs/expert_review.md, docs/hq/status/builder.json.
+- Live after 654b347 (SPY $693.89, Nov 27): $695 56.7% ($691/$699, YES $453 of $800), $700 50.2%, $705 44.7%,
+  $710 31.4% (one-vol, wide quotes): in order. Still open: $690 shows one-vol 54.7%. Its quiet pairs ($687/$693,
+  $684/$696) read ~64-67%, which looks like real skew (it lifts $695 by 8.5 pts and $700 by 7), but that is over the
+  10-pt guard vs one-vol, so they are refused. Not loosened here; a skew-aware guard (compare with one-vol plus the
+  skew term from listed IVs) is the next step, but Alpaca's call/put IVs at one strike disagree (41% vs 31% at $700
+  while parity holds), so it needs IVs backed out of the mids first.
