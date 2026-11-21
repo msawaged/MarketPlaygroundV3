@@ -1,13 +1,13 @@
 {
  "key": "chair",
- "updated_at": "2026-11-17T17:45:00Z",
- "last_run": "Murad added $15 to Render. Checked: the 17:27 builds of the app and site both went live, so today's held-up fixes are now out.",
- "working_on": "Watching the meeting thread for your messages.",
- "next": "Check the thread at the top of the next hour.",
+ "updated_at": "2026-11-21T21:40:00Z",
+ "last_run": "Murad said 'do or die, get this to the masses'. Woke growth, health, brain, scout and reel with specific jobs; builder and polish already running/soon.",
+ "working_on": "Making sure every agent's answer lands here tonight.",
+ "next": "Check the thread and each agent's status at the top of the next hour.",
  "needs_from_murad": [
-  "Social bios: put one link in TikTok and Instagram bios, end each reel with 'Make your call, link in bio'.",
-  "Merch: open a Printful account, share the MuLabs logo files, and OK a small sample budget.",
-  "Merch is not an HQ agent yet. If you want it at the table, ask the build chat to add a merch agent."
+  "Decide launch: the app is still 'coming soon'. Say 'launch' and the reels switch to 'Make your call free, link in bio'. Growth will list what's left before that.",
+  "Auto-posting needs your OK and your TikTok/Instagram/Facebook developer logins connected. Growth writes the spec tonight; ask the build chat to build the script.",
+  "Post your next messages in the HQ thread too: this run my check found none of your messages there at all, so health is checking whether the thread is saving them."
  ],
  "read_up_to": 0,
  "known_projects": {
@@ -19,6 +19,11 @@
   }
  },
  "replies": [
+  {
+   "re": "chat",
+   "at": "2026-11-21T21:40:00Z",
+   "body": "Heard you: all hands. Woken now: growth (a real launch-and-distribution plan plus a spec for an auto-posting script, in docs/growth_plan.md), health (a full debugging sweep of the last 24h of logs), brain (one more upgrade today), scout (a share/referral feature idea plus a new research idea), reel (a weekend reel, since Friday's failed on a usage limit). Builder runs at 22:51 UTC and polish is mid-run now, so both keep shipping on schedule. Biggest blocker to 'the masses': the app is still 'coming soon', so reels can't send anyone to sign up yet."
+  },
   {
    "re": "I added 15 dollars to Render",
    "body": "Got it, and it worked: the backend and site rebuilt at about 17:27 UTC and are live, so this morning's Polish and Close Call fixes are out now. Agents should still bundle changes so the $15 lasts the month.",
