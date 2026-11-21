@@ -1329,3 +1329,32 @@ Changed:
 - Not changed: render.yaml / the 22:47 job (Render settings are Murad's); it still retrains nightly.
 
 Checks: vite build passes, backend tests 224 passed (fresh venv). Checked at 375 locally against the live /v4/brain.
+
+## 2026-11-21 (third run, ~06:25 UTC = Sat 1:25 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story (all 6 slides), /account, /brain, /close-call, /journey, /reel on the live
+site at 390x844 and /trending, /live, /welcome at 375: no page errors, no 4xx/5xx, no horizontal overflow (only the
+sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Spot checks held up: last night's fix is live ("Next market grading 70h 48m, Tue 12:13 AM ET"; "Last market grading
+1h ago" matches the feed's "graded 697 picks"). "Just graded" rows match the live DB to the decimal (NVDA Nov 13:
+-26.0% vs S&P -9.2% = -16.8 pts; SLB -10.4% vs -8.1% = -2.3; IYT -6.0 vs -8.3 = +2.3; DRIV -13.4 vs -8.3 = -5.1).
+Live forward-test confidence split 422/215/99 = 736, weighted -0.1 pts as stated. Practice 108,823 = 119,095 - 10,272.
+Signed in locally (offline server, throwaway SQLite): bearish "People will travel less this winter", $1,000, 1 month
+-> DAL Bear Put Spread $58/$53: $2.33 - $0.61 = $172, 5 for $860, max gain $1,640 (+191%), breakeven $56.28, delta
+-142 sh: all add up; Portfolio agrees. Close Call NVDA $185, 2 contracts: YES $109 / NO $141 per $250, breakevens
+$186.09 both sides, ask break-even odds 46% / 60%, round trips $14 / $19: all add up.
+
+Found (Close Call confirmations, the screen a derivatives expert will test first):
+- Practice trade: "Opened 2 NVDA Close Call: NO NVDA > $185.00 contracts with practice money (about $282 set aside).
+  Priced with the market's implied volatility." The internal structure label was pasted into a sentence, and the
+  pricing note was generic while the card above says each strike is at its own implied vol.
+- Just call it: "Logged: YES. We'll grade it after the close on 2026-11-27." (raw ISO date, no question named).
+
+Changed:
+- yesno.make_call writes its own messages: "Opened NO on NVDA above $185 on Fri Nov 27: 2 contracts with practice
+  money (about $282 set aside), at the practice price shown above. [market-closed note] It's in your Portfolio and
+  settles at the close on Fri Nov 27." and "Logged: YES on NVDA above $190 on Fri Nov 27. We'll grade it after that
+  day's close." Pricing, set-aside, stored structure label and grading untouched (wording only).
+- test_yesno_practice_trade checks both messages (fails on the old code).
+
+Checks: vite build passes, backend tests 224 passed (fresh venv). Checked locally at 390.

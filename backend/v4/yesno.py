@@ -530,7 +530,10 @@ def make_call(user_id: str, ticker: str, level: float, expiration: str, side: st
         raise YesNoError("Choose YES or NO.")
     q = quote(ticker, level, expiration)
     position_id = None
-    msg = f"Logged: {side.upper()}. We'll grade it after the close on {q['expiration']}."
+    exp = date.fromisoformat(q["expiration"])
+    day = f"{exp.strftime('%a %b')} {exp.day}"
+    what = f"{q['ticker']} above {_money(q['level'])} on {day}"
+    msg = f"Logged: {side.upper()} on {what}. We'll grade it after that day's close."
     if trade:
         from . import practice_options
         try:
@@ -540,7 +543,14 @@ def make_call(user_id: str, ticker: str, level: float, expiration: str, side: st
         except practice_options.PracticeError as e:
             raise YesNoError(str(e))
         position_id = r.get("position_id")
-        msg = r.get("message", msg) + " It's in your Portfolio."
+        n = int(contracts or 1)
+        # Our own words, not practice_options' generic "Opened 2 NVDA Close Call: NO NVDA > $185.00 contracts ...
+        # Priced with the market's implied volatility" (it read garbled, and the price is the one shown above).
+        msg = (f"Opened {side.upper()} on {what}: {n} contract{'s' if n > 1 else ''} with practice money "
+               f"(about ${float(r.get('set_aside') or 0):,.0f} set aside), at the practice price shown above."
+               + (" The market is closed, so it opened now at an estimate from the last prices; it doesn't wait "
+                  "for the open." if r.get("market_closed") else "")
+               + " It's in your Portfolio and settles at the close on " + day + ".")
     cid = f"yn-{uuid.uuid4().hex[:14]}"
     db.execute("""INSERT INTO yesno_calls (id, user_id, ticker, level, expiration, side, market_p, brain_p, spot,
                   strikes, cost, payout, contracts, position_id, created_at, features)

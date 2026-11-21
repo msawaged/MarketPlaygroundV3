@@ -1441,3 +1441,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   unchanged. Value appears after the next grade-and-train run (22:47 UTC weekdays, so Mon Nov 23).
 - Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainLineages.jsx,
   docs/hq/status/builder.json.
+
+## 2026-11-21 ~06:50 UTC (daily polish walk): Close Call confirmations read as the question
+- No HQ messages from Murad. Wording only: prices, set-aside, the stored "Close Call: ..." structure label (Portfolio
+  shows it), grading and research gates unchanged.
+- yesno.make_call builds its own confirmation instead of practice_options' generic one ("Opened 2 NVDA Close Call: NO
+  NVDA > $185.00 contracts ..."), and "Just call it" names the question and a readable date instead of 2026-11-27.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

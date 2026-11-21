@@ -4349,12 +4349,21 @@ def test_yesno_practice_trade(monkeypatch, tmp_path):
     seen = {}
     def fake_open(user_id, ticker, structure, legs, contracts, belief="", vol_override=None, keep_leg_vols=False):
         seen.update(user=user_id, legs=practice_options._clean_legs(legs, ticker), structure=structure, n=contracts)
-        return {"status": "success", "position_id": "opt-x", "message": "Opened."}
+        return {"status": "success", "position_id": "opt-x", "message": "Opened.", "set_aside": 281.76,
+                "market_closed": True}
     monkeypatch.setattr(practice_options, "open_trade", fake_open)
     e = yesno.expirations("WINR")
     lvl = float(int(market.latest_price("WINR")))
     r = yesno.make_call("u2", "WINR", lvl, e["expirations"][0], "no", trade=True, contracts=3)
     assert r["position_id"] == "opt-x" and seen["n"] == 3 and seen["structure"].startswith("Close Call: NO")
+    # the confirmation reads as the question, in words (was "Opened 3 WINR Close Call: NO WINR > $X contracts")
+    exp = date.fromisoformat(e["expirations"][0])
+    day = f"{exp.strftime('%a %b')} {exp.day}"
+    assert r["message"].startswith(f"Opened NO on WINR above ${lvl:,.0f} on {day}: 3 contracts with practice money "
+                                   "(about $282 set aside)"), r["message"]
+    assert "market is closed" in r["message"] and "Close Call:" not in r["message"] and ">" not in r["message"]
+    logged = yesno.make_call("u2", "WINR", lvl, e["expirations"][0], "yes")
+    assert logged["message"] == f"Logged: YES on WINR above ${lvl:,.0f} on {day}. We'll grade it after that day's close."
     assert [l["option_type"] for l in seen["legs"]] == ["Put", "Put"] and seen["legs"][0]["strike_price"] == lvl + 1
 
 

@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T03:50:00Z",
- "last_run": "The Brain page's 'Next market grading' clock said Monday 5:47 PM, but picks are really graded just after midnight ET following each trading day (Friday's close is graded tonight at 12:13 AM). Fixed the clock, its wording, and the 'Last market grading' time.",
+ "updated_at": "2026-11-21T06:50:00Z",
+ "last_run": "Walked every public page on a phone: nothing broken, and last night's grading-clock fix is live and right. Fixed the Close Call confirmations: a practice trade said 'Opened 2 NVDA Close Call: NO NVDA > $185.00 contracts', and 'Just call it' showed a raw date (2026-11-27). Now they read 'Opened NO on NVDA above $185 on Fri Nov 27: 2 contracts...'.",
  "working_on": "Nothing open.",
- "next": "Confirm tonight's Saturday 12:13 AM ET grading shows up on the Brain page, then check the first graded Close Call questions after Monday's close.",
+ "next": "Check the first graded Close Call questions and the Monday-night grading after Monday's close; keep walking signed-in screens.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
