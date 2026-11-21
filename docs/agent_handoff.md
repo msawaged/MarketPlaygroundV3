@@ -1472,3 +1472,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Price Check's "expensive" sentence also names a nervous market.
 - Files: backend/v4/yesno.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
   docs/hq/status/polish.json.
+
+## 2026-11-21 ~11:30 UTC (Builder routine): Close Call centres the spread on the line on uneven strike grids too
+- No HQ messages from Murad; no proposals open in feature_ideas.md, so this fixes a misleading Close Call price.
+- Live SPY Nov 27 lists $699, $700, $705 and nothing $701-704. For the suggested $700 line, `strikes_around` took the
+  nearest strikes ($699/$705, a digital at $702): YES $244.59 of $600 (40.8%) beside "Market's odds 43%", both
+  breakevens $701.45. Same for lines between strikes ($702 -> $700/$705, middle $702.50).
+- `yesno.strikes_around` now first looks for two listed strikes the same distance either side of the line, no wider
+  than 2x the nearest pair (SPY $700 -> $695/$705, $702 -> $699/$705); else the nearest pair as before.
+  `spread_note` on an uneven pair now says YES's price is about the odds of a close above the strikes' middle.
+- Not changed: odds (`digital_from_spread` already read them at the line), grading, open trades, `real_money_order`
+  (still off; uses the same pair). Even grids (NVDA $185 -> $182.50/$187.50) pick the same pair as before.
+- Seen, not fixed (weekend quotes): SPY Nov 27 $705 read 45% from stale spread mids while $702 read 41% at one vol.
+  The stale guard (10 pts off one-vol) let it through; worth a look on a weekday if it persists in market hours.
+- Test: test_yesno_uneven_strikes_still_centre_the_spread_on_the_line.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx,
+  docs/expert_review.md, docs/hq/status/builder.json.

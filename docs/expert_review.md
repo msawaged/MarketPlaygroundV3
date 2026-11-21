@@ -12,6 +12,10 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   Done 2026-11-21 (Builder): a line on a listed strike trades the strikes either side of it (NVDA $185 on $2.50
   strikes: $182.50/$187.50, not $185/$187.50, which was a digital at $186.25 priced at 44% beside "50% odds").
   The spread is now the same pair the odds are read from, so YES's price is the odds and both breakevens sit at the line.
+  Done 2026-11-21 later (Builder): uneven strike grids too. Live SPY Nov 27 listed $699/$700/$705 (nothing $701-704),
+  so the nearest pair for a $700 line was $699/$705 (a digital at $702: YES 41% of payout beside 43% odds). Now it
+  takes listed strikes the same distance either side ($695/$705), up to 2x the nearest pair's width; otherwise the
+  nearest pair, and the spread note names the close it really bets on (the middle of the strikes).
 - **Costs and fills.** Practice prices use mid / model vol. Say "before bid/ask costs"; real orders use the
   natural/mid limit (`real_money_order`).
   Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price

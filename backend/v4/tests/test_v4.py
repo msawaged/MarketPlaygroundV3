@@ -4190,6 +4190,33 @@ def test_yesno_math():
     assert yesno.brier(0.7, True) == pytest.approx(0.09)
 
 
+def test_yesno_uneven_strikes_still_centre_the_spread_on_the_line(monkeypatch):
+    """Live SPY Nov 27 listed $699, $700, $705 and nothing between: the nearest pair $699/$705 bet on a close above
+    $702 and cost 41% of its payout beside 'Market's odds 43%'. A pair the same distance either side wins."""
+    from backend.v4 import yesno
+    spy = [float(k) for k in range(690, 701)] + [705.0, 710.0, 715.0]
+    assert yesno.strikes_around(spy, 700) == (695, 705)              # on a strike, uneven gaps: $5 either side
+    assert yesno.strikes_around(spy, 702) == (699, 705)              # between strikes: $3 either side
+    assert yesno.strikes_around([182.5, 185, 187.5], 185) == (182.5, 187.5)
+    assert yesno.strikes_around([99, 100, 110], 100) == (99, 110)    # nothing centred within 2x: nearest pair
+    assert yesno.strikes_around([90, 99, 100, 101.5, 110], 100) == (99, 101.5)  # $90/$110 is over 2x as wide
+    note = yesno.spread_note("SPY", 699, 705, 600, 700)
+    assert "$1.00 below and $5.00 above the $700.00 line" in note and "close above $702.00" in note
+    assert "either side" in yesno.spread_note("SPY", 695, 705, 1000, 700)
+
+    _fake_chain(monkeypatch, iv=0.4)
+    full = market.option_chain_near
+    lvl = float(int(market.latest_price("WINR")))
+    gap = {lvl + d for d in (1, 2, 3, 4)}                            # strikes just above the line not listed
+    monkeypatch.setattr(market, "option_chain_near", lambda *a, **k: [r for r in full(*a, **k) if r["strike"] not in gap])
+    e = yesno.expirations("WINR")["expirations"][0]
+    q = yesno.quote("WINR", lvl, e)
+    assert q["strikes"] == [lvl - 5, lvl + 5] and q["yes"]["payout"] == 1000
+    assert abs(q["yes"]["cost"] / 1000 - q["market_p"]) < 0.01          # YES costs the market's odds
+    assert abs(q["yes"]["breakeven"] - lvl) < 0.15 and abs(q["no"]["breakeven"] - lvl) < 0.15
+    assert "$5.00 either side of the" in q["spread_note"]
+
+
 def test_yesno_expected_move_and_big_move_warning(monkeypatch):
     from backend.v4 import yesno
     e = date(2026, 11, 20)

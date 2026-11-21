@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T08:45:00Z",
- "last_run": "Close Call: a question on a listed strike now trades the spread centred on the line, so YES's price matches the market's odds shown above it and both sides break even at the line (was half a strike gap off).",
+ "updated_at": "2026-11-21T11:30:00Z",
+ "last_run": "Close Call: on stocks whose listed strikes are unevenly spaced (SPY around $700 today), the trade now uses strikes the same distance either side of the line, so YES costs the market's odds and both sides break even at the line.",
  "working_on": "Nothing open.",
- "next": "After Monday's grade-and-train run (22:47 UTC), check the Brain page's no-peek strategist number and the 'Is it new?' numbers after the next research run; keep looking for numbers a finance professor would catch.",
+ "next": "Check on a weekday whether Close Call's odds stay in order across nearby lines during market hours (on weekend quotes SPY $705 read higher than $702); Monday's no-peek strategist number on the Brain page.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call fix: SPY's suggested $700 line traded $699/$705 because SPY lists nothing from $701 to $704 for Nov 27. That spread is really a bet on a close above $702, so the screen said 'market's odds 43%' while YES cost 41% of its payout and both breakevens sat at $701.45. Now it takes strikes the same distance either side of the line ($695/$705), so YES costs the market's odds and both sides break even at the line. When no such pair exists, it says which close the trade really bets on. Practice money only; odds and grading unchanged.",
+   "at": "2026-11-21T11:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call fix: when the line was a listed strike (most questions), the trade was the line and the next strike up, e.g. NVDA $185 traded $185/$187.50. That is really a bet on a close above $186.25, so the screen said 'market's odds 50%' while YES cost 44% of its payout and both breakevens sat above the line. A finance professor would spot that first. Now the spread uses the strikes either side of the line ($182.50/$187.50): YES costs 50% of a $500 payout and both sides break even at the line. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The brain's Close Call record was only a summary, and its lean just nudges the market's odds by a few points, so 'right X% of the time' mostly repeats the market. A professor would want to see the actual calls and the few where the brain disagreed. Close Call now lists the brain's latest questions with both sets of odds, the close and right/wrong, marks the ones where it took the other side, and (once graded) how often those were right. First grades land Thursday. Information only: odds and grading unchanged.",
    "at": "2026-11-18T02:20:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Tonight every card on Moving now was red (Accenture 'story helps' at -3.4%, Microsoft -2.4%) with no word that the whole market fell, so you couldn't tell the story's effect from the market's. Each card now shows the S&P 500's move for the day at the top and each stock's move against it (for example -3.4 pts vs S&P). Only compared when both moves are from the same trading day. Information only: picks, grading and prices unchanged.",
-   "at": "2026-11-17T23:45:00Z"
   }
  ]
 }

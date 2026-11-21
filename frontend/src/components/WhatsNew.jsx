@@ -4,7 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 21';
 export const UPDATES = [
-  "Fixed: a Close Call on a listed strike now trades the spread centred on the line, so YES costs the market's odds and both sides break even at the line",
+  "Fixed: a Close Call now trades a spread centred on the line, even where the listed strikes are uneven (SPY $700: $695/$705), so YES costs the market's odds and both sides break even at the line",
   "New: the Brain page's luck check says whether the strongest research rule picks the same #1 as the app, and how it does where it doesn't",
   "New: option idea cards price each strike at its own implied volatility from listed options, so the skew is in the card's price, max loss and Greeks",
   "New: an option idea's Price check puts the card's own price next to the listed bid/ask for each leg, says why they differ, and totals the whole trade three ways",

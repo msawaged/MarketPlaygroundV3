@@ -316,16 +316,30 @@ def strikes_around(strikes: list[float], level: float) -> Optional[tuple[float, 
     a close above $186.25, priced at 44% while the screen said the market's odds were 50%, with both breakevens
     above the line. So a line on a strike takes the strikes below and above it ($182.50/$187.50, the same pair the
     odds are read from); a line between two strikes takes those two. Only when the line is the lowest listed strike
-    does it fall back to the line and the next one up."""
+    does it fall back to the line and the next one up.
+
+    Strike grids aren't always even: live SPY Nov 27 listed $699, $700 and $705 but nothing from $701 to $704, so
+    the nearest strikes either side of $700 were $699/$705, a bet on a close above $702 that cost 41% of its payout
+    beside "Market's odds 43%", with both breakevens above the line. So first look for two listed strikes the SAME
+    distance either side of the line ($695/$705 there), no wider than twice the nearest pair; only when there is
+    none does it take the nearest pair (and the spread note says which close it really bets on)."""
     ks = sorted(set(k for k in strikes if k > 0))
     below = [k for k in ks if k < level - 1e-9]
     above = [k for k in ks if k > level + 1e-9]
     if not above:
         return None
     on = any(abs(k - level) <= 1e-9 for k in ks)
-    if below:
-        return below[-1], above[0]
-    return (level, above[0]) if on else None
+    if not below:
+        return (level, above[0]) if on else None
+    near = below[-1], above[0]
+    cap = 2 * (near[1] - near[0]) + 1e-9
+    for k1 in reversed(below):
+        if 2 * (level - k1) > cap:
+            break
+        k2 = next((k for k in above if abs(k - (2 * level - k1)) <= 1e-6), None)
+        if k2 is not None:
+            return k1, k2
+    return near
 
 
 def brier(p: float, happened: bool) -> float:
@@ -574,7 +588,9 @@ def spread_note(u: str, k1: float, k2: float, width: float, level: Optional[floa
         lo, hi = level - k1, k2 - level
         line = (f"Its strikes sit ${lo:,.2f} either side of the ${level:,.2f} line, so YES's share of the payout is "
                 f"about the market's odds of a close above it. " if abs(lo - hi) < 0.005 else
-                f"Its strikes sit ${lo:,.2f} below and ${hi:,.2f} above the ${level:,.2f} line. ")
+                f"Its strikes sit ${lo:,.2f} below and ${hi:,.2f} above the ${level:,.2f} line (no listed pair is "
+                f"centred on it), so YES's share of the payout is about the market's odds of a close above "
+                f"${(k1 + k2) / 2:,.2f}, the middle of the strikes, not the line. ")
     return (f"YES is a ${k1:,.2f}/${k2:,.2f} call spread: it pays the full ${width:,.0f} per contract if {u} closes at "
             f"or above ${k2:,.2f}, nothing at or below ${k1:,.2f}, and part of it in between. {line}NO is the matching "
             f"put spread, the mirror image. So the trade's result can differ from the yes/no answer when {u} closes "
