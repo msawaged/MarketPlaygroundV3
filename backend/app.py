@@ -48,6 +48,7 @@ from backend.routes.strategy_logger_router import router as strategy_logger_rout
 from backend.routes.strategy_router import router as strategy_router
 from backend.routes.trade_confirmation_router import router as trade_confirmation_router
 from backend.v4.router import router as v4_router
+from backend.v4.share import router as share_router
 
 app = FastAPI(title="MarketPlayground API")
 
@@ -124,6 +125,7 @@ app.include_router(market_events_router, dependencies=_ADMIN)
 app.include_router(alpaca_probe_router, dependencies=_ADMIN)
 app.include_router(market_ticker_router)
 app.include_router(v4_router,                prefix="/v4",                tags=["v4 Belief Engine"])
+app.include_router(share_router,             tags=["Share cards"])  # /c/{belief_id}: per-call share link + preview
 
 
 def _require_admin(token: Optional[str]) -> None:

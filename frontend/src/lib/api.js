@@ -121,6 +121,16 @@ export function getMyBeliefs() {
   return request(`/v4/my_beliefs?user_id=${encodeURIComponent(userId())}`);
 }
 
+/** A call's share card ("I called it"): its link, its checks from stored grades, and Wordle-style copy text. */
+export function getShareCard(beliefId) {
+  return request(`/c/${encodeURIComponent(beliefId)}.json`);
+}
+
+/** The share link for a call; its preview card is drawn by the backend at /c/<id>.png. */
+export function shareUrl(beliefId) {
+  return `${API_BASE}/c/${encodeURIComponent(beliefId)}`;
+}
+
 /** "I'm wrong if...": the user's own one-line test of their call (optional price line on one pick). */
 export function saveWrongIf(beliefId, { text = null, price = null, ticker = null } = {}) {
   return request("/v4/wrong_if", { method: "POST", body: { belief_id: beliefId, user_id: userId(), text, price, ticker } });

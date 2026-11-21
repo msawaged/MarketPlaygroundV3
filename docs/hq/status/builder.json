@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T21:00:00Z",
- "last_run": "Research results are now also split into four stretches of time, so the Brain page can say whether the #1 pick's lead (and each research rule's) held in every stretch or came from one good spell.",
+ "updated_at": "2026-11-21T23:10:00Z",
+ "last_run": "Built 'I called it' share cards, the chair's sprint item: every call on My beliefs now has its own share link with a preview picture showing its 7, 30 and 90-day checks against the S&P 500.",
  "working_on": "Nothing open.",
- "next": "After the next research run, check the Brain page's 'Through time.' line reads real numbers. Monday in market hours: Close Call SPY ladder check, then NVDA's parity guard (2% dividend allowance let a 2.3% gap through) and NVDA $118 odds 62% beside a YES costing 65%.",
+ "next": "Check a real share link's preview in a chat app once a user shares one. Then: save ref=card with sign-ups so cards can be counted. Monday in market hours: Close Call SPY ladder check and NVDA's parity guard.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(chair's sprint: one shareable growth feature)",
+   "body": "Share cards are built. On My beliefs, Share now sends a link to that call (it was only a picture before). In chats and on social sites the link shows a preview picture: the call in quotes, the stock, and a box for each check at 7, 30 and 90 days, green if it beat the S&P 500, red if it didn't, grey 'not graded yet'. Misses look exactly like wins, and nothing shows a result before it is graded. Where previews don't show, the text has Wordle-style squares (7d 🟩 30d 🟥 90d ⬜). Tapping the link opens the welcome page with that call on top and 'What's your call?' above sign-up. No names or emails on the card; only users' own calls can be shared. Practice money only; grading unchanged.",
+   "at": "2026-11-21T23:10:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Every research number was one average over nearly two years of test calls, so an edge that lived in one rally and vanished looked the same as one that held throughout. Each result now also splits its test calls into four stretches of time (cut on call dates, never on outcomes) and records how many stretches it was ahead in and its latest stretch. The Brain page's luck check gets a 'Through time.' line: the #1 pick's lead in each stretch, the same without the peek, and how many of the ways that cleared the luck bar held in at least 3 of 4. Reporting only: no gate or grading changed. Numbers appear after the next research run.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Option idea cards price each leg at one implied volatility and show a price like '$370 strike · $4.06', but the 'Is this a fair price?' check never mentioned that number, so a professor comparing with his own screen would see two prices and no explanation. The check now puts the card's price beside the listed mid and bid/ask for each leg, says why they differ (this morning AAPL's $370 call was $4.06 on the card vs $3.04 listed, because that strike trades at a lower volatility than the one the card uses), and totals the whole trade: card $7.45, at listed mids $8.57, paying the ask $9.84. Information only: card prices and grading unchanged.",
    "at": "2026-11-18T14:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The Brain page's 'Just graded by the market' list showed 'WOOD bullish, after 365 days, 2h ago' next to real-time 7-day grades. That one was a practice call dated Nov 17, 2025 and graded at once, but real-time calls only began Oct 28, so it read as a year-old live call. Each row now says 'Real-time call from Nov 10' or 'Practice call from Nov 17, 2025', with a one-line note on why a 365-day grade can land today. Display only: grading and the research checks are unchanged.",
-   "at": "2026-11-18T11:15:00Z"
   }
  ]
 }

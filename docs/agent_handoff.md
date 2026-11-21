@@ -1691,3 +1691,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Not changed: gates, `_passes`, `fit_production`, luck bar.
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-21 ~23:10 UTC (Builder, key `builder`): "I called it" share cards (the chair's sprint item)
+- No HQ messages from Murad (hq_messages empty). Built the scout's Part B proposal from docs/feature_ideas.md.
+- Backend: new backend/v4/share.py, mounted at the root in backend/app.py. `GET /c/{belief_id}` = tiny HTML with the
+  call's own og/twitter tags + instant redirect to `<MP_SITE_URL>/welcome?ref=card&c=<id>`; `/c/{id}.png` = 1200x630
+  Pillow card (DejaVu from matplotlib's mpl-data, in-memory cache of 64); `/c/{id}.json` = same facts + Wordle-style
+  copy text. Grades come only from stored outcomes (same per-call measure as engine._graded_checks / baserate);
+  ungraded checks say "not graded yet"; misses drawn like wins; no user id/name; only `source='user'` calls, else 404.
+- Frontend: My beliefs "↗ Share" now shares the link + copy text (navigator.share, clipboard fallback "Copied"), shown
+  on every call; the old tall image is a small "Image" button, its kicker no longer says "I called it" on ungraded
+  live returns ("My call, so far"). WelcomePage shows the shared call in place of the example when `?c=` is present.
+  WhatsNew line added.
+- test_security PUBLIC list now allows `/c/{belief_id}(.png|.json)` (public by design). New test:
+  test_share_card_shows_only_stored_grades_and_its_own_tags.
+- Not changed: grading, research gates, auth, env vars. `ref=card` is in the landing URL only; sign-ups don't store it yet.
+- Files: backend/v4/share.py, backend/app.py, backend/v4/tests/test_v4.py, backend/v4/tests/test_security.py,
+  frontend/src/components/MyCallsPage.jsx, frontend/src/components/WelcomePage.jsx, frontend/src/components/WhatsNew.jsx,
+  frontend/src/lib/api.js, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/builder.json.

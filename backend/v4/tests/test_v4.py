@@ -5862,3 +5862,59 @@ def test_grades_put_a_real_time_entry_on_the_split_adjusted_scale():
     db.execute("UPDATE picks SET entry_price = ? WHERE id = ?", (ocl[bisect.bisect_right(od, d0) - 1] * 1.8, other["id"]))
     assert grader.grade()["suspect"] >= 1
     assert db.query_one("SELECT COUNT(*) AS n FROM outcomes WHERE pick_id = ?", (other["id"],))["n"] == 0
+
+
+def test_share_card_shows_only_stored_grades_and_its_own_tags():
+    """'I called it' cards: /c/{id} carries the call's own og tags and the redirect into the app; ungraded checks say
+    'not graded yet' (never a result); a miss is shown as a miss; seeded calls and unknown ids are 404; the copy text
+    marks each checkpoint from stored grades only."""
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from backend.v4 import share
+
+    def belief(bid, source, text="AI chips <keep> running", direction="bullish"):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction, user_prob) "
+                   "VALUES (?,?,?,?,?,?,?,?,?)", (bid, "u-1", text, "x", "2026-09-01T15:00:00+00:00", "2026-09-01",
+                                                  source, direction, 0.7))
+        db.execute("INSERT INTO picks (id, belief_id, ticker, name, direction, entry_date, entry_price, final_rank, shown) "
+                   "VALUES (?,?,?,?,?,?,?,?,?)", (f"p{bid}", bid, "NVDA", "NVIDIA", direction, "2026-09-01", 100.0, 1, 1))
+
+    def grade(bid, cp, bench, spy, right):
+        db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at,
+                      bench_ret, belief_right) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                   (f"p{bid}", cp, "2026-09-08", 1.0, bench, spy, 0.0, "2026-09-09", bench, right))
+
+    belief("b-aaaa000000000001", "user")
+    grade("b-aaaa000000000001", 7, 0.05, 0.02, 1)      # +3 pts ahead
+    grade("b-aaaa000000000001", 30, -0.01, 0.03, 0)    # 4 pts behind: a miss, shown as one
+    belief("b-aaaa000000000002", "user", text="Nothing graded yet")
+    belief("b-aaaa000000000003", "seed_live")
+
+    app = FastAPI()
+    app.include_router(share.router)
+    c = TestClient(app)
+
+    r = c.get("/c/b-aaaa000000000001")
+    assert r.status_code == 200
+    page = r.text
+    assert 'property="og:title" content="“AI chips &lt;keep&gt; running”"' in page   # escaped, the call's own words
+    assert "/c/b-aaaa000000000001.png" in page and 'name="twitter:card" content="summary_large_image"' in page
+    assert "welcome?ref=card&amp;c=b-aaaa000000000001" in page
+    assert "30 days in: behind the S&amp;P 500 by 4.0 pts" in page   # the newest graded check, a miss
+    assert "u-1" not in page                                           # no user id on the page
+
+    j = c.get("/c/b-aaaa000000000001.json").json()
+    st = {k["days"]: k["status"] for k in j["checks"]}
+    assert st == {7: "ahead", 30: "behind", 90: "pending"} and j["sure"] == 70
+    assert "7d 🟩 30d 🟥 90d ⬜ vs the S&P 500" in j["copy_text"] and "NVDA, calling up" in j["copy_text"]
+
+    j2 = c.get("/c/b-aaaa000000000002.json").json()
+    assert all(k["status"] == "pending" and k["vs_spy"] is None for k in j2["checks"])
+    assert j2["headline"] == "Not graded yet. First check Sep 8, 2026." and "🟩" not in j2["copy_text"]
+
+    png = c.get("/c/b-aaaa000000000002.png")
+    assert png.status_code == 200 and png.content[:8] == b"\x89PNG\r\n\x1a\n"
+
+    assert c.get("/c/b-aaaa000000000003").status_code == 404   # seeded calls get no card
+    assert c.get("/c/b-ffff000000000009").status_code == 404
+    assert c.get("/c/nonsense.png").status_code == 404

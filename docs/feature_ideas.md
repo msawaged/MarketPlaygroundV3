@@ -535,7 +535,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-21 (night, extra run) — "I called it" cards: a share link with its own preview for every graded call, wins and misses alike
 - **Area:** app (growth). Scouted on the HQ chair's sprint call (growth and launch readiness until 02:00 UTC).
-- **Status:** proposed
+- **Status:** built 2026-11-21, commit "Share: every call gets its own link with a preview card" (Builder). Built as sketched, with these differences: the link lives on the backend (`/c/<id>` on marketplayground-backend-18mm.onrender.com, since the static site can't serve per-call tags); only users' own calls (`source = 'user'`) get a card, seeded ones 404; the PNG is cached in memory (64 entries), not kv_cache; card views are counted in the backend log (`[share] card view`), not a table.
 - **Problem:** the app has almost no one using it yet, and nothing inside it lets a user bring anyone else. Since Oct 1:
   34 calls from real users (`beliefs.source = 'user'`), from 7 distinct users, the last one on 2026-11-10; everything
   else (7,413) comes from our own seeders. There is no share button anywhere: the one site-wide preview

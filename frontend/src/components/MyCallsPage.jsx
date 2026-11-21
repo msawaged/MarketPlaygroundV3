@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Page, { Card, pct } from './ui/Page';
 import Term from './ui/Term';
-import { getMyBeliefs, answerWrongIf } from '../lib/api';
+import { getMyBeliefs, answerWrongIf, getShareCard, shareUrl } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { shareCard } from '../lib/shareCard';
 import WrongIf from './chat/WrongIf';
@@ -19,18 +19,52 @@ function ago(iso) {
   return `${Math.floor(d / 30)} mo ago`;
 }
 
-async function shareCall(b) {
+// The call's own share link (/c/<id>): chat apps draw its preview card (graded checks only, misses like wins), and
+// whoever taps it lands on the welcome screen with this call on top. Text is Wordle-style for chats without previews.
+// The card is fetched when the row shows (share sheets must open straight from the tap, with no wait in between);
+// if it isn't in yet, the link alone still carries the preview.
+async function shareLink(b, card) {
+  const text = card?.copy_text || `My call on MarketPlayground: “${b.text}”\nPractice call. ${shareUrl(b.belief_id)}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'My call on MarketPlayground', text }); return 'shared'; } catch (e) {
+      if (e?.name === 'AbortError') return 'cancelled';
+    }
+  }
+  await navigator.clipboard.writeText(text);
+  return 'copied';
+}
+
+// The tall image for Instagram/TikTok: live returns so far, so it never says "I called it" before anything is graded.
+async function shareImage(b) {
   const graded = b.picks.filter((p) => p.vs_spy != null);
   const avg = graded.reduce((s, p) => s + p.vs_spy, 0) / Math.max(1, graded.length);
   const days = Math.max(1, Math.round((Date.now() - new Date(b.created_at).getTime()) / 86400000));
   return shareCard({
-    kicker: avg >= 0 ? 'I called it' : 'My call, so far',
+    kicker: 'My call, so far',
     belief: b.text,
     headline: `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)}% vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
     good: avg >= 0,
     picks: b.picks.map((p) => ({ ticker: p.ticker, label: 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)}%`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
     url: window.location.host,
   }, `My call on MarketPlayground: "${b.text}"`);
+}
+
+function ShareButtons({ b }) {
+  const [msg, setMsg] = useState(null);
+  const [card, setCard] = useState(null);
+  useEffect(() => { let on = true; getShareCard(b.belief_id).then((c) => on && setCard(c)).catch(() => {}); return () => { on = false; }; }, [b.belief_id]);
+  const flash = (m) => { setMsg(m); setTimeout(() => setMsg(null), 2500); };
+  const link = async () => {
+    try { const how = await shareLink(b, card); if (how === 'copied') flash('Copied'); } catch { flash('Try again'); }
+  };
+  return (
+    <>
+      <button onClick={link} className="text-xs font-semibold text-slate-300 hover:text-white">{msg || '↗ Share'}</button>
+      {b.picks.some((p) => p.vs_spy != null) && (
+        <button onClick={() => shareImage(b)} className="text-[11px] font-semibold text-slate-500 hover:text-slate-300">Image</button>
+      )}
+    </>
+  );
 }
 
 function shortDate(d) {
@@ -284,9 +318,7 @@ export default function MyCallsPage() {
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
                   <button onClick={() => navigate(`/chat?b=${encodeURIComponent(b.text)}&go=1`)} className="text-xs font-semibold text-blue-300 hover:text-blue-200">Run again</button>
-                  {b.picks.some((p) => p.vs_spy != null) && (
-                    <button onClick={() => shareCall(b)} className="text-xs font-semibold text-slate-300 hover:text-white">↗ Share</button>
-                  )}
+                  <ShareButtons b={b} />
                 </div>
               </div>
               {b.picks.length > 0 && (
