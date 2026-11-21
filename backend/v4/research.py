@@ -317,6 +317,8 @@ def load(include_aug: bool = False, days: int = DAYS, live_only: bool = False) -
                         + [1.0 if sign < 0 else 0.0] + [float(num.get(k, 0.0) or 0.0) for k in REG_KEYS],
                         dtype=np.float64, count=len(FEATS) + 1 + len(REG_KEYS))
         b = by.setdefault(r["belief_id"], {"date": str(r["as_of_date"])[:10], "cands": []})
+        if not r.get("num_only") and raw.get("rv2") is not None:
+            b["rv2"] = True  # ranker v2 was ordering this call when it was made (engine stores rv2 only then)
         if r.get("src_date"):
             b["aug"], b["src_date"] = True, str(r["src_date"])[:10]
         ex = float(r["dir_excess"])
@@ -1085,25 +1087,36 @@ def _passes(m: dict, app: dict, risk: bool = False) -> bool:
 
 
 def live_check(model, mu, sd, w, days: int | None = None, min_calls: int | None = None,
-               keys: list[str] | None = None) -> dict:
-    """Would the mix have done at least as well as the app's own #1 on calls made in real time (never practice, so no
-    hindsight; all after every training outcome)? Needs min_calls such calls graded at `days`. model None = ridge."""
+               keys: list[str] | None = None, alone: bool = False) -> dict:
+    """Would the mix (alone=True: the model on its own, as a lone ranker goes live) have done at least as well as the
+    app's own #1 on calls made in real time (never practice, so no hindsight; all after every training outcome)? Needs
+    min_calls such calls graded at `days`. model None = ridge. Calls that ranker v2 itself ordered are left out: their
+    stored #1 is a ranker's pick, not the app's, so comparing against it would compare the model with itself."""
     days, min_calls = days or LIVE_DAYS, min_calls or LIVE_MIN_CALLS
     try:
         live = load(days=days, live_only=True)
     except Exception as e:
         return {"ok": False, "n": 0, "reason": f"{type(e).__name__}"}
+    ranked = sum(1 for b in live if b.get("rv2"))
+    live = [b for b in live if not b.get("rv2")]
     mix_p, app_p = [], []
     for b in live:
         xb = _matrix([b], keys or ZKEYS)
         sc = model.predict(xb) if model is not None else ((xb - np.asarray(mu)) / np.asarray(sd)) @ np.asarray(w)
         app = [c.get("app", 0.0) for c in b["cands"]]
-        mix_p.append(_pick(b, b["cands"][_top(b, mix_scores(app, sc, MIX_WEIGHT))]))
+        mix_p.append(_pick(b, b["cands"][_top(b, sc if alone else mix_scores(app, sc, MIX_WEIGHT))]))
         app_p.append(_pick(b, next((c for c in b["cands"] if c["top"]), b["cands"][_top(b, app)])))
     mm, am = _metrics(mix_p), _metrics(app_p)
     n = mm.get("n", 0)
     ok = n >= min_calls and mm.get("avg", 0) >= am.get("avg", 0)
-    return {"ok": bool(ok), "n": n, "days": days, "needed": min_calls, "mix": mm, "app": am}
+    return {"ok": bool(ok), "n": n, "days": days, "needed": min_calls, "mix": mm, "app": am, "alone": alone,
+            "ranker_ordered": ranked}
+
+
+def live_veto(live: dict | None) -> bool:
+    """A model that passed alone goes live without waiting for real-time proof (practice calls are all there is at first),
+    but once enough real-time calls are graded it must not be doing worse than the app's own #1 on them."""
+    return bool(live) and live.get("n", 0) >= live.get("needed", LIVE_MIN_CALLS) and not live.get("ok")
 
 
 def fit_production(results: dict | None = None) -> dict:
@@ -1167,6 +1180,15 @@ def fit_production(results: dict | None = None) -> dict:
             live = live_check(m, mu, sd, w, keys=keys)
             if not live.get("ok"):
                 continue
+        else:  # a lone model: vetoed once enough real-time calls show it doing worse than the app's #1 (live_veto)
+            try:
+                lv = {**live_check(m, mu, sd, w, keys=keys, alone=True), "candidate": k}
+            except Exception:
+                lv = None
+            if live_veto(lv):
+                live = lv
+                continue
+            live = lv
         best, kind, model = k, kd, m
         break
     oos, label = cands[best]

@@ -1,9 +1,9 @@
 {
  "key": "brain",
- "updated_at": "2026-11-17T20:53:25Z",
- "last_run": "Weekly upgrade. Tonight the smarter pick-ranker switched itself off again, though the past calls it is tested on had not changed. The cause: two brand-new measurements were added this week and are still being filled in for old calls (one is only 13% done), so the models were learning from mostly blank placeholders. Fixed: the models now only learn from measurements that are filled in for nearly every call; new ones join automatically once complete. No safety check was changed.",
- "working_on": "Keeping the ranker's tests steady so it only switches on or off when the real evidence changes.",
- "next": "Check that the next nightly test is back to last week's numbers, and whether the ranker passes its unchanged checks again.",
+ "updated_at": "2026-11-21T22:30:00Z",
+ "last_run": "Weekly upgrade. The smarter pick-ranker is switched on again and is now choosing the top pick people see. Its tests are all on practice calls, where its edge has been shrinking over time, and until now it got no check on real calls made in real time. I added one: once about 300 real calls have 30-day results (early December), the ranker switches itself off if its picks are doing worse than the app's own picks on them. Nothing changes before then, and no safety check was loosened.",
+ "working_on": "Making sure the pick-ranker that users see is backed by real-time results, not only practice data.",
+ "next": "Early December: check the first real-time comparison (about 300 calls) and whether the ranker stays on.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

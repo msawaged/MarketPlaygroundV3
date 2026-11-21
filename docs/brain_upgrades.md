@@ -668,3 +668,40 @@ raw beat near 52.6%), i.e. a run-to-run change only when the data changes. Wheth
 the unchanged gate, not this change. Later: when `delay` crosses 99% it rejoins; if the learned models then drop
 clearly again, that is the feature itself, a real result for the scout's log. A loss would be the learned models doing
 clearly worse with the features held back than with them in (more than ~0.2 points across the board).
+
+## 2026-11-21 night (weekly) — A lone ranker gets the same real-time check a mix gets (veto once the evidence is in)
+
+**Last week's result first (2026-11-17, held-back features).** Ranker v2 is **on** again since the 20:19 UTC refit
+tonight, through the unchanged gate: neural net (`mlp`, alone), walk-forward on 2,703 calls, lift **+1.69% (t 5.23,
+overlap-honest t 3.58)** vs the stored #1's +1.49% (t_nw 1.91) and the no-look-ahead app's +0.53%; risk-matched lift
++1.30% (t 4.17); it is the only method over the luck bar (3.27) on honest t. `delay`/`rskew` have filled in and rejoined
+(the rskew rule now clears the bar on its own). So the 2026-11-17 fix did what it was meant to.
+
+**Problem (real numbers).** The ranker now decides the #1 users see, but every test it passed is on **practice calls**
+(test period ends 2026-07-24), and those show a fading edge: the new time-block split gives lift **+2.70%, +2.17%,
++1.24%, +0.66%** (beat 57.5% → 45.6%) from Dec 2024 to Jul 2026 — the same fade as the app's stored #1 (+3.1% →
+-0.7%), consistent with practice-call hindsight thinning toward the present. Real-time calls are the only clean
+evidence, yet a model that passed **alone** went live with **no real-time check at all**: `live_check` ran only for
+25% mixes. Second gap (read-only SQL tonight): the engine stores `rv2` on a pick only while the ranker orders it, and
+real-time #1 picks carry it on **102/138 (Nov 16) up to 143/143 (Nov 18–19)** — for those calls the "app's #1" that
+`live_check` compares against is a ranker's own pick, so the check would compare the model with itself. Real-time
+calls graded at 30 days: 0 today (the first arrive ~Nov 28; 1,997 real-time beliefs graded at 7 days).
+
+**Change (stricter only; no gate loosened).** `live_check(..., alone=True)` scores a lone model by its own order (as it
+goes live) instead of the 25% mix. `load` flags beliefs ranker v2 ordered (`rv2` stored) and `live_check` leaves them
+out (reported as `ranker_ordered`), for mixes too. New `research.live_veto`: in `fit_production` a lone candidate that
+passed `_passes` is skipped once **300+ real-time calls graded at 30 days** show its #1 averaging worse than the app's
+#1 on them; with fewer it goes live as before (so tonight nothing changes). The stored `ranker:v2` now carries the lone
+model's `live` result. `_passes`, `MIN_LIFT`, `MIN_T`, `MIN_T_ADJ`, `RAW_BEAT_SLACK`, the 90-day embargo, the mixes'
+own live rule and the NN criteria are unchanged. Memory: one extra small load of real-time 30-day calls per refit.
+
+**Checks.** Backend tests: 232 passed (fresh venv). New
+`test_lone_ranker_is_vetoed_by_real_time_calls_and_ranker_ordered_calls_are_left_out` (alone vs mix scoring, the rv2
+exclusion, no veto under 300 calls, veto skips the candidate in `fit_production`). Commit: see git log ("Ranker v2: a
+lone model gets the real-time check").
+
+**What counts as a win.** From ~Dec 2, `/v4/brain` (kv `ranker:v2`) `live.alone` = true with `n` ≥ 300 and
+`ranker_ordered` > 0. If the model's real-time #1 (`live.mix.avg`) ≥ the app's (`live.app.avg`), the ranker stays on
+with real-time backing — the win. If it is below, the ranker switches itself off and the app's own ordering returns:
+also a win (users stop getting a practice-only edge that doesn't hold). Caveat: only calls made while the ranker was
+off (mostly Oct 28 – Nov 15, ~2,000) can be compared, so this pool grows only while the ranker is off.

@@ -5650,3 +5650,51 @@ def test_research_time_blocks_flag_a_rule_carried_by_one_stretch():
     app = {"beat": 0.0, "beat_adj": 0.0}
     strip = {k: x for k, x in e.items() if k not in ("blocks", "pos_blocks", "n_blocks", "last_block_lift", "block_spread")}
     assert research._passes(e, app) == research._passes(strip, app)
+
+
+def test_lone_ranker_is_vetoed_by_real_time_calls_and_ranker_ordered_calls_are_left_out(monkeypatch):
+    # a model that passed alone went live with no real-time check at all (only mixes had one). Now: it still goes live
+    # while real-time proof is too thin, but is vetoed once enough real-time calls show its own #1 doing worse than the
+    # app's #1. Calls ranker v2 itself ordered (rv2 stored) are left out: their #1 is not the app's.
+    from backend.v4 import research
+
+    def add(bid, rv2=False, app_first=True):
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "u", "x", "x", "2026-11-01T00:00:00", "2026-11-01", "user"))
+        for j in range(3):
+            pid = f"{bid}-{j}"
+            feats = {"num": {"mom60": 0.1 * j}, **({"rv2": 0.1 * j} if rv2 else {})}
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank, final_score) VALUES (?,?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", "2026-11-01", 10.0, db.dumps(feats), j, 0.9 - 0.1 * j))
+            # the app's #1 (j=0) does best; the highest-momentum idea (j=2) does worst
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 30, "2026-12-01", 10.0, 0.0, 0.0, 0.05 - 0.02 * j, "2026-12-01"))
+    for i in range(4):
+        add(f"lz{i}")
+    for i in range(3):
+        add(f"lzr{i}", rv2=True)
+    research._set_keys()
+    keys = ["z_mom60"]
+    # alone, a "momentum" ridge picks j=2 every time: worse than the app's #1 on the 4 app-ordered calls
+    r = research.live_check(None, [0.0], [1.0], [1.0], days=30, min_calls=4, keys=keys, alone=True)
+    assert r["n"] == 4 and r["ranker_ordered"] == 3 and not r["ok"] and r["alone"]
+    assert abs(r["mix"]["avg"] - 0.01) < 1e-9 and abs(r["app"]["avg"] - 0.05) < 1e-9
+    assert research.live_veto(r)
+    # the same model as a 25% mix can't overturn the app's clear ordering, so it ties the app's #1
+    assert research.live_check(None, [0.0], [1.0], [1.0], days=30, min_calls=4, keys=keys)["ok"]
+    # too few real-time calls yet: no veto (the model passed the walk-forward gate and may go live)
+    thin = research.live_check(None, [0.0], [1.0], [1.0], days=30, min_calls=5, keys=keys, alone=True)
+    assert not thin["ok"] and not research.live_veto(thin)
+    assert not research.live_veto(None) and not research.live_veto({"ok": True, "n": 400, "needed": 300})
+
+    # fit_production: a lone candidate that passed the gate is skipped when vetoed, kept when not
+    test_research_walk_forward_runs_and_stores(monkeypatch)
+    out = research.run()
+    target = out["results"]["gbm (learned)"]
+    monkeypatch.setattr(research, "_passes", lambda m, app, risk=False: m is target)
+    monkeypatch.setattr(research, "live_check", lambda *a, **k: {"ok": False, "n": 10, "needed": 300})
+    rv = research.fit_production(out)
+    assert rv["active"] and rv["model"] == "gbm" and not rv["mix"]
+    monkeypatch.setattr(research, "live_check", lambda *a, **k: {"ok": False, "n": 300, "needed": 300, "alone": k.get("alone")})
+    rv = research.fit_production(out)
+    assert not rv["active"] and rv["live"]["candidate"] == "gbm" and rv["live"]["alone"]

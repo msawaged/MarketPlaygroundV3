@@ -1605,3 +1605,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_research_time_blocks_flag_a_rule_carried_by_one_stretch.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/builder.json.
+
+## 2026-11-21 ~22:30 UTC (weekly brain upgrade, key `brain`): lone ranker gets the real-time check
+- No HQ messages from Murad. Health OK. Ranker v2 is on (mlp alone, lift +1.69%, t_nw 3.58) through the unchanged gate.
+- research.live_check: `alone=True` scores the model by its own order; beliefs whose picks carry `rv2` (ordered by
+  ranker v2) are skipped (`ranker_ordered`), since their stored #1 isn't the app's. load() flags them (`b["rv2"]`).
+- research.live_veto + fit_production: a lone passing candidate is skipped once 300+ real-time calls graded at 30 days
+  show its #1 doing worse than the app's #1; with fewer it goes live as before. Stricter only; _passes etc. unchanged.
+- Note for everyone: the legacy nn.py network retrains nightly on identical data (n_train 11,408 since Nov 3, 90-day
+  labels wait on real-time calls reaching 90 days); its "versions" panel numbers won't move until ~late January.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md,
+  docs/hq/status/brain.json.
