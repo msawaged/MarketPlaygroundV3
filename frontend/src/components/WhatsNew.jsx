@@ -7,7 +7,7 @@ export const UPDATES = [
   "New: the Brain page's luck check splits the research into four stretches of time and says whether the #1 pick's lead held in each, not just on average",
   "Fixed: Close Call's odds now include the option smile (skew), checked across many strikes, so they fall steadily as the line rises, even on weekend quotes (SPY Nov 27: $690 had read 55% beside 57% for $695)",
   "Fixed: Close Call reads the odds from a wider spread when the nearest strikes are quoted too loosely to read (SPY's $1 strikes on weekends), so odds no longer rise with the line",
-  "Fixed: a Close Call now trades a spread centred on the line, even where the listed strikes are uneven (SPY $700: $695/$705), so YES costs the market's odds and both sides break even at the line",
+  "Fixed: a Close Call now trades a spread centred on the line, even where the listed strikes are uneven (SPY $700: $695/$705), so YES costs the market's odds, and YES and NO break even at about the same price, between the strikes",
   "New: the Brain page's luck check says whether the strongest research rule picks the same #1 as the app, and how it does where it doesn't",
   "New: option idea cards price each strike at its own implied volatility from listed options, so the skew is in the card's price, max loss and Greeks",
   "New: an option idea's Price check puts the card's own price next to the listed bid/ask for each leg, says why they differ, and totals the whole trade three ways",

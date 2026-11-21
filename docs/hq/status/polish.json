@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T20:15:00Z",
- "last_run": "Walked every public page on a phone: nothing broken. Fixed one overstatement: the big headline on a news story said '8 million barrels' when the article said 'up to 8 million barrels'. Story headlines now keep words like 'up to' or 'about' from the article.",
+ "updated_at": "2026-11-21T21:45:00Z",
+ "last_run": "Walked every public page on a phone and the signed-in screens locally: nothing broken. Fixed one overstatement in What's new on the welcome page: it said Close Call trades break even at the line; they break even near it, between the two strikes.",
  "working_on": "Nothing open.",
- "next": "Check Monday night's grading and the first graded Close Call questions; keep walking signed-in screens.",
+ "next": "Re-check NVDA's Close Call odds on Monday's fresh quotes (this weekend's stale quotes read 51% for both $125 and $130); check Monday night's grading.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

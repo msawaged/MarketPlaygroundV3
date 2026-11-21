@@ -1454,3 +1454,28 @@ Changed:
 - Test: test_story_mode_cards_are_grounded_and_cached extended.
 
 Checks: vite build passes, backend tests 229 passed (fresh venv).
+
+## 2026-11-21 (eighth run, ~21:30 UTC = Sat 4:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story (all 6 slides), /account, /brain, /close-call on the live site at 390x844: no
+page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages
+from Murad. Signed in locally (throwaway SQLite): /chat, /my, /portfolio, /close-call clean at 390. Spot checks held:
+Trending "vs S&P" points (NVDA -11.5% on Fri, S&P -3.1%, -8.5 pts), story grounded in the article summary,
+Close Call AAPL $350 Nov 27: YES $195.10 of $500 = 39% = market's odds, breakeven $347.50 + $1.95 = $349.45 on both sides.
+
+Found (welcome page "What's new", the first screen a visitor sees):
+- "a Close Call now trades a spread centred on the line ... so YES costs the market's odds and both sides break even
+  at the line". Not true unless the odds are 50%: YES breaks even at k1 + payout x odds (live AAPL $350 line:
+  $349.45; NVDA $140 line: $138.21). The app's own card and spread note say it right; only the changelog overstated.
+
+Changed:
+- WhatsNew.jsx: "... so YES costs the market's odds, and YES and NO break even at about the same price, between the
+  strikes". Wording only.
+
+Noted, not changed (for the build chat; Close Call odds were reworked twice today): live NVDA Nov 27 on weekend
+quotes reads 51% above $125 and 51% above $130 (last price $129.17). The $122/$128 and $127/$133 call-spread mids are
+$3.05 and $3.06, which breaks call convexity (an equal-width spread higher up can't cost more), so the quotes are
+junk; the smile was refused (parity says ~$126), but the spreads still pass because the one-vol yardstick uses the
+nearest put's 150% IV and `quotes_out_of_step` allows 2% for a dividend. Fresh Monday quotes should clear it.
+
+Checks: vite build passes, backend tests 232 passed (fresh venv).

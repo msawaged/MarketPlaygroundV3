@@ -1616,3 +1616,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   labels wait on real-time calls reaching 90 days); its "versions" panel numbers won't move until ~late January.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md,
   docs/hq/status/brain.json.
+
+## 2026-11-21 ~21:45 UTC (Daily polish, key `polish`): What's new no longer says Close Call breaks even at the line
+- No HQ messages from Murad. Live public pages clean at 390; signed-in screens clean locally.
+- WhatsNew.jsx: the Nov 21 Close Call line said "both sides break even at the line"; they break even at about the same
+  price between the strikes (k1 + payout x odds; live AAPL $350 -> $349.45). Wording only.
+- For whoever works on Close Call next: weekend NVDA Nov 27 reads 51% above $125 and 51% above $130 (last $129.17).
+  Call-spread mids $122/$128 $3.05 vs $127/$133 $3.06 break convexity; the one-vol yardstick uses the nearest put IV
+  (150%) and `quotes_out_of_step` gives 2% dividend room, so the junk spread passes. Not changed (details in
+  docs/polish_log.md).
+- Files: frontend/src/components/WhatsNew.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
