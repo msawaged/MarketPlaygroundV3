@@ -1,15 +1,21 @@
 {
  "key": "growth",
- "updated_at": "2026-11-21T22:45:00Z",
- "last_run": "Weekly report: 0 new accounts and 0 beliefs from real people this week; reels got 677 TikTok views (Nov 9-15) but no one came through to the app.",
- "working_on": "Finding out whether reels bring anyone to the app at all.",
- "next": "Next weekly report: count sign-ups, Close Call answers and first beliefs, and check visits by ref tag if counting has been built.",
+ "updated_at": "2026-11-21T23:30:00Z",
+ "last_run": "Wrote the launch plan (docs/growth_plan.md): guerrilla stunts first (street interviews, QR posters, chalk, Humans vs. the Brain reels), a 7-item yes/no launch list, 3 free channels and the auto-posting spec. Still 0 strangers using the app.",
+ "working_on": "Getting the first 25 strangers to answer a Close Call this week.",
+ "next": "Write the QR poster text and the street-interview script, then count visits by ref tag in next Sunday's report.",
  "needs_from_murad": [
-  "Put the app link in your TikTok and Instagram bios with a tag per platform (?ref=tt, ?ref=ig), and end each reel with that day's Close Call question: 'Answer free, link in bio'.",
-  "Render: $15 build budget added Nov 17. Agents still deploy many times a day, so watch that it lasts to Dec 1."
+  "Yes/no: launch now, so reels stop saying 'coming soon' and say 'Make your call free, link in bio'.",
+  "Yes/no: bio links with tags (?ref=tt, ?ref=ig, ?ref=fb) pointing at Close Call. You set them in each app.",
+  "Yes/no: build chat adds a visit counter by ref tag, privacy and terms pages, and Close Call as the landing page, in one deploy.",
+  "Yes/no: film 10 street interviews Monday ('Will NVDA close above $185 Friday?') and put up 30 QR posters where allowed.",
+  "Yes/no: auto-posting daily reels to TikTok, Instagram and Facebook (spec in docs/growth_plan.md). It needs your Meta and TikTok developer apps and a Facebook Page.",
+  "Auto-approve (posts after a 30-min veto ping) or manual approval for each reel?"
  ],
  "read_up_to": 0,
  "replies": [
-  {"re": "(no new messages)", "body": "No messages for me this week. Suggested next build for any agent: count site visits by ref tag (tt/ig/fb) and how many visitors reach Close Call or a first belief, so we can see if reels work.", "at": "2026-11-21T22:45:00Z"}
+  {"re": "do or die / get this to the masses", "body": "Plan is in docs/growth_plan.md. Biggest finding: the app is already open (free, no sign-up), but every reel ends with 'coming soon, follow for launch day', so viewers are told to wait. Say 'launch' and that flips. Then: tagged bio links to Close Call, a visit counter so we can see what works, and the auto-poster (the bot in scripts/social already does Instagram and TikTok; Facebook gets added).", "at": "2026-11-21T23:30:00Z"},
+  {"re": "I want guerrilla marketing", "body": "Done: guerrilla is now section 0 of the plan. Street-interview reels asking strangers one Close Call question, then revealing the market's odds; QR posters and chalk ('The market says 62%. Do you?') where allowed; a weekly Humans vs. the Brain scoreboard reel; earnings-night odds posts; QR merch. No fake accounts, spam or 'guaranteed' claims.", "at": "2026-11-21T23:30:00Z"},
+  {"re": "(no new messages)", "body": "Suggested next build: count site visits by ref tag (tt/ig/fb/qr) and how many visitors reach Close Call or a first idea, so we can see if reels and stunts work.", "at": "2026-11-21T22:45:00Z"}
  ]
 }
