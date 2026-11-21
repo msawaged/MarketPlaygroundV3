@@ -705,3 +705,44 @@ lone model gets the real-time check").
 with real-time backing — the win. If it is below, the ranker switches itself off and the app's own ordering returns:
 also a win (users stop getting a practice-only edge that doesn't hold). Caveat: only calls made while the ranker was
 off (mostly Oct 28 – Nov 15, ~2,000) can be compared, so this pool grows only while the ranker is off.
+
+## 2026-11-21 late night (extra run, woken by the HQ chair) — Grades survive stock splits
+
+**Why a second run today.** The HQ chair relayed Murad's all-hands call and asked for one more brain upgrade. No HQ
+messages from Murad himself (the `hq_messages` table is empty). Health OK. Tonight's earlier upgrade (lone-ranker
+real-time veto) stands; this one protects the data that veto will read.
+
+**Problem (real numbers, read-only SQL).** Daily bars come split-adjusted (`market.daily_closes`, `adjustment: all`),
+but a real-time pick's `entry_price` is the raw trade at the time, and the grader did `ret = close / entry_price - 1`.
+When a stock splits after the call, the adjusted history rescales and the raw entry no longer matches: ITA (3-for-1
+in early Nov) graded **39 real-time calls at -66%** (entry $209.72 vs adjusted close $68-73), SOXX **37 at -69%**
+($451.93 vs ~$155). They sit in **76 real-time beliefs** (21 shown picks, 5 of them the #1) with fake
+`dir_excess` of ±0.63-0.67 each (net -14.4 over 76 grades), next to a forward-test lift of +0.29% (t 1.82) and a
+pick-level sd of ~8%. 8 practice grades (later checkpoints graded after the split) carry the same error. These calls
+entered Oct 29 – Nov 4, exactly the first real-time calls to reach 30 days (~Nov 28 – Dec 4), i.e. the pool
+`live_check` / `live_veto` will use to decide whether ranker v2 stays on. Users' "My calls" showed the same fake
+-67% on those picks. Other big real-time moves (BITO, BITI, PARA at $0.10, CDLR, IHRT) are either real moves or bad
+data; they are now classified rather than trusted blindly.
+
+**Change (grading data only; no gate touched).** New `market.split_factor(dates, closes, entry_date, entry_price)`:
+the history's own close on/before the entry date divided by the entry, `1.0` within ±35% (an intraday move),
+snapped to a split ratio (2..100 for-1, 1-for-2..100, 3:2, 5:2, ...) within 7%, else `None` (bad data). Uses no
+later price. `grader.grade` grades `close / (entry × f) - 1` (structure return on the pre-split scale, where the
+strikes are) and skips `None` picks (counted as `suspect`, never given a fake grade). New `grader.repair_splits`:
+one time (kv `grader:split_repair_v1`, set only after a run with no data errors), re-grades outcomes that moved 25%+
+and were graded after their call's creation day (~500 rows, ~200 tickers), only where a split ratio fits, and clears
+that belief checkpoint's selection scores so `score_selection` redoes them. `engine.my_beliefs` divides by the same
+factor. `_passes`, `MIN_LIFT`, `MIN_T`, the embargo, `live_check`/`live_veto` rules and the NN criteria are
+unchanged. Memory: ≤200 cached bar series once, at grading time.
+
+**Checks.** Backend tests: 233 passed (fresh venv). New `test_grades_put_a_real_time_entry_on_the_split_adjusted_scale`
+(split_factor cases incl. 3-for-1, 1-for-10, a 25% intraday move, bad data; a raw 3× entry grades to the real move;
+an old fake grade is repaired once, re-scored, idempotent; a no-fit entry isn't graded).
+Commit: see git log ("Grading: real-time grades survive stock splits").
+
+**What counts as a win.** After the Nov 24 05:13 UTC grading run: the job log prints "repaired ~84 split-scaled
+grades"; the SQL `abs(ret) > 0.4` on ITA/SOXX real-time grades returns 0 rows; bullish-ETF real-time 7-day average
+`dir_excess` moves from -3.2% toward the stock picks' ~-1%; kv `grader:split_repair_v1` exists. When the 30-day
+real-time pool reaches 300 (~Dec 2), `live_veto` decides on real moves only. A loss would be a repaired row whose
+new return is clearly wrong (check a few against the price chart), or `suspect` counts above ~1% of a day's picks
+(the 35% / 7% bands are too tight).

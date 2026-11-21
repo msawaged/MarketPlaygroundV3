@@ -570,6 +570,35 @@ def close_on_or_after(symbol: str, d: date) -> Optional[tuple[str, float]]:
     return dates[i], closes[i]
 
 
+# Daily bars come split-adjusted ("adjustment": "all"), but a real-time pick's entry_price is the raw trade at the
+# time. After a split the adjusted history rescales, so raw entry vs adjusted later close read as a fake move (ITA's
+# 3-for-1 in Nov 2026 graded 39 real-time calls at -66%, SOXX's at -69%). split_factor says how to put the entry on
+# the history's scale: the history's own close on the entry date divided by entry_price, snapped to a split ratio.
+SPLIT_RATIOS = sorted({float(n) for n in (2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 100)}
+                      | {1.0 / n for n in (2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 100)}
+                      | {1.5, 2.0 / 3.0, 2.5, 0.4})
+SPLIT_SAME = 1.35   # entry within this of the history's close that day: same scale (an intraday move, not a split)
+SPLIT_SNAP = 0.07   # history/entry within 7% of a split ratio: that split happened since entry
+
+
+def split_factor(dates: list[str], closes: list[float], entry_date: str, entry_price: float) -> Optional[float]:
+    """1.0 when entry_price is on the same scale as the (adjusted) history, the split ratio f (history = entry * f)
+    when a split happened since, or None when the two disagree with no split ratio to explain it (bad data: don't
+    grade it). Uses only the history's close on/before the entry date, never a later price."""
+    try:
+        e = float(entry_price)
+    except (TypeError, ValueError):
+        return None
+    i = _index_on_or_before(dates, str(entry_date)[:10])
+    if i < 0 or not (e > 0) or not (closes[i] > 0):
+        return 1.0  # nothing to compare with: leave as before
+    r = float(closes[i]) / e
+    if abs(math.log(r)) <= math.log(SPLIT_SAME):
+        return 1.0
+    f = min(SPLIT_RATIOS, key=lambda x: abs(math.log(r / x)))
+    return f if abs(math.log(r / f)) <= math.log(1.0 + SPLIT_SNAP) else None
+
+
 def _ret(closes: list[float], i: int, lag: int) -> float:
     if i - lag < 0 or closes[i - lag] <= 0:
         return 0.0

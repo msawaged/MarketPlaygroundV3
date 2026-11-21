@@ -5,6 +5,7 @@ Run:  PYTHONPATH=./ python -m pytest backend/v4/tests -q
 """
 from __future__ import annotations
 
+import bisect
 import json
 import math
 import os
@@ -5698,3 +5699,58 @@ def test_lone_ranker_is_vetoed_by_real_time_calls_and_ranker_ordered_calls_are_l
     monkeypatch.setattr(research, "live_check", lambda *a, **k: {"ok": False, "n": 300, "needed": 300, "alone": k.get("alone")})
     rv = research.fit_production(out)
     assert not rv["active"] and rv["live"]["candidate"] == "gbm" and rv["live"]["alone"]
+
+
+def test_grades_put_a_real_time_entry_on_the_split_adjusted_scale():
+    """Daily bars are split-adjusted but a real-time pick's entry_price is the raw trade. ITA's 3-for-1 split
+    (Nov 2026) graded 39 real-time calls at -66% vs SPY. Grading (and the repair of old grades, and My calls) must
+    read a split since entry as no move, and refuse to grade an entry no split can explain."""
+    dates, closes = market.daily_closes("WINR")
+    d0 = (TODAY - timedelta(days=20)).isoformat()
+    i = bisect.bisect_right(dates, d0) - 1
+    c = closes[i]
+    assert market.split_factor(dates, closes, d0, c * 1.01) == 1.0          # same scale
+    assert market.split_factor(dates, closes, d0, c * 1.25) == 1.0          # a big intraday move, not a split
+    assert market.split_factor(dates, closes, d0, c * 3.0) == pytest.approx(1 / 3)  # a 3-for-1 since entry
+    assert market.split_factor(dates, closes, d0, c / 10.0) == pytest.approx(10.0)  # a 1-for-10 reverse split
+    assert market.split_factor(dates, closes, d0, c * 1.8) is None          # no split explains it: bad data
+    assert market.split_factor(dates, closes, "2000-01-01", c * 3) == 1.0   # nothing to compare with
+
+    engine.process_belief("plumbing will boom", "u1", "moderate", source="seed_news", claude_client=FakeClaude())
+    p = db.query_one("SELECT p.id, p.ticker, p.belief_id FROM picks p JOIN beliefs b ON b.id = p.belief_id "
+                     "WHERE b.source = 'seed_news' ORDER BY p.final_rank LIMIT 1")
+    tdates, tcloses = market.daily_closes(p["ticker"])
+    k = bisect.bisect_right(tdates, d0) - 1
+    raw = tcloses[k] * 3.0  # the raw pre-split price the pick was entered at
+    db.execute("UPDATE picks SET entry_date = ?, entry_price = ? WHERE id = ?", (d0, raw, p["id"]))
+    db.execute("UPDATE beliefs SET created_at = ? WHERE id = ?", (d0 + "T15:00:00+00:00", p["belief_id"]))
+    db.execute("UPDATE picks SET entry_date = ? WHERE belief_id = ? AND id <> ?", (d0, p["belief_id"], p["id"]))
+    grader.grade()
+    o = db.query_one("SELECT ret, price FROM outcomes WHERE pick_id = ? AND checkpoint_days = 7", (p["id"],))
+    tk = market.close_on_or_after(p["ticker"], date.fromisoformat(d0) + timedelta(days=7))
+    assert o["ret"] == pytest.approx(tk[1] / tcloses[k] - 1, abs=1e-6)  # the real move, not -67%
+    assert abs(o["ret"]) < 0.25
+
+    # an old grade made before the fix (raw entry vs adjusted close) is repaired once, and its belief re-scored
+    db.execute("UPDATE outcomes SET ret = ?, dir_excess = ?, graded_at = ? WHERE pick_id = ? AND checkpoint_days = 7",
+               (tk[1] / raw - 1, -0.66, TODAY.isoformat() + "T05:00:00+00:00", p["id"]))
+    assert grader.repair_splits().get("done_before") is True  # grade() already ran it once: no daily refetch
+    out = grader.repair_splits(force=True)
+    assert out["repaired"] >= 1 and out["data_errors"] == 0
+    o2 = db.query_one("SELECT ret, dir_excess, bench_ret FROM outcomes WHERE pick_id = ? AND checkpoint_days = 7",
+                      (p["id"],))
+    assert o2["ret"] == pytest.approx(tk[1] / tcloses[k] - 1, abs=1e-6) and o2["bench_ret"] is None
+    assert grader.score_selection() > 0
+    assert db.query_one("SELECT bench_ret FROM outcomes WHERE pick_id = ? AND checkpoint_days = 7",
+                        (p["id"],))["bench_ret"] is not None
+    assert grader.repair_splits(force=True)["repaired"] == 0  # idempotent
+
+    # a pick whose entry no split explains is not graded at all
+    other = db.query_one("SELECT id FROM picks WHERE belief_id = ? AND id <> ? LIMIT 1", (p["belief_id"], p["id"]))
+    assert other
+    db.execute("DELETE FROM outcomes WHERE pick_id = ?", (other["id"],))
+    oc = db.query_one("SELECT ticker FROM picks WHERE id = ?", (other["id"],))["ticker"]
+    od, ocl = market.daily_closes(oc)
+    db.execute("UPDATE picks SET entry_price = ? WHERE id = ?", (ocl[bisect.bisect_right(od, d0) - 1] * 1.8, other["id"]))
+    assert grader.grade()["suspect"] >= 1
+    assert db.query_one("SELECT COUNT(*) AS n FROM outcomes WHERE pick_id = ?", (other["id"],))["n"] == 0

@@ -1654,3 +1654,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   from /hq; his "all hands" words reached the chair some other way. Posting code (hq.post) looks right; not verified live
   (would need his signed-in session).
 - Files: backend/v4/router.py, docs/agent_handoff.md, docs/hq/status/health.json.
+
+## 2026-11-21 ~23:30 UTC (brain upgrade, extra run on the chair's all-hands wake, key `brain`): grades survive splits
+- No HQ messages from Murad (hq_messages is empty). Health OK.
+- Bug: bars are split-adjusted, real-time entry_price is raw, so ITA (3-for-1) and SOXX splits graded 76 real-time
+  calls at ~-66%/-69% (5 were #1 picks), right in the first pool the 30-day live_veto will read.
+- market.split_factor (entry vs the history's own close that day; 1.0 / split ratio / None for bad data). grader.grade
+  uses it (None -> not graded, counted `suspect`); grader.repair_splits is a one-time re-grade of old rows (kv
+  `grader:split_repair_v1`; delete that key to rerun it); engine.my_beliefs uses it for "My calls".
+- Gates unchanged. Test: test_grades_put_a_real_time_entry_on_the_split_adjusted_scale.
+- Files: backend/v4/market.py, backend/v4/grader.py, backend/v4/engine.py, backend/v4/tests/test_v4.py,
+  docs/brain_upgrades.md, docs/agent_handoff.md, docs/hq/status/brain.json.

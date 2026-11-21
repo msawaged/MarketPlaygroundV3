@@ -42,7 +42,7 @@ def _due_picks(limit: int) -> list[dict]:
 
 
 def grade(limit: int = 50000) -> dict:
-    done, skipped, errors = 0, 0, 0
+    done, skipped, errors, suspect = 0, 0, 0, 0
     today = market.today()
     rows_out = []
     for p in _due_picks(limit):
@@ -59,6 +59,11 @@ def grade(limit: int = 50000) -> dict:
         except market.MarketDataError:
             errors += 1
             continue
+        # the history is split-adjusted, a real-time entry_price is not: put both on one scale (see market.split_factor)
+        f = market.split_factor(dates, closes, p["entry_date"], p["entry_price"])
+        if f is None:
+            suspect += 1  # entry and history disagree with no split to explain it: a fake move, so don't grade it
+            continue
         sign = 1.0 if p["direction"] == "bullish" else -1.0
         trade = db.loads(p["legs"], {})
         for cp in due:
@@ -70,10 +75,10 @@ def grade(limit: int = 50000) -> dict:
             if not tk or not sp or tk[0] >= today.isoformat():
                 skipped += 1
                 continue
-            ret = tk[1] / p["entry_price"] - 1.0
+            ret = tk[1] / (p["entry_price"] * f) - 1.0
             spy_ret = sp[1] / spy_entry - 1.0
-            try:
-                sret = strategy.structure_return(trade, p["entry_price"], tk[1], entry, date.fromisoformat(tk[0]), vol)
+            try:  # exit put back on the entry's (pre-split) scale, where the trade's strikes live
+                sret = strategy.structure_return(trade, p["entry_price"], tk[1] / f, entry, date.fromisoformat(tk[0]), vol)
             except Exception:
                 sret = None
             # volatile picks were a bet on a BIG move either way: did it move more than the market?
@@ -84,15 +89,84 @@ def grade(limit: int = 50000) -> dict:
         if len(rows_out) >= 500:
             _flush(rows_out)
     _flush(rows_out)
+    try:
+        fixed = repair_splits()
+    except Exception as e:  # never let the repair block grading
+        print(f"[grade] repair_splits failed: {type(e).__name__}: {e}", flush=True)
+        fixed = {"repaired": 0, "suspect": 0}
     sel = score_selection()
-    if done or sel:
+    if done or sel or fixed["repaired"]:
         learning.invalidate()
     try:  # "the outside view": how often calls like this came true (one small kv row; info only)
         from . import baserate
         baserate.compute()
     except Exception as e:
         print(f"[grade] baserate failed: {type(e).__name__}: {e}", flush=True)
-    return {"graded": done, "skipped": skipped, "errors": errors, "selection_scored": sel}
+    return {"graded": done, "skipped": skipped, "errors": errors, "suspect": suspect, "selection_scored": sel,
+            "split_repaired": fixed["repaired"], "split_suspect": fixed["suspect"]}
+
+
+REPAIR_MIN_MOVE = 0.25  # a split moves a grade by 33%+ (2-for-1 = -50%, 1-for-2 = +100%); smaller moves are left alone
+REPAIR_KEY = "grader:split_repair_v1"
+
+
+def repair_splits(limit: int = 5000, force: bool = False) -> dict:
+    """One-time re-grade of outcomes graded before split_factor existed whose entry_price is on a pre-split scale.
+    Looks only at rows that moved 25%+ and were graded after the day their call was made (a practice call graded at
+    once used one consistent history; ~500 rows on ~200 tickers in Nov 2026), and only a snap to a split ratio changes
+    a row. The selection scores of that belief's checkpoint are cleared so score_selection redoes them. Idempotent;
+    marked done in kv_cache once it ran without a data error, so the daily job doesn't refetch. Bad-data rows (no
+    split fits) are counted, not changed."""
+    if not force and db.query_one("SELECT v FROM kv_cache WHERE k = ?", (REPAIR_KEY,)):
+        return {"repaired": 0, "suspect": 0, "done_before": True}
+    rows = db.query(
+        """SELECT o.pick_id, o.checkpoint_days, o.eval_date, o.price, o.ret, o.spy_ret,
+                  p.belief_id, p.ticker, p.direction, p.entry_date, p.entry_price, p.legs
+           FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
+           WHERE (o.ret > ? OR o.ret < ?) AND substr(o.graded_at, 1, 10) > substr(b.created_at, 1, 10)
+           LIMIT ?""", (REPAIR_MIN_MOVE, -REPAIR_MIN_MOVE, limit))
+    fixes, clear, suspect, data_errors = [], set(), 0, 0
+    for r in rows:
+        try:
+            dates, closes = market.daily_closes(r["ticker"])
+        except market.MarketDataError:
+            data_errors += 1
+            continue
+        f = market.split_factor(dates, closes, r["entry_date"], r["entry_price"])
+        if f is None:
+            suspect += 1
+            continue
+        if f == 1.0:
+            continue
+        e, px, spy_ret = float(r["entry_price"]), float(r["price"]), float(r["spy_ret"])
+        ret = px / (e * f) - 1.0
+        if abs(ret - float(r["ret"])) < 1e-6:
+            continue
+        dx = (abs(ret) - abs(spy_ret)) if r["direction"] == "volatile" else \
+            (1.0 if r["direction"] == "bullish" else -1.0) * (ret - spy_ret)
+        entry = date.fromisoformat(str(r["entry_date"])[:10])
+        i0 = max(0, bisect.bisect_right(dates, str(r["entry_date"])[:10]) - 1)
+        try:
+            sret = strategy.structure_return(db.loads(r["legs"], {}), e, px / f, entry,
+                                             date.fromisoformat(str(r["eval_date"])[:10]),
+                                             market.realized_vol(closes, i0, 60) if closes else 0.35)
+        except Exception:
+            sret = None
+        fixes.append((ret, dx, sret, r["pick_id"], r["checkpoint_days"]))
+        clear.add((r["belief_id"], r["checkpoint_days"]))
+    if fixes:
+        db.executemany("UPDATE outcomes SET ret = ?, dir_excess = ?, structure_ret = ? "
+                       "WHERE pick_id = ? AND checkpoint_days = ?", fixes)
+        db.executemany("UPDATE outcomes SET bench_ret = NULL, sel_edge = NULL, belief_right = NULL "
+                       "WHERE checkpoint_days = ? AND pick_id IN (SELECT id FROM picks WHERE belief_id = ?)",
+                       [(cp, bid) for bid, cp in clear])
+        print(f"[grade] repaired {len(fixes)} split-scaled grades on {len(clear)} belief checkpoints", flush=True)
+    out = {"repaired": len(fixes), "suspect": suspect, "looked_at": len(rows), "data_errors": data_errors}
+    if not data_errors:
+        now = datetime.now(timezone.utc).isoformat()
+        db.execute("DELETE FROM kv_cache WHERE k = ?", (REPAIR_KEY,))
+        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (REPAIR_KEY, json.dumps(out), now))
+    return out
 
 
 def _is_etf(row: dict) -> bool:

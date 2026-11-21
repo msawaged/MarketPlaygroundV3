@@ -754,6 +754,16 @@ def _close_on(symbol: str, d: str) -> Optional[float]:
     return closes[i] if i >= 0 else None
 
 
+def _split_since(symbol: str, entry_date: str, entry_price) -> float:
+    """How a split since entry rescales the pick (market.split_factor; 1.0 if none or unknown), so a 3-for-1 split
+    doesn't show as down 67%."""
+    try:
+        dates, closes = market.daily_closes(symbol)
+        return market.split_factor(dates, closes, entry_date, entry_price) or 1.0
+    except Exception:
+        return 1.0
+
+
 def my_beliefs(user_id: str, limit: int = 30) -> dict:
     """A user's own beliefs with how the picks they were shown are doing so far."""
     if not user_id or user_id == "anonymous":
@@ -781,7 +791,8 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
     for p in picks:
         now = _live_price(p["ticker"]) or _close_on(p["ticker"], today_s)
         spy0 = p.get("spy_entry") or _close_on("SPY", p["entry_date"])
-        p["ret"] = (now / float(p["entry_price"]) - 1) if now and p["entry_price"] else None
+        p["ret"] = (now / (float(p["entry_price"]) * _split_since(p["ticker"], p["entry_date"], p["entry_price"])) - 1) \
+            if now and p["entry_price"] else None
         p["spy_r"] = (spy_now / spy0 - 1) if spy_now and spy0 else None
         p["now"] = now
         by_belief.setdefault(p["belief_id"], []).append(p)
