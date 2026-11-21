@@ -1574,3 +1574,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   `movers._hook` now takes the article text and puts a dropped hedge back ("Up to 8 million barrels"), or drops the
   hook if it gets too long. Cached stories fixed when served.
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-21 ~19:05 UTC (CTO scout routine): idea 17 recorded, idea 18 (trading-activity variability) added
+- No HQ messages from Murad. Idea 17 (coskewness) final: lift +0.83% (t 3.00, t_nw 3.12), risk-matched +0.87% (t_nw
+  3.95, tops `clear_adj_nw`), but lift_diff vs the app +0.40% (t_nw 0.58): mostly restates the app. Idea 16 (rskew)
+  is-it-new: same_as_app 25%, lift_diff +1.23% (t_nw 2.44). Both written up in docs/research_ideas.md.
+- New feature `cvvol` (Chordia, Subrahmanyam & Anshuman 2001): CV of daily dollar volume over ~1 year, as of each
+  pick's date. Added to market.cvvol / cvvol_features / features(), nn.make_features num (not MODEL_NUMERIC),
+  research.FEATS + DIRECTIONAL, research.enrich backfill, fixed rule "steady trading activity (-z_cvvol)".
+  Result pending until `cvvol` leaves `provisional`.
+- Proposal (docs/feature_ideas.md): "Does it hold every year?" lift per chronological time block + sign count,
+  reporting only. Side note there: coskew row shows n_eff = n with t_nw > t; may be worth a look at `_se_overlap`.
+- Not changed: gates, `_passes`, `fit_production`, luck bar.
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

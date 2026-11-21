@@ -5146,6 +5146,63 @@ def test_coskewness_rule_and_enrich_backfill(monkeypatch):
     assert num["rskew"] == 0.7 and num["beta"] == 1.2
 
 
+def test_trading_activity_variability_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(57)
+    n = 300
+    dates = [(_dt.date(2022, 1, 3) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    closes = [20.0 * (1 + 0.001 * k) for k in range(n)]
+    steady = [1e6 * (1 + rng.uniform(-0.05, 0.05)) for _ in range(n)]
+    jumpy = [1e6 * (8.0 if k % 10 == 0 else 0.3) for k in range(n)]
+    i = n - 1
+    cs, cj = market.cvvol(closes, steady, i), market.cvvol(closes, jumpy, i)
+    assert 0 < cs < 0.1 and cj > 1.5, (cs, cj)
+    assert market.cvvol(closes, steady, 100) == 0.0                       # under 120 priced sessions
+    assert market.cvvol(closes, [0.0] * n, i) == 0.0                      # no volume
+    assert market.cvvol(closes, steady[:5], i) == 0.0                     # volumes don't line up with closes
+    later = jumpy[:250] + [v * 50 for v in jumpy[250:]]
+    assert market.cvvol(closes, later, 249) == market.cvvol(closes, jumpy, 249)  # no look-ahead
+    assert "cvvol" in research.FEATS and "cvvol" in research.DIRECTIONAL
+    # planted: steady-trading stocks pay for longs, jumpy ones pay for shorts; -z_cvvol finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-cv-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            cv = rng.uniform(0.2, 2.0)
+            ex = (cv - 1.1) * 0.04 if bear else -(cv - 1.1) * 0.04
+            pid = f"p-cv-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"cvvol": cv}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["steady trading activity (-z_cvvol)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills cvvol as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, closes))
+    monkeypatch.setattr(market, "daily_volumes", lambda s: later)
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features",
+                 "delay_features", "rskew_features", "coskew_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4, "delay": 0.3, "rskew": 0.7, "coskew": -0.2}
+    asof = dates[249]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-cvx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-cvx", "b-cvx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-cvx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-cvx'")["features"])["num"]
+    assert abs(num["cvvol"] - market.cvvol(closes, jumpy, 249)) < 1e-12 and num["cvvol"] > 1.5
+    assert num["coskew"] == -0.2 and num["rskew"] == 0.7
+
+
 def test_ticker_must_still_be_the_company_the_idea_names():
     # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
     # abbreviations still count as the same company.

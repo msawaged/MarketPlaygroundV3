@@ -1022,6 +1022,34 @@ def coskew_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"coskew": coskew(dates, closes, sdates, scloses, i) if i >= 0 else 0.0}
 
 
+def cvvol(closes: list[float], vols: list[float], i: int, window: int = 252, min_n: int = 120) -> float:
+    """Variability of trading activity (Chordia, Subrahmanyam & Anshuman 2001, "Trading activity and expected stock
+    returns"): the coefficient of variation (std / mean) of daily dollar volume over the last `window` sessions up to
+    index i only. The paper finds a strong *negative* link: stocks whose trading activity swings the most earned
+    less, even after controlling for its level. The paper uses monthly dollar volume and turnover over 36 months; we
+    use a year of daily dollar volume from our feed (IEX by default, a slice of total volume, fine for ranking stocks
+    against each other). Clipped to [0, 5]; 0.0 without `min_n` priced sessions or with no volume."""
+    if i < 0 or i >= len(closes) or len(vols) != len(closes):
+        return 0.0
+    dv = [closes[k] * vols[k] for k in range(max(0, i - window + 1), i + 1) if closes[k] > 0 and vols[k] > 0]
+    n = len(dv)
+    if n < min_n:
+        return 0.0
+    m = sum(dv) / n
+    if m <= 0:
+        return 0.0
+    sd = math.sqrt(sum((x - m) ** 2 for x in dv) / (n - 1))
+    return max(0.0, min(5.0, sd / m))
+
+
+def cvvol_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"cvvol": ...} using closes and volumes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    vols = daily_volumes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"cvvol": cvvol(closes, vols, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1133,6 +1161,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "delay": delay(dates, closes, sdates, scloses, i),
         "rskew": rskew(closes, i),
         "coskew": coskew(dates, closes, sdates, scloses, i),
+        "cvvol": cvvol(closes, daily_volumes(symbol), i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

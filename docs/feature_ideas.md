@@ -450,3 +450,38 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   is Murad's decision, written up in docs/brain_upgrades.md). `lift_diff` on few disagreements is noisy, so report
   `n_diff` with it and don't quote it under ~100 calls. The app's #1 baseline must be the same no-look-ahead version
   the "app (current #1)" row uses, or the comparison inherits its leak.
+
+## 2026-11-21 — "Does it hold every year?": each research result split into time blocks, with a sign-consistency count
+- **Area:** brain (research honesty). Reporting only.
+- **Status:** proposed.
+- **Problem:** every research number is one average over the whole test period (2024-12-03 on, 429 call dates,
+  n = 2,703). An edge that lived in one stretch (one rally, one sell-off, one hot theme) and vanished since looks the
+  same as one that held throughout, and the outlier check (lift_w, top-10 share) can't tell them apart because it
+  clips single calls, not whole months. Today's numbers make it matter: the strongest fixed rule, "avoid right-skewed
+  stocks (-z_rskew)", has lift +1.45% with n_eff only 922 of 2,703 calls (its calls cluster in time), and beats the
+  app's #1 by +1.23% where they differ (t_nw 2.44); the learned neural net leads `is_new` (+1.23%, t_nw 2.83). Before
+  anyone leans on either, the obvious question is "was it good in each part of the period, or in one?", and nothing
+  stored answers it. A side observation for whoever builds this: the coskew row reports n_eff = n (2,703) with t_nw
+  above t, unusual for overlapping 90-day windows, worth a glance at `_se_overlap` while in there.
+- **Source:** McLean & Pontiff (2016), "Does Academic Research Destroy Stock Return Predictability?", Journal of
+  Finance 71(1), 5-32 (CFA Institute digest: https://rpc.cfainstitute.org/research/cfa-digest/2016/06/does-academic-research-destroy-stock-return-predictability-digest-summary;
+  author copy: https://ivey.uwo.ca/media/3775549/pontiff.pdf): across 97 published predictors, returns were about 26%
+  lower out of sample and 58% lower after publication, so an average over a long window overstates what is left now.
+  Bailey, Borwein, López de Prado & Zhu (2017), "The Probability of Backtest Overfitting" (J. Computational Finance)
+  makes the same point with combinatorially split periods: a strategy chosen on the whole sample should keep its rank
+  across sub-periods.
+- **Build sketch (S):** in `research.run` / `_metrics`, split each method's test calls into K = 4 chronological blocks
+  of equal call count by belief `as_of_date` (calls on one date stay in one block). Per block store `lift`, `n`,
+  `beat`; per method add `blocks` (the list), `pos_blocks` (how many blocks have lift > 0), `last_block_lift`, and
+  `block_spread` (max minus min block lift). `luck.steady` = methods that clear the luck bar *and* have lift > 0 in
+  at least 3 of 4 blocks. Files: backend/v4/research.py, one planted test in backend/v4/tests/test_v4.py (a rule that
+  only works in the first quarter of dates shows `pos_blocks` 1 and stays out of `luck.steady`; an even rule shows 4),
+  one header line in docs/research_ideas.md; optionally a "held in 4 of 4 periods" note per row on the Brain page.
+  Data: none new (dates are already loaded). Memory: four small sums per method, negligible on the 512Mi job.
+- **How we'd know it worked:** the next run says, for example, "rskew positive in 4 of 4 blocks, latest block +X%", and
+  research log entries quote pos_blocks / last_block_lift beside lift. A rule positive in only one block is read as an
+  episode, not an edge, however high its t.
+- **Risks:** must stay reporting only: `_passes` / `fit_production` and the luck bar's threshold are untouched
+  (changing the gate is Murad's decision, written up in docs/brain_upgrades.md). Each block holds ~675 calls but only
+  ~100 dates, so a block's lift is noisy: report block n and don't treat one negative block as a failure; the point is
+  spotting rules carried by a single stretch. Blocks must be cut on dates, never on outcomes.

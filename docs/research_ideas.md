@@ -614,4 +614,47 @@ the app's (52.9%).
   points toward the lottery reading of idea 16.
 - **Note:** until enrich finishes backfilling older picks they read `coskew = 0`; trust the result once `coskew` is out
   of `provisional` in the research kv (coverage share >= 99%).
+- **Result (final, run 2026-11-21 17:36 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703; coverage `coskew` 100%, zero
+  share 0.2%, not in `provisional`):** lift **+0.83%**, beat **52.2%**, t **3.00** (t_nw **3.12**); risk-matched lift
+  **+0.87%**, beat_adj **53.6%**, t **3.26** (t_nw **3.95**). Outlier check: lift_w **+0.70%** (t 2.86, t_nw 2.62),
+  median per-call lift +0.90%, top-10 share 35%. Is it new: same_as_app **24.5%**, n_diff 2,040, lift_diff **+0.40%**
+  (t 0.76, t_nw 0.58). Luck bar 3.27 for 46 tries: in `clear_adj` and top of `clear_adj_nw` (risk-matched t_nw 3.95),
+  not in `clear` / `clear_nw` / `clear_w` (raw t 3.00 and 3.12 under the bar). Reading: the paper's side wins, about
+  half the size of idea 16 (rskew +1.45%), and where it disagrees with the app's #1 it adds nothing measurable
+  (lift_diff t 0.58), so it looks like a weaker restatement of what the app already finds rather than a new edge.
+  Coskewness does not carry rskew's effect: rskew's own is-it-new numbers (same run: same_as_app 25.2%, n_diff 2,023,
+  lift_diff **+1.23%**, t 2.24, t_nw 2.44) are much stronger, which leans toward the stock's own lopsidedness (lottery
+  preference), not market-linked tail risk. Caveats: the kv reports n_eff = n (2,703) for this rule and its t_nw sits
+  above the plain t, unusual for 90-day overlapping windows (rskew's n_eff is 922), so treat t_nw here with care;
+  46 rules tried. Ridge weight on z_coskew -0.0017 (small). Fixed rules do not go live.
+- **Also answers idea 16's caveat (a):** rskew picks the same #1 as the app on only 25% of calls and beats the app's #1
+  by +1.23% where they differ (t_nw 2.44, under the 3.27 luck bar), so it is mostly *not* the app's picks restated;
+  promising but not yet clear of luck on the head-to-head.
+
+### 18. Variability of trading activity: avoid stocks whose trading swings the most (Chordia, Subrahmanyam & Anshuman)
+- **Added:** 2026-11-21
+- **Source:** Chordia, Subrahmanyam & Anshuman (2001), "Trading activity and expected stock returns", Journal of
+  Financial Economics 59(1), 3-32: https://research.iimb.ac.in/fac_pubs/1268 (working paper:
+  https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/03/0121.pdf)
+- **Why:** the paper expected stocks with jumpier liquidity to pay a premium, and found the opposite: a strong
+  *negative* link between the variability of dollar volume (and turnover) and later returns, even after controlling for
+  the level of trading, size, book-to-market and momentum. A volume-only idea the log hasn't tried: Amihud (8) is the
+  *level* of price impact, rvol is the last few weeks' volume, continuing overreaction (9) signs volume by price moves;
+  none reads how *unsteady* trading has been.
+- **Computed as:** `cvvol` = coefficient of variation (sample std / mean) of daily dollar volume (close x volume) over
+  the last 252 sessions (~1 year) up to the pick's own date, clipped to [0, 5]; 0 without 120 priced sessions or with no
+  volume. The paper uses monthly dollar volume over 36 months; we use a year of daily data from our feed (IEX by
+  default, a slice of total volume, fine for ranking stocks against each other): a data and hold-length choice, not the
+  paper's exact measure. Daily CV also rises with event spikes (earnings days), which the monthly version smooths.
+  `market.cvvol` / `market.cvvol_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes and volumes up to each pick's own date
+  only (other features untouched). Directional (bearish calls flip it, so the rule shorts the stock whose trading swings
+  most). Research rule: `steady trading activity (-z_cvvol)`; `z_cvvol` is also available to the learned
+  ridge/gbm/net once its coverage passes (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w, same_as_app / lift_diff, and the luck bar (now 47
+  tries); compare with illiquidity (8, `z_amihud`, which cleared `clear` and `clear_adj` on 2026-11-21) and high vol:
+  jumpy trading goes with small, volatile names, and in this sample those have done *well*, so the paper's side may run
+  the wrong way here as MAX (5) and IVOL (13) did.
+- **Note:** until enrich finishes backfilling older picks they read `cvvol = 0`; trust the result once `cvvol` is out of
+  `provisional` in the research kv (coverage share >= 99%).
 - **Result:** pending.

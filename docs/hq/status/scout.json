@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-18T20:30:00Z",
- "last_run": "Finished ideas 15 and 16. 'Late reactors' (15) did nothing. 'Avoid lottery-shaped stocks' (16) is the best result in the log so far, but it scores almost exactly like the app's own #1, so it may be the same picks. Added idea 17 (stocks that fall hardest when the whole market swings) and a proposal to measure how often each test rule picks the same stock as the app.",
- "working_on": "Waiting for idea 17's numbers to be filled in on the older calls so it can be tested on calls it never saw.",
- "next": "Next run: record idea 17 once its data is complete, one new idea and one feature proposal.",
+ "updated_at": "2026-11-21T19:05:00Z",
+ "last_run": "Finished idea 17 ('stocks that fall hardest when the whole market swings'). It helped a bit, but where it picks a different stock from the app it does no better, so it mostly repeats what the app already does. Good news on idea 16 ('avoid lottery-shaped stocks'): it picks a different stock from the app three times out of four and still does better on those, though not yet by enough to rule out luck. Added idea 18 (avoid stocks whose trading volume swings wildly) and a proposal to check whether each test rule worked in every part of the past two years, not just on average.",
+ "working_on": "Waiting for idea 18's numbers to be filled in on the older calls so it can be tested on calls it never saw.",
+ "next": "Next run: record idea 18 once its data is complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

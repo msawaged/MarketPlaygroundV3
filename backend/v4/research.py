@@ -58,13 +58,16 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          # coskewness (Harvey & Siddique 2000): standardized co-movement of the stock's residual with SPY's squared
          # moves, daily returns over ~1 year
          "coskew",
+         # variability of trading activity (Chordia, Subrahmanyam & Anshuman 2001): coefficient of variation of daily
+         # dollar volume over ~1 year
+         "cvvol",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "cvvol", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -108,7 +111,8 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%"co"%' OR p.features NOT LIKE '%"seas"%'
                   OR p.features NOT LIKE '%"dbeta"%' OR p.features NOT LIKE '%"ivol"%'
                   OR p.features NOT LIKE '%"ltr"%' OR p.features NOT LIKE '%"delay"%'
-                  OR p.features NOT LIKE '%"rskew"%' OR p.features NOT LIKE '%"coskew"%')
+                  OR p.features NOT LIKE '%"rskew"%' OR p.features NOT LIKE '%"coskew"%'
+                  OR p.features NOT LIKE '%"cvvol"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
@@ -116,7 +120,7 @@ def enrich(limit: int = 300) -> dict:
             or "resid_mom" not in num or "beta" not in num or "max5" not in num \
             or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num \
             or "seas" not in num or "dbeta" not in num or "ivol" not in num or "ltr" not in num or "delay" not in num \
-            or "rskew" not in num or "coskew" not in num
+            or "rskew" not in num or "coskew" not in num or "cvvol" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -158,6 +162,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.rskew_features(r["ticker"], d0))
             if "coskew" not in have:
                 vp.update(market.coskew_features(r["ticker"], d0))
+            if "cvvol" not in have:
+                vp.update(market.cvvol_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -821,6 +827,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         # idea log, added 2026-11-18: coskewness (Harvey & Siddique 2000) — the stock that does worst when the market
         # swings hardest (most negative coskewness, which investors pay to avoid) for a long (most positive, for a short)
         "negative coskewness premium (-z_coskew)": lambda f: -f["z_coskew"],
+        # idea log, added 2026-11-21: variability of trading activity (Chordia, Subrahmanyam & Anshuman 2001) — the stock
+        # whose dollar volume has been steadiest for a long (the one whose trading swings the most, for a short)
+        "steady trading activity (-z_cvvol)": lambda f: -f["z_cvvol"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
