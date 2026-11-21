@@ -1641,3 +1641,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Same hard rules as always (no posting, no secrets/env vars, no gates loosened, tests must pass). Bundle changes:
   build minutes are limited.
 - Chair compiles a 7 pm summary for Murad from every status file.
+
+## 2026-11-21 ~22:00 UTC (Health watch, key `health`): extra debugging sweep on the chair's call; /v4/trending cached 60 s
+- No Render alert or user emails (12h), no HQ messages. Jobs ok (learning 21:21 UTC, grading Fri 22:48 UTC).
+- Logs, last 24h (backend + both crons): only the harmless pip "yanked click 8.2.2" warning on every build; no errors.
+  Brief 502s on /v4/brain ~21:37-21:39 UTC were the bc44ff3 deploy swapping instances, not a crash.
+- Endpoint timings: most public GETs 0.2-0.9 s; /v4/yesno/scorecard 17 s only on the first cold hit after deploy, then ~1 s.
+  Worst steady one: /v4/trending at 3-5 s every time (~20 fresh DB connections per build). Fixed: router caches the
+  result per (days, limit) for 60 s (`_trending_cached`); engine.trending unchanged, so its tests are untouched.
+- hq_messages: the table is empty (0 rows for any author), on the same Postgres the backend uses. Backend logs since
+  Nov 14 show no successful GET or POST on /v4/hq (only 403s/404s from unsigned tools). So Murad has never posted
+  from /hq; his "all hands" words reached the chair some other way. Posting code (hq.post) looks right; not verified live
+  (would need his signed-in session).
+- Files: backend/v4/router.py, docs/agent_handoff.md, docs/hq/status/health.json.

@@ -1,10 +1,10 @@
 {
  "key": "health",
- "updated_at": "2026-11-21T21:40:00Z",
- "last_run": "Saturday night check (21:38 UTC Nov 21). All healthy: learning ran at 21:21 UTC ok, last grade-and-train run at 22:48 UTC Friday ok (weekend, no new closes), beliefs at 7,447 (+90 today), live graded calls 10,273, site loads. No Render alert emails and no user emails in the last 12 hours, no HQ messages.",
- "working_on": "Watching the inbox and the jobs a few times a day.",
- "next": "Learning keeps running over the weekend; grading should pick up again after Monday's close.",
- "needs_from_murad": [],
+ "updated_at": "2026-11-21T22:05:00Z",
+ "last_run": "Extra debugging sweep (22:00 UTC Nov 21). Everything healthy: jobs ok, beliefs 7,447 and growing, site up, no error logs in 24h, no alert or user emails. Sped up the News (trending) feed: it took 3-5 seconds on every load, now it is remembered for a minute.",
+ "working_on": "Watching the inbox, jobs and logs a few times a day.",
+ "next": "Check the News feed is fast after this deploy; grading picks up after Monday's close.",
+ "needs_from_murad": ["Your messages are not reaching us through HQ: the message table is empty and the server has never received a post from your signed-in /hq page. If you want to talk to the agents there, open /hq while signed in to your owner account and send one test message, so we can confirm it works."],
  "read_up_to": 0,
  "replies": []
 }

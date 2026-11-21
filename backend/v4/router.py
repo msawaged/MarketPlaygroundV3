@@ -125,9 +125,24 @@ async def get_belief(belief_id: str):
     return b
 
 
+_trending_cache: dict = {}
+TRENDING_TTL = 60  # seconds; trending moves slowly and each build is ~20 DB round trips (3-5 s on Render)
+
+
+def _trending_cached(days: int, limit: int) -> dict:
+    import time
+    key = (days, limit)
+    hit = _trending_cache.get(key)
+    if hit and time.time() - hit[0] < TRENDING_TTL:
+        return hit[1]
+    v = engine.trending(days, limit)
+    _trending_cache[key] = (time.time(), v)
+    return v
+
+
 @router.get("/trending")
 async def get_trending(days: int = 14, limit: int = 8):
-    return await run_in_threadpool(engine.trending, max(1, min(days, 90)), max(1, min(limit, 20)))
+    return await run_in_threadpool(_trending_cached, max(1, min(days, 90)), max(1, min(limit, 20)))
 
 
 @router.get("/stats")
