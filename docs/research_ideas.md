@@ -667,4 +667,35 @@ the app's (52.9%).
   the wrong way here as MAX (5) and IVOL (13) did.
 - **Note:** until enrich finishes backfilling older picks they read `cvvol = 0`; trust the result once `cvvol` is out of
   `provisional` in the research kv (coverage share >= 99%).
+- **Result:** pending. At run 2026-11-21 21:05 UTC `cvvol` coverage was 12.6% (still in `provisional`); enrich is
+  backfilling it.
+
+### 19. Timing of the 52-week high: stocks that set their high recently (Bhootra & Hur)
+- **Added:** 2026-11-21 (late)
+- **Source:** Bhootra & Hur (2013), "The timing of 52-week high price and momentum", Journal of Banking & Finance
+  37(10), 3773-3782: https://ideas.repec.org/a/eee/jbfina/v37y2013i10p3773-3782.html (also
+  https://econpapers.repec.org/RePEc:eee:jbfina:v:37:y:2013:i:10:p:3773-3782)
+- **Why:** stocks whose 52-week high was set recently beat stocks whose high was set long ago, by about 0.70% a month
+  top decile vs bottom, and the classic "near the 52-week high" strategy (George & Hwang 2004) earns about twice as
+  much among recent-high stocks. Read as recency bias: investors anchor on a fresh high and under-react to the news
+  that made it, while an old high has faded from view. New to the log: the baseline "near highs (z_dist_high)" reads
+  *how far* the price is from its high (and ran the wrong way here, -1.06% on 2026-11-02); this reads *when* the high
+  was set. Two stocks 10% below their highs can have set them last week or last year. A position-length idea (the
+  paper holds for months), so it suits our ~90-day hold.
+- **Computed as:** `hi_age` = sessions since the highest close of the last 252 sessions (~1 year) up to the pick's own
+  date, divided by 251 (0 = the high is today, 1 = a year ago); ties take the latest day; 0.5 (neutral, also
+  `research.NEUTRAL`) without 200 priced sessions. The paper counts days since the 52-week high; dividing by the window
+  only rescales it (rules are z-scored within a belief). `market.hi_age` / `market.hi_age_features`; stored for new
+  picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by
+  `research.enrich` using closes up to each pick's own date only (other features untouched). Directional (bearish
+  calls flip it, so the rule shorts the stock whose high is the most distant). Research rule:
+  `recent 52-week high (-z_hi_age)`; `z_hi_age` is also available to the learned ridge/gbm/net once its coverage passes
+  (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w, same_as_app / lift_diff, pos_blocks /
+  last_block_lift, and the luck bar (now 48 tries). Compare with "near highs (z_dist_high)" and the momentum rows
+  (12-1, MAD, echo): a fresh high goes with strong recent momentum, so a result that only restates momentum adds
+  little; lift_diff against the app tells whether it picks different stocks.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 0.5; trust the result once `hi_age` is
+  out of `provisional` in the research kv (coverage share >= 99%). `cvvol` (idea 18) is backfilled first in the same
+  loop, so `hi_age` fills in alongside or just after it.
 - **Result:** pending.

@@ -134,6 +134,8 @@ def make_features(
         "coskew": market.get("coskew", 0.0),
         # variability of daily dollar volume over ~1 year (research + ranker v2 only; not MODEL_NUMERIC)
         "cvvol": market.get("cvvol", 0.0),
+        # timing of the 52-week high, 0 = today, 1 = a year ago (research + ranker v2 only; not MODEL_NUMERIC)
+        "hi_age": market.get("hi_age", 0.5),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

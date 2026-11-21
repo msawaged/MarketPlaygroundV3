@@ -487,3 +487,48 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   (changing the gate is Murad's decision, written up in docs/brain_upgrades.md). Each block holds ~675 calls but only
   ~100 dates, so a block's lift is noisy: report block n and don't treat one negative block as a failure; the point is
   spotting rules carried by a single stretch. Blocks must be cut on dates, never on outcomes.
+
+## 2026-11-21 (late) — "Would we have picked the winner?": probability of backtest overfitting across all research rules
+- **Area:** brain (research honesty). Reporting only.
+- **Status:** proposed
+- **Problem:** the research run now tries 47 ways to choose the #1 (48 after idea 19), and the honest question about the
+  *process*, not any single rule, is: when we pick the best-looking way on one stretch of history, does it stay good on
+  the rest? The luck bar (3.27 for 47 tries) and "Does it hold every year?" judge rules one at a time; neither measures
+  how often the act of picking the winner fools us. Today's run shows why it matters: the no-look-ahead app #1 was
+  ahead in its first three stretches (+1.54%, +1.20%, +1.01%) and then -1.65% in the latest (2026-02-27 to 2026-07-24,
+  beat 43.5%); the stored app #1 and rskew, both near the top on the whole period (t 4.54 and 4.96), are also negative
+  in the latest stretch (-0.74%, -0.39%), while the neural net, ridge, gbm and Amihud stayed positive (+0.6% to +1.7%).
+  A rule chosen on the early data would not always have been the one that held up. Ranker v2 is live as the mlp
+  alone, chosen exactly this way, so a single number for "how likely is the chosen one to be below median out of
+  sample" is the most direct honesty check we don't have.
+- **Source:** Bailey, Borwein, López de Prado & Zhu (2017), "The Probability of Backtest Overfitting", Journal of
+  Computational Finance 20(4): https://papers.ssrn.com/abstract=2326253 (author copy:
+  https://escholarship.org/content/qt4w1110bb/qt4w1110bb.pdf). Combinatorially symmetric cross-validation (CSCV): split
+  the history into S equal blocks, and for every way of choosing S/2 blocks as "in-sample", pick the best strategy
+  there and see where it ranks on the other half. PBO = share of splits where the in-sample winner ranks below the
+  out-of-sample median. Also reports the slope of out-of-sample vs in-sample performance (performance degradation)
+  and the chance the winner loses money out of sample.
+- **Build sketch (S/M):** in `research.run`, after results are filled: cut the test-period call dates into S = 8
+  chronological blocks of about equal call count (same date-cut rule as `_time_blocks`, a date never splits). For each
+  method with n > 0, keep 8 (sum lift, count) pairs from the per-call lifts `_metrics` already sees (47 x 8 numbers,
+  negligible on 512Mi). For each of the C(8,4) = 70 splits: IS score = pooled mean lift over its 4 blocks per method,
+  winner = argmax, OOS = pooled mean over the other 4; record the winner's OOS rank fraction (logit as in the paper),
+  its OOS lift, and the IS/OOS pair. Store `pbo` = {`pbo`, `n_splits`, `n_methods`, `oos_lift_med` (winner's median OOS
+  lift), `p_loss` (share of splits with winner OOS lift < 0), `slope` (OOS on IS lift across splits), `winners`
+  (method -> how many of the 70 splits it won)} in the research kv, and the same restricted to the learned candidates
+  that `fit_production` chooses among (`pbo_learned`). Exclude the look-ahead "app (current #1)" row from the pool (use
+  the no-look-ahead app row as a member). One Brain page line in the luck check: "If we had picked the best way on half
+  the history, it ranked in the bottom half on the other half X% of the time." Files: backend/v4/research.py, one
+  planted test in backend/v4/tests/test_v4.py (40 pure-noise rules give PBO near 0.5; one rule with a real planted edge
+  plus noise rules gives PBO near 0 and wins most splits), a header line in docs/research_ideas.md,
+  frontend/src/components/BrainPage.jsx. Data: none new.
+- **How we'd know it worked:** the kv carries `pbo` after the next run, and the research log quotes it each day. A
+  PBO well under 0.5 (the paper treats about 0.1 or less as reassuring) with the learned models winning most splits
+  says our selection is picking real signal; a PBO near 0.5 says the leaderboard is mostly reshuffling noise and the
+  log should say so plainly.
+- **Risks:** must stay reporting only: `_passes`, `fit_production`, the luck bar and MIN_LIFT/MIN_T are untouched (any
+  gate use is Murad's decision, written up in docs/brain_upgrades.md). Many rules are near-copies (momentum variants,
+  gbm vs gbm-shifted), which makes PBO look better than it is; report `n_methods` and the winners table so this is
+  visible. Each block holds only ~50 dates, so per-block lifts are noisy and PBO itself has sampling error; say so
+  next to the number. Blocks must be cut on dates, never on outcomes, and only test-period calls (after the 90-day
+  embargo) may enter.

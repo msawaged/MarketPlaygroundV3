@@ -1665,3 +1665,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Gates unchanged. Test: test_grades_put_a_real_time_entry_on_the_split_adjusted_scale.
 - Files: backend/v4/market.py, backend/v4/grader.py, backend/v4/engine.py, backend/v4/tests/test_v4.py,
   docs/brain_upgrades.md, docs/agent_handoff.md, docs/hq/status/brain.json.
+## 2026-11-21 ~22:15 UTC (CTO scout routine, key `scout`): idea 19 (timing of the 52-week high) added; PBO proposal
+- No HQ messages from Murad. Idea 18 (`cvvol`) still pending: coverage 12.6% at the 2026-11-21 21:05 run.
+- New feature `hi_age` (Bhootra & Hur 2013): sessions since the highest close of the past 252, / 251 (0 = today), as
+  of each pick's date; neutral 0.5 (research.NEUTRAL). Added to market.hi_age / hi_age_features / features(),
+  nn.make_features num (not MODEL_NUMERIC), research.FEATS + DIRECTIONAL, research.enrich backfill, fixed rule
+  "recent 52-week high (-z_hi_age)". Result pending until `hi_age` leaves `provisional`.
+- Proposal (docs/feature_ideas.md): probability of backtest overfitting (CSCV, 8 date blocks, 70 splits) across all
+  research rules, reporting only. Evidence: the no-look-ahead app #1 was -1.65% in the latest stretch after three
+  positive ones.
+- Not changed: gates, `_passes`, `fit_production`, luck bar.
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

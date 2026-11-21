@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-21T19:05:00Z",
- "last_run": "Finished idea 17 ('stocks that fall hardest when the whole market swings'). It helped a bit, but where it picks a different stock from the app it does no better, so it mostly repeats what the app already does. Good news on idea 16 ('avoid lottery-shaped stocks'): it picks a different stock from the app three times out of four and still does better on those, though not yet by enough to rule out luck. Added idea 18 (avoid stocks whose trading volume swings wildly) and a proposal to check whether each test rule worked in every part of the past two years, not just on average.",
- "working_on": "Waiting for idea 18's numbers to be filled in on the older calls so it can be tested on calls it never saw.",
- "next": "Next run: record idea 18 once its data is complete, one new idea and one feature proposal.",
+ "updated_at": "2026-11-21T22:15:00Z",
+ "last_run": "Idea 18 (avoid stocks whose trading volume swings wildly) is still waiting: only about 1 in 8 older calls has its number filled in so far. Added idea 19: prefer stocks that hit their one-year high recently rather than long ago (a published finding that investors under-react to fresh highs). Also proposed a check on the whole research process: if we had picked the best-looking method on half of the past, how often would it have been below average on the other half?",
+ "working_on": "Waiting for ideas 18 and 19 to be filled in on the older calls so they can be tested on calls they never saw.",
+ "next": "Next run: record ideas 18 and 19 once their data is complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
