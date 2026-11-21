@@ -9,6 +9,9 @@ What a derivatives desk will check first (fix or label honestly; never hide):
 - **Risk-neutral vs real-world.** Option-implied odds are risk-neutral. Say so where they're shown.
 - **Replication.** A call spread approximates a digital: partial payoff between strikes, wider strikes = blurrier
   line. Show strikes and the in-between zone (already on the screen).
+  Done 2026-11-21 (Builder): a line on a listed strike trades the strikes either side of it (NVDA $185 on $2.50
+  strikes: $182.50/$187.50, not $185/$187.50, which was a digital at $186.25 priced at 44% beside "50% odds").
+  The spread is now the same pair the odds are read from, so YES's price is the odds and both breakevens sit at the line.
 - **Costs and fills.** Practice prices use mid / model vol. Say "before bid/ask costs"; real orders use the
   natural/mid limit (`real_money_order`).
   Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price

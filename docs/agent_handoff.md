@@ -1448,3 +1448,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - yesno.make_call builds its own confirmation instead of practice_options' generic one ("Opened 2 NVDA Close Call: NO
   NVDA > $185.00 contracts ..."), and "Just call it" names the question and a readable date instead of 2026-11-27.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-21 ~08:45 UTC (Builder routine): Close Call trades the spread centred on the line
+- No HQ messages from Murad; no proposals open in feature_ideas.md, so this fixes a misleading Close Call price.
+- When the line was a listed strike, `yesno.strikes_around` took the line and the next strike up: NVDA $185 on $2.50
+  strikes traded $185/$187.50, which replicates a close above $186.25. The screen said "Market's odds 50%" while YES
+  cost $109 of $250 (44%) and both breakevens sat above the line ($186.09). Now a line on a strike takes the strikes
+  either side ($182.50/$187.50, $500 payout, the same pair `digital_from_spread` reads the odds from): YES $248 of
+  $500, breakevens $184.98 / $184.99. A line between two strikes keeps those two; the lowest strike falls back as before.
+- `spread_note(..., level)` adds "Its strikes sit $2.50 either side of the $185.00 line, so YES's share of the payout
+  is about the market's odds". YesNoPage prints strikes as $182.50 (was $182.5). WhatsNew line.
+- Not changed: odds, pricing (per-strike vols), grading (close vs line), open trades, `real_money_order` code
+  (still off; its proposed order now uses the same centred spread). Payouts per contract are now usually 2 strike gaps.
+- Tests updated to the centred pair (skew test now pins YES price = market odds within 0.5 pt); 224 passed (fresh venv).
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.

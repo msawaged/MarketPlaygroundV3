@@ -6,6 +6,8 @@ import Page, { Card } from './ui/Page';
 import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoMyRecord, yesnoScorecard } from '../lib/api';
 
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
+// A strike as the market lists it: $185, $182.50 (not $182.5).
+const strikeTxt = (k) => (Number.isInteger(k) ? String(k) : Number(k).toFixed(2));
 // Practice YES / NO prices are to the cent; show the cents so YES + NO visibly add up to (just under) the payout.
 const usdc = (v) => usd(v, Math.abs(Math.round(Number(v || 0) * 100)) % 100 ? 2 : 0);
 const pc = (p) => `${Math.round(Number(p || 0) * 100)}%`;
@@ -349,7 +351,7 @@ export default function YesNoPage() {
             </div>
           </div>
           <ListedCosts c={q.listed} />
-          <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options. The odds are risk-neutral (what option prices imply, not a forecast); over days or weeks they sit close to real-world odds. {q.price_source === 'strikes' && q.leg_vols ? `Practice trades cost the listed mid prices of the $${q.strikes[0]} and $${q.strikes[1]} options, each at its own implied volatility (${(q.leg_vols[0] * 100).toFixed(1)}% and ${(q.leg_vols[1] * 100).toFixed(1)}%, so skew is included), before bid/ask costs.` : q.price_source === 'spread' ? `Practice trades cost the listed mid price of the same $${q.strikes[0]}/$${q.strikes[1]} spreads (skew included), before bid/ask costs.` : q.price_source === 'line_iv' ? "Practice trades are priced at the line's implied volatility (no tight quote on the trade's strikes), before bid/ask costs." : 'Practice trades are priced at an estimated volatility (no live option quotes), before bid/ask costs.'} Practice money. Not investment advice.</p>
+          <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options. The odds are risk-neutral (what option prices imply, not a forecast); over days or weeks they sit close to real-world odds. {q.price_source === 'strikes' && q.leg_vols ? `Practice trades cost the listed mid prices of the $${strikeTxt(q.strikes[0])} and $${strikeTxt(q.strikes[1])} options, each at its own implied volatility (${(q.leg_vols[0] * 100).toFixed(1)}% and ${(q.leg_vols[1] * 100).toFixed(1)}%, so skew is included), before bid/ask costs.` : q.price_source === 'spread' ? `Practice trades cost the listed mid price of the same $${strikeTxt(q.strikes[0])}/$${strikeTxt(q.strikes[1])} spreads (skew included), before bid/ask costs.` : q.price_source === 'line_iv' ? "Practice trades are priced at the line's implied volatility (no tight quote on the trade's strikes), before bid/ask costs." : 'Practice trades are priced at an estimated volatility (no live option quotes), before bid/ask costs.'} Practice money. Not investment advice.</p>
         </Card>
       )}
 

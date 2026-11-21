@@ -8,8 +8,9 @@ A Nadex-style question without Nadex. Three numbers, in this order:
   2. The brain's lean: the market's odds nudged by what the brain knows (the stock's MuLine trend and which way the
      app's recent ideas on it point). The nudge is small and capped (at most about 7 points), because the brain is
      proven on 90-day calls, not on one-week ones. Every lean is logged and graded so that changes with evidence.
-  3. The trade: YES = a call spread (buy the strike at the line, sell the next one up); NO = a put spread (buy the
-     next strike up, sell the one at the line). Fixed cost, fixed most-you-can-make, like a Nadex contract. Opened
+  3. The trade: YES = a call spread on the listed strikes either side of the line (buy the lower, sell the upper),
+     centred on it so its price matches the market's odds; NO = the matching put spread (buy the upper, sell the
+     lower). Fixed cost, fixed most-you-can-make, like a Nadex contract. Opened
      with practice money through practice_options, so it shows in Portfolio and settles at expiration like any
      other practice options trade.
 
@@ -266,16 +267,24 @@ def lean(market_p: float, trend_dir: float, idea_balance: Optional[float]) -> tu
 
 
 def strikes_around(strikes: list[float], level: float) -> Optional[tuple[float, float]]:
-    """(the listed strike at or just below the line, the next one up)."""
+    """The two listed strikes either side of the line, so the spread is centred on it.
+
+    A k1/k2 call spread replicates a bet on a close above the middle of its strikes, (k1 + k2) / 2 (see
+    digital_from_spread). When the line is itself a listed strike, the line and the next strike up (the old choice)
+    put that middle half a strike gap above the line: NVDA $185 on $2.50 strikes was a $185/$187.50 spread, a bet on
+    a close above $186.25, priced at 44% while the screen said the market's odds were 50%, with both breakevens
+    above the line. So a line on a strike takes the strikes below and above it ($182.50/$187.50, the same pair the
+    odds are read from); a line between two strikes takes those two. Only when the line is the lowest listed strike
+    does it fall back to the line and the next one up."""
     ks = sorted(set(k for k in strikes if k > 0))
-    lo = [k for k in ks if k <= level + 1e-9]
-    if not lo:
+    below = [k for k in ks if k < level - 1e-9]
+    above = [k for k in ks if k > level + 1e-9]
+    if not above:
         return None
-    k1 = lo[-1]
-    hi = [k for k in ks if k > k1]
-    if not hi:
-        return None
-    return k1, hi[0]
+    on = any(abs(k - level) <= 1e-9 for k in ks)
+    if below:
+        return below[-1], above[0]
+    return (level, above[0]) if on else None
 
 
 def brier(p: float, happened: bool) -> float:
@@ -482,7 +491,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
             "listed": listed_costs(chain, k1, k2, exp, sides),
-            "spread_note": spread_note(u, k1, k2, width),
+            "spread_note": spread_note(u, k1, k2, width, level),
             "move": dict(move, lines=move_text(u, move, exp, isinstance(info, dict) and bool(info.get("is_etf")))) if move else None}
 
 
@@ -516,11 +525,17 @@ def listed_costs(chain: list[dict], k1: float, k2: float, exp: date, sides: dict
     return out
 
 
-def spread_note(u: str, k1: float, k2: float, width: float) -> str:
+def spread_note(u: str, k1: float, k2: float, width: float, level: Optional[float] = None) -> str:
+    line = ""
+    if level is not None and k1 < level < k2:
+        lo, hi = level - k1, k2 - level
+        line = (f"Its strikes sit ${lo:,.2f} either side of the ${level:,.2f} line, so YES's share of the payout is "
+                f"about the market's odds of a close above it. " if abs(lo - hi) < 0.005 else
+                f"Its strikes sit ${lo:,.2f} below and ${hi:,.2f} above the ${level:,.2f} line. ")
     return (f"YES is a ${k1:,.2f}/${k2:,.2f} call spread: it pays the full ${width:,.0f} per contract if {u} closes at "
-            f"or above ${k2:,.2f}, nothing at or below ${k1:,.2f}, and part of it in between. NO is the matching put "
-            f"spread, the mirror image. So the trade's result can differ from the yes/no answer when {u} closes between "
-            f"the two strikes; the breakeven shows where each side starts to make money.")
+            f"or above ${k2:,.2f}, nothing at or below ${k1:,.2f}, and part of it in between. {line}NO is the matching "
+            f"put spread, the mirror image. So the trade's result can differ from the yes/no answer when {u} closes "
+            f"between the two strikes; the breakeven shows where each side starts to make money.")
 
 
 def make_call(user_id: str, ticker: str, level: float, expiration: str, side: str, trade: bool = False,

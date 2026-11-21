@@ -4180,7 +4180,12 @@ def test_yesno_math():
     assert p < 0.5 and abs(p - 0.5) < 0.08
     assert yesno.lean(0.3, 0, None) == (pytest.approx(0.3), 0.0)    # no read -> market's odds
     assert yesno.strikes_around([95, 100, 105], 101) == (100, 105)
-    assert yesno.strikes_around([95, 100, 105], 100) == (100, 105)
+    assert yesno.strikes_around([95, 100, 105], 100) == (95, 105)     # on a strike: centred on the line
+    assert yesno.strikes_around([100, 105], 100) == (100, 105)         # lowest strike: line and the next one up
+    assert yesno.strikes_around([95, 100], 100) is None
+    assert "$2.50 either side of the $185.00 line" in yesno.spread_note("NVDA", 182.5, 187.5, 500, 185)
+    assert "$5.00 below and $2.50 above the $185.00 line" in yesno.spread_note("NVDA", 180, 187.5, 750, 185)
+    assert "line" not in yesno.spread_note("NVDA", 185, 187.5, 250).split("in between.")[1].split("NO is")[0]
     assert yesno.strikes_around([100, 105], 99) is None
     assert yesno.brier(0.7, True) == pytest.approx(0.09)
 
@@ -4231,16 +4236,17 @@ def test_yesno_quote_call_grade(monkeypatch):
     assert e["expirations"][0] == (TODAY + timedelta(days=9)).isoformat() and e["spot"] == spot
     lvl = float(int(spot))
     q = yesno.quote("WINR", lvl, e["expirations"][0])
-    assert q["strikes"] == [lvl, lvl + 1] and q["vol_source"] == "market"
+    assert q["strikes"] == [lvl - 1, lvl + 1] and q["vol_source"] == "market"     # centred on the line
     assert 0.3 < q["market_p"] < 0.8 and abs(q["brain_p"] - q["market_p"]) < 0.08
-    assert q["yes"]["payout"] == 100 and 0 < q["yes"]["cost"] < 100 and 0 < q["no"]["cost"] < 100
+    assert q["yes"]["payout"] == 200 and 0 < q["yes"]["cost"] < 200 and 0 < q["no"]["cost"] < 200
     assert q["yes"]["legs"][0]["option_type"] == "call" and q["no"]["legs"][0]["option_type"] == "put"
     # breakeven at expiration: YES call spread = k1 + cost, NO put spread = k2 - cost (per share)
-    assert q["yes"]["breakeven"] == pytest.approx(lvl + q["yes"]["cost"] / 100, abs=0.01)
+    assert q["yes"]["breakeven"] == pytest.approx(lvl - 1 + q["yes"]["cost"] / 100, abs=0.01)
     assert q["no"]["breakeven"] == pytest.approx(lvl + 1 - q["no"]["cost"] / 100, abs=0.01)
-    assert lvl < q["yes"]["breakeven"] < lvl + 1 and "breakeven" in q["spread_note"]
+    assert lvl - 1 < q["yes"]["breakeven"] < lvl + 1 and "breakeven" in q["spread_note"]
+    assert "$1.00 either side of the" in q["spread_note"]
     # both sides priced with one volatility: YES + NO = the payout (less a little interest), never free money
-    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.5
+    assert 194 <= q["yes"]["cost"] + q["no"]["cost"] <= 201
     with pytest.raises(yesno.YesNoError):
         yesno.quote("WINR", spot * 3, e["expirations"][0])
     with pytest.raises(yesno.YesNoError):
@@ -4394,15 +4400,15 @@ def test_yesno_skewed_chain_prices_each_strike_at_its_own_vol(monkeypatch):
     v = yesno.leg_vols(chain("WINR", k1, exp)[::2], k1, k1 + 1, spot, yrs, iv(k1))
     assert v == (pytest.approx(iv(k1), abs=2e-3), pytest.approx(iv(k1 + 1), abs=2e-3))
     q = yesno.quote("WINR", k1, exp.isoformat())
-    assert q["price_source"] == "strikes" and q["strikes"] == [k1, k1 + 1]
-    listed = (round(mid(k1, "call"), 2) - round(mid(k1 + 1, "call"), 2)) * 100
+    assert q["price_source"] == "strikes" and q["strikes"] == [k1 - 1, k1 + 1]
+    listed = (round(mid(k1 - 1, "call"), 2) - round(mid(k1 + 1, "call"), 2)) * 100
     assert q["yes"]["cost"] == pytest.approx(listed, abs=2.0)                       # the listed spread mid
-    flat = (bs_price(spot, k1, yrs, q["vol"], "call") - bs_price(spot, k1 + 1, yrs, q["vol"], "call")) * 100
+    flat = (bs_price(spot, k1 - 1, yrs, q["vol"], "call") - bs_price(spot, k1 + 1, yrs, q["vol"], "call")) * 100
     assert q["yes"]["cost"] - flat > 2.0                                            # the old flat-vol price was cheap
     df = math.exp(-RISK_FREE * yrs)
-    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=0.02)   # put-call parity, to the cent
-    # the market's odds (k1-1 / k1+1 spread, discounted) and YES's price (k1 / k1+1, a strike gap higher) now agree
-    assert abs(q["yes"]["cost"] / 100 / df - q["market_p"]) < 0.04
+    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(200 * df, abs=0.02)   # put-call parity, to the cent
+    # the market's odds are read from the same k1-1 / k1+1 spread YES is, so YES's price is those odds
+    assert q["yes"]["cost"] / 200 / df == pytest.approx(q["market_p"], abs=0.005)
     assert q["market_p"] == pytest.approx((mid(k1 - 1, "call") - mid(k1 + 1, "call")) / 2 / df, abs=0.01)
     # marked at the same per-strike vols as it was priced: worth what it cost right after it opens
     legs = practice_options._clean_legs(q["yes"]["legs"], "WINR", keep_leg_vols=True)
@@ -4453,7 +4459,7 @@ def test_yesno_real_money_order_is_ready_but_off(monkeypatch):
     o = rm["yes"]["order"]
     assert o["order_class"] == "mleg" and o["type"] == "limit" and len(o["legs"]) == 2
     assert [l["position_intent"] for l in o["legs"]] == ["buy_to_open", "sell_to_open"]
-    assert rm["yes"]["max_loss"] + rm["yes"]["max_gain"] == pytest.approx(100.0)
+    assert rm["yes"]["max_loss"] + rm["yes"]["max_gain"] == pytest.approx(q["yes"]["payout"])  # the same spread
 
 
 def test_yesno_listed_costs_show_the_real_bid_ask_next_to_the_practice_price(monkeypatch):
@@ -4493,7 +4499,7 @@ def test_yesno_sides_add_up_when_call_and_put_ivs_differ(monkeypatch):
     monkeypatch.setattr(market, "option_iv", lambda u, kind, *a, **k: 0.9 if kind == "call" else 0.2)
     e = yesno.expirations("WINR")
     q = yesno.quote("WINR", float(int(market.latest_price("WINR"))), e["expirations"][0])
-    assert 97 <= q["yes"]["cost"] + q["no"]["cost"] <= 100.0
+    assert 0.97 * q["yes"]["payout"] <= q["yes"]["cost"] + q["no"]["cost"] <= q["yes"]["payout"]
 
 
 def test_yesno_yes_plus_no_never_costs_more_than_the_payout(monkeypatch):
@@ -4707,8 +4713,8 @@ def test_yesno_quotes_too_wide_to_trade_use_one_vol_for_odds_and_price(monkeypat
     assert "too wide" in q["odds_source"] and q["market_p"] == q["market_p_flat_vol"]
     assert q["price_source"] == "line_iv" and q["leg_vols"] is None
     df = math.exp(-RISK_FREE * yrs)
-    assert abs(q["yes"]["cost"] / 100 / df - q["market_p"]) < 0.03     # YES costs about the odds shown
-    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(100 * df, abs=0.02)
+    assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.03     # YES costs about the odds shown
+    assert q["yes"]["cost"] + q["no"]["cost"] == pytest.approx(q["yes"]["payout"] * df, abs=0.02)
 
 
 def test_exercise_notes_american_style():
