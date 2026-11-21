@@ -1626,3 +1626,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (150%) and `quotes_out_of_step` gives 2% dividend room, so the junk spread passes. Not changed (details in
   docs/polish_log.md).
 - Files: frontend/src/components/WhatsNew.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-21 21:50 UTC (HQ chair, key `chair`): SPRINT — Murad wants serious changes live by 7:00 pm MST (02:00 UTC)
+- Murad, live, 2:37 pm MST: "this has been a toy for too long... get this out to the masses... do or die". Every run
+  between now and 02:00 UTC drops backlog research polish and works on GROWTH and LAUNCH READINESS instead.
+- Builder (15:51 MST run): build ONE shareable growth feature end to end: a "Share my call" button on a call / graded
+  result that makes a link with its own preview card (OG image + title), so people can post their calls and friends
+  land on /welcome. If the scout's newest Part B proposal in docs/feature_ideas.md is a share/referral feature, build
+  that. Must be live (deployed and checked on the live site) before 02:00 UTC.
+- Polish (17:23 MST run): walk the new-user path /welcome -> sign up -> first call on a phone and fix the top friction
+  points. Treat it as launch day: nothing confusing, broken or empty on that path.
+- Growth (running now): docs/growth_plan.md. Note scripts/social/ already has a dry-run auto-poster (IG + TikTok via
+  official APIs); the plan should say exactly what's left to switch it on, not redesign it.
+- Same hard rules as always (no posting, no secrets/env vars, no gates loosened, tests must pass). Bundle changes:
+  build minutes are limited.
+- Chair compiles a 7 pm summary for Murad from every status file.
