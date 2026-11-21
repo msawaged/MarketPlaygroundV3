@@ -99,6 +99,16 @@ _PROPER = {
 }
 
 
+def _name_in(word: str, context: str) -> bool:
+    """True when the context writes `word` with a capital in the middle of a sentence, after a lower-case word ("rivals
+    lose to Fresenius"), and never in lower case. A capital inside a longer name ("the Sunrise Tungsten Project",
+    "Norwegian Cruise Line") or a word the context also uses in lower case ("non-Chinese tungsten producer") is a
+    common noun, so "Tungsten supply will tighten" -> "I don't think tungsten supply will tighten"."""
+    if not context or re.search(rf"\b{re.escape(word.lower())}\b", context):
+        return False
+    return bool(re.search(rf"(?:^|[\s(\"“])[a-z][\w'’-]*[,;:]? {re.escape(word)}\b", context))
+
+
 def _lower_first(sentence: str, context: str = "") -> str:
     """Lower-case a hunch's first letter so it reads naturally after "I don't think ...", unless the first word is a
     name or acronym: "AI ..." / "UK ..." / "Microsoft ..." / "Iran ..." / "Tesla's ..." stay as they are.
@@ -112,11 +122,12 @@ def _lower_first(sentence: str, context: str = "") -> str:
     bare = re.sub(r"['’]s$", "", core)
     if bare.lower() in ("a", "an", "the"):
         return w[0].lower() + sentence[1:]
+    second = re.sub(r"[^\w'’-]", "", words[1]) if len(words) > 1 else ""
     if (any(ch.isupper() or ch.isdigit() for ch in core[1:])                 # AI, UK, US-China, McDonald's, 5G
             or bare != core                                                    # possessive: Brazil's, Oracle's
-            or (len(words) > 1 and words[1][:1].isupper())                     # Hong Kong, Social Security, North Sea
+            or (second[:1].isupper() and not re.match(r"[A-Z0-9]{2}", second))  # Hong Kong, Social Security (not "Cheaper AI")
             or bare.lower() in _PROPER or re.search(r"(ian|ese)$", bare)       # common names, Canadian, Chinese
-            or re.search(rf"[a-z,;:] {re.escape(bare)}\b", context)):          # capitalised mid-sentence elsewhere
+            or _name_in(bare, context)):                                       # capitalised mid-sentence elsewhere
         return sentence
     return w[0].lower() + sentence[len(w[0]):] if w[0].isupper() else sentence
 

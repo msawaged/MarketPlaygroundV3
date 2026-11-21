@@ -1490,6 +1490,17 @@ def test_opposite_side_keeps_names_and_acronyms_capitalised():
     assert f("Cheap chips will spread") == "cheap chips will spread"
     assert f("A Democratic Congress will block it") == "a Democratic Congress will block it"
     assert f("Data center demand will rise") == "data center demand will rise"
+    # Live Nov 21: "I don't think Tungsten supply outside China will tighten" (the summary named "the Sunrise Tungsten
+    # Project") and "I don't think Cheaper AI chips will spread" (an acronym second word isn't a two-word name).
+    tungsten = ("Torrent Gold has finalized the acquisition of the Sunrise Tungsten Project in New Mexico. "
+                "Non-Chinese tungsten producer gains as global supply tightens.")
+    assert f("Tungsten supply outside China will tighten", tungsten) == "tungsten supply outside China will tighten"
+    assert f("Cruise lines will keep ordering ships", "orders at Norwegian Cruise Line rose") == \
+        "cruise lines will keep ordering ships"
+    assert f("Cheaper AI chips will spread") == "cheaper AI chips will spread"
+    assert f("Giant AI-driven deals will grow") == "giant AI-driven deals will grow"
+    assert f("New York lenders will pull back") == "New York lenders will pull back"
+    assert f("Fresenius will win clinics", "rivals lose, Fresenius gains") == "Fresenius will win clinics"
 
 
 def test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch(monkeypatch):

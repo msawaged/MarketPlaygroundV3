@@ -26,7 +26,9 @@ export function lowerFirst(s) {
   const core = w.replace(/[^\w'’-]/g, '');
   const bare = core.replace(/['’]s$/, '');
   if (['a', 'an', 'the'].includes(bare.toLowerCase())) return text.charAt(0).toLowerCase() + text.slice(1);
-  if (/[A-Z0-9]/.test(core.slice(1)) || bare !== core || /^[A-Z]/.test(words[1] || '')
+  const second = (words[1] || '').replace(/[^\w'’-]/g, '');
+  // A capitalised second word makes a two-word name ("Hong Kong"), unless it's an acronym ("Cheaper AI chips").
+  if (/[A-Z0-9]/.test(core.slice(1)) || bare !== core || (/^[A-Z]/.test(second) && !/^[A-Z0-9]{2}/.test(second))
       || PROPER.has(bare.toLowerCase()) || /(ian|ese)$/.test(bare)) return text;
   return text.charAt(0).toLowerCase() + text.slice(1);
 }

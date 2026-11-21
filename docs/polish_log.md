@@ -1411,3 +1411,26 @@ Changed:
 
 Checks: vite build passes, backend tests 226 passed (fresh venv). Checked locally at 390: Close Call shows the message
 at once.
+
+## 2026-11-21 (sixth run, ~16:30 UTC = Sat 11:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Signed in locally (throwaway SQLite): /chat, /my, /portfolio, /close-call, /select-tool clean at 390; /learning is
+owner-only (403 by design).
+
+Found (live /live "Just learned" and the beliefs table):
+- "I don't think Tungsten supply outside China will tighten and lift prices" (capital T mid-sentence). The story's
+  summary names "the Sunrise Tungsten Project", and `seeder._lower_first` read any capital after a lower-case letter
+  as a name ("Sunrise" ends in "e"), even though the company notes say "tungsten" in lower case.
+- DB (read-only) shows the same slip in other opposites: "I don't think Cheaper AI chips ...", "Giant AI-driven ...",
+  "Cruise lines ..." (an acronym second word was read as a two-word name like "Hong Kong").
+
+Changed (wording only; which beliefs are learned and their picks unchanged; dedupe is case-insensitive so nothing
+is re-learned):
+- `seeder._name_in`: a mid-sentence capital counts as a name only after a lower-case word and when the context never
+  uses the word in lower case. The second-word rule skips acronyms ("Cheaper AI" -> "cheaper AI"), backend and
+  frontend `lowerFirst` ("See the other side" button). Existing DB rows not rewritten.
+- Test: test_opposite_side_keeps_names_and_acronyms_capitalised extended (fails on the old code).
+
+Checks: vite build passes, backend tests 228 passed (fresh venv).

@@ -1531,3 +1531,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   10-pt guard vs one-vol, so they are refused. Not loosened here; a skew-aware guard (compare with one-vol plus the
   skew term from listed IVs) is the next step, but Alpaca's call/put IVs at one strike disagree (41% vs 31% at $700
   while parity holds), so it needs IVs backed out of the mids first.
+
+## 2026-11-21 ~16:30 UTC (daily polish walk): "I don't think tungsten ..." not "Tungsten"
+- No HQ messages from Murad. Wording only: news opposites keep names capitalised but no longer treat a capital inside
+  a longer name ("Sunrise Tungsten Project") or a capitalised word before an acronym ("Cheaper AI") as a name.
+- Files: backend/v4/seeder.py, backend/v4/tests/test_v4.py, frontend/src/lib/text.js, docs/polish_log.md,
+  docs/hq/status/polish.json.
