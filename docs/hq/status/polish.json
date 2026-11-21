@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T09:50:00Z",
- "last_run": "Walked every public page on a phone: nothing broken. Checked the new centred Close Call prices: they add up. Fixed a misleading line: with the whole market nervous this week, Close Call told AAPL, MSFT and NVDA 'news is due, like an earnings report'. It now compares with the S&P 500's options and says it's market-wide nervousness when that's the case.",
+ "updated_at": "2026-11-21T12:40:00Z",
+ "last_run": "Walked every public page on a phone: nothing broken, numbers add up. Fixed two rough edges: if live prices hiccup, Close Call now says 'prices didn't load, try again in a minute' right away instead of a blank box and a 'check your connection' error; and the Brain page no longer says 'graded 1 picks'.",
  "working_on": "Nothing open.",
  "next": "Check the first graded Close Call questions and Monday night's grading; keep walking signed-in screens.",
  "needs_from_murad": [],

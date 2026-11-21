@@ -500,6 +500,12 @@ def _yesno(fn, *a):
         return fn(yesno)(*a)
     except yesno.YesNoError as e:
         return {"status": "error", "message": str(e)}
+    except market.MarketDataError as e:
+        # A quote-feed hiccup used to escape as a bare 500 (no CORS headers), so the page sat on a blank card for ~20s
+        # of retries and then blamed the user's connection. Say what happened instead (a call fails before anything is opened or logged).
+        print(f"[v4] close call market data failed: {e}")
+        return {"status": "error", "message": "Live prices didn't load just now (the quote feed may be busy). "
+                                              "Try again in a minute."}
 
 
 @router.get("/yesno/expirations")

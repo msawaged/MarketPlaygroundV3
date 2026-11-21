@@ -196,7 +196,10 @@ function eventText(e) {
   const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds over ${hrs}h` : '';
   if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from the news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
-  if (e.kind === 'graded') return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
+  if (e.kind === 'graded') {
+    if (e.n === 1) return { title: 'The market graded 1 pick', sub: e.right ? 'It beat the S&P 500' : 'It didn’t beat the S&P 500' };
+    return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
+  }
   if (e.kind === 'trained') return { title: 'Retrained the brain', sub: (STATUS[e.status] || STATUS.retired).label };
   return { title: '', sub: '' };
 }

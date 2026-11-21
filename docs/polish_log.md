@@ -1385,3 +1385,29 @@ Changed:
 - Display only: odds, prices, lean, grading untouched. Test: test_yesno_expected_move_and_big_move_warning extended.
 
 Checks: vite build passes, backend tests 224 passed (fresh venv). Checked locally at 390 (offline server).
+
+## 2026-11-21 (fifth run, ~12:25 UTC = Sat 7:25 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Spot checks held up: forward-test overlap t (1.8 x sqrt(1,272/1,955) = 1.45 -> "t 1.5"); confidence split
+(422 x -0.1 + 215 x -0.6 + 99 x 0.9) / 736 = -0.11 -> "-0.1 pts"; TEAM +1.3% vs S&P -3.1% = +4.3 pts (unrounded).
+The Saturday 09:17 UTC grading is real: one 7-day checkpoint (pick p-c4b7d9688e16444b, eval_date Nov 20, bearish,
+dir_excess -6.9 pts vs SPY) graded late.
+
+Found:
+- Brain page feed: "The market graded 1 picks / 0 beat the S&P 500" (live, from that one late checkpoint).
+- Close Call (signed in, local, quote feed unreachable): the screen sat on a blank grey card for ~20 s and then said
+  "Can't reach MarketPlayground right now. Check your connection". Cause: `router._yesno` caught only YesNoError, so
+  a `market.MarketDataError` (Alpaca asset/quote lookup failing, e.g. busy or rate-limited) escaped as a bare 500
+  without CORS headers; the browser saw a network failure, `request()` retried 4 times, then blamed the user.
+
+Changed:
+- `router._yesno` also catches MarketDataError -> {"status": "error", "message": "Live prices didn't load just now
+  (the quote feed may be busy). Try again in a minute."}, which YesNoPage already shows for loads and calls. A failing
+  call raises before anything is opened or logged (quote first; open_trade's only later market call is guarded).
+- BrainPage feed: "The market graded 1 pick" / "It beat (didn't beat) the S&P 500" when n = 1.
+- Test: test_yesno_quote_feed_failure_is_a_plain_message_not_a_500.
+
+Checks: vite build passes, backend tests 226 passed (fresh venv). Checked locally at 390: Close Call shows the message
+at once.

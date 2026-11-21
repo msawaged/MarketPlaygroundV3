@@ -4190,6 +4190,16 @@ def test_yesno_math():
     assert yesno.brier(0.7, True) == pytest.approx(0.09)
 
 
+def test_yesno_quote_feed_failure_is_a_plain_message_not_a_500(monkeypatch):
+    from backend.v4 import router, market
+
+    def boom(symbol):
+        raise market.MarketDataError("asset lookup failed for SPY: proxy")
+    monkeypatch.setattr(market, "asset_info", boom)
+    r = router._yesno(lambda m: m.expirations, "SPY")
+    assert r["status"] == "error" and "Try again in a minute" in r["message"]
+
+
 def test_yesno_uneven_strikes_still_centre_the_spread_on_the_line(monkeypatch):
     """Live SPY Nov 27 listed $699, $700, $705 and nothing between: the nearest pair $699/$705 bet on a close above
     $702 and cost 41% of its payout beside 'Market's odds 43%'. A pair the same distance either side wins."""

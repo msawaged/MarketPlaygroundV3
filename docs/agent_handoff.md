@@ -1497,3 +1497,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   On even grids this is the same number as before (the interpolation at a listed line is that same spread).
 - Test extended (skewed quotes on an uneven grid: YES cost / payout = market odds within 0.5 pt).
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/hq/status/builder.json.
+
+## 2026-11-21 ~12:40 UTC (daily polish walk): Close Call says "prices didn't load" instead of a 500
+- No HQ messages from Murad. Display/error handling only: odds, prices, grading, research gates unchanged.
+- `router._yesno` now also catches `market.MarketDataError` and returns a plain status-error message (was a bare 500
+  with no CORS headers -> blank card, 4 retries, then "Check your connection").
+- Brain feed reads "The market graded 1 pick / It didn't beat the S&P 500" for single gradings.
+- Files: backend/v4/router.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/hq/status/polish.json.
