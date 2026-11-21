@@ -124,8 +124,10 @@ def parity_forward(chain: list[dict], strikes, years: float) -> Optional[tuple[f
     so F = K + (C - P) * exp(r * years), averaged over the given strikes that have a tight call AND put quote.
     Returns (F, mid noise) where the noise is half the call and put bid/ask gaps (how far mids can sit from fair),
     or None if no strike has both. A desk reads this before trusting a call spread: if the quotes' F is far from the
-    stock's last price, the quotes were set when the stock traded elsewhere (seen Sat Nov 21: SPY last $693.89 but
-    the Nov 27 quotes read 50% above $700 and 45% above $705, i.e. priced as if SPY were near $702)."""
+    stock's last price, the quotes were set when the stock traded elsewhere (e.g. a late print in the stock after the
+    options stopped quoting). Checked live Sat Nov 21: SPY $693.89 and its Nov 27 quotes gave F = $693.5-693.9 at
+    $695-$710, so they agreed; SPY's "50% above $700" there is real skew (a digital call is N(d2) - vega * dsigma/dK,
+    and equity skew has dsigma/dK < 0, so it sits ABOVE the one-vol 43%), not stale quotes."""
     from .strategy import RISK_FREE
     grow = math.exp(RISK_FREE * max(0.0, years))
     calls = _mids([r for r in chain if r["type"] == "call"])
@@ -379,6 +381,44 @@ def strikes_around(strikes: list[float], level: float) -> Optional[tuple[float, 
     return near
 
 
+def spread_noise(calls: list[dict], k1: float, k2: float) -> Optional[float]:
+    """How far the k1/k2 call spread's odds can sit from fair because of the quotes alone: half of each leg's
+    bid/ask gap, over the strike gap. None if a leg has no two-sided quote."""
+    gap = {}
+    for r in calls:
+        b, a = float(r.get("bid") or 0), float(r.get("ask") or 0)
+        if a > 0 and b >= 0 and a >= b:
+            gap[float(r["strike"])] = a - b
+    if k1 not in gap or k2 not in gap or k2 <= k1:
+        return None
+    return 0.5 * (gap[k1] + gap[k2]) / (k2 - k1)
+
+
+MAX_NOISE = 0.03          # a spread whose quotes alone blur its odds by more than 3 points is too fine to read
+
+
+def quiet_pair(calls: list[dict], level: float, pair: tuple[float, float]) -> tuple[float, float]:
+    """The narrowest pair of listed strikes the same distance either side of the line whose quotes read the odds to
+    within MAX_NOISE, starting from `pair`. Live Sat Nov 21, SPY Nov 27 on $1 strikes: $694/$696 quoted
+    $13.68/$13.85 and $12.38/$12.56, so one $1 step read anywhere from 17% to 78% and the $695 line fell back to the
+    one-vol 48% beside a skew-included 50% for $700 (odds rising with the line). $690/$700 reads it to ~1.5 points.
+    Stays within 4% of the line either way; keeps `pair` when it is already quiet or nothing wider is."""
+    n = spread_noise(calls, *pair)
+    if n is not None and n <= MAX_NOISE:
+        return pair
+    ks = sorted({float(r["strike"]) for r in calls})
+    have = set(ks)
+    for k1 in reversed([k for k in ks if k < pair[0] - 1e-9 and level - k <= 0.04 * level]):
+        k2 = round(2 * level - k1, 6)
+        k2 = next((k for k in have if abs(k - k2) <= 1e-6), None)
+        if k2 is None:
+            continue
+        n = spread_noise(calls, k1, k2)
+        if n is not None and n <= MAX_NOISE:
+            return k1, k2
+    return pair
+
+
 def brier(p: float, happened: bool) -> float:
     return (p - (1.0 if happened else 0.0)) ** 2
 
@@ -503,13 +543,22 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     m_p_flat = prob_above(spot, level, years, vol)
     why: list = []
     dig = digital_from_spread([r for r in chain if r["type"] == "call"], level, years, why=why)
+    # Quotes too noisy for a fine spread (thin $1 strikes, weekend quotes) read as inverted or far off: step out to a
+    # wider centred pair whose quotes can read the odds, trade that pair, and read the odds off it.
+    if "inverted" in why or (dig and abs(dig[0] - m_p_flat) > 0.10):
+        w1, w2 = quiet_pair([r for r in chain if r["type"] == "call"], level, (k1, k2))
+        if (w1, w2) != (k1, k2):
+            wide_dig = digital_from_spread([r for r in chain if r["type"] == "call" and r["strike"] in (w1, w2)],
+                                           level, years)
+            if wide_dig and abs(wide_dig[0] - m_p_flat) <= 0.10:
+                k1, k2, dig, why = w1, w2, wide_dig, []
     # Option-implied odds carry skew, but skew moves a near-dated digital only a few points off the one-vol
     # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
     stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
     # Put-call parity: if the quotes imply a stock price well away from the last price, the spread's odds describe
-    # a close relative to that other price (Sat Nov 21: SPY $693.89, quotes priced as if near $702, so "50% above
-    # $700" sat above "48% above $695"). Then use the one-vol answer at the last price, and say what the quotes imply.
+    # a close relative to that other price. Then use the one-vol answer at the last price, and say what the quotes
+    # imply. (A guard: on consistent quotes, e.g. live SPY Sat Nov 21, it stays quiet.)
     fwd = parity_forward(chain, sorted({k1, k2, *(dig[3] if dig else [])}), years) if dig else None
     off_step = bool(dig) and quotes_out_of_step(spot, fwd, vol, years)
     stale = stale or off_step

@@ -4,7 +4,7 @@ import React from 'react';
 
 export const UPDATED = 'Nov 21';
 export const UPDATES = [
-  "Fixed: Close Call checks the option quotes against the stock's last price (put-call parity); when they were set at another price, as after Friday's close, it shows the one-volatility odds and says so",
+  "Fixed: Close Call reads the odds from a wider spread when the nearest strikes are quoted too loosely to read (SPY's $1 strikes on weekends), so odds no longer rise with the line",
   "Fixed: a Close Call now trades a spread centred on the line, even where the listed strikes are uneven (SPY $700: $695/$705), so YES costs the market's odds and both sides break even at the line",
   "New: the Brain page's luck check says whether the strongest research rule picks the same #1 as the app, and how it does where it doesn't",
   "New: option idea cards price each strike at its own implied volatility from listed options, so the skew is in the card's price, max loss and Greeks",

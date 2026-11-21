@@ -5400,10 +5400,9 @@ def test_research_run_reports_is_it_new():
 
 
 def test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol(monkeypatch):
-    """Sat Nov 21, live: SPY last traded $693.89 but the Nov 27 quotes were priced as if SPY were near $702, so the
-    screen read 48% above $695, 50% above $700 and 45% above $705 (odds can't rise with the line). Put-call parity
-    reads the stock price the quotes imply; when it's well away from the last price, the call spread's odds describe
-    a close relative to that other price, so the one-vol answer at the last price is shown and the gap is named."""
+    """Put-call parity reads the stock price the option quotes imply; when it's well away from the stock's last price
+    (quotes set at another moment), the call spread's odds describe a close relative to that other price, so the
+    one-vol answer at the last price is shown and the gap is named. Quotes consistent with the price are untouched."""
     from backend.v4 import yesno
     from backend.v4.strategy import bs_price, RISK_FREE
     import math
@@ -5444,3 +5443,38 @@ def test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol(monkeypatc
     monkeypatch.setattr(market, "option_chain_near", chain_at(spot))
     q = yesno.quote("WINR", lvl, exp.isoformat())
     assert "call spread" in q["odds_source"] and q["market_p"] != q["market_p_flat_vol"]
+
+
+def test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread(monkeypatch):
+    """Live Sat Nov 21, SPY $693.89, Nov 27 on $1 strikes: $694/$695/$696 quoted so that one $1 step read 78% and the
+    next 51%, so the $695 line fell back to the one-vol 48% while $700 read a skew-included 50% (odds rising with the
+    line). The $1 pairs' quotes blur the odds by ~9 points; $690/$700 reads them to ~1.5. Now the $695 line trades and
+    reads $690/$700."""
+    from backend.v4 import yesno
+    mids = {690: 15.95, 693: 13.935, 694: 13.765, 695: 12.98, 696: 12.47, 697: 11.84,
+            698: 11.15, 699: 10.805, 700: 10.34, 705: 7.965, 710: 5.87}
+    gaps = {k: (0.05 if k in (693, 698) else 0.3 if k == 697 else 0.18) for k in mids}
+    gaps.update({690: 0.2, 700: 0.28, 705: 0.15, 710: 0.18})
+    calls = [{"type": "call", "strike": float(k), "bid": m - gaps[k] / 2, "ask": m + gaps[k] / 2} for k, m in mids.items()]
+    assert yesno.spread_noise(calls, 694, 696) > yesno.MAX_NOISE
+    assert yesno.quiet_pair(calls, 695, (694, 696)) == (690, 700)
+    assert yesno.quiet_pair(calls, 700, (695, 705)) == (695, 705)            # already quiet: unchanged
+
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=6)
+    shift = round(spot) - 695                                                # same quotes around WINR's price
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for c in calls:
+            k = c["strike"] + shift
+            out.append({"symbol": f"{u}{k}c", "type": "call", "strike": k, "expiration": exp, "bid": c["bid"],
+                        "ask": c["ask"], "iv": 0.39})
+            put_mid = max(0.05, c["bid"] / 2 + c["ask"] / 2 - (spot - k))     # parity at the last price
+            out.append({"symbol": f"{u}{k}p", "type": "put", "strike": k, "expiration": exp,
+                        "bid": round(put_mid - 0.1, 2), "ask": round(put_mid + 0.1, 2), "iv": 0.39})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    q = yesno.quote("WINR", 695.0 + shift, exp.isoformat())
+    assert q["strikes"] == [690 + shift, 700 + shift] and "call spread" in q["odds_source"]
+    assert abs(q["market_p"] - (15.95 - 10.34) / 10) < 0.01                  # about 56%, from the market's quotes

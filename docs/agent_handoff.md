@@ -1506,17 +1506,22 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/router.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/hq/status/polish.json.
 
-## 2026-11-21 ~14:30 UTC (Builder routine): Close Call checks the quotes against the stock price (put-call parity)
+## 2026-11-21 ~14:30 UTC (Builder routine): Close Call reads odds off a quiet spread; put-call parity guard
 - No HQ messages from Murad; no proposals open in feature_ideas.md, so this fixes misleading Close Call odds.
-- Live this morning: SPY last $693.89, Nov 27 lines read $695 48%, $700 50.2%, $705 44.7% (odds rising with the
-  line). The $695/$705 and $700/$710 spreads were quoted as if SPY were near $702 (YES spread mid $502 + NO $461 on
-  $700), i.e. set at a different stock price than the last trade; the 10-pt stale guard let 7 pts through.
-- `yesno.parity_forward` reads the stock price the quotes imply (F = K + (C - P) e^{rT} at the trade's and the
-  odds' strikes, tight call AND put quotes only); `quotes_out_of_step` flags F more than 0.1 sd of the move to
-  expiration (+ mid noise) above the last price, or that plus 2% below it (dividends/early exercise lower F).
-  Flagged -> odds and price at one implied vol at the last price (the existing stale path), and the source line says
-  "the option quotes were set as if SPY were near $702.05, not its last price $693.89" (number named only within 5%).
-- Not changed: grading, research gates, listed bid/ask box, real_money_order (still off), strike choice.
-- Test: test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol. WhatsNew line.
+- Live this morning, SPY $693.89, Nov 27: $695 line 48%, $700 50.2%, $705 44.7% (odds rising from $695 to $700).
+- First push (130e98a) blamed stale quotes and added a put-call parity guard. Checked after deploy with listed bids/asks
+  (price_check): parity F = $693.5-693.9 at $695-$710, so the quotes AGREE with the price and the guard stayed quiet
+  (correctly). $700's 50% is real skew: a digital call is N(d2) - vega * dsigma/dK and equity skew (dsigma/dK < 0)
+  lifts it above the one-vol 43%. The guard stays as a safety check (`yesno.parity_forward`, `quotes_out_of_step`:
+  F over 0.1 sd of the move above the last price, or that + 2% below for dividends -> one-vol odds, source line names
+  the price the quotes imply). Its earlier comments/WhatsNew line claiming SPY was stale were corrected.
+- The real bug: the $695 line on $1 strikes. $694/$695/$696 mids read 78% then 51% one step apart (weekend quotes,
+  bid/ask $0.17-0.28 on $1 gaps blur each reading ~9 pts), so the reading was >10 pts off one-vol and fell back to 48%.
+  `yesno.spread_noise` / `quiet_pair`: when the fine reading is inverted or >10 pts off, step out to the narrowest
+  centred pair (within 4% of the line) whose quotes blur the odds by <= 3 pts, trade it and read the odds off it
+  (only if that reading is itself within 10 pts of one-vol). Otherwise unchanged; quiet fine spreads untouched.
+- Not changed: grading, research gates, the 10-pt stale guard, listed bid/ask box, real_money_order (still off).
+- Tests: test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol,
+  test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread. WhatsNew line.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/WhatsNew.jsx,
   docs/expert_review.md, docs/hq/status/builder.json.

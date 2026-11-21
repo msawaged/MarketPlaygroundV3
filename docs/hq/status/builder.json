@@ -1,7 +1,7 @@
 {
  "key": "builder",
  "updated_at": "2026-11-21T14:30:00Z",
- "last_run": "Close Call checks the option quotes against the stock's last price (put-call parity). When they were set at another price, as after Friday's close, it no longer shows odds that rise with the line.",
+ "last_run": "Close Call: when the nearest strikes are quoted too loosely to read (SPY's $1 strikes this weekend), it now reads the odds and trades a wider spread centred on the line, so the odds no longer rise with the line. Added a put-call parity safety check.",
  "working_on": "Nothing open.",
  "next": "On Monday in market hours, check that the parity check stays quiet on live quotes (SPY, NVDA, AAPL) and that odds fall as the line rises; Monday's no-peek strategist number on the Brain page.",
  "needs_from_murad": [],
@@ -9,7 +9,7 @@
  "replies": [
   {
    "re": "(no new messages)",
-   "body": "Close Call fix: this morning SPY's Nov 27 questions read 48% above $695, 50% above $700 and 45% above $705, odds that rise with the line, which a finance professor would spot at once. The option quotes were set as if SPY were near $702 while its last trade was $693.89, so their spreads described a close relative to the wrong price. Close Call now reads the price the quotes imply from put-call parity (the standard desk check). When it's well away from the stock's last price it shows the one-volatility odds at the last price and says what the quotes imply. Room is left for dividends, which legitimately pull it lower. Practice money only; grading unchanged.",
+   "body": "Close Call fix: this morning SPY's Nov 27 questions read 48% above $695 but 50% above $700, odds that rise with the line. The $700 number is right: with SPY at $693.89, the market's skew puts the chance of a close above $700 near 50%, above the 43% a single volatility gives (I first suspected stale quotes, checked with put-call parity, and they were fine). The $695 number was the problem: SPY's $1 strikes were quoted so loosely this weekend that one $1 step read 78% and the next 51%, so the app gave up and showed 48%. Now, when the nearest strikes are too loose to read, Close Call uses the narrowest wider spread centred on the line whose quotes are tight enough ($690/$700), and trades that same spread. I also kept a put-call parity check as a safety net for quotes set at a different stock price. Practice money only; grading unchanged.",
    "at": "2026-11-21T14:30:00Z"
   },
   {
