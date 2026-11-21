@@ -1,9 +1,9 @@
 {
  "key": "health",
- "updated_at": "2026-11-21T21:15:00Z",
- "last_run": "Saturday evening check (21:12 UTC Nov 21). All healthy: learning ran at 20:21 UTC ok, last grade-and-train run at 22:48 UTC Friday ok (weekend, no new closes), beliefs at 7,441 (+84 today), live graded calls 10,273, site loads. No Render alert emails and no user emails in the last 12 hours, no HQ messages.",
+ "updated_at": "2026-11-21T21:40:00Z",
+ "last_run": "Saturday night check (21:38 UTC Nov 21). All healthy: learning ran at 21:21 UTC ok, last grade-and-train run at 22:48 UTC Friday ok (weekend, no new closes), beliefs at 7,447 (+90 today), live graded calls 10,273, site loads. No Render alert emails and no user emails in the last 12 hours, no HQ messages.",
  "working_on": "Watching the inbox and the jobs a few times a day.",
- "next": "Next check: learning keeps running over the weekend; grading should pick up again after Monday's close.",
+ "next": "Learning keeps running over the weekend; grading should pick up again after Monday's close.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
