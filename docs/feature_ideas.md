@@ -532,3 +532,51 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   visible. Each block holds only ~50 dates, so per-block lifts are noisy and PBO itself has sampling error; say so
   next to the number. Blocks must be cut on dates, never on outcomes, and only test-period calls (after the 90-day
   embargo) may enter.
+
+## 2026-11-21 (night, extra run) — "I called it" cards: a share link with its own preview for every graded call, wins and misses alike
+- **Area:** app (growth). Scouted on the HQ chair's sprint call (growth and launch readiness until 02:00 UTC).
+- **Status:** proposed
+- **Problem:** the app has almost no one using it yet, and nothing inside it lets a user bring anyone else. Since Oct 1:
+  34 calls from real users (`beliefs.source = 'user'`), from 7 distinct users, the last one on 2026-11-10; everything
+  else (7,413) comes from our own seeders. There is no share button anywhere: the one site-wide preview
+  (`frontend/index.html`, og.png "invest in what you believe") is the same for every link, so a user who wants to show
+  a friend a good call has to screenshot it. Graded calls are exactly the thing worth showing: a dated, checkable
+  prediction with a result against the S&P 500.
+- **Evidence it works for similar products:** Wordle grew from about 90 players in November 2021 to about 2 million by
+  January 2022 once the share button posted a spoiler-free grid of coloured squares; 1.2 million tweets carrying the
+  grid went out on Jan 1-13, 2022 alone (BuzzFeed News: https://www.buzzfeednews.com/article/stefficao/how-wordle-went-viral-strategy;
+  Smithsonian: https://www.smithsonianmag.com/smart-news/heres-why-the-word-game-wordle-went-viral-180979439/), and the
+  New York Times said it brought "tens of millions" of new users after the purchase (TechCrunch:
+  https://techcrunch.com/2022/05/04/wordle-new-york-times-user-growth). What carried it: one result per day, compact,
+  same format for everyone, and the link leads straight into playing. Research on sharing points the same way: Berger
+  & Milkman (2012), "What Makes Online Content Viral?", Journal of Marketing Research
+  (https://faculty.wharton.upenn.edu/wp-content/uploads/2011/11/Virality.pdf), found useful and emotionally arousing
+  content (surprise, excitement, even anxiety) is shared more; a call that beat or missed the market is both.
+- **Build sketch (M):**
+  - Backend (backend/v4/router.py, new backend/v4/share.py): `GET /c/{belief_id}` returns a tiny HTML page with
+    per-call `og:title` / `og:description` / `og:image` / `twitter:card` tags and an instant redirect to
+    `https://marketplayground-web.onrender.com/welcome?ref=card&c={belief_id}` (crawlers read the tags, people land in
+    the app). `GET /c/{belief_id}.png` renders a 1200x630 card with Pillow (already in requirements.txt): the belief
+    in quotes, the date it was made, the #1 pick and direction, the latest graded checkpoint ("90 days: +6.1% vs the
+    S&P 500" or "Missed: -3.2% vs the S&P 500"), the user's stated "How sure" if set, and the footer "Practice call,
+    graded against the S&P 500 at 30/60/90 days. MarketPlayground". Cache the PNG in kv_cache by belief id +
+    checkpoint so it renders once. Data: what `engine.get_belief` already returns, nothing new.
+  - Wordle-style copy text for chats where previews don't show: e.g. "My call: 'AI chips keep running' NVDA long,
+    Nov 2 / 30d 🟩 60d 🟩 90d 🟥 vs S&P / marketplayground-web.onrender.com/c/<id>" (green = ahead of the S&P at that
+    checkpoint, red = behind, grey = not graded yet).
+  - Frontend: a "Share" button on each graded call in MyCallsPage.jsx and on the graded result view, using
+    `navigator.share` on phones with a copy-link fallback; WelcomePage.jsx shows "<the shared call> — make your own
+    call" above sign-up when `c` is present, and keeps `ref=card` with the sign-up so it can be counted.
+  - Test (backend/v4/tests/test_v4.py): the share page carries the call's own og tags and the redirect; an ungraded
+    call shows "not graded yet", never a result; a belief id that doesn't exist is a 404; the copy text marks each
+    checkpoint from the stored grades only.
+- **How we'd know it worked:** count shares (button taps), card visits (`/c/` hits), and sign-ups carrying `ref=card`
+  per week. Worth keeping if real users' weekly calls rise above the current ~0 and at least some sign-ups come from
+  cards within a month; the growth report already watches `ref` visits (docs/growth_plan.md).
+- **Risks and guardrails:** honest by construction. Only graded checkpoints are shown, misses look the same as wins
+  (no cherry-picked "I called it" for losing calls, no ungraded call shown as a win), returns always against the
+  S&P 500 and always labelled practice, and no claim beyond the call itself (no "the AI beats the market"). Privacy:
+  no user name or email on the card or page, just the call; sharing is opt-in per call and the link reveals only that
+  belief, which `/v4/belief/{id}` already serves publicly. The PNG renderer must cap text length and handle any
+  ticker or quote safely (escape in the HTML, wrap in the image). No posting on anyone's behalf: the user shares it
+  themselves. Nothing touches real-money behaviour or research gates.

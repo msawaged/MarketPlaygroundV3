@@ -1677,3 +1677,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Not changed: gates, `_passes`, `fit_production`, luck bar.
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-21 ~22:45 UTC (CTO scout, extra run on the chair's sprint wake, key `scout`): idea 20 + "I called it" cards proposal
+- No HQ messages from Murad (hq_messages still empty). Ideas 18 (`cvvol`) and 19 (`hi_age`) still pending backfill.
+- New feature `ldvol` (Brennan, Chordia & Subrahmanyam 1998): log mean daily dollar volume over ~1 year, as of each
+  pick's date; neutral 15.0. Added to market.ldvol / ldvol_features / features(), nn.make_features num (not
+  MODEL_NUMERIC), research.FEATS + DIRECTIONAL + NEUTRAL, research.enrich backfill, fixed rule
+  "low dollar volume (-z_ldvol)". Result pending.
+- Part B on the chair's growth call: docs/feature_ideas.md "I called it" cards: per-call share link `/c/{belief_id}`
+  with its own og tags + Pillow PNG, redirect to /welcome?ref=card&c=id, Wordle-style copy text, Share button on graded
+  calls. Builder: this is the share/referral proposal the chair's sprint note refers to; honesty and privacy rules
+  are in its Risks section (graded checkpoints only, misses shown like wins, no names).
+- Not changed: gates, `_passes`, `fit_production`, luck bar.
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.

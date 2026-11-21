@@ -1106,6 +1106,29 @@ def hi_age_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"hi_age": hi_age(closes, i) if i >= 0 else 0.5}
 
 
+def ldvol(closes: list[float], vols: list[float], i: int, window: int = 252, min_n: int = 120) -> float:
+    """Level of trading activity (Brennan, Chordia & Subrahmanyam 1998, "Alternative factor specifications, security
+    characteristics, and the cross-section of expected stock returns"): log of the mean daily dollar volume
+    (close x volume) over the last `window` sessions (~1 year) up to index i only. The paper finds a strong *negative*
+    link between dollar trading volume and later returns (after risk factors, size and book-to-market), read as a
+    liquidity premium. Our feed is IEX by default, a slice of total volume, fine for ranking stocks against each other
+    but not an absolute size. 15.0 (neutral, also research.NEUTRAL) without `min_n` priced sessions with volume."""
+    if i < 0 or i >= len(closes) or len(vols) != len(closes):
+        return 15.0
+    dv = [closes[k] * vols[k] for k in range(max(0, i - window + 1), i + 1) if closes[k] > 0 and vols[k] > 0]
+    if len(dv) < min_n:
+        return 15.0
+    return math.log(max(1.0, sum(dv) / len(dv)))
+
+
+def ldvol_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"ldvol": ...} using closes and volumes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    vols = daily_volumes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"ldvol": ldvol(closes, vols, i) if i >= 0 else 15.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1219,6 +1242,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "coskew": coskew(dates, closes, sdates, scloses, i),
         "cvvol": cvvol(closes, daily_volumes(symbol), i),
         "hi_age": hi_age(closes, i),
+        "ldvol": ldvol(closes, daily_volumes(symbol), i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

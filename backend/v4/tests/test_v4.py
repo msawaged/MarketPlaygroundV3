@@ -5258,6 +5258,60 @@ def test_timing_of_52_week_high_rule_and_enrich_backfill(monkeypatch):
     assert abs(num["hi_age"] - (249 - 60) / 251) < 1e-12
     assert num["cvvol"] == 0.9 and num["coskew"] == -0.2
 
+def test_dollar_volume_level_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, math as _m, random as _r
+    rng = _r.Random(67)
+    n = 300
+    dates = [(_dt.date(2022, 1, 3) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    closes = [20.0] * n
+    vols = [1e5] * n
+    i = n - 1
+    assert abs(market.ldvol(closes, vols, i) - _m.log(2e6)) < 1e-12
+    assert market.ldvol(closes, vols, 100) == 15.0                       # under 120 priced sessions: neutral
+    assert market.ldvol(closes, vols[:5], i) == 15.0                     # volumes don't line up with closes
+    later = vols[:250] + [1e9] * (n - 250)
+    assert market.ldvol(closes, later, 249) == market.ldvol(closes, vols, 249)  # no look-ahead
+    assert "ldvol" in research.FEATS and "ldvol" in research.DIRECTIONAL and research.NEUTRAL["ldvol"] == 15.0
+    # planted: thinly traded stocks pay for longs, heavily traded ones pay for shorts; -z_ldvol finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-ld-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            lv = rng.uniform(13.0, 21.0)
+            ex = (lv - 17.0) * 0.008 if bear else -(lv - 17.0) * 0.008
+            pid = f"p-ld-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"ldvol": lv}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["low dollar volume (-z_ldvol)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills ldvol as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, closes))
+    monkeypatch.setattr(market, "daily_volumes", lambda s: later)
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features",
+                 "delay_features", "rskew_features", "coskew_features", "cvvol_features", "hi_age_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4, "delay": 0.3, "rskew": 0.7, "coskew": -0.2, "cvvol": 0.9,
+            "hi_age": 0.4}
+    asof = dates[249]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-ldx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-ldx", "b-ldx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-ldx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-ldx'")["features"])["num"]
+    assert abs(num["ldvol"] - _m.log(2e6)) < 1e-12
+    assert num["hi_age"] == 0.4 and num["cvvol"] == 0.9
+
 def test_ticker_must_still_be_the_company_the_idea_names():
     # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
     # abbreviations still count as the same company.

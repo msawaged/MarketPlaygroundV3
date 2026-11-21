@@ -699,3 +699,30 @@ the app's (52.9%).
   out of `provisional` in the research kv (coverage share >= 99%). `cvvol` (idea 18) is backfilled first in the same
   loop, so `hi_age` fills in alongside or just after it.
 - **Result:** pending.
+
+### 20. Level of trading activity: low dollar volume (Brennan, Chordia & Subrahmanyam)
+- **Added:** 2026-11-21 (night, extra run)
+- **Source:** Brennan, Chordia & Subrahmanyam (1998), "Alternative factor specifications, security characteristics,
+  and the cross-section of expected stock returns", Journal of Financial Economics 49(3), 345-373:
+  https://ideas.repec.org/a/eee/jfinec/v49y1998i3p345-373.html
+- **Why:** after Fama-French and Connor-Korajczyk risk adjustment, size and book-to-market, the paper finds a strong
+  *negative* link between a stock's dollar trading volume and its later returns, read as a liquidity premium (heavily
+  traded stocks are cheap to trade, so investors accept less). Idea 18 (`cvvol`) reads how *unsteady* trading is, and
+  Chordia, Subrahmanyam & Anshuman control for the level; this tests the level itself. Amihud (idea 8) is price
+  impact per dollar, which mixes volume with volatility; this is volume alone. Also a rough size proxy, since we have
+  no market caps. Slow-moving, so it suits our ~90-day hold.
+- **Computed as:** `ldvol` = log of mean daily dollar volume (close x volume) over the last 252 sessions (~1 year) up
+  to the pick's own date; 15.0 (neutral, also `research.NEUTRAL`) without 120 priced sessions with volume. Our feed is
+  IEX by default, a slice of total volume, so the level is not an absolute size but ranks stocks against each other.
+  `market.ldvol` / `market.ldvol_features`; stored for new picks via `market.features` and `nn.make_features` (not
+  MODEL_NUMERIC); backfilled for older picks by `research.enrich` using closes and volumes up to each pick's own date
+  only (other features untouched). Directional (bearish calls flip it, so the rule shorts the most heavily traded
+  stock). Research rule: `low dollar volume (-z_ldvol)`; `z_ldvol` is also available to the learned ridge/gbm/net once
+  its coverage passes (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w, same_as_app / lift_diff, pos_blocks /
+  last_block_lift, and the luck bar (now 49 tries). Read it next to illiquidity (z_amihud, which cleared `clear`, is in
+  `luck.steady` and was ahead in its latest stretch, +1.73%): if ldvol repeats Amihud, the price-impact part adds
+  nothing; if Amihud beats it clearly, volatility per dollar traded is what carries that rule.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 15.0; trust the result once `ldvol` is
+  out of `provisional` (coverage share >= 99%). Backfilled after `cvvol` and `hi_age` in the same loop.
+- **Result:** pending.
