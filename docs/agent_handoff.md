@@ -1438,6 +1438,6 @@ and anything the others must know. Keep entries to a few lines; details go in th
   BrainLineages.jsx compares the leader (and the "app's own #1" row in the ranking) with app_pit, shows the stored
   number beneath as "as stored, with the peek", one sentence why. Falls back to the old text until the next evolve.
 - Display only: strategist fitness/selection, pick_champion's live gate (LIVE_MIN/LIVE_MARGIN), research gates
-  unchanged. Value appears after the next 22:47 UTC grade-and-train run.
+  unchanged. Value appears after the next grade-and-train run (22:47 UTC weekdays, so Mon Nov 23).
 - Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainLineages.jsx,
   docs/hq/status/builder.json.
