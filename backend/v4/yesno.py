@@ -23,6 +23,7 @@ Nothing here touches existing features: own table (yesno_calls), own endpoints, 
 from __future__ import annotations
 
 import math
+import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
@@ -234,6 +235,35 @@ def expected_move(spot: float, rows: list[dict], years: float, rv60: Optional[fl
             "iv_rv": round(ratio, 2) if ratio else None, "big": bool(ratio and ratio > 1.35)}
 
 
+# A stock's options priced well above its own recent moves usually means news is due (earnings), unless the whole
+# market's options are priced the same way (live Nov 21 2026, a selloff: SPY 2.2x, AAPL 1.6x, MSFT 1.7x, NVDA 2.4x,
+# and the card told each of them "news is due, like an earnings report" with no earnings for months). A stock counts
+# as standing out from the market when its ratio is over STAND_OUT times SPY's.
+STAND_OUT = 1.5
+_MKT: dict = {}
+
+
+def market_iv_rv(exp: date, years: float) -> Optional[float]:
+    """SPY's implied-vs-realized ratio for the same expiration (the expected_move test), cached 15 minutes.
+    None when SPY lists nothing that day or the feed fails: the card then keeps its usual wording."""
+    key = exp.isoformat()
+    hit = _MKT.get(key)
+    if hit and time.time() - hit[0] < 900:
+        return hit[1]
+    r = None
+    try:
+        spot = float(market.latest_price("SPY"))
+        chain = [x for x in _chain("SPY", spot, exp) if x["expiration"] == exp]
+        _, closes = market.daily_closes("SPY")
+        rv = market.realized_vol(closes, len(closes) - 1, 60) if len(closes) > 65 else None
+        m = expected_move(spot, chain, years, rv)
+        r = m["iv_rv"] if m else None
+    except Exception:
+        r = None
+    _MKT[key] = (time.time(), r)
+    return r
+
+
 def move_text(u: str, m: dict, exp: date, is_etf: bool = False) -> list[str]:
     day = f"{exp.strftime('%a %b')} {exp.day}"
     pct = m["pct"] * 100
@@ -241,10 +271,21 @@ def move_text(u: str, m: dict, exp: date, is_etf: bool = False) -> list[str]:
     out = [f"Option prices put about a 2-in-3 chance on {u} closing between {_money(m['low'])} and {_money(m['high'])} "
            f"on {day} (about \u00b1{pct_s}% from today)."]
     if m["big"]:
-        out.append(f"That's a bigger move than usual: these options are priced for {m['atm_iv'] * 100:.0f}% yearly "
-                   f"volatility, while {u} actually moved {m['rv60'] * 100:.0f}% a year over the last 60 trading days "
-                   f"({m['iv_rv']:.1f}x). Often that means news is due before {day}, "
-                   + ("like a Fed decision or a big economic report." if is_etf else "like an earnings report."))
+        head = (f"That's a bigger move than usual: these options are priced for {m['atm_iv'] * 100:.0f}% yearly "
+                f"volatility, while {u} actually moved {m['rv60'] * 100:.0f}% a year over the last 60 trading days "
+                f"({m['iv_rv']:.1f}x). ")
+        mk = m.get("market_iv_rv")
+        news = "like a Fed decision or a big economic report" if is_etf else "like an earnings report"
+        if u == "SPY":
+            out.append(head + f"Often that means news is due before {day}, {news}, or that the market is nervous.")
+        elif mk and mk > 1.35 and m["iv_rv"] <= STAND_OUT * mk:
+            out.append(head + f"Options across the whole market are priced that way right now (the S&P 500's at "
+                              f"{mk:.1f}x), so it's market-wide nervousness more than news about {u}.")
+        elif mk and mk > 1.35:
+            out.append(head + f"That's more than the whole market's (the S&P 500's options are at {mk:.1f}x), so "
+                              f"news may be due before {day}, {news}.")
+        else:
+            out.append(head + f"Often that means news is due before {day}, {news}.")
     return out
 
 
@@ -448,6 +489,8 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     except Exception:
         pass
     move = expected_move(spot, chain, years, rv60) if vol_source == "market" else None
+    if move and move["big"] and u != "SPY":
+        move["market_iv_rv"] = market_iv_rv(exp, years)
     sig = _signals(u)
     feats = make_features(m_p, sig, spot, level, vol, years)
     model = active_model()

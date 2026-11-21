@@ -1463,3 +1463,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Tests updated to the centred pair (skew test now pins YES price = market odds within 0.5 pt); 224 passed (fresh venv).
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.
+
+## 2026-11-21 ~09:50 UTC (daily polish walk): Close Call's "bigger move" line knows a market-wide fear spike
+- No HQ messages from Murad. Display only: odds, practice prices, lean, grading, research gates unchanged.
+- Close Call's move box told AAPL/MSFT/NVDA "news is due, like an earnings report" when SPY's options were just as
+  rich (2.2x realized; November selloff). `yesno.market_iv_rv` (SPY ratio, same expiration, 15-min cache) now feeds
+  `move_text`, which says "market-wide nervousness" unless the stock is over 1.5x the market's ratio.
+- Price Check's "expensive" sentence also names a nervous market.
+- Files: backend/v4/yesno.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
+  docs/hq/status/polish.json.

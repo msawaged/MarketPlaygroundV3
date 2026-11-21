@@ -1358,3 +1358,30 @@ Changed:
 - test_yesno_practice_trade checks both messages (fails on the old code).
 
 Checks: vite build passes, backend tests 224 passed (fresh venv). Checked locally at 390.
+
+## 2026-11-21 (fourth run, ~09:25 UTC = Sat 4:25 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Spot checks held up: "Moving now" vs-S&P math (ORA -4.6% vs S&P -3.1% = -1.5 pts, ENPH -10.8 = -7.7); the story hook
+"$500,000 loan backing" is in the source summary. Builder's centred Close Call checked locally (offline server) and on
+the live API: NVDA $185 -> $182.50/$187.50, YES $248.43 + NO $251.24 = $499.67 of $500, breakevens $184.98 / $184.99
+(182.50 + 2.4843, 187.50 - 2.5124); live NVDA $130 line: $129/$131, $91.41 + $108.45 = $199.86, breakevens add up.
+
+Found (Close Call "How far it could move", live API Sat Nov 21):
+- Every big name got "That's a bigger move than usual ... Often that means news is due before Fri Nov 27, like an
+  earnings report": AAPL (implied 1.58x realized), MSFT 1.71x, NVDA 2.35x. But SPY's own options were at 2.23x: it's a
+  market-wide fear spike (press: worst November since 2008, VIX jumps), and AAPL/MSFT have no earnings until late
+  January. An expert would read that line as wrong.
+
+Changed:
+- yesno.market_iv_rv(exp, years): SPY's implied/realized ratio for the same expiration (cached 15 min, None on any
+  failure). quote adds it to `move` only when the stock's move is "big". move_text: if SPY is also over 1.35x and the
+  stock isn't over 1.5x SPY's ratio -> "Options across the whole market are priced that way right now (the S&P 500's
+  at 2.2x), so it's market-wide nervousness more than news about AAPL." If the stock stands well above the market ->
+  "That's more than the whole market's (...), so news may be due before Fri Nov 27, like an earnings report." SPY
+  itself: "... or that the market is nervous." Calm market / no reading: unchanged.
+- Price Check's "expensive" line: "Often it's an earnings date or other news, or the whole market is nervous."
+- Display only: odds, prices, lean, grading untouched. Test: test_yesno_expected_move_and_big_move_warning extended.
+
+Checks: vite build passes, backend tests 224 passed (fresh venv). Checked locally at 390 (offline server).

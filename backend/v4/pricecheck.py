@@ -111,7 +111,7 @@ def _vol_text(verdict: str, iv: Optional[float], rv20: Optional[float], rv60: Op
     if verdict == "cheap":
         return base + " That's cheap: options on this stock are priced for less movement than it has been showing."
     if verdict == "expensive":
-        return base + " That's expensive: the stock has to move more than it has been for options to pay off. Often it's an earnings date or news."
+        return base + " That's expensive: the stock has to move more than it has been for options to pay off. Often it's an earnings date or other news, or the whole market is nervous."
     if ratio < 1.0:
         return base + " That's normal, at the low end: options here are priced for a little less movement than the stock has shown."
     if ratio > 1.2:

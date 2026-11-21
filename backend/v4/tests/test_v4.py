@@ -4211,6 +4211,14 @@ def test_yesno_expected_move_and_big_move_warning(monkeypatch):
     # A fund has no earnings report: SPY's big-move line names market news instead
     spy = yesno.move_text("SPY", m, e, is_etf=True)[1]
     assert "earnings" not in spy and "Fed decision or a big economic report" in spy
+    # The whole market's options priced the same way (a selloff): say so, not "news is due, like an earnings report"
+    wide = yesno.move_text("NVDA", dict(m, market_iv_rv=2.2), e)[1]
+    assert "earnings" not in wide and "whole market" in wide and "S&P 500's at 2.2x" in wide
+    # A stock well above the market's own premium: news may be due
+    alone = yesno.move_text("NVDA", dict(m, market_iv_rv=1.4), e)[1]
+    assert "more than the whole market's" in alone and "earnings report" in alone
+    # A calm market (or no SPY reading): the usual line
+    assert "news is due" in yesno.move_text("NVDA", dict(m, market_iv_rv=1.1), e)[1]
     assert yesno.expected_move(157.29, rows, 3 / 365)["big"] is False
     # no strike within 3% of today's price (the chain slice sits around a far line): no range rather than a wrong one
     assert yesno.expected_move(120.0, rows, 3 / 365, rv60=0.5) is None

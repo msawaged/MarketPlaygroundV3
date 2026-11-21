@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T06:50:00Z",
- "last_run": "Walked every public page on a phone: nothing broken, and last night's grading-clock fix is live and right. Fixed the Close Call confirmations: a practice trade said 'Opened 2 NVDA Close Call: NO NVDA > $185.00 contracts', and 'Just call it' showed a raw date (2026-11-27). Now they read 'Opened NO on NVDA above $185 on Fri Nov 27: 2 contracts...'.",
+ "updated_at": "2026-11-21T09:50:00Z",
+ "last_run": "Walked every public page on a phone: nothing broken. Checked the new centred Close Call prices: they add up. Fixed a misleading line: with the whole market nervous this week, Close Call told AAPL, MSFT and NVDA 'news is due, like an earnings report'. It now compares with the S&P 500's options and says it's market-wide nervousness when that's the case.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions and the Monday-night grading after Monday's close; keep walking signed-in screens.",
+ "next": "Check the first graded Close Call questions and Monday night's grading; keep walking signed-in screens.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
