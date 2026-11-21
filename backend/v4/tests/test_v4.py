@@ -5531,6 +5531,13 @@ def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
     junk = [{"type": t, "strike": float(k), "bid": 1.0, "ask": 1.1} for k in range(int(spot) - 20, int(spot) + 20)
             for t in ("call", "put")]
     assert yesno.skew_odds(junk, spot, lvl, yrs) is None                        # same price everywhere: a V, not a line
+    coarse = [r for r in chain("WINR", lvl, exp) if r["strike"] % 5 == 0]       # $5 grid: nearest two a side
+    assert abs(yesno.skew_odds(coarse, spot, lvl, yrs)["p"] - true_p) < 0.02
+    lower = spot * 0.975                                                         # quotes set as if the stock were 2.5% lower
+    stale = [dict(r, bid=round(bs_price(lower, r["strike"], yrs, iv(r["strike"]), r["type"]) - 0.02, 2),
+                  ask=round(bs_price(lower, r["strike"], yrs, iv(r["strike"]), r["type"]) + 0.02, 2))
+             for r in chain("WINR", lvl, exp)]
+    assert yesno.skew_odds(stale, spot, lvl, yrs) is None                       # puts and calls disagree: no smile
 
     # Market open: a clean spread reading 10+ points over one vol is skew, not stale quotes, and is kept.
     q = yesno.quote("WINR", lvl, exp.isoformat())

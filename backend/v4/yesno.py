@@ -159,6 +159,7 @@ def quotes_out_of_step(spot: float, fwd: Optional[tuple[float, float]], vol: flo
 
 
 SKEW_BAND = 0.02          # strikes within 2% of the line feed the local skew fit
+SKEW_REACH = 0.08         # ... and the two nearest on each side out to 8% where the grid is coarse
 MAX_SKEW_TERM = 0.15      # a skew term over 15 points of odds is a bad fit, not skew
 MAX_SMILE_MISS = 0.08     # the strikes' vols must sit near one straight line (RMS miss under 8% of the vol)
 
@@ -172,7 +173,8 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     falls ~0.35 vol pts per $1, which lifts the $690 line from 54% to 66%, so the quiet $687/$693 spread's 64% was
     right and the old guard (10 points off the one-vol answer) refused it, leaving $690 at 54.7% under $695's 56.7%.
     Feed IVs aren't used: Alpaca's call and put IVs at one strike disagreed by ~10 vol pts while parity held.
-    None with fewer than two usable strikes on either side of the line, vols that don't sit near one straight line
+    None when the quotes' own stock price (put-call parity) is over 0.1 sd of the move from the last price, with
+    fewer than two usable strikes on either side of the line, vols that don't sit near one straight line
     (RMS miss over MAX_SMILE_MISS of the vol: junk quotes, e.g. every strike at the same price, make a V), or a skew
     term over MAX_SKEW_TERM."""
     from .strategy import RISK_FREE
@@ -181,15 +183,20 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     fwd = spot * math.exp(RISK_FREE * years)
     mids = {"call": _mids([r for r in chain if r["type"] == "call"]),
             "put": _mids([r for r in chain if r["type"] == "put"])}
-    pts = []
+    allv = []
     for k in sorted(set(mids["call"]) | set(mids["put"])):
-        if abs(k - level) > SKEW_BAND * level:
+        if abs(k - level) > SKEW_REACH * level:
             continue
         kind = "put" if k < fwd else "call"
         m = mids[kind].get(k)
         v = strike_vol(m, spot, k, years, kind) if m else None
         if v:
-            pts.append((k, v))
+            allv.append((k, v))
+    # Every strike within SKEW_BAND, and on a coarse grid (NVDA $5 strikes around $120) at least the two nearest on
+    # each side, out to SKEW_REACH.
+    lo = [kv for kv in allv if kv[0] <= level][-2:]
+    hi = [kv for kv in allv if kv[0] >= level][:2]
+    pts = sorted(set(kv for kv in allv if abs(kv[0] - level) <= SKEW_BAND * level) | set(lo) | set(hi))
     if sum(1 for k, _ in pts if k <= level) < 2 or sum(1 for k, _ in pts if k >= level) < 2:
         return None
     mk = sum(k for k, _ in pts) / len(pts)
@@ -199,6 +206,12 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
         return None
     slope = sum((k - mk) * (v - mv) for k, v in pts) / sxx
     sig = mv + slope * (level - mk)
+    # Puts and calls only describe one smile when they agree on the stock price (put-call parity). Live Sat Nov 21,
+    # NVDA $129.17: the quotes implied ~$126.15, so put IVs read ~140% beside ~90% for calls and the "smile" was a
+    # step. No dividend allowance here (unlike quotes_out_of_step): a gap that size breaks the fit either way.
+    pf = parity_forward(chain, [k for k, _ in pts], years)
+    if pf and sig > 0 and abs(pf[0] - fwd) > 0.1 * sig * math.sqrt(years) * spot + pf[1]:
+        return None
     rms = math.sqrt(sum((v - mv - slope * (k - mk)) ** 2 for k, v in pts) / len(pts))
     if sig <= 0 or rms > MAX_SMILE_MISS * sig:
         return None
@@ -663,7 +676,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
                    else "the trade's own quotes are too wide to read alone, usual outside market hours" if wide and dig
                    else "no tight spread quoted on the trade's strikes")
         m_p, odds_source = sk["p"], (f"the option smile near the line: implied volatilities of {sk['n']} listed "
-                                     f"{u} options within 2% of {_money(level)} (skew included; {why_not})")
+                                     f"{u} options near {_money(level)} (skew included; {why_not})")
     else:
         from .strategy import RISK_FREE
         implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else None

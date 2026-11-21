@@ -1,9 +1,9 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T17:40:00Z",
+ "updated_at": "2026-11-21T18:10:00Z",
  "last_run": "Close Call now reads the option smile (skew) across many strikes to check its odds, and uses it outside market hours, so odds fall as the line rises (SPY Nov 27 had read 55% above $690 beside 57% above $695).",
  "working_on": "Nothing open.",
- "next": "Monday in market hours: check SPY and a few stocks read clean spreads close to the smile, and that the ladder of lines still falls as the line rises.",
+ "next": "Monday in market hours: check SPY and a few stocks read clean spreads close to the smile and the ladder still falls. Then NVDA: its weekend quotes imply $126 while the last price is $129, and the guard's 2% dividend allowance lets that through; NVDA $118 shows 62% odds beside a YES costing 65%.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [

@@ -1562,3 +1562,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   after hours (renamed ..._read_the_smile_for_odds_and_price).
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/expert_review.md, docs/hq/status/builder.json.
+- Follow-up (same run, after the live check): live NVDA ($129.17) showed no smile at most lines because its quotes
+  imply ~$126.15 by put-call parity (put IVs ~140% beside ~90% for calls). `skew_odds` now refuses a fit when the
+  quotes' parity forward is over 0.1 sd (+ mid noise) from the last price, with no dividend allowance, and on coarse
+  grids takes the two nearest strikes each side out to 8%. NVDA keeps its earlier behaviour (spread / one vol).
+  Next: the parity guard in `quote` still allows 2% for dividends, which let NVDA's 2.3% gap through; and NVDA $118
+  shows one-vol 62% odds beside a YES costing 64.7% (spread_vol pricing): pre-existing, worth a look on a weekday.
