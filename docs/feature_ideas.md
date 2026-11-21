@@ -419,7 +419,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-18 — "Is it new?": how often each research rule picks the same #1 as the app, and its lift where they differ
 - **Area:** brain (research honesty). Reporting only.
-- **Status:** built 2026-11-21, (this commit; see docs/agent_handoff.md).
+- **Status:** built 2026-11-21, bfbcdaa.
 - **Problem:** the research log judges each of 46 fixed rules against zero and the luck bar, never against what the
   app already does. Today's run (2026-11-18 17:19 UTC, n = 2,703) shows why that matters: the strongest fixed rule
   yet, "avoid right-skewed stocks (-z_rskew)", has lift +1.45% / beat 53.4% / lift_w +1.26%, almost exactly the app's
