@@ -119,6 +119,43 @@ def leg_vols(calls: list[dict], k1: float, k2: float, spot: float, years: float,
     return round(v1, 4), round(v2, 4)
 
 
+def parity_forward(chain: list[dict], strikes, years: float) -> Optional[tuple[float, float]]:
+    """The stock price the option quotes themselves imply, by put-call parity: C(K) - P(K) = (F - K) * exp(-r * years),
+    so F = K + (C - P) * exp(r * years), averaged over the given strikes that have a tight call AND put quote.
+    Returns (F, mid noise) where the noise is half the call and put bid/ask gaps (how far mids can sit from fair),
+    or None if no strike has both. A desk reads this before trusting a call spread: if the quotes' F is far from the
+    stock's last price, the quotes were set when the stock traded elsewhere (seen Sat Nov 21: SPY last $693.89 but
+    the Nov 27 quotes read 50% above $700 and 45% above $705, i.e. priced as if SPY were near $702)."""
+    from .strategy import RISK_FREE
+    grow = math.exp(RISK_FREE * max(0.0, years))
+    calls = _mids([r for r in chain if r["type"] == "call"])
+    puts = _mids([r for r in chain if r["type"] == "put"])
+    gaps = {(r["type"], float(r["strike"])): float(r.get("ask") or 0) - float(r.get("bid") or 0) for r in chain}
+    fs, noise = [], []
+    for k in strikes:
+        k = float(k)
+        if k in calls and k in puts:
+            fs.append(k + (calls[k] - puts[k]) * grow)
+            noise.append(0.5 * (gaps.get(("call", k), 0) + gaps.get(("put", k), 0)) * grow)
+    if not fs:
+        return None
+    return sum(fs) / len(fs), sum(noise) / len(noise)
+
+
+def quotes_out_of_step(spot: float, fwd: Optional[tuple[float, float]], vol: float, years: float) -> bool:
+    """True when the option quotes' own stock price (parity_forward) is too far from the last price for their odds to
+    describe a close relative to it. The bar: a tenth of one standard deviation of the move to expiration (about 4
+    points of odds at the money) plus the quotes' own mid noise. A forward BELOW the price gets 2% extra room, since a
+    dividend before expiration (or early-exercise value in puts) lowers it legitimately; nothing raises it."""
+    if not fwd or spot <= 0 or vol <= 0 or years <= 0:
+        return False
+    from .strategy import RISK_FREE
+    f, noise = fwd
+    gap = f - spot * math.exp(RISK_FREE * years)
+    band = 0.1 * vol * math.sqrt(years) * spot + noise
+    return gap > band or gap < -(band + 0.02 * spot)
+
+
 def digital_from_spread(calls: list[dict], level: float, years: float = 0.0,
                         why: Optional[list] = None) -> Optional[tuple[float, float, float, list]]:
     """Market-implied P(close > level) from listed call prices. A call spread (C(Ka) - C(Kb)) / (Kb - Ka) is the
@@ -470,6 +507,12 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # answer. A gap over 10 points means the spread quotes are stale or out of step with the stock price (seen
     # after hours: SPY at $752 with "61% to close above $755"), so use the one-vol answer and say so.
     stale = (bool(dig) and abs(dig[0] - m_p_flat) > 0.10) or "inverted" in why
+    # Put-call parity: if the quotes imply a stock price well away from the last price, the spread's odds describe
+    # a close relative to that other price (Sat Nov 21: SPY $693.89, quotes priced as if near $702, so "50% above
+    # $700" sat above "48% above $695"). Then use the one-vol answer at the last price, and say what the quotes imply.
+    fwd = parity_forward(chain, sorted({k1, k2, *(dig[3] if dig else [])}), years) if dig else None
+    off_step = bool(dig) and quotes_out_of_step(spot, fwd, vol, years)
+    stale = stale or off_step
     # When the trade's strikes sit the same distance either side of the line, read the odds off that very spread
     # ((C(k1) - C(k2)) / (k2 - k1), the chance at its middle = the line), so YES's price is the odds shown. On an
     # even grid this is the same number as the reading above; on an uneven one (live SPY $699/$700/$705, trade
@@ -486,7 +529,13 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     if dig and not stale and not wide:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
     else:
-        m_p, odds_source = m_p_flat, ("one implied volatility (the spread quotes looked out of date)" if stale
+        from .strategy import RISK_FREE
+        implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else None
+        named = implied is not None and abs(implied / spot - 1) <= 0.05   # a wilder number is just broken quotes
+        m_p, odds_source = m_p_flat, (f"one implied volatility (the option quotes were set as if {u} were near "
+                                      f"${implied:,.2f}, not its last price ${spot:,.2f}, so their spreads would "
+                                      f"misread the odds)" if named
+                                      else "one implied volatility (the spread quotes looked out of date)" if stale
                                       else "one implied volatility (the listed quotes are too wide to read skew "
                                            "from, usual outside market hours)" if wide and dig
                                       else "one implied volatility (no tight spread quoted)")

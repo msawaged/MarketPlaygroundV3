@@ -16,6 +16,11 @@ What a derivatives desk will check first (fix or label honestly; never hide):
   so the nearest pair for a $700 line was $699/$705 (a digital at $702: YES 41% of payout beside 43% odds). Now it
   takes listed strikes the same distance either side ($695/$705), up to 2x the nearest pair's width; otherwise the
   nearest pair, and the spread note names the close it really bets on (the middle of the strikes).
+  Done 2026-11-21 afternoon (Builder): put-call parity check. A call spread's odds only describe a close relative to
+  the stock price the quotes were set at; after Friday's close SPY last traded $693.89 while its quotes implied ~$702
+  (so "50% above $700" beside "48% above $695"). `yesno.parity_forward` / `quotes_out_of_step`: if the quotes'
+  forward is over 0.1 sd above the last price (or that + 2% below, room for dividends), the one-vol answer is shown
+  and the source line names the price the quotes imply.
 - **Costs and fills.** Practice prices use mid / model vol. Say "before bid/ask costs"; real orders use the
   natural/mid limit (`real_money_order`).
   Done 2026-11-18 (Builder): Close Call shows the listed bid/ask of the same YES/NO spreads beside the practice price

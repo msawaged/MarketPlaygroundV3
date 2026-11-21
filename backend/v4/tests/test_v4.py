@@ -5397,3 +5397,50 @@ def test_research_run_reports_is_it_new():
     assert 0 <= mom["same_as_app"] <= 1 and mom["n_diff"] <= mom["n"]
     assert isinstance(out["luck"]["is_new"], list) and len(out["luck"]["is_new"]) <= 3
     assert all("same_as_app" in x for x in out["luck"]["is_new"])
+
+
+def test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol(monkeypatch):
+    """Sat Nov 21, live: SPY last traded $693.89 but the Nov 27 quotes were priced as if SPY were near $702, so the
+    screen read 48% above $695, 50% above $700 and 45% above $705 (odds can't rise with the line). Put-call parity
+    reads the stock price the quotes imply; when it's well away from the last price, the call spread's odds describe
+    a close relative to that other price, so the one-vol answer at the last price is shown and the gap is named."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    import math
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=6)
+    yrs = 6 / 365
+    iv = lambda k: 0.35 - 0.3 * (k / spot - 1)                     # mild equity skew
+
+    def chain_at(s):
+        def chain(u, strike, e, days=21, band=0.15):
+            out = []
+            for k in range(int(spot * 0.9), int(spot * 1.1) + 1):
+                for t in ("call", "put"):
+                    mid = bs_price(s, float(k), yrs, iv(k), t)
+                    out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                                "bid": round(max(0.01, mid - 0.02), 2), "ask": round(mid + 0.02, 2), "iv": iv(k)})
+            return out
+        return chain
+
+    # Pure parity: the quotes' own stock price comes back, with half the bid/ask as noise.
+    monkeypatch.setattr(market, "option_chain_near", chain_at(spot * 1.012))
+    rows = market.option_chain_near("WINR", spot, exp)
+    f, noise = yesno.parity_forward(rows, [float(int(spot))], yrs)
+    assert abs(f * math.exp(-RISK_FREE * yrs) - spot * 1.012) < 0.05 and 0 < noise < 0.05
+    assert yesno.quotes_out_of_step(spot, (f, noise), 0.35, yrs)
+    assert not yesno.quotes_out_of_step(spot, (spot * math.exp(RISK_FREE * yrs), 0.02), 0.35, yrs)
+    # A forward 1.5% below the price is what a dividend before expiration does: not flagged. 1.5% above is.
+    assert not yesno.quotes_out_of_step(spot, (spot * 0.985, 0.02), 0.35, yrs)
+    assert yesno.quotes_out_of_step(spot, (spot * 1.015, 0.02), 0.35, yrs)
+    assert yesno.parity_forward([r for r in rows if r["type"] == "call"], [float(int(spot))], yrs) is None
+
+    lvl = float(int(spot) + 2)
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    assert q["market_p"] == q["market_p_flat_vol"] and q["leg_vols"] is None
+    assert "set as if WINR were near" in q["odds_source"] and f"${spot:,.2f}" in q["odds_source"]
+
+    # The same quotes set at the last price: odds read off the call spread as before.
+    monkeypatch.setattr(market, "option_chain_near", chain_at(spot))
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    assert "call spread" in q["odds_source"] and q["market_p"] != q["market_p_flat_vol"]

@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T12:10:00Z",
- "last_run": "Close Call: on stocks whose listed strikes are unevenly spaced (SPY around $700 today), the trade now uses strikes the same distance either side of the line, so YES costs the market's odds and both sides break even at the line.",
+ "updated_at": "2026-11-21T14:30:00Z",
+ "last_run": "Close Call checks the option quotes against the stock's last price (put-call parity). When they were set at another price, as after Friday's close, it no longer shows odds that rise with the line.",
  "working_on": "Nothing open.",
- "next": "Check on a weekday whether Close Call's odds stay in order across nearby lines during market hours (on weekend quotes SPY $705 read higher than $702); Monday's no-peek strategist number on the Brain page.",
+ "next": "On Monday in market hours, check that the parity check stays quiet on live quotes (SPY, NVDA, AAPL) and that odds fall as the line rises; Monday's no-peek strategist number on the Brain page.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call fix: this morning SPY's Nov 27 questions read 48% above $695, 50% above $700 and 45% above $705, odds that rise with the line, which a finance professor would spot at once. The option quotes were set as if SPY were near $702 while its last trade was $693.89, so their spreads described a close relative to the wrong price. Close Call now reads the price the quotes imply from put-call parity (the standard desk check). When it's well away from the stock's last price it shows the one-volatility odds at the last price and says what the quotes imply. Room is left for dividends, which legitimately pull it lower. Practice money only; grading unchanged.",
+   "at": "2026-11-21T14:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call fix: SPY's suggested $700 line traded $699/$705 because SPY lists nothing from $701 to $704 for Nov 27. That spread is really a bet on a close above $702, so the screen said 'market's odds 43%' while YES cost 41% of its payout and both breakevens sat at $701.45. Now it takes strikes the same distance either side of the line ($695/$705) and reads the odds off that same spread, so YES costs the market's odds and both sides break even at the line. When no such pair exists, it says which close the trade really bets on. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call only said its practice prices were 'before bid/ask costs'. Tonight SPY's $725 YES practiced at $63 while the listed spread's ask was $105, more than the $100 it can pay, and a professor checking against his own screen would see neither number. Close Call now shows the listed bid and ask for the same YES and NO spreads beside the practice price, the odds you'd need to break even if you paid the ask, the cost of a round trip, and an amber note when the quotes are too wide to trade (usual outside market hours). Information only: odds, practice prices and grading unchanged.",
    "at": "2026-11-18T05:40:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The brain's Close Call record was only a summary, and its lean just nudges the market's odds by a few points, so 'right X% of the time' mostly repeats the market. A professor would want to see the actual calls and the few where the brain disagreed. Close Call now lists the brain's latest questions with both sets of odds, the close and right/wrong, marks the ones where it took the other side, and (once graded) how often those were right. First grades land Thursday. Information only: odds and grading unchanged.",
-   "at": "2026-11-18T02:20:00Z"
   }
  ]
 }
