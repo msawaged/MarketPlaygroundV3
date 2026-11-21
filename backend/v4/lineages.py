@@ -130,15 +130,22 @@ def score_candidates(weights: dict, nums: list[dict], directions: list[str]) -> 
     return [sub.get(i, avg) for i in range(len(nums))]
 
 
-def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[list[dict]]:
+def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW, pit: bool = False) -> list[list[dict]]:
     """Candidates of the most recent graded beliefs: [[{feat..., ex, top}, ...], ...]. `since`: only beliefs created
-    after that time (a strategist's live record: calls it never saw). Directional ideas only (see directional)."""
+    after that time (a strategist's live record: calls it never saw). Directional ideas only (see directional).
+    pit: also give each candidate `pit`, the app's score for it as it stood on the call's own date (research._pit_score),
+    so the scoreboard can show the app's #1 without the look-ahead practice calls' stored #1 carries. Display only."""
     rows = db.query(
         """SELECT p.belief_id, p.direction, p.features, p.final_rank, o.dir_excess, b.created_at, b.direction AS bdir,
-                  b.source
+                  b.source""" + (""", p.ticker, p.claude_score, p.final_score, o.sel_edge, o.eval_date, b.as_of_date"""
+                                  if pit else "") + """
            FROM outcomes o JOIN picks p ON p.id = o.pick_id JOIN beliefs b ON b.id = p.belief_id
            WHERE o.checkpoint_days = ? AND b.created_at > ?
            ORDER BY b.created_at DESC""", (CHECKPOINT, since or ""))
+    pit_ix = None
+    if pit:
+        from . import research
+        pit_ix = research._pit_index(rows)  # every graded 90-day outcome: track records as of each call's date
     by: dict[str, list[dict]] = {}
     order: list[str] = []
     for r in rows:
@@ -150,10 +157,15 @@ def _graded_beliefs(since: Optional[str] = None, limit: int = WINDOW) -> list[li
             by[r["belief_id"]] = []
             order.append(r["belief_id"])
         core = str(r.get("bdir") or "").lower()
+        extra = {}
+        if pit_ix is not None:
+            from . import research
+            extra["pit"] = research._pit_score(pit_ix, r, r["final_rank"] == 0, float(r.get("final_score") or 0.0))
         by[r["belief_id"]].append(features_of(r["features"], r["direction"], ex=float(r["dir_excess"]),
                                               top=r["final_rank"] == 0,  # 0-based: 0 is the app's #1
                                               practice=r.get("source") == "seed_backfill",
-                                              lead=core not in ("bullish", "bearish") or str(r["direction"]).lower() == core))
+                                              lead=core not in ("bullish", "bearish") or str(r["direction"]).lower() == core,
+                                              **extra))
     return [by[b] for b in order if len(by[b]) >= 2]  # a choice needs at least two candidates
 
 
@@ -185,9 +197,17 @@ def window_baselines(beliefs: list[list[dict]]) -> dict:
     app = _baseline(beliefs)
     avgs = [sum(c["ex"] for c in _lead(cands)) / len(_lead(cands)) for cands in beliefs]
     n = len(beliefs)
-    return {"app": {k: round(v, 4) if isinstance(v, float) else v for k, v in app.items()},
-            "avg_idea": round(sum(avgs) / n, 4) if n else 0.0,
-            "practice": round(sum(1 for b in beliefs if b and b[0].get("practice")) / n, 3) if n else 0.0, "n": n}
+    rnd = lambda d: {k: round(v, 4) if isinstance(v, float) else v for k, v in d.items()}  # noqa: E731
+    out = {"app": rnd(app),
+           "avg_idea": round(sum(avgs) / n, 4) if n else 0.0,
+           "practice": round(sum(1 for b in beliefs if b and b[0].get("practice")) / n, 3) if n else 0.0, "n": n}
+    if n and all("pit" in c for cands in beliefs for c in cands):
+        # Practice calls' stored #1 was chosen with track records that include later results (the Brain page's
+        # "catch we found"); strategists never see those, so the fair yardstick is the app's #1 rebuilt as of each
+        # call's date (calls made in real time keep their stored #1, which had no peek).
+        out["app_pit"] = rnd(_baseline([[{**c, "top": c is max(_lead(cands), key=lambda x: x["pit"])} for c in cands]
+                                        for cands in beliefs]))
+    return out
 
 
 def _lead(cands: list[dict]) -> list[dict]:
@@ -221,7 +241,7 @@ def evolve(seed: Optional[int] = None) -> dict:
     """One generation: score everyone, retire the weakest, the strongest evolve."""
     ensure_founders()
     rng = random.Random(seed)
-    beliefs = _graded_beliefs()
+    beliefs = _graded_beliefs(pit=True)
     alive = db.query("SELECT * FROM strategists WHERE status = 'alive'")
     for s in alive:
         r = score(db.loads(s["weights"], {}), beliefs)

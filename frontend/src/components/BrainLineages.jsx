@@ -82,10 +82,15 @@ export default function BrainLineages({ data, ago, now }) {
   const top = data.alive[0];
   // Yardsticks on the very calls the strategists are scored on (stored by the daily evolve; absent on old snapshots)
   const win = data.window?.n && data.window.app?.n ? data.window : null;
-  const gap = win ? top.fitness - win.app.fitness : 0;
+  // The fair yardstick: the app's #1 as it stood on each call's date. Practice calls' stored #1 used track records
+  // that include later results (see "A catch we found" above); strategists never see those. Absent on old snapshots.
+  const fair = win?.app_pit?.n ? win.app_pit : null;
+  const base = fair || win?.app;
+  const peekGap = fair ? win.app.fitness - fair.fitness : 0;
+  const gap = win ? top.fitness - base.fitness : 0;
   const vsApp = !win ? '' : Math.abs(gap) < 0.001 ? 'about the same as' : gap > 0 ? `${(gap * 100).toFixed(1)} pts ahead of` : `${(-gap * 100).toFixed(1)} pts behind`;
   const rows = win
-    ? [...data.alive, { ref: true, fitness: win.app.fitness, beat_rate: win.app.beat_rate }].sort((a, b) => b.fitness - a.fitness)
+    ? [...data.alive, { ref: true, fitness: base.fitness, beat_rate: base.beat_rate }].sort((a, b) => b.fitness - a.fitness)
     : data.alive;
   return (
     <section>
@@ -113,10 +118,14 @@ export default function BrainLineages({ data, ago, now }) {
         </div>
         {win && (
           <div className="mt-2 rounded-xl bg-slate-950/40 px-3 py-2 text-xs text-slate-300">
-            <div className="flex justify-between gap-2"><span>App's own #1, same calls</span><span className="font-bold tabular-nums whitespace-nowrap">{pct(win.app.fitness)} pts</span></div>
+            <div className="flex justify-between gap-2"><span>App's own #1, same calls{fair ? ', no peek' : ''}</span><span className="font-bold tabular-nums whitespace-nowrap">{pct(base.fitness)} pts</span></div>
+            {fair && Math.abs(peekGap) >= 0.001 && (
+              <div className="flex justify-between gap-2 text-slate-500"><span>…as stored, with the peek</span><span className="tabular-nums whitespace-nowrap">{pct(win.app.fitness)} pts</span></div>
+            )}
             <div className="flex justify-between gap-2"><span>A random idea, same calls</span><span className="font-bold tabular-nums whitespace-nowrap">{pct(win.avg_idea)} pts</span></div>
             <div className="mt-1 text-[11px] text-slate-400">
-              So the leader is {vsApp} the app's own pick.
+              So the leader is {vsApp} the app's own pick{fair ? ' as it stood on each call\'s date' : ''}.
+              {fair && Math.abs(peekGap) >= 0.001 ? ` On practice calls the stored #1 was chosen with results that came later (the catch above); strategists never see those, so we compare with the app's #1 rebuilt without that peek.` : ''}
               {' '}Each strategist was chosen on these same calls, which flatters it{win.practice >= 0.5 ? `, and ${win.practice >= 0.995 ? 'all' : `${Math.round(win.practice * 100)}%`} of them are practice calls made on past dates` : ''}.
               {' '}The live record below is the fair test.
             </div>
@@ -147,7 +156,7 @@ export default function BrainLineages({ data, ago, now }) {
             <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-dashed border-slate-400" />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-slate-300 truncate">The app's own #1</div>
-              <div className="text-[11px] text-slate-500 truncate">for comparison, same calls</div>
+              <div className="text-[11px] text-slate-500 truncate">for comparison, same calls{fair ? ', no peek' : ''}</div>
             </div>
             <div className="text-right leading-tight">
               <div className="text-sm font-bold tabular-nums text-slate-300">{pct(s.fitness)} pts</div>

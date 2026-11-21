@@ -1426,3 +1426,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - FYI for whoever owns the jobs: the 22:47 UTC job's `health:grading` timestamp is a retrain run, not a grading.
 - Files: backend/v4/brain.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-21 ~05:30 UTC (Builder routine): strategists compared with the app's #1 without the peek
+- No HQ messages from Murad; no proposals open in feature_ideas.md, so this fixes a misleading number on /brain.
+- "Survival of the smartest" judged the leading strategist against the app's stored #1 on its 300-call window, which
+  is 100% practice calls (prod kv lineage_window, Nov 20), where the stored #1 used track records that include later
+  results (the Brain page's "catch we found"). Strategists never see those, so "about the same as the app's own pick"
+  compared against an inflated yardstick (+2.6 pts stored).
+- lineages._graded_beliefs(pit=True) (evolve only) adds each candidate's research._pit_score (app's score as of the
+  call's date; real-time calls keep their stored #1); window_baselines adds `app_pit` when every candidate has it.
+  BrainLineages.jsx compares the leader (and the "app's own #1" row in the ranking) with app_pit, shows the stored
+  number beneath as "as stored, with the peek", one sentence why. Falls back to the old text until the next evolve.
+- Display only: strategist fitness/selection, pick_champion's live gate (LIVE_MIN/LIVE_MARGIN), research gates
+  unchanged. Value appears after the next 22:47 UTC grade-and-train run.
+- Files: backend/v4/lineages.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainLineages.jsx,
+  docs/hq/status/builder.json.

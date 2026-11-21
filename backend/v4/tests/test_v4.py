@@ -1925,11 +1925,18 @@ def test_lineages_scoreboard_shows_the_apps_own_pick_and_the_average_idea(monkey
         # the app's #1 (rank 0) wins +4%, the other longs -1% and +0%; a short on a competitor (+9%) can't be a #1
         for j, (d, ex, rank) in enumerate((("bullish", 0.04, 0), ("bullish", -0.01, 1), ("bullish", 0.0, 2), ("bearish", 0.09, 3))):
             pid = f"p-linwin{i}-{j}"
-            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
-                       (pid, bid, f"W{j}", d, "2026-01-01", 10.0, db.dumps({"num": {}}), rank))
+            # Claude liked W1 best; the stored #1 (W0) came from a track record that, on practice calls, peeked
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank, claude_score) VALUES (?,?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"W{j}", d, "2026-01-01", 10.0, db.dumps({"num": {}}), rank, 0.9 if j == 1 else 0.5))
             db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
                        (pid, lineages.CHECKPOINT, "2026-02-01", 10.0, 0.0, 0.0, ex, "2026-02-01"))
     w = lineages.window_baselines(lineages._graded_beliefs(since="2096-01-01"))
+    assert "app_pit" not in w  # only when every candidate carries its point-in-time score
+    wp = lineages.window_baselines(lineages._graded_beliefs(since="2096-01-01", pit=True))
+    # no-peek #1: practice calls (8) fall back to Claude's favourite W1 (-1%, nothing graded before their date);
+    # real-time calls (2) keep their stored #1 (+4%). The opposite-direction short (+9%) is never the #1.
+    assert wp["app_pit"]["n"] == 10 and abs(wp["app_pit"]["fitness"] - (8 * -0.01 + 2 * 0.04) / 10) < 1e-9
+    assert wp["app_pit"]["beat_rate"] == 0.2 and wp["app"] == w["app"]
     assert w["n"] == 10 and w["app"]["n"] == 10
     assert abs(w["app"]["fitness"] - 0.04) < 1e-9 and w["app"]["beat_rate"] == 1.0
     assert abs(w["avg_idea"] - 0.01) < 1e-9  # mean of the longs only (+4, -1, 0): the short is never a #1
@@ -1941,7 +1948,7 @@ def test_lineages_scoreboard_shows_the_apps_own_pick_and_the_average_idea(monkey
     monkeypatch.setattr(lineages, "SNAP_TTL", 0)
     assert lineages.evolve(seed=3)["evolved"] is False
     win = lineages.snapshot()["window"]
-    assert win and win["n"] > 0 and set(win) == {"app", "avg_idea", "practice", "n"}
+    assert win and win["n"] > 0 and set(win) == {"app", "app_pit", "avg_idea", "practice", "n"}
 
 
 def test_lineages_leave_out_volatile_ideas():
