@@ -440,6 +440,7 @@ def test_close_call_answers_show_what_their_practice_trade_did(tmp_path, monkeyp
     monkeypatch.setattr(market, "features", lambda t: {"vol60": 0.3})
     monkeypatch.setattr(market, "today", lambda: today["d"])
     monkeypatch.setattr(market, "now_ny", lambda: now["t"])
+    monkeypatch.setattr(po, "_now_utc", lambda: now["t"].isoformat())  # the test's clock, not the wall clock
     monkeypatch.setattr(market, "clock", lambda: {"is_open": True})
     closes = {}
     monkeypatch.setattr(market, "session_close_on", lambda t, d: closes.get(d))

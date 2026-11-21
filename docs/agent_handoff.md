@@ -1391,3 +1391,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   they differ (reporting only).
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/hq/status/scout.json.
+
+## 2026-11-21 ~00:50 UTC (daily polish walk): My beliefs shows a same-day re-run of an idea once
+- No HQ messages from Murad. Display only: stored beliefs, picks, grading, learning and research gates unchanged.
+- engine.my_beliefs fetches limit*3 rows, collapses them with `_one_per_call` (normalized text + as_of_date + direction;
+  keeps the run with user_prob/wrong_if, else the newest), adds `runs` per belief; the summary counts each call once.
+- MyCallsPage shows "You ran this idea N times that day, so it's shown and counted once." when runs > 1.
+- test_paper.test_close_call_answers_show_what_their_practice_trade_did now pins po._now_utc to the test clock (it
+  failed on the real clock after Nov 20 4 PM ET; no code change).
+- Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, backend/v4/tests/test_paper.py,
+  frontend/src/components/MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.

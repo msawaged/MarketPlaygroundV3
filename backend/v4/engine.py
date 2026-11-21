@@ -759,12 +759,14 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
     if not user_id or user_id == "anonymous":
         return {"beliefs": [], "summary": None}
     rows = db.query(
-        "SELECT id, text, created_at, as_of_date, direction, horizon_days, interpretation, wrong_if, wrong_if_px, "
+        "SELECT id, text, norm_text, created_at, as_of_date, direction, horizon_days, interpretation, wrong_if, wrong_if_px, "
         "wrong_if_ticker, wrong_if_answer, wrong_if_answered_at, user_prob FROM beliefs WHERE user_id = ? AND source = 'user' ORDER BY created_at DESC LIMIT ?",
-        (user_id, int(limit)),
+        (user_id, int(limit) * 3),
     )
     if not rows:
         return {"beliefs": [], "summary": None}
+    rows, runs = _one_per_call(rows)
+    rows = rows[: int(limit)]
     ids = [r["id"] for r in rows]
     ph = ",".join("?" for _ in ids)
     # shown picks, plus any sector fund among the ideas (the "simple choice" each pick is compared with)
@@ -841,11 +843,32 @@ def my_beliefs(user_id: str, limit: int = 30) -> dict:
                     "summary": interp.get("summary"), "direction": r["direction"],
                     "horizon_days": r["horizon_days"], "picks": items, "call": call,
                     "wrong_if": _wrong_if_view(r, [p for p in by_belief.get(r["id"], []) if p["shown"]]),
-                    "sure": _sure_view(r), "graded": graded.get(r["id"])})
+                    "sure": _sure_view(r), "graded": graded.get(r["id"]), "runs": runs.get(r["id"], 1)})
     summary = None
     if tracked or calls_tracked:
         summary = {"tracked": tracked, "ahead": ahead, "calls": calls_tracked, "calls_playing_out": calls_right}
     return {"beliefs": out, "summary": summary, "as_of": today_s, "calibration": calibration.for_user(user_id)}
+
+
+def _one_per_call(rows: list) -> tuple:
+    """The same idea typed again on the same day ("Run again", or trying other amounts/strategies) is one call, not
+    several: My beliefs shows it once and counts it once in "N of M of your calls". Keeps the run the user wrote
+    something on (how sure / wrong if), else the newest; rows come newest first. Returns (rows, {kept id: runs})."""
+    groups: dict = {}
+    order = []
+    for r in rows:
+        k = ((r.get("norm_text") or r.get("text") or "").strip().lower(), r.get("as_of_date"), r.get("direction"))
+        if k not in groups:
+            groups[k] = []
+            order.append(k)
+        groups[k].append(r)
+    kept, runs = [], {}
+    for k in order:
+        g = groups[k]
+        r = next((x for x in g if x.get("user_prob") is not None or x.get("wrong_if") or x.get("wrong_if_px") is not None), g[0])
+        kept.append(r)
+        runs[r["id"]] = len(g)
+    return kept, runs
 
 
 def _graded_checks(belief_ids: list) -> dict:

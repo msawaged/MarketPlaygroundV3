@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-18T18:50:00Z",
- "last_run": "Option idea cards now price each strike at its own implied volatility, but opening one as a practice trade still averaged the volatilities, so an AAPL call spread the card showed at $809 opened at $703. Practice trades now use the same per-strike volatilities as the card, so the entry matches.",
+ "updated_at": "2026-11-21T00:50:00Z",
+ "last_run": "My beliefs showed the same idea several times when someone ran it again the same day (Run again, or trying another amount), and counted each copy as a separate call in their score. About a third of real users' beliefs were such repeats. Now each idea shows once per day, with a note saying how many times it was run, and counts once.",
  "working_on": "Nothing open.",
- "next": "Check the first graded Close Call questions after today's close, and walk the option card's Price check against live quotes.",
+ "next": "Check the first graded Close Call questions after Monday's close, and the live Moving now feed during market hours.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

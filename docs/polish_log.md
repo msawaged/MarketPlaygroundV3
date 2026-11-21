@@ -1275,3 +1275,30 @@ Changed:
 - Test: test_practice_trade_from_a_card_opens_at_the_cards_per_strike_price (fails on the old code).
 
 Checks: vite build passes, backend tests 219 passed (fresh venv).
+
+## 2026-11-21 (first run, ~00:25 UTC = Fri 7:25 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Spot checks held up: Moving now's "vs S&P" adds up with S&P -3.1% today (CXW -3.7% = -0.6 pts, PAYO +0.1% = +3.2 pts);
+live forward test confidence split (347/175/86 = 608 calls, weighted -0.2 pts) and MuLine 18.3 - 15.4 = 2.9 match.
+Signed in locally (offline server, throwaway SQLite): "Chip stocks will bounce back from this selloff", $1,000,
+3 months, Options, Limit my risk: NVDA $185/$202.50 spread $10.09 - $3.75 = $634, max gain $1,116, breakeven $191.34,
+delta +28 sh: all add up; paper trade and Portfolio agree ($634 set aside).
+
+Found (My beliefs):
+- The same idea typed again the same day showed up as separate identical cards and was counted as separate calls in
+  "N of M of your calls are playing out" (the card's own "Run again" button creates one). Live DB: 34 user beliefs
+  since Oct 1, only 23 distinct (user, text, day); e.g. "colorado is gonna ban flavored vapes before 2029" x3 in 5 min.
+- test_close_call_answers_show_what_their_practice_trade_did started failing once the wall clock passed its Nov 20
+  expiry: po._now_utc (closed_at) wasn't on the test's clock, so a hand-close read as "expired". Test-only.
+
+Changed:
+- engine.my_beliefs: `_one_per_call` keeps one belief per (normalized text, day, direction): the run the user wrote on
+  (how sure / wrong if), else the newest; the summary counts it once; each belief carries `runs`. Stored beliefs,
+  picks, grading and learning untouched (display and the user's own tally only).
+- MyCallsPage: "You ran this idea 3 times that day, so it's shown and counted once." under the date when runs > 1.
+- test_paper: the Close Call test pins po._now_utc to its clock.
+- Test: test_my_beliefs_shows_and_counts_the_same_idea_run_twice_in_a_day_once (fails on the old code).
+
+Checks: vite build passes, backend tests 221 passed (fresh venv). Checked at 375 locally.

@@ -5231,3 +5231,13 @@ def test_option_cards_price_each_strike_at_its_own_listed_implied_vol():
     assert "own listed implied volatility" in c["text"] and "one number" not in c["text"] and c["in_spread"]
     c1 = pricecheck.card_vs_listed(res, 4.06, hi, exp.isoformat(), 0.26, "implied", 350.0)
     assert "one number for every strike" in c1["text"]
+
+
+def test_my_beliefs_shows_and_counts_the_same_idea_run_twice_in_a_day_once():
+    fake = FakeClaude()
+    engine.process_belief("plumbing demand is going to be high", "u-twice", "moderate", claude_client=fake)
+    r2 = engine.process_belief("Plumbing demand is going to be high", "u-twice", "moderate", claude_client=fake)
+    r3 = engine.process_belief("potatoes are in demand", "u-twice", "moderate", claude_client=fake)
+    mine = engine.my_beliefs("u-twice")["beliefs"]
+    assert [b["belief_id"] for b in mine] == [r3["belief_id"], r2["belief_id"]]  # newest run kept, once
+    assert [b["runs"] for b in mine] == [1, 2]

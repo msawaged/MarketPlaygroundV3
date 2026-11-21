@@ -274,6 +274,7 @@ export default function MyCallsPage() {
                 <div className="min-w-0">
                   <div className="font-semibold leading-snug">“{b.text}”</div>
                   <div className="mt-0.5 text-xs text-slate-500">{ago(b.created_at)}{b.horizon_days ? ` · plays out over ~${b.horizon_days >= 60 ? `${Math.round(b.horizon_days / 30)} months` : `${b.horizon_days} days`}` : ''}</div>
+                  {b.runs > 1 && <div className="mt-0.5 text-[11px] text-slate-500">You ran this idea {b.runs} times that day, so it's shown and counted once.</div>}
                   {b.call && (
                     <div className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${b.call.playing_out ? 'bg-green-500/15 text-green-200' : 'bg-slate-800 text-slate-300'}`}>
                       <span className="whitespace-nowrap">{b.call.playing_out ? '✓ Your call is playing out' : 'Not playing out yet'}</span>
