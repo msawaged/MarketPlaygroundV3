@@ -1568,3 +1568,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   grids takes the two nearest strikes each side out to 8%. NVDA keeps its earlier behaviour (spread / one vol).
   Next: the parity guard in `quote` still allows 2% for dividends, which let NVDA's 2.3% gap through; and NVDA $118
   shows one-vol 62% odds beside a YES costing 64.7% (spread_vol pricing): pre-existing, worth a look on a weekday.
+
+## 2026-11-21 ~20:00 UTC (daily polish walk): story hooks keep the article's hedge
+- No HQ messages from Murad. Story mode's big hook read "8 million barrels" where the article says "up to 8 million";
+  `movers._hook` now takes the article text and puts a dropped hedge back ("Up to 8 million barrels"), or drops the
+  hook if it gets too long. Cached stories fixed when served.
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/hq/status/polish.json.

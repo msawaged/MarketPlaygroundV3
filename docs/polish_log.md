@@ -1434,3 +1434,23 @@ is re-learned):
 - Test: test_opposite_side_keeps_names_and_acronyms_capitalised extended (fails on the old code).
 
 Checks: vite build passes, backend tests 228 passed (fresh venv).
+
+## 2026-11-21 (seventh run, ~20:00 UTC = Sat 3 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Spot checks held up: Trending "stock -2.8% on Fri / +0.3 pts vs S&P" with S&P -3.1%; HAL bearish -0.3% vs S&P marked
+right. Local signed-in chat couldn't build picks (sandbox blocks Alpaca), signed-in screens were walked this morning.
+
+Found (live /story, first story of the day):
+- Giant hook "8 million barrels" for Saudi Arabia's deal with Japan, while the article says "up to 8 million
+  barrels". The hook overstates the news; the card text under it keeps "up to".
+
+Changed:
+- `movers._hedged` / `_hook(s, source)`: when every mention of a hook's number in the headline+summary follows a
+  hedge ("up to", "about", "more than", "nearly", "over", ...) and the hook drops it, the hedge is put back
+  ("Up to 8 million barrels"); if that breaks the 5-word / 40-char hook limit the hook is dropped for the fallback.
+  Applied to new stories and to cached ones when served. Story text, figures and picks unchanged.
+- Test: test_story_mode_cards_are_grounded_and_cached extended.
+
+Checks: vite build passes, backend tests 229 passed (fresh venv).

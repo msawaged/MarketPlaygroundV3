@@ -538,10 +538,39 @@ def _undate(s: str) -> str:
     return out + (f", {y}" if y and int(y) != datetime.now(timezone.utc).year else "")
 
 
-def _hook(s: Any) -> str:
+_HEDGES = ("up to", "as much as", "as many as", "more than", "less than", "at least", "nearly", "almost", "about",
+           "around", "roughly", "approximately", "an estimated", "over", "under")
+_HEDGE_RE = "|".join(re.escape(h) for h in _HEDGES)
+
+
+def _hedged(s: str, source: str) -> str:
+    """Keep the article's hedge on a hook's number. Live 2026-11-21: the article said Saudi Arabia will supply "up to
+    8 million barrels" and the giant hook read "8 million barrels", a firmer claim than the news. If the article only
+    writes the number after a hedge ("up to", "about", "more than", ...) and the hook drops it, put it back."""
+    if not s or not source:
+        return s
+    out = s
+    for m in reversed(list(re.finditer(r"\$?\d[\d,]*(?:\.\d+)?", s))):
+        num = m.group()
+        before = s[: m.start()].lower()
+        if re.search(rf"(?:{_HEDGE_RE})\s*$", before):
+            continue  # the hook kept the hedge
+        pat = rf"(?<![\w$.,]){re.escape(num)}(?![\d]|[.,]\d)"
+        uses = list(re.finditer(pat, source))
+        if not uses:
+            continue
+        hedges = [re.search(rf"\b({_HEDGE_RE})\s+$", source[: u.start()], re.I) for u in uses]
+        if all(hedges):  # every mention is hedged: the bare number overstates it
+            h = hedges[0].group(1).lower()
+            out = out[: m.start()] + (h.capitalize() if m.start() == 0 else h) + " " + out[m.start():]
+    return out
+
+
+def _hook(s: Any, source: str = "") -> str:
     """The big hook phrase, whole or not at all: clipping it can flip its meaning
-    ("Credit stress looks contained" -> "Credit stress looks…")."""
-    s = _undate(re.sub(r"\s+", " ", str(s or "")).strip())
+    ("Credit stress looks contained" -> "Credit stress looks…"). With the article's text, a number the article
+    hedges ("up to 8 million") keeps its hedge, or the hook is dropped if that makes it too long."""
+    s = _hedged(_undate(re.sub(r"\s+", " ", str(s or "")).strip()), source)
     whole = not s.endswith(("…", "..."))  # a hook cut by an older rule ("11,000 satellites, still…")
     if _BARE_YEAR.match(s):  # live 2026-11-17: "2026" (a conference's year) as the giant hook under "Moving now"
         return ""
@@ -581,7 +610,7 @@ def _write_story(item: dict, client: Any = None) -> dict:
     for f in d.get("figures") or []:
         if isinstance(f, dict) and _grounded(f, source):
             figs.append({k: _clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")})
-    return {"hook_big": _hook(d.get("hook_big")) or _fallback_story(item)["hook_big"], "hook_line": _clip(d.get("hook_line"), 120),
+    return {"hook_big": _hook(d.get("hook_big"), source) or _fallback_story(item)["hook_big"], "hook_line": _clip(d.get("hook_line"), 120),
             "happened": _sentences(d.get("happened"), 320), "figures": figs[:2], "why": _sentences(d.get("why"), 240),
             "twist": _sentences(d.get("twist"), 200), "ai": True}
 
@@ -610,7 +639,7 @@ def story(headline: str, client: Any = None) -> Optional[dict]:
             db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                        (key, json.dumps(st), datetime.now(timezone.utc).isoformat()))
     if st.get("hook_big"):  # stories cached before the date rule
-        st["hook_big"] = _hook(st["hook_big"]) or _fallback_story(item)["hook_big"]
+        st["hook_big"] = _hook(st["hook_big"], f"{item['headline']}\n{item.get('summary') or ''}") or _fallback_story(item)["hook_big"]
     if st.get("ai"):  # stories cached before the whole-sentence rule
         for k, n in (("happened", 320), ("why", 240), ("twist", 200)):
             if st.get(k):

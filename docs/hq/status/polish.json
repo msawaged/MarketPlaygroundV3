@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T16:40:00Z",
- "last_run": "Walked every public page on a phone and the signed-in screens locally: nothing broken. Fixed a wording slip on the Live page: the brain's 'other side' beliefs said things like 'I don't think Tungsten supply...' and 'I don't think Cheaper AI chips...' with a stray capital; new ones now read normally.",
+ "updated_at": "2026-11-21T20:15:00Z",
+ "last_run": "Walked every public page on a phone: nothing broken. Fixed one overstatement: the big headline on a news story said '8 million barrels' when the article said 'up to 8 million barrels'. Story headlines now keep words like 'up to' or 'about' from the article.",
  "working_on": "Nothing open.",
  "next": "Check Monday night's grading and the first graded Close Call questions; keep walking signed-in screens.",
  "needs_from_murad": [],

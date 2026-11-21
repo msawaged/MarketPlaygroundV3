@@ -1876,6 +1876,12 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     assert movers._sentences("It hit 242 U.S. cities. Ages rose to 40.", 320) == "It hit 242 U.S. cities. Ages rose to 40."
     assert movers._sentences("word " * 80, 60).endswith("…")
     assert movers._hook("11,000 satellites, still…") == ""
+    # the hook keeps the article's hedge on its number (live 2026-11-21: "up to 8 million barrels" -> "8 million barrels")
+    src = "Saudi Arabia will supply up to 8 million barrels of crude oil to Japan's reserve."
+    assert movers._hook("8 million barrels", src) == "Up to 8 million barrels"
+    assert movers._hook("Up to 8 million barrels", src) == "Up to 8 million barrels"
+    assert movers._hook("Japan gets 8 million barrels more", src) == ""  # too long once hedged: dropped, not overstated
+    assert movers._hook("$51 billion", "A deal worth $51 billion, up from about $40 billion.") == "$51 billion"
 
 
 def test_lineages_evolve_and_snapshot(monkeypatch):
