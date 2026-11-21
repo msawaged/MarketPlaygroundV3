@@ -438,6 +438,44 @@ def _metrics(picks: list[tuple], cuts: tuple[float, float] | None = None) -> dic
     return out
 
 
+VS_APP_BASE = "app, no look-ahead"  # the app's #1 the head-to-head compares against (no look-ahead, see _pit_score)
+VS_APP_MIN = 100  # disagreements needed before the Brain page quotes a head-to-head
+
+
+def _vs_app(chosen: list[tuple], base: dict) -> dict:
+    """"Is it new?" (Feng, Giglio & Xiu 2020: judge a new signal by what it adds to what's already in hand). chosen:
+    [(belief key, index of this method's #1, belief)]; base: {belief key: index of the app's #1 without look-ahead}.
+    same_as_app = share of calls where the two #1s are the same idea; on the n_diff calls where they differ,
+    lift_diff = this #1's excess minus the app's #1's excess (same belief, so the belief's average cancels), with its
+    plain t and overlap-honest t_nw. A rule that mostly agrees and has lift_diff near zero is the app restated.
+    Reporting only: _passes / fit_production and the luck bar never read these."""
+    rows = [(i, b, base[k]) for k, i, b in chosen if k in base]
+    if not rows:
+        return {}
+    diff = [(float(b["cands"][i]["ex"] - b["cands"][j]["ex"]), str(b.get("date") or "")[:10])
+            for i, b, j in rows if i != j]
+    out = {"same_as_app": round(1 - len(diff) / len(rows), 4), "n_diff": len(diff)}
+    if len(diff) >= 2:
+        x = np.array([d for d, _ in diff])
+        se = x.std(ddof=1) / math.sqrt(len(x))
+        out.update({"lift_diff": round(float(x.mean()), 4), "lift_diff_t": round(float(x.mean() / se), 2) if se > 0 else 0.0})
+        if all(d for _, d in diff):
+            se_h = _se_overlap(x, [d for _, d in diff])
+            out["lift_diff_t_nw"] = round(float(x.mean() / se_h), 2) if se_h > 0 else 0.0
+    return out
+
+
+def is_new(results: dict, k: int = 3) -> list[dict]:
+    """The k strongest methods other than the app itself (by overlap-honest t, else plain t), each with how often it
+    picks the app's #1 and how it does where it doesn't. Reporting only."""
+    rows = [(n, m) for n, m in (results or {}).items()
+            if n not in ("app (current #1)", VS_APP_BASE) and (m or {}).get("n") and m.get("same_as_app") is not None]
+    t = lambda m: float(m.get("lift_t_nw") if m.get("lift_t_nw") is not None else m.get("lift_t") or 0)
+    rows.sort(key=lambda r: -t(r[1]))
+    keys = ("lift", "lift_t", "lift_t_nw", "same_as_app", "n_diff", "lift_diff", "lift_diff_t", "lift_diff_t_nw")
+    return [{"name": n, **{q: m.get(q) for q in keys}} for n, m in rows[:k]]
+
+
 def mix_scores(app, model, w: float) -> np.ndarray:
     """The app's score with a model mixed in, exactly as the engine does it live: the model's scores are put on the
     app's scale for this belief (z-scored, clipped to +-2, times the app's spread, at least 0.08), then weighted."""
@@ -813,6 +851,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             b["wmean"] = float(np.mean(np.clip([c["ex"] for c in b["cands"]], cuts[0], cuts[1])))
     spreads: dict[str, list[float]] = {}
     off: dict[str, list[bool]] = {}  # test beliefs where the model's favourite idea was in the other direction
+    # "is it new?" (reporting only): each method's #1 per test belief, and the app's no-look-ahead #1 to compare with
+    chose: dict[str, list[tuple]] = {}
+    base: dict[int, int] = {}
 
     def learned(name: str, fn, test: list[dict]) -> None:
         """Pick each test belief's top idea and remember how far it stood out (top score minus the belief's mean):
@@ -822,6 +863,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             i = _top(b, sc)  # within the belief's own direction, as the engine shows it
             off.setdefault(name, []).append(int(np.argmax(sc)) != i)
             res[name].append(_pick(b, b["cands"][i]))
+            chose.setdefault(name, []).append((id(b), i, b))
             spreads.setdefault(name, []).append(float(sc[i] - np.mean(sc)))
             # what would go live: the model mixed into the app's score as it stood on the call's date. The stored score
             # of practice calls carries look-ahead (2026-11-09: ~2/3 of the app's lift); mixing into it let a mix
@@ -829,6 +871,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             mx = mix_scores([c.get("pit_app", c.get("app", 0.0)) for c in b["cands"]], sc, MIX_WEIGHT)
             j = _top(b, mx)
             res.setdefault(name + MIX, []).append(_pick(b, b["cands"][j]))
+            chose.setdefault(name + MIX, []).append((id(b), j, b))
             spreads.setdefault(name + MIX, []).append(float(mx[j] - mx.mean()))
 
     for blk in blocks:
@@ -843,17 +886,23 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
                 for b in test:
                     j = _top(b, [c.get("pit", 0.0) for c in b["cands"]])
                     res[name].append(_pick(b, b["cands"][j]))
+                    base[id(b)] = j
                     # confidence on the same point-in-time score the live engine computes (Claude + track record so
                     # far): how far the #1 stood out. The stored score's thirds carry look-ahead (2026-11-09).
                     pa = [c.get("pit_app", c.get("app", 0.0)) for c in b["cands"]]
                     spreads.setdefault(name, []).append(float(pa[j] - np.mean(pa)))
             elif fn is None:
                 for b in test:
-                    top = next((c for c in b["cands"] if c["top"]), b["cands"][0])
+                    ti = next((q for q, c in enumerate(b["cands"]) if c["top"]), 0)
+                    top = b["cands"][ti]
                     res[name].append(_pick(b, top))
+                    chose.setdefault(name, []).append((id(b), ti, b))
                     spreads.setdefault(name, []).append(top.get("app", 0.0) - float(np.mean([c.get("app", 0.0) for c in b["cands"]])))
             else:
-                res[name] += [_choose(b, fn) for b in test]
+                for b in test:
+                    i = _top(b, [fn(c["f"]) for c in b["cands"]])
+                    res[name].append(_pick(b, b["cands"][i]))
+                    chose.setdefault(name, []).append((id(b), i, b))
         ridge, weights = _fit_ridge(train, zkeys)
         learned("ridge (learned)", ridge, test)
         try:
@@ -889,7 +938,11 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
            "off_lead": {k: round(float(np.mean(v)), 4) for k, v in off.items() if v},
            "beta_coverage": round(float(np.mean([c["has_beta"] for b in data for c in b["cands"]])), 3),
            "random_beat": round(float(np.mean([np.mean([c["ex"] > 0 for c in b["cands"]]) for b in data[start:]])), 4)}
+    for name, rows in chose.items():  # "is it new?": agreement with the app's #1 and the head-to-head where they differ
+        if name != VS_APP_BASE and name in out["results"]:
+            out["results"][name].update(_vs_app(rows, base))
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
+    out["luck"]["is_new"] = is_new(out["results"])
     if out["winsor"]:
         out["luck"]["winsor"] = out["winsor"]
     # feature coverage on the test-period calls (the ones every result is scored on); reporting only

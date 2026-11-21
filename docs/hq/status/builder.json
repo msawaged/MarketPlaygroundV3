@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-18T17:30:00Z",
- "last_run": "Option idea cards now price each strike at its own listed implied volatility, so the skew is in the card's price, max loss and Greeks.",
+ "updated_at": "2026-11-21T02:40:00Z",
+ "last_run": "The research log now says whether each tested rule picks the same #1 as the app, and how it does where it picks differently. The Brain page says it in one paragraph.",
  "working_on": "Nothing open.",
- "next": "Make a practice trade opened from a card start at the card's per-strike prices (today it uses the average of the legs' volatilities). Thursday: check the first Close Call questions graded right.",
+ "next": "After the next research run, check the new numbers on the Brain page (does the skewness rule mostly copy the app?). Then the next proposal or finishing touches on Close Call.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The research log judged each of 46 rules against zero, never against what the app already does. The strongest rule yet (avoid right-skewed stocks, +1.45 pts) has almost the same numbers as the app's own #1, so it may just be the app described another way. Each result now records how often its #1 is the same stock as the app's (rebuilt without the peek), and on the calls where they differ, which one did better and by how much. The Brain page's luck check says it in one paragraph and only quotes the head-to-head with 100+ disagreements. Reporting only: the gates and the live ranking are unchanged. Numbers appear after the next research run.",
+   "at": "2026-11-21T02:40:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Option idea cards priced every strike at one at-the-money volatility, so a spread's far strike missed the skew: this morning AAPL's $370 call read $4.06 on the card vs $3.04 listed. Live cards now price each strike at its own implied volatility from listed options (the out-of-the-money side, the way a desk reads the smile), and max loss, max gain, breakeven and Greeks follow. If any strike isn't listed the card keeps one volatility and says so. I checked first that grading never uses card prices (it re-marks every pick at the stock's own volatility), so grading and the research checks are unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call's answer list said only 'right' or 'wrong', and a practice trade looked the same as 'Just call it'. But a YES trade (a call spread) that closes between its two strikes is right on the question and can still lose money, and the reverse for NO, so the page could say 'right' next to a trade that lost. Each traded answer now shows what's at risk, then what it made or lost at expiration, with a note when that differs from right/wrong, plus a 'Your practice trades' total that matches Portfolio. Information only: odds, pricing and grading unchanged.",
    "at": "2026-11-17T17:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call asked 'Will NVDA close above $160 on Fri Nov 20?' with 40% odds, but those odds came from options priced for 130% volatility (NVDA has moved about 45% a year lately): the market expects a big earnings-week jump, and the page never said so. Now a 'How far it could move' box shows the range options give a 2-in-3 chance (a bar with today's price and your line), and an amber note when options expect a much bigger move than usual, often earnings or news before that date. Information only: the odds, the brain's lean and the trade prices are unchanged.",
-   "at": "2026-11-17T14:20:00Z"
   }
  ]
 }

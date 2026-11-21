@@ -465,6 +465,34 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     );
                   })()}
+                  {(sk.luck.is_new || []).length > 0 && (() => {
+                    // "Is it new?" (research.is_new, reporting only): does the strongest other way pick a different #1
+                    // from ours, and is it ahead on the calls where it does? Compared with our #1 rebuilt without the peek.
+                    const rows = sk.luck.is_new.filter((x) => x.same_as_app != null);
+                    if (!rows.length) return null;
+                    const label = (name) => name.replace(/\s*\((?:-?z_|vp|rvol|frog)[^)]*\)\s*$/, '');
+                    const tOf = (x) => (x.lift_diff_t_nw != null ? x.lift_diff_t_nw : x.lift_diff_t);
+                    const [b, ...rest] = rows;
+                    const ours = sk.ranker?.active ? 'the old way of picking the #1' : 'ours';
+                    const enough = Number(b.n_diff || 0) >= 100 && b.lift_diff != null;
+                    const t = Number(tOf(b) || 0);
+                    const verdict = !enough
+                      ? ' Too few disagreements to judge yet.'
+                      : t >= 2 ? " That's a sign it adds something our ranking doesn't already have, though one result isn't proof."
+                        : Number(b.same_as_app) >= 0.5 ? ' So for now it mostly re-describes what the app already does.'
+                          : " Where they disagree it isn't reliably better, so it isn't yet adding something new.";
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-slate-200">New, or the app restated?</span>
+                        {' '}The strongest other way we tested, “{label(b.name)}”, picks the same #1 as {ours}{peek ? ' (rebuilt without the peek)' : ''} on {Math.round(Number(b.same_as_app) * 100)}% of test calls.
+                        {enough
+                          ? <> On the {Number(b.n_diff).toLocaleString()} calls where they pick differently, its #1 {Number(b.lift_diff) >= 0 ? 'is ahead of' : 'trails'} {sk.ranker?.active ? 'the old way' : 'ours'} by {pts(Math.abs(Number(b.lift_diff))).replace('+', '')} pts (t {t.toFixed(1)}{b.lift_diff_t_nw != null ? ', counting overlap honestly' : ''}).</>
+                          : <> They pick differently on only {Number(b.n_diff || 0).toLocaleString()} calls.</>}
+                        {verdict}
+                        {rest.length > 0 && <> Next strongest: {rest.map((x) => `“${label(x.name)}” agrees ${Math.round(Number(x.same_as_app) * 100)}% of the time`).join('; ')}.</>}
+                      </div>
+                    );
+                  })()}
                   <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
                 </div>
               )}

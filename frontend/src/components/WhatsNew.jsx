@@ -2,8 +2,9 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 18';
+export const UPDATED = 'Nov 21';
 export const UPDATES = [
+  "New: the Brain page's luck check says whether the strongest research rule picks the same #1 as the app, and how it does where it doesn't",
   "New: option idea cards price each strike at its own implied volatility from listed options, so the skew is in the card's price, max loss and Greeks",
   "New: an option idea's Price check puts the card's own price next to the listed bid/ask for each leg, says why they differ, and totals the whole trade three ways",
   "New: Moving now says when a stock's move came before the news (overnight and weekend stories), so it isn't read as the reaction",

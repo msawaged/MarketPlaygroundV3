@@ -1401,3 +1401,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   failed on the real clock after Nov 20 4 PM ET; no code change).
 - Files: backend/v4/engine.py, backend/v4/tests/test_v4.py, backend/v4/tests/test_paper.py,
   frontend/src/components/MyCallsPage.jsx, docs/polish_log.md, docs/hq/status/polish.json.
+
+## 2026-11-21 ~02:40 UTC (Builder routine): "Is it new?" — research rules vs the app's own #1
+- No HQ messages from Murad. Builds the 2026-11-18 proposal in docs/feature_ideas.md. Reporting only: `_passes`,
+  `fit_production`, the luck bar, MIN_LIFT/MIN_T and embargoes are unchanged and never read the new keys.
+- research.run records each method's chosen #1 per test belief (fixed rules, "app (current #1)", learned models and
+  their mixes) and the app's no-look-ahead #1 (`VS_APP_BASE`). `_vs_app` adds to each result: `same_as_app`,
+  `n_diff`, `lift_diff`, `lift_diff_t`, `lift_diff_t_nw` (rule's #1 excess minus the app's on disagreements only).
+  `is_new(results)` -> `luck.is_new`: the 3 strongest methods (by lift_t_nw) with those numbers; reaches the Brain page
+  via brain._skill's luck passthrough. Fixed rules now pick via `_top` inline (`_choose` kept, unused).
+- BrainPage.jsx: "New, or the app restated?" paragraph in the luck check (quotes the head-to-head only with 100+
+  disagreements). WhatsNew line. docs/research_ideas.md header explains the new columns. Values appear after the
+  next research run.
+- Tests: test_is_it_new_reports_agreement_with_the_app_and_the_head_to_head_where_they_differ,
+  test_research_run_reports_is_it_new. Checked at 390 and 375 (live /v4/brain with a planted is_new).
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/feature_ideas.md, docs/research_ideas.md, docs/hq/status/builder.json.

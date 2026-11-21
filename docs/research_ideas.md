@@ -19,6 +19,12 @@ Since 2026-11-17 (late) each result also has an **outlier check** (`research.win
 (`winsor` {lo, hi} in the kv), `lift_med` (median per-call lift) and `top10_share` (share of the summed lift from the
 10 best calls), plus `luck.clear_w`. Quote lift_w beside lift: a rule whose lift_w collapses is a few lottery tickets,
 not a broad edge. Reporting only: gates unchanged.
+Since 2026-11-21 each result (except the app's no-look-ahead row) also has **"is it new?"** (`research._vs_app`,
+Feng, Giglio & Xiu 2020): `same_as_app` = share of test calls where the rule's #1 is the app's no-look-ahead #1;
+`n_diff` = calls where they differ; `lift_diff` / `lift_diff_t` / `lift_diff_t_nw` = the rule's #1 excess minus the
+app's #1 excess on those calls only. `luck.is_new` lists the 3 strongest methods with these. Quote same_as_app and
+lift_diff (with n_diff; not under ~100) beside lift: high agreement with lift_diff near zero is the app restated.
+Reporting only: gates unchanged.
 
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 

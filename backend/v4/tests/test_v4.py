@@ -5241,3 +5241,59 @@ def test_my_beliefs_shows_and_counts_the_same_idea_run_twice_in_a_day_once():
     mine = engine.my_beliefs("u-twice")["beliefs"]
     assert [b["belief_id"] for b in mine] == [r3["belief_id"], r2["belief_id"]]  # newest run kept, once
     assert [b["runs"] for b in mine] == [1, 2]
+
+
+def test_is_it_new_reports_agreement_with_the_app_and_the_head_to_head_where_they_differ():
+    """docs/feature_ideas.md 2026-11-18 "Is it new?": a rule that copies the app's no-look-ahead #1 shows same_as_app 1
+    and no disagreements; a rule planted to beat the app where they differ shows a large lift_diff_t. Reporting only:
+    the gate reads the same numbers as before."""
+    from backend.v4 import research
+    rng = random.Random(8)
+    beliefs, base, copy, better = [], {}, [], []
+    for k in range(400):
+        b = {"date": f"2025-{1 + k % 12:02d}-{1 + k % 27:02d}", "cands": [{"ex": rng.gauss(0, 0.1)} for _ in range(4)]}
+        beliefs.append(b)
+        base[id(b)] = 0                                   # the app's #1 is idea 0
+        copy.append((id(b), 0, b))
+        if k % 2:                                         # half the time the planted rule picks another idea, the best
+            j = max(range(1, 4), key=lambda q: b["cands"][q]["ex"])
+            b["cands"][j]["ex"] = max(b["cands"][j]["ex"], b["cands"][0]["ex"] + 0.05)
+            better.append((id(b), j, b))
+        else:
+            better.append((id(b), 0, b))
+    c, w = research._vs_app(copy, base), research._vs_app(better, base)
+    assert c == {"same_as_app": 1.0, "n_diff": 0}
+    assert w["same_as_app"] == 0.5 and w["n_diff"] == 200 and w["lift_diff"] > 0.05 and w["lift_diff_t"] > 3
+    assert "lift_diff_t_nw" in w
+    assert research._vs_app([(1, 0, beliefs[0])], {}) == {}   # no app #1 for that call: nothing to say
+    res = {"app (current #1)": {"n": 400, "lift_t": 9.0, **c}, "app, no look-ahead": {"n": 400, "lift_t": 8.0},
+           "copycat": {"n": 400, "lift": 0.01, "lift_t": 2.0, **c}, "better": {"n": 400, "lift": 0.03, "lift_t": 5.0, **w},
+           "no head-to-head": {"n": 400, "lift_t": 7.0}}
+    top = research.is_new(res)
+    assert [r["name"] for r in top] == ["better", "copycat"] and top[0]["n_diff"] == 200
+    m = {"lift": 0.02, "lift_t": 3.0, "beat": 0.6}
+    assert research._passes({**m, **w}, {}) == research._passes(m, {})
+
+
+def test_research_run_reports_is_it_new():
+    from backend.v4 import research
+    rng = random.Random(6)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for k in range(300):
+        bid = f"b-new-{k}"
+        asof = (d0 + __import__("datetime").timedelta(days=k * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            pid = f"p-new-{k}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": {"mom60": rng.uniform(-1, 1)}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, rng.gauss(0, 0.1), asof))
+    out = research.run(data=research.load())
+    r = out["results"]
+    assert "same_as_app" not in r["app, no look-ahead"]
+    mom = r["momentum (z_mom60)"]
+    assert 0 <= mom["same_as_app"] <= 1 and mom["n_diff"] <= mom["n"]
+    assert isinstance(out["luck"]["is_new"], list) and len(out["luck"]["is_new"]) <= 3
+    assert all("same_as_app" in x for x in out["luck"]["is_new"])
