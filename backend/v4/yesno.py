@@ -171,6 +171,49 @@ def parity_forward(chain: list[dict], strikes, years: float) -> Optional[tuple[f
     return sum(fs) / len(fs), sum(noise) / len(noise)
 
 
+def quotes_own_price(chain: list[dict], spot: float, level: float, years: float,
+                     strikes=None) -> Optional[dict]:
+    """The stock price the option quotes near the line were set at (put-call parity, parity_forward), the volatility
+    they price once read at THAT price (where calls and puts agree), and whether that price is too far from the last
+    price for the quotes to be read against it ("out").
+
+    Why the volatility has to be read at the quotes' own price: read at the last price instead, quotes set while the
+    stock traded lower make every put look dear and every call cheap. Live Sun Nov 22, NVDA $129.17, Dec 4: the
+    quotes implied ~$126.1 (calls ~0.81 vol beside puts ~1.19 at the same strikes); read at $126 both say ~1.03. The
+    old allowance (0.1 sd of the move, on the puts' inflated 1.19) grew with the very gap it measured and let the
+    quotes through, so the smile, all puts there, read "46% to close above $125" with the stock $4 above it.
+
+    The bar: 0.1 sd of the move at the quotes' own vol (about 4 points of odds at the money) plus the quotes' mid
+    noise. No dividend room here: callers that allow for a dividend (quotes_out_of_step) keep doing so.
+    strikes: which strikes to read (default: those within SKEW_BAND of the line). None without a strike quoted on both
+    sides."""
+    from .strategy import RISK_FREE
+    if spot <= 0 or level <= 0 or years <= 0:
+        return None
+    calls = _mids([r for r in chain if r["type"] == "call"])
+    puts = _mids([r for r in chain if r["type"] == "put"])
+    both = sorted(k for k in calls if k in puts)
+    if strikes is None:
+        strikes = [k for k in both if abs(k - level) <= SKEW_BAND * level]
+    pf = parity_forward(chain, strikes, years)
+    if not pf or pf[0] <= 0:
+        return None
+    # Quotes from one moment give every strike the same parity price (to within their noise); junk quotes (the same
+    # price at every strike) give each strike its own, which is no stock price at all.
+    grow = math.exp(RISK_FREE * years)
+    each = [float(k) + (calls[float(k)] - puts[float(k)]) * grow for k in strikes if float(k) in calls and float(k) in puts]
+    if max(each) - min(each) > 2 * pf[1] + 0.005 * spot:
+        return None
+    price = pf[0] / grow
+    k = min(both, key=lambda x: abs(x - level))
+    cv, pv = strike_vol(calls[k], price, k, years, "call"), strike_vol(puts[k], price, k, years, "put")
+    # At their own price a call and a put on one strike price one vol; if they still don't, the vol isn't readable.
+    vol = (cv + pv) / 2 if cv and pv and abs(cv / pv - 1) <= 0.15 else None
+    gap = pf[0] - spot * math.exp(RISK_FREE * years)
+    out = bool(vol) and abs(gap) > 0.1 * vol * math.sqrt(years) * spot + pf[1]
+    return {"price": price, "vol": vol, "noise": pf[1], "out": out}
+
+
 def quotes_out_of_step(spot: float, fwd: Optional[tuple[float, float]], vol: float, years: float) -> bool:
     """True when the option quotes' own stock price (parity_forward) is too far from the last price for their odds to
     describe a close relative to it. The bar: a tenth of one standard deviation of the move to expiration (about 4
@@ -256,8 +299,13 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     # Puts and calls only describe one smile when they agree on the stock price (put-call parity). Live Sat Nov 21,
     # NVDA $129.17: the quotes implied ~$126.15, so put IVs read ~140% beside ~90% for calls and the "smile" was a
     # step. No dividend allowance here (unlike quotes_out_of_step): a gap that size breaks the fit either way.
+    # The allowance is measured at the vol the quotes price at their own stock price (quotes_own_price), not at this
+    # fit's: live Sun Nov 22, NVDA Dec 4, the fit ran through puts alone, each inflated by the gap, which widened its
+    # own allowance enough to pass and read 46% above $125 with the stock at $129.17.
     pf = parity_forward(chain, [k for k, _ in pts], years)
-    if pf and sig > 0 and abs(pf[0] - fwd) > 0.1 * sig * math.sqrt(years) * spot + pf[1]:
+    own = quotes_own_price(chain, spot, level, years, [k for k, _ in pts]) if pf else None
+    band_vol = own["vol"] if own and own["vol"] else sig
+    if pf and band_vol > 0 and abs(pf[0] - fwd) > 0.1 * band_vol * math.sqrt(years) * spot + pf[1]:
         return None
     rms = math.sqrt(sum((v - mv - slope * (k - mk)) ** 2 for k, v in pts) / len(pts))
     if sig <= 0 or rms > MAX_SMILE_MISS * sig:
@@ -667,6 +715,13 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             vol = 0.4
         vol_source = "estimate"
     years = max(1, (exp - t).days) / 365.0
+    # Quotes near the line set at another stock price (stale weekend quotes on the free feed): read their volatility
+    # at that price, where calls and puts agree, not the feed's number (a put's IV read at the last price carries the
+    # gap: live NVDA Dec 4 $125, feed 1.22 vs ~1.03). The one-vol answer below is then at the last price.
+    at_own = quotes_own_price(chain, spot, level, years) if vol_source == "market" else None
+    moved = bool(at_own and at_own["out"])
+    if moved:
+        vol = at_own["vol"]
     m_p_flat = prob_above(spot, level, years, vol)
     # The yardstick a spread's reading is checked against: the smile's own odds near the line (skew included) when
     # the quotes give a usable fit, else the one-vol answer.
@@ -743,7 +798,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
                                      f"{u} options near {_money(level)} (skew included; {why_not})")
     else:
         from .strategy import RISK_FREE
-        implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else None
+        implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else at_own["price"] if moved and not split else None
         named = implied is not None and abs(implied / spot - 1) <= 0.05   # a wilder number is just broken quotes
         m_p, odds_source = m_p_flat, (f"one implied volatility (the option quotes were set as if {u} were near "
                                       f"${implied:,.2f}, not its last price ${spot:,.2f}, so their spreads would "

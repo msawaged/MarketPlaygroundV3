@@ -6115,3 +6115,57 @@ def test_option_vol_uses_the_quote_clock_so_a_weekend_does_not_inflate_it(monkey
     assert res["contract_iv"] == pytest.approx(0.35, abs=0.003)
     assert any("Fri Nov 20 closing quotes" in l for l in res["lines"])
     assert any("35% yearly volatility" in l for l in res["lines"])
+
+
+def test_yesno_quotes_set_at_another_price_read_their_vol_at_that_price(monkeypatch):
+    """Live Sun Nov 22, NVDA $129.17, Dec 4 $125: the option quotes were set as if NVDA were ~$126.1 (parity), so read
+    at the last price every put looked dear (~1.19 vol) and every call cheap (~0.81). The smile near $125 ran through
+    puts alone, its parity allowance (0.1 sd at the puts' own inflated vol) passed the gap it was measuring, and the
+    page read "46% to close above $125" with the stock $4 above the line. Read at the quotes' own price, calls and
+    puts agree (~1.03). Now: no smile from those quotes, and the one-vol answer at the last price uses that vol and
+    says what price the quotes were set at. Quotes set at the last price are untouched."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price
+    yrs = 12 / 365
+    iv = lambda k: 1.03 - 0.009 * (k - 125)
+
+    def rows(at, call_gap=0.9):
+        out = []
+        for k in range(115, 141):
+            for t in ("call", "put"):
+                m = bs_price(at, float(k), yrs, iv(k), t)
+                g = call_gap if t == "call" else 0.04          # the live calls were ~$0.90 wide, puts ~$0.04
+                out.append({"symbol": f"N{k}{t}", "type": t, "strike": float(k), "expiration": date(2026, 12, 4),
+                            "bid": round(m - g / 2, 2), "ask": round(m + g / 2, 2), "iv": 1.2229})
+        return out
+    stale = rows(126.0)
+    own = yesno.quotes_own_price(stale, 129.17, 125.0, yrs)
+    assert own["out"] and abs(own["price"] - 126.0) < 0.3 and abs(own["vol"] - 1.03) < 0.03
+    assert yesno.skew_odds(stale, 129.17, 125.0, yrs) is None
+    fresh = rows(129.17)
+    assert not yesno.quotes_own_price(fresh, 129.17, 125.0, yrs)["out"]
+    assert yesno.skew_odds(fresh, 129.17, 125.0, yrs) is not None
+
+    # quote(): the same shape around WINR's price, quotes set 2.4% lower (inside quotes_out_of_step's dividend room).
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=12)
+    at = spot * 126.0 / 129.17
+    vol = lambda k: 1.03 - 0.009 * 129.17 / spot * (k - spot * 125 / 129.17)
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in range(int(spot * 0.88), int(spot * 1.1) + 1):
+            for t in ("call", "put"):
+                m = bs_price(at, float(k), yrs, vol(k), t)
+                g = 0.007 * spot if t == "call" else 0.0003 * spot
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(max(0.01, m - g / 2), 2), "ask": round(m + g / 2, 2), "iv": 1.2229})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    lvl = float(round(spot * 125 / 129.17))
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    assert q["market_p_smile"] is None
+    assert abs(q["vol"] - 1.03) < 0.06 and q["market_p"] > 0.5                # the stock sits ~3% above the line
+    if q["market_p"] == q["market_p_flat_vol"]:
+        assert "set as if WINR were near" in q["odds_source"]

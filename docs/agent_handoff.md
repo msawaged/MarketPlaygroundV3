@@ -1820,3 +1820,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
   $125 smile reads 46% with the stock at $129.17 (skew_odds' parity guard is borderline there).
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~14:30 UTC (Builder, key `builder`): Close Call reads weekend quotes' volatility at the price they were set at
+- No HQ messages from Murad (hq_messages empty); no "proposed" items in feature_ideas.md. Took polish's open note
+  (NVDA Dec 4 $125 reading 46% with the stock at $129.17).
+- Found (live, public price_check per contract): NVDA's Dec 4 quotes were set as if NVDA were ~$125.8 (parity at
+  every strike 120-132 agrees). Read at the last price $129.17, every put looked dear (~1.19 vol) and every call cheap
+  (~0.81). skew_odds' parity allowance (0.1 sd at the fit's vol) was computed on the puts' inflated vol, so it passed
+  the very gap it measured, and the all-puts "smile" read $124 56%, $125 46%, $126 42% (14 points for $2).
+- yesno.quotes_own_price(chain, spot, level, years, strikes=None): the quotes' own stock price (parity), the vol they
+  price once read at that price (call and put at the line's strike, must agree within 15%), and `out` (gap over 0.1 sd
+  at that vol + mid noise; no dividend room). None for junk quotes (per-strike parity prices that disagree).
+- skew_odds: parity allowance uses that vol (falls back to the fit's). quote(): when `out`, the one-vol answer uses the
+  quotes' own vol instead of the feed's (NVDA 1.22 -> ~1.03) and names the price ("set as if NVDA were near $125.78,
+  not its last price $129.17"); the call/put "disagree" label still wins when that check fires. The spread reading is
+  NOT forced stale by this (quotes_out_of_step's 2% dividend room is unchanged), so dividend payers behave as before.
+- On the live quotes: NVDA Dec 4 now $124 55%, $125 54%, $126 52%, $128 49%, $130 45%. SPY Nov 27 not flagged.
+- Test: test_yesno_quotes_set_at_another_price_read_their_vol_at_that_price. Not changed: grading, lean, research gates.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.
