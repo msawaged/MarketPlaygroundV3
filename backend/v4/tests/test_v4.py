@@ -6015,3 +6015,54 @@ def test_share_card_shows_only_stored_grades_and_its_own_tags():
     assert c.get("/c/b-aaaa000000000003").status_code == 404   # seeded calls get no card
     assert c.get("/c/b-ffff000000000009").status_code == 404
     assert c.get("/c/nonsense.png").status_code == 404
+
+
+def test_option_vol_uses_the_quote_clock_so_a_weekend_does_not_inflate_it(monkeypatch):
+    """Sunday Nov 22 2026: SPY's Nov 27 options still carried Friday's closing quotes, and the feed's IV divided them
+    by the 5 days left, reading ~42% for options priced at ~35%. Vol is read off the quotes from the last close."""
+    from zoneinfo import ZoneInfo
+    from backend.v4 import pricecheck, yesno
+    ny = ZoneInfo("America/New_York")
+    exp = date(2026, 11, 27)                                   # day after Thanksgiving: 1pm close
+    sun = datetime(2026, 11, 22, 5, 53, tzinfo=ny)
+    assert market.last_close_dt(sun) == datetime(2026, 11, 20, 16, 0, tzinfo=ny)
+    assert market.last_close_dt(datetime(2026, 11, 26, 12, 0, tzinfo=ny)) == datetime(2026, 11, 25, 16, 0, tzinfo=ny)
+    assert market.last_close_dt(datetime(2026, 11, 23, 9, 0, tzinfo=ny)) == datetime(2026, 11, 20, 16, 0, tzinfo=ny)
+    assert market.last_close_dt(datetime(2026, 11, 23, 16, 30, tzinfo=ny)) == datetime(2026, 11, 23, 16, 0, tzinfo=ny)
+    closed = market.quote_years(exp, sun, open_now=False)
+    assert closed * 365 == pytest.approx(6 + 21 / 24)          # Fri 4pm -> Fri 1pm, not the 5 days left
+    live = datetime(2026, 11, 23, 13, 0, tzinfo=ny)
+    assert market.quote_years(exp, live, open_now=True) * 365 == pytest.approx(4)
+    assert market.quote_years(exp, datetime(2026, 11, 28, 9, 0, tzinfo=ny), open_now=False) == 0.0
+
+    # Quotes priced at 35% on the quote clock read back 35%; the old clock (time left from Sunday) reads far higher
+    spot, k = 693.89, 694.0
+    rows = []
+    for kind in ("call", "put"):
+        mid = strategy.bs_price(spot, k, closed, 0.35, kind)
+        rows.append({"type": kind, "strike": k, "expiration": exp, "bid": mid - 0.1, "ask": mid + 0.1, "iv": 0.42})
+    rows.append({"type": "call", "strike": 700.0, "expiration": exp, "bid": 0, "ask": 0, "iv": 0.45})
+    iv, strike, skew = yesno.atm_quote_iv(rows, spot, closed)
+    assert strike == k and iv == pytest.approx(0.35, abs=0.003) and abs(skew) < 0.003
+    assert yesno.atm_quote_iv(rows, spot, 5 / 365)[0] > 0.40
+    assert yesno.quote_iv(rows[2], spot, closed) is None       # no two-sided quote: no reading
+    assert yesno.quote_iv(dict(rows[0], bid=1.0, ask=30.0), spot, closed) is None   # too loose to read
+
+    # Close Call's range: same spread of outcomes the prices carry, labelled with the honest vol
+    m = yesno.expected_move(spot, rows, 5 / 365, rv60=0.17, quote_years=closed)
+    assert m["atm_iv"] == pytest.approx(0.35, abs=0.003)
+    assert m["high"] == pytest.approx(spot * math.exp(0.35 * math.sqrt(closed)), abs=0.3)
+    old = yesno.expected_move(spot, rows, 5 / 365, rv60=0.17)  # no quote clock: the feed's number, as before
+    assert old["atm_iv"] == pytest.approx(0.42)
+
+    # Price Check off-hours: verdict on the quote-clock vol, and it says which close the quotes are from
+    monkeypatch.setattr(market, "option_chain_near", lambda *a, **kw: [dict(r, symbol=f"SPY261127{r['type'][0].upper()}{int(r['strike'] * 1000):08d}") for r in rows])
+    monkeypatch.setattr(market, "latest_price", lambda s: spot)
+    monkeypatch.setattr(market, "daily_closes", lambda s: ([], []))
+    monkeypatch.setattr(market, "is_open", lambda: False)
+    monkeypatch.setattr(market, "now_ny", lambda: sun)
+    res = pricecheck._compute("SPY", "call", 694.0, exp)
+    assert res["available"] and res["atm_iv"] == pytest.approx(0.35, abs=0.003)
+    assert res["contract_iv"] == pytest.approx(0.35, abs=0.003)
+    assert any("Fri Nov 20 closing quotes" in l for l in res["lines"])
+    assert any("35% yearly volatility" in l for l in res["lines"])

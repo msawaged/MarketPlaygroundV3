@@ -102,6 +102,9 @@ def vol_verdict(iv: Optional[float], rv60: Optional[float]) -> tuple[str, Option
 def _vol_text(verdict: str, iv: Optional[float], rv20: Optional[float], rv60: Optional[float], ratio: Optional[float],
               who: str = "At-the-money options on this stock") -> str:
     if verdict == "unknown":
+        if iv:   # an implied vol but too little price history to compare it with
+            return (f"{who} {'is' if who.startswith('This') else 'are'} priced for {iv * 100:.0f}% yearly volatility. "
+                    "There isn't enough price history yet to compare that with how much the stock actually moves.")
         return "No implied volatility for this contract right now."
     swings = f"{rv60 * 100:.0f}% a year over the last 60 trading days"
     if rv20:
@@ -132,11 +135,20 @@ def _history(u: str, atm_iv: Optional[float]) -> Optional[dict]:
     return {"days": len(rows), "percentile": round(below / len(rows), 3)}
 
 
-def _atm(chain: list[dict], spot: float, target: date) -> tuple[Optional[float], Optional[int], Optional[float]]:
-    """At-the-money IV (avg of call and put nearest the spot, expiration nearest target), its days, and put-call skew."""
+def _atm(chain: list[dict], spot: float, target: date,
+         years_fn=None) -> tuple[Optional[float], Optional[int], Optional[float]]:
+    """At-the-money IV (avg of call and put nearest the spot, expiration nearest target), its days, and put-call skew.
+
+    With years_fn (expiration -> market.quote_years), the IVs are read off the call and put quotes themselves on the
+    quote clock, so a weekend or holiday doesn't inflate them; the feed's IV is the fallback."""
     if not chain:
         return None, None, None
     exp = min({r["expiration"] for r in chain}, key=lambda e: abs((e - target).days))
+    if years_fn:
+        from . import yesno
+        own = yesno.atm_quote_iv([r for r in chain if r["expiration"] == exp], spot, years_fn(exp))
+        if own and abs(own[1] / spot - 1) <= 0.03:
+            return own[0], (exp - date.today()).days, own[2]
     same = [r for r in chain if r["expiration"] == exp and r["iv"]]
     if not same:
         return None, None, None
@@ -204,7 +216,13 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
     mid = _mid(c)
     spread_pct = round((c["ask"] - c["bid"]) / mid, 4) if mid else None
     atm_chain = chain if abs(c["strike"] / spot - 1) < 0.08 else market.option_chain_near(u, spot, c["expiration"], band=0.05)
-    atm_iv, atm_days, skew = _atm(atm_chain, spot, c["expiration"])
+    from . import yesno
+    atm_iv, atm_days, skew = _atm(atm_chain, spot, c["expiration"], market.quote_years)
+    # The contract's own vol on the same quote clock (the feed's number mixes clocks off-hours: on Sunday Nov 22
+    # 2026 it read SPY's $695 Nov 27 call at 47% and the put at 37%).
+    own_iv = yesno.quote_iv(c, spot, market.quote_years(c["expiration"]))
+    if own_iv:
+        c = dict(c, iv=own_iv)
     # Cheap/expensive is judged on AT-THE-MONEY implied vol vs realized vol. Far-from-the-money strikes carry extra
     # implied vol from the volatility smile/skew (normal, not "expensive"), and deep in-the-money ones often have no IV
     # in the feed. The contract's own IV is reported beside it.
@@ -219,6 +237,12 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
                       f"{c['iv'] * 100:.0f}% vs {atm_iv * 100:.0f}% at the money. That difference (the volatility smile) is normal for "
                       "strikes far from the price, not a sign of a bad deal.")
     hist = _history(u, atm_iv)
+    clock_text = None
+    if not is_open and (own_iv or atm_iv):
+        lc = market.last_close_dt()
+        clock_text = (f"The market is closed: these are the {lc.strftime('%a %b')} {lc.day} closing quotes, so volatility "
+                      "is measured from that close to the expiration (counting from now would make the same prices "
+                      "look more volatile).")
     cost_text = ("No two-sided quote right now, so the trading cost is unknown." if spread_pct is None else
                  f"Buyers pay ${c['ask']:.2f}, sellers get ${c['bid']:.2f}: buying and selling right away would cost about "
                  f"{_pct_text(spread_pct)} of the price." + (" That's a wide spread; use a limit order." if spread_pct > 0.1 else ""))
@@ -241,7 +265,7 @@ def _compute(u: str, kind: str, strike: float, exp: date) -> dict:
         "iv_source": iv_src if iv else None,
         "contract_iv": round(c["iv"], 4) if c["iv"] else None,
         "lines": [l for l in (_vol_text(verdict, iv, rv20, rv60, ratio, "At-the-money options on this stock" if atm_iv else "This option"), smile_text, (parity_text(par, u) if is_open else "Put-call parity is checked while the market is open (overnight, stock and option prices come from different moments)."),
-                              cost_text, hist_text) if l],
+                              cost_text, hist_text, clock_text) if l],
         "note": ("Prices come from a free data feed that can lag a little. Realized volatility is the standard deviation of "
                  "daily closing moves (log returns), annualized. " + (f"Parity uses mid prices and a {risk_free() * 100:.1f}% risk-free rate; "
                  "US stock options are American-style, so dividends and early exercise can explain a gap. " if par else "")
@@ -326,7 +350,7 @@ def log_daily(limit: int = 60, force: bool = False) -> dict:
         try:
             spot = market.latest_price(u)
             chain = market.option_chain_near(u, spot, date.today() + timedelta(days=30), days=20, band=0.06)
-            atm_iv, atm_days, skew = _atm(chain, spot, date.today() + timedelta(days=30))
+            atm_iv, atm_days, skew = _atm(chain, spot, date.today() + timedelta(days=30), market.quote_years)
             if atm_iv is None:
                 continue
             dates, closes = market.daily_closes(u)

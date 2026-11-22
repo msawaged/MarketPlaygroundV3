@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T08:45:00Z",
- "last_run": "Close Call: the brain's record now lists its latest graded questions, right and wrong, with each close. Before, the list only showed questions still open, so none of the answers behind its score were visible.",
+ "updated_at": "2026-11-22T11:30:00Z",
+ "last_run": "Option volatility is now measured from when the quotes were set. Over the weekend SPY's one-week options showed 42%; Friday's closing prices really price about 36%.",
  "working_on": "Nothing open.",
- "next": "Check weekend option volatility readings (SPY showed 42% on Friday's quotes) once markets reopen; Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
+ "next": "Monday in market hours: check Price Check and Close Call volatility readings match live quotes, and Close Call's SPY ladder and NVDA's parity guard.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Price Check and Close Call overstated option volatility whenever the market was closed. This weekend SPY's options for Nov 27 read '42% yearly volatility, expensive, 2.45x realized'. Those prices are Friday's closing quotes, which still cover the risk from Friday's close to the expiration, but the data feed divided them by the 5 days left from Sunday. Measured from Friday's close, the same prices are about 36%. The app now works the volatility out from each option's own bid and ask, timed from when the quotes were set (now while the market is open, otherwise the last close, with holidays and early closes counted), and Price Check says when it's showing closing quotes. Close Call's 'how far it could move' range is unchanged, because that comes from the prices; only the yearly-volatility label beside it changes. Odds, trades and grading are unchanged.",
+   "at": "2026-11-22T11:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The Close Call page said the brain had 15 questions graded and picked the right side 73% of the time, but the list under it only showed the 12 newest questions, and those were all still open (it asks about 11 a day, each closing 5+ days later). So you couldn't see a single right or wrong answer behind the 73%. Now the card has 'Latest graded': each question with the market's odds, the brain's, the close, and right or wrong, plus 'Its side was right on X of these N'. The open ones sit below under 'Waiting for the close'. Grading and odds unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call fix: when the line was a listed strike (most questions), the trade was the line and the next strike up, e.g. NVDA $185 traded $185/$187.50. That is really a bet on a close above $186.25, so the screen said 'market's odds 50%' while YES cost 44% of its payout and both breakevens sat above the line. A finance professor would spot that first. Now the spread uses the strikes either side of the line ($182.50/$187.50): YES costs 50% of a $500 payout and both sides break even at the line. Practice money only; grading unchanged.",
    "at": "2026-11-21T08:45:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The Brain page's 'Survival of the smartest' said the leading strategist (+2.6 pts) was 'about the same as the app's own pick'. But all 300 calls it's scored on are practice calls, and there the app's stored #1 was chosen with results that came later (the catch the page already admits elsewhere); the strategists never see those. So the app's yardstick was inflated. The scoreboard now compares with the app's #1 rebuilt as it stood on each call's date, and shows the stored number beneath as 'with the peek'. Display only: how strategists are scored and the live test that gives one a say in real picks are unchanged. The new number appears after Monday's grade-and-train run (22:47 UTC, weekdays only).",
-   "at": "2026-11-21T05:30:00Z"
   }
  ]
 }

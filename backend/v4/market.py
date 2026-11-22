@@ -120,6 +120,55 @@ def is_open() -> bool:
     return bool(clock().get("is_open"))
 
 
+# NYSE full-day closures and 1pm early closes, used only by quote_years (the option-vol clock). Alpaca's clock
+# knows holidays too, but only "next open", not when the last session closed.
+NYSE_HOLIDAYS = {"2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03", "2026-05-25", "2026-06-19", "2026-07-03",
+                 "2026-09-07", "2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26",
+                 "2027-05-31", "2027-06-18", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24"}
+NYSE_EARLY_CLOSE = {"2026-11-27", "2026-12-24", "2027-11-26"}
+
+
+def _close_dt(d: date) -> datetime:
+    hour = 13 if d.isoformat() in NYSE_EARLY_CLOSE else 16
+    return datetime(d.year, d.month, d.day, hour, 0, tzinfo=NY) if NY else \
+        datetime(d.year, d.month, d.day, hour + 5, 0, tzinfo=timezone.utc)
+
+
+def _is_session(d: date) -> bool:
+    return d.weekday() < 5 and d.isoformat() not in NYSE_HOLIDAYS
+
+
+def last_close_dt(now: Optional[datetime] = None) -> datetime:
+    """When the most recent regular session closed, at or before `now` (New York)."""
+    now = now or now_ny()
+    if NY and now.tzinfo:
+        now = now.astimezone(NY)
+    d = now.date()
+    if not (_is_session(d) and now >= _close_dt(d)):
+        d -= timedelta(days=1)
+        while not _is_session(d):
+            d -= timedelta(days=1)
+    return _close_dt(d)
+
+
+def quote_years(expiration: date, now: Optional[datetime] = None, open_now: Optional[bool] = None) -> float:
+    """Years from the moment the option quotes were set to the expiration's close (2026-11-22).
+
+    While the market is open that moment is now. When it's closed, the quotes are the last session's closing ones,
+    so the clock starts at that close: on a Sunday, Friday's quotes for a Friday expiration still price 7 days of
+    risk, not the 5 left on the calendar. Dividing their price by the shorter clock made SPY's one-week options read
+    42% yearly volatility on Nov 22 2026 when they were priced for about 35%. 365-day years (the usual option
+    convention, the same one the odds use)."""
+    now = now or now_ny()
+    if open_now is None:
+        try:
+            open_now = is_open()
+        except Exception:
+            open_now = False
+    start = now if open_now else last_close_dt(now)
+    return max(0.0, (_close_dt(expiration) - start).total_seconds()) / (365.0 * 86400.0)
+
+
 def session_open_after(symbol: str, after: datetime) -> Optional[tuple[str, float]]:
     """(trading date, opening price) of the first regular session that opens at or after `after`
     (aware datetime). None if that session hasn't opened yet. Used to fill orders placed while the

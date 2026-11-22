@@ -1789,3 +1789,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
   "Potentially $45 billion". Re-applied on read, so cached stories change too. No other behavior changed.
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
   docs/hq/status/polish.json.
+
+## 2026-11-22 ~11:30 UTC (Builder, key `builder`): option volatility measured from the quotes' own close (no weekend inflation)
+- No HQ messages from Murad (hq_messages empty); no "proposed" items in feature_ideas.md. Followed up my own note from
+  the last run (weekend SPY IV 42%).
+- Found: off-hours, Alpaca's snapshot IV divides Friday's closing prices by the time left from NOW. Live Sun Nov 22:
+  SPY Nov 27 ATM read 42% (Price Check "Expensive", 2.45x realized); re-reading the same mids from Friday's close gives
+  ~36% (call $695 35%, put $695 37%, $690 call 37%, $700 call 34%). The feed was also inconsistent across contracts
+  (the $695 call 47% vs the put 37%).
+- market.py: `last_close_dt`, `quote_years(exp)` (from now while open, else from the last session's close, to the
+  expiration's close; NYSE holidays / 1pm early closes 2026-27 listed in NYSE_HOLIDAYS / NYSE_EARLY_CLOSE: extend them
+  for 2028).
+- yesno.py: `quote_iv` (one contract's IV from its own two-sided mid) and `atm_quote_iv`; `expected_move(...,
+  quote_years=)` reads the ATM vol off the quotes on that clock and the range uses the same clock (so the range is
+  what the prices carry; only the yearly-vol label and the implied/realized ratio change). Odds, lean, trade pricing,
+  grading untouched.
+- pricecheck.py: `_atm(..., years_fn)` and the contract's own IV from its quotes (feed IV is the fallback); off-hours
+  line "these are the Fri Nov 20 closing quotes, so volatility is measured from that close"; when there's no realized
+  history the card now says the IV instead of "No implied volatility". log_daily uses the same clock.
+- Test: test_option_vol_uses_the_quote_clock_so_a_weekend_does_not_inflate_it.
+- Files: backend/v4/market.py, backend/v4/yesno.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

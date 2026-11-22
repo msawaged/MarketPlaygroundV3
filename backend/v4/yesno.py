@@ -102,6 +102,33 @@ def strike_vol(mid: float, spot: float, k: float, years: float, kind: str = "cal
     return (lo + hi) / 2
 
 
+def quote_iv(row: dict, spot: float, years: float) -> Optional[float]:
+    """One listed option's implied volatility from its own two-sided quote (mid), on the quote clock
+    (market.quote_years). None without a usable bid AND ask (callers fall back to the feed's number)."""
+    bid, ask = float(row.get("bid") or 0), float(row.get("ask") or 0)
+    if bid <= 0 or ask < bid or spot <= 0 or years <= 0:
+        return None
+    mid = (bid + ask) / 2
+    if (ask - bid) > 0.5 * mid:          # too loose to read a volatility off
+        return None
+    return strike_vol(mid, spot, row["strike"], years, row["type"])
+
+
+def atm_quote_iv(rows: list[dict], spot: float, years: float) -> Optional[tuple[float, float, Optional[float]]]:
+    """(at-the-money vol, its strike, put minus call vol) from the call and put quotes at the listed strike nearest
+    the stock price, for ONE expiration's rows. Averaging the call and put cancels most of a dividend's pull.
+    None when neither has a readable quote."""
+    if not rows or spot <= 0:
+        return None
+    k = min({r["strike"] for r in rows}, key=lambda s: abs(s - spot))
+    by = {r["type"]: quote_iv(r, spot, years) for r in rows if r["strike"] == k}
+    ivs = [v for v in by.values() if v]
+    if not ivs:
+        return None
+    c, p = by.get("call"), by.get("put")
+    return sum(ivs) / len(ivs), k, (p - c if c and p else None)
+
+
 def leg_vols(calls: list[dict], k1: float, k2: float, spot: float, years: float, near: float) -> Optional[tuple[float, float]]:
     """Each strike of the YES spread at its own implied volatility, from its listed call mid ("sticky strike").
     One flat vol can't reprice a skewed spread: the skew sits in how IV changes from k1 to k2, and a vertical
@@ -320,21 +347,33 @@ def prob_above(spot: float, level: float, years: float, vol: float, rate: float 
     return min(0.995, max(0.005, _ncdf(d2)))
 
 
-def expected_move(spot: float, rows: list[dict], years: float, rv60: Optional[float] = None) -> Optional[dict]:
+def expected_move(spot: float, rows: list[dict], years: float, rv60: Optional[float] = None,
+                  quote_years: Optional[float] = None) -> Optional[dict]:
     """The range option prices put about a 2-in-3 chance on by the expiration (one standard deviation), from the
     at-the-money implied volatility of that one expiration, and whether that's a bigger move than the stock has been
     making (implied vs its last 60 trading days of realized volatility; same 1.35x line as Price Check).
 
-    Information only: it doesn't feed the odds, the lean or any grade."""
-    rows = [r for r in rows if r.get("iv")]
-    if not rows or spot <= 0 or years <= 0:
+    Information only: it doesn't feed the odds, the lean or any grade.
+
+    quote_years (market.quote_years): the vol is read off the at-the-money quotes themselves on the quote clock, so
+    a weekend doesn't inflate it (Friday's quotes still price Friday-to-expiration risk); the range uses the same
+    clock, so it is the spread those prices carry. Without it, or without readable quotes, the feed's IV and `years`."""
+    if spot <= 0 or years <= 0:
         return None
-    k = min({r["strike"] for r in rows}, key=lambda s: abs(s - spot))
-    if abs(k / spot - 1) > 0.03:        # no strike near today's price in this slice of the chain
-        return None
-    ivs = [r["iv"] for r in rows if r["strike"] == k]
-    iv = sum(ivs) / len(ivs)
-    sd = iv * math.sqrt(years)
+    own = atm_quote_iv(rows, spot, quote_years) if quote_years and quote_years > 0 else None
+    if own and abs(own[1] / spot - 1) <= 0.03:
+        iv, k = own[0], own[1]
+        sd = iv * math.sqrt(quote_years)
+    else:
+        rows = [r for r in rows if r.get("iv")]
+        if not rows:
+            return None
+        k = min({r["strike"] for r in rows}, key=lambda s: abs(s - spot))
+        if abs(k / spot - 1) > 0.03:        # no strike near today's price in this slice of the chain
+            return None
+        ivs = [r["iv"] for r in rows if r["strike"] == k]
+        iv = sum(ivs) / len(ivs)
+        sd = iv * math.sqrt(years)
     lo, hi = spot * math.exp(-sd), spot * math.exp(sd)
     ratio = iv / rv60 if rv60 else None
     return {"atm_iv": round(iv, 4), "atm_strike": k, "low": round(lo, 2), "high": round(hi, 2),
@@ -363,7 +402,7 @@ def market_iv_rv(exp: date, years: float) -> Optional[float]:
         chain = [x for x in _chain("SPY", spot, exp) if x["expiration"] == exp]
         _, closes = market.daily_closes("SPY")
         rv = market.realized_vol(closes, len(closes) - 1, 60) if len(closes) > 65 else None
-        m = expected_move(spot, chain, years, rv)
+        m = expected_move(spot, chain, years, rv, market.quote_years(exp))
         r = m["iv_rv"] if m else None
     except Exception:
         r = None
@@ -712,7 +751,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         rv60 = market.realized_vol(closes, len(closes) - 1, 60) if len(closes) > 65 else None
     except Exception:
         pass
-    move = expected_move(spot, chain, years, rv60) if vol_source == "market" else None
+    move = expected_move(spot, chain, years, rv60, market.quote_years(exp)) if vol_source == "market" else None
     if move and move["big"] and u != "SPY":
         move["market_iv_rv"] = market_iv_rv(exp, years)
     sig = _signals(u)
