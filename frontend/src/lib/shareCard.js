@@ -81,7 +81,10 @@ export async function drawCard(card) {
     ctx.fillStyle = '#fff'; ctx.font = `800 56px ${FONT}`; ctx.fillText(p.ticker, x + 32, yy + 82);
     ctx.fillStyle = '#94a3b8'; ctx.font = `500 28px ${FONT}`; ctx.fillText(String(p.label || '').slice(0, 18), x + 32, yy + 126);
     ctx.fillStyle = p.good == null ? '#e2e8f0' : p.good ? '#86efac' : '#fca5a5';
-    ctx.font = `800 54px ${FONT}`; ctx.fillText(p.value || '', x + 32, yy + 196);
+    // shrink to fit the box ("-12.3 pts" is wider than the old "-12.3%")
+    let fs = 54; ctx.font = `800 ${fs}px ${FONT}`;
+    while (fs > 30 && ctx.measureText(p.value || '').width > bw - 56) { fs -= 2; ctx.font = `800 ${fs}px ${FONT}`; }
+    ctx.fillText(p.value || '', x + 32, yy + 196);
   });
 
   // footer

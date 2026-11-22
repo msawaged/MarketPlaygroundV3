@@ -44,9 +44,9 @@ async function shareImage(b) {
     belief: b.text,
     headline: b.direction === 'volatile'
       ? `Moved ${(Math.abs(avg) * 100).toFixed(1)} pts ${avg >= 0 ? 'more' : 'less'} than the S&P 500 in ${days} day${days === 1 ? '' : 's'}`
-      : `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)}% vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
+      : `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)} pts vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
     good: avg >= 0,
-    picks: b.picks.map((p) => ({ ticker: p.ticker, label: p.direction === 'volatile' ? 'move vs S&P' : 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)}%`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
+    picks: b.picks.map((p) => ({ ticker: p.ticker, label: p.direction === 'volatile' ? 'move vs S&P' : 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)} pts`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
     url: window.location.host,
   }, `My call on MarketPlayground: "${b.text}"`);
 }

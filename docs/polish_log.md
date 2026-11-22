@@ -1528,3 +1528,30 @@ Changed (wording/labels only; grades unchanged):
 - Test: test_share_card_shows_only_stored_grades_and_its_own_tags extended with a volatile call.
 
 Checks: vite build passes, backend tests 237 passed (fresh venv).
+
+## 2026-11-22 (third run, ~06:30 UTC = Sun 1:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain plus /learning, /journey, /hot-trades, /basket-builder,
+/yes-no, /close-call, /my, /portfolio on the live site at 390x844: no page errors, no 5xx, no horizontal overflow (only
+the sandbox-proxy-blocked third-party request; /learning's 403 is its owner-only data, page says "This page is
+private"). No HQ messages from Murad. Moving now: each "vs S&P" equals the stock's Friday move minus SPY's -3.07%
+(/v4/movers). Live SPY Close Call Nov 27 ($650-$680 lines): YES + NO = payout, both breakevens equal. Signed in locally
+(offline server, throwaway SQLite) at 375: "Chip stocks will fall over the next month", $1,000, Options, Limit my risk ->
+NVDA $185/$165 bear put spread: $9.77 - $2.89 = $6.88 -> $688, max gain $1,312, breakeven $178.12, delta -25 sh; paper
+trade -> Portfolio (invested $688, cash $99,312) and My beliefs all consistent.
+
+Found:
+- Brain page luck card says "We've tested 49 ways", the new "Would we have picked the winner?" paragraph says "the best
+  of 48 ways" with no reason given. /v4/brain: luck.tries_ever 49, luck.pbo.n_methods 48; research.PBO_EXCLUDE drops
+  "app (current #1)" (its stored score has the peek; the no-peek app row stands in).
+- Brain page "Just graded by the market" showed a difference of two returns as "%" ("HAL bearish ✓ -0.3%  stock vs
+  S&P 500"), while every other vs-S&P figure on the page and on Moving now / share cards says "pts". Same for the
+  My beliefs "Image" share card on up/down calls ("+1.2% vs the S&P 500", picks "+1.2%"), whose big-move version
+  already said "pts".
+
+Changed (wording/units only; no numbers or grading changed):
+- BrainPage.jsx: PBO line adds "(the 49 above minus the old #1 as scored with the peek; its rebuilt, no-peek version
+  takes part)" when exactly one is left out, a generic reason otherwise. Just graded feed shows "-0.3 pts" (no "-0.0").
+- MyCallsPage.jsx Image card: headline and pick values in pts; shareCard.js shrinks a pick value's font to fit its box.
+
+Checks: vite build passes, backend tests 238 passed (fresh venv).

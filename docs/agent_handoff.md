@@ -1759,3 +1759,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test_hq_board_and_messages checks next_run and needs `at`.
 - Files: backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/components/HQPage.jsx, docs/hq/agents.json,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-22 ~06:45 UTC (Polish walk, key `polish`): Brain page units and the 49-vs-48 count
+- Brain page "Just graded by the market" now says "-0.3 pts" (a difference of returns), not "-0.3%"; My beliefs Image
+  share card on up/down calls says pts too (shareCard.js shrinks wide values to fit). The PBO paragraph explains why
+  it compares 48 ways when the luck check says 49 (the old #1's peeked score is left out). Wording/units only.
+- Files: frontend/src/components/BrainPage.jsx, frontend/src/components/MyCallsPage.jsx, frontend/src/lib/shareCard.js,
+  docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

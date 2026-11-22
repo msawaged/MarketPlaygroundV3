@@ -505,7 +505,11 @@ export default function BrainPage({ viewOnly = false }) {
                     return (
                       <div className="mt-2 text-xs text-slate-300">
                         <span className="font-semibold text-slate-200">Would we have picked the winner?</span>
-                        {' '}We cut the test calls into {P.n_blocks} stretches of time and tried all {P.n_splits} ways of using half of them to choose the best of {P.n_methods} ways to pick the #1.
+                        {' '}We cut the test calls into {P.n_blocks} stretches of time and tried all {P.n_splits} ways of using half of them to choose the best of {P.n_methods} ways to pick the #1{Number(sk.luck.tries_ever) > Number(P.n_methods)
+                          ? (Number(sk.luck.tries_ever) - Number(P.n_methods) === 1
+                            ? ` (the ${Number(sk.luck.tries_ever)} above minus the old #1 as scored with the peek; its rebuilt, no-peek version takes part)`
+                            : ` (of the ${Number(sk.luck.tries_ever)} above: those with test calls in every stretch, leaving out the old #1 as scored with the peek)`)
+                          : ''}.
                         {' '}The chosen one landed in the bottom half on the other half {Math.round(v * 100)}% of the time
                         {' '}(median {pts(Number(P.oos_lift_med || 0))} pts there; behind our other ideas in {Math.round(Number(P.p_loss || 0) * 100)}% of tries).
                         {verdict}
@@ -753,7 +757,8 @@ export default function BrainPage({ viewOnly = false }) {
                 </div>
               </div>
               <div className={`text-right font-extrabold shrink-0 ${x.right ? 'text-green-300' : 'text-red-300'}`}>
-                {x.right ? '✓' : '✗'} {v >= 0 ? '+' : ''}{(v * 100).toFixed(1)}%
+                {/* a difference of two returns, so percentage points (pts), as everywhere else on the page */}
+                {x.right ? '✓' : '✗'} {(() => { const r = Number((Number(v || 0) * 100).toFixed(1)); return r === 0 ? '0.0' : `${r > 0 ? '+' : ''}${r.toFixed(1)}`; })()} pts
                 <div className="text-[10px] font-medium text-slate-500">{stock ? 'stock vs S&P 500' : x.direction === 'volatile' ? 'size of move vs S&P' : 'vs S&P 500'}</div>
               </div>
             </div>
