@@ -1714,3 +1714,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Added `docs/growth_plan.md`: guerrilla-first launch plan, 7 yes/no launch items for Murad, 3 free channels, and a spec for extending `scripts/social/` (add Facebook Page Reels + auto-queue the daily `make_reel.js` reel). Nothing built yet; build chat owns the code.
 - Key finding: the app is already open, but reels still end "coming soon" (`LIVE` flag in `make_reel.js` / `?live=1` on `/reel`). Don't flip it without Murad's "launch".
 - Updated `docs/hq/status/growth.json`. No code or deploy changes.
+
+## 2026-11-22 ~00:40 UTC (Polish walk, key `polish`): share cards say what the grade was measured on
+- The builder's "I called it" cards showed the theme's grade beside one ticker ("CHWY, calling up +1.2 pts" while CHWY
+  fell 11.5%). Now the card lists up to 3 shown picks and says "Graded on <fund> / the average of N related stocks".
+  New card/json fields `picks`, `measured_on`. Grades and grading unchanged. Double period in og description fixed.
+- Files: backend/v4/share.py, backend/v4/tests/test_v4.py, frontend/src/components/WelcomePage.jsx,
+  docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-21T21:45:00Z",
- "last_run": "Walked every public page on a phone and the signed-in screens locally: nothing broken. Fixed one overstatement in What's new on the welcome page: it said Close Call trades break even at the line; they break even near it, between the two strikes.",
+ "updated_at": "2026-11-22T00:45:00Z",
+ "last_run": "Checked the new share cards against the database. They showed the theme's score next to one stock (a pet-food call read 'CHWY +1.2 pts' while CHWY fell 11%). The cards now list the picks and say what the score was measured on.",
  "working_on": "Nothing open.",
- "next": "Re-check NVDA's Close Call odds on Monday's fresh quotes (this weekend's stale quotes read 51% for both $125 and $130); check Monday night's grading.",
+ "next": "Re-check NVDA's Close Call odds on Monday's fresh quotes; check Monday night's grading.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

@@ -63,6 +63,8 @@ def card(belief_id: str) -> Optional[dict]:
     pick = db.query_one("SELECT ticker, name, direction FROM picks WHERE belief_id = ? AND shown = 1 "
                         "ORDER BY final_rank LIMIT 1", (belief_id,))
     core = b.get("direction") or ""
+    shown = [r["ticker"] for r in db.query("SELECT ticker FROM picks WHERE belief_id = ? AND shown = 1 AND direction = ? "
+                                           "ORDER BY final_rank LIMIT 3", (belief_id, core))]
     rows = db.query(
         """SELECT o.checkpoint_days AS cp, MAX(o.bench_ret) AS br, MAX(o.spy_ret) AS sr, MAX(o.eval_date) AS on_date
            FROM outcomes o JOIN picks p ON p.id = o.pick_id
@@ -90,15 +92,37 @@ def card(belief_id: str) -> Optional[dict]:
                 pass
             checks.append({"days": cp, "status": "pending", "vs_spy": None, "due": due})
     latest = max(graded) if graded else None
+    measured = _measured_on(belief_id, core, latest) if latest is not None else None
     prob = b.get("user_prob")
     return {
         "id": b["id"], "text": _short(b.get("text")), "made": made, "made_label": _fmt_date(made),
         "direction": core, "direction_word": WORDS.get(core),
         "pick": ({"ticker": pick["ticker"], "name": pick.get("name"), "direction": pick["direction"]} if pick else None),
+        "picks": shown,
+        "measured_on": measured,
         "sure": round(float(prob) * 100) if prob is not None else None,   # stored 0-1 (calibration.normalize)
         "checks": checks,
         "latest": ({"days": latest, **graded[latest]} if latest is not None else None),
     }
+
+
+def _measured_on(belief_id: str, core: str, cp: int) -> Optional[str]:
+    """What the grade was measured on (grader._group_scores): the theme's fund(s) among the picks if there are any,
+    else the average of every related stock found (shown or not), else the one stock. The card names the shown picks,
+    so without this a reader takes "+1.7 pts" for the first ticker's own result, which it isn't."""
+    rows = db.query("""SELECT p.ticker, o.bench_kind AS kind, o.sel_edge AS edge FROM picks p JOIN outcomes o ON o.pick_id = p.id
+                       WHERE p.belief_id = ? AND p.direction = ? AND o.checkpoint_days = ? AND o.belief_right IS NOT NULL
+                       ORDER BY p.final_rank""", (belief_id, core, cp))
+    if not rows:
+        return None
+    kind = rows[0].get("kind")
+    tickers = [r["ticker"] for r in rows]
+    if kind == "fund":
+        funds = [r["ticker"] for r in rows if r.get("edge") is None]
+        return f"{', '.join(funds)}, the theme's fund" if len(funds) == 1 else f"{', '.join(funds)}, the theme's funds"
+    if len(tickers) > 1:
+        return f"the average of {len(tickers)} related stocks"
+    return tickers[0]
 
 
 def headline(c: dict) -> str:
@@ -115,10 +139,16 @@ def headline(c: dict) -> str:
 
 def _call_line(c: dict) -> str:
     p = c.get("pick")
+    names = ", ".join(c.get("picks") or ([p["ticker"]] if p else []))
     word = c.get("direction_word")
-    if p and word:
-        return f"{p['ticker']}, calling {word}"
-    return p["ticker"] if p else ""
+    if names and word:
+        return f"{names} · calling {word}"
+    return names
+
+
+def _graded_on(c: dict) -> str:
+    m = c.get("measured_on")
+    return f"Graded on {m}" if m else ""
 
 
 def copy_text(c: dict, url: str) -> str:
@@ -128,7 +158,7 @@ def copy_text(c: dict, url: str) -> str:
     bits = [f"My call on MarketPlayground: “{c['text']}”"]
     who = _call_line(c)
     bits.append(" · ".join(x for x in (who, f"made {c['made_label']}" if c["made_label"] else "") if x))
-    bits.append(f"{row} vs the S&P 500")
+    bits.append(f"{row} vs the S&P 500" + (f" ({_graded_on(c)[0].lower()}{_graded_on(c)[1:]})" if c.get("measured_on") else ""))
     bits.append(f"Practice call. {url}")
     return "\n".join(b for b in bits if b)
 
@@ -141,7 +171,9 @@ def page_html(c: dict, url: str, png: str) -> str:
     e = lambda s: html.escape(str(s or ""), quote=True)  # noqa: E731
     title = f"“{c['text']}”"
     who = _call_line(c)
-    desc = f"{headline(c)}. {who + '. ' if who else ''}Practice call made {c['made_label']}, graded against the " \
+    on = _graded_on(c)
+    desc = f"{headline(c).rstrip('.')}{' (' + on[0].lower() + on[1:] + ')' if on else ''}. " \
+           f"{who + '. ' if who else ''}Practice call made {c['made_label']}, graded against the " \
            f"S&P 500 at 7, 30 and 90 days. Make your own call free."
     go = landing(c["id"])
     return f"""<!doctype html>
@@ -240,7 +272,7 @@ def _wrap(draw, text: str, font, width: int, max_lines: int) -> list[str]:
 
 
 def render_png(c: dict) -> bytes:
-    key = (c["id"], tuple((k["days"], k["status"], k.get("vs_spy")) for k in c["checks"]))
+    key = (c["id"], c.get("measured_on"), tuple((k["days"], k["status"], k.get("vs_spy")) for k in c["checks"]))
     with _png_lock:
         hit = _png_cache.get(key)
         if hit:
@@ -294,7 +326,12 @@ def render_png(c: dict) -> bytes:
         else:
             v = k["vs_spy"] * 100
             d.text((bx + 22, by + 50), f"{'+' if v > 0 else ''}{v:.1f} pts", font=_font(40, True), fill=tone)
-    d.text((X, 552), "vs the S&P 500, in the direction called. Practice call, no real money.", font=_font(22), fill=grey)
+    on = _graded_on(c)
+    foot = f"vs the S&P 500, in the direction called{'. ' + on if on else ''}. Practice call, no real money."
+    size = 22
+    while size > 16 and d.textlength(_plain(foot), font=_font(size)) > W - 2 * X:
+        size -= 1
+    d.text((X, 552), _plain(foot), font=_font(size), fill=grey)
     d.text((X, 584), "Make your own call free: marketplayground-web.onrender.com", font=_font(22, True), fill=blue)
     buf = io.BytesIO()
     img.save(buf, "PNG", optimize=True)

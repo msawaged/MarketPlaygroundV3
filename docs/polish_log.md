@@ -1479,3 +1479,25 @@ junk; the smile was refused (parity says ~$126), but the spreads still pass beca
 nearest put's 150% IV and `quotes_out_of_step` allows 2% for a dividend. Fresh Monday quotes should clear it.
 
 Checks: vite build passes, backend tests 232 passed (fresh venv).
+
+## 2026-11-22 (first run, ~00:30 UTC = Fri 7:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account on the live site at 390x844: no page errors, no 4xx/5xx, no
+horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad. Checked the new
+"I called it" share cards (built ~23:10 UTC) against the database.
+
+Found (share card /c/{id}, its .png, its copy text and the welcome-screen "Shared call"):
+- The card names one ticker and shows the call's grade next to it, but the grade is the theme's (grader._group_scores:
+  the theme's fund among the picks, else the average of every related stock), not that ticker's. DB, 7-day check:
+  "Pet food companies are growing" read "CHWY, calling up · +1.2 pts" while CHWY fell 11.5% vs S&P -2.7% (8.8 pts
+  behind; the +1.2 is the 8-stock average). "People are eating out less" read "EAT, calling down · -5.4 pts" while
+  shorting EAT was -0.9 pts (the -5.4 is XLY). The NVDA "big move" card's +1.7 is SMH, NVDA alone was +5.3.
+- Meta description doubled the period on ungraded calls ("First check Sep 8, 2026..").
+
+Changed (wording/labels only; grades unchanged):
+- share.card adds `picks` (up to 3 shown tickers in the called direction) and `measured_on` ("XLY, the theme's fund",
+  "the average of 8 related stocks", or the single stock). Card line "CHWY, FRPT, CL · calling up"; footer, copy text,
+  og description and WelcomePage say "Graded on ...". PNG footer shrinks to fit. Double period fixed.
+- Test: test_share_card_shows_only_stored_grades_and_its_own_tags extended with a fund-graded call.
+
+Checks: vite build passes, backend tests 236 passed (fresh venv).

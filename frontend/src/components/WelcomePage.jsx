@@ -14,7 +14,7 @@ function SharedCall({ c }) {
     <div className="w-full rounded-3xl bg-slate-900/80 border border-slate-700/70 p-4 text-left" aria-label="Shared call">
       <div className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Shared call{c.made_label ? ` · made ${c.made_label}` : ''}</div>
       <div className="mt-1 font-semibold break-words">“{c.text}”</div>
-      {c.pick && <div className="mt-1 text-sm text-slate-400">{c.pick.ticker}{c.direction_word ? `, calling ${c.direction_word}` : ''}{c.sure != null ? ` · said ${c.sure}% sure` : ''}</div>}
+      {c.pick && <div className="mt-1 text-sm text-slate-400">{(c.picks && c.picks.length ? c.picks : [c.pick.ticker]).join(', ')}{c.direction_word ? ` · calling ${c.direction_word}` : ''}{c.sure != null ? ` · said ${c.sure}% sure` : ''}</div>}
       <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(c.checks.length, 5)}, minmax(0, 1fr))` }}>
         {c.checks.slice(0, 5).map((k) => (
           <div key={k.days} className={`rounded-2xl border px-2.5 py-2 ${tone[k.status]}`}>
@@ -23,7 +23,7 @@ function SharedCall({ c }) {
           </div>
         ))}
       </div>
-      <div className="mt-2 text-xs text-slate-400">vs the S&amp;P 500, in the direction called. Practice money.</div>
+      <div className="mt-2 text-xs text-slate-400">vs the S&amp;P 500, in the direction called.{c.measured_on ? ` Graded on ${c.measured_on}.` : ''} Practice money.</div>
     </div>
   );
 }

@@ -5906,7 +5906,25 @@ def test_share_card_shows_only_stored_grades_and_its_own_tags():
     j = c.get("/c/b-aaaa000000000001.json").json()
     st = {k["days"]: k["status"] for k in j["checks"]}
     assert st == {7: "ahead", 30: "behind", 90: "pending"} and j["sure"] == 70
-    assert "7d 🟩 30d 🟥 90d ⬜ vs the S&P 500" in j["copy_text"] and "NVDA, calling up" in j["copy_text"]
+    assert "7d 🟩 30d 🟥 90d ⬜ vs the S&P 500" in j["copy_text"] and "NVDA · calling up" in j["copy_text"]
+
+    # The grade is the theme's (its fund, else the average of its stocks), not the first ticker's own move: the card
+    # names what it was measured on, so "CHWY +1.2 pts" can't be read as CHWY's result when CHWY fell 11%.
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source, direction) "
+               "VALUES (?,?,?,?,?,?,?,?)", ("b-aaaa000000000004", "u-1", "Diners cut back", "y",
+                                            "2026-09-01T15:00:00+00:00", "2026-09-01", "user", "bearish"))
+    for i, (t, shown, ret, edge) in enumerate([("EAT", 1, -0.03, 0.01), ("DRI", 1, 0.04, -0.03), ("CAKE", 0, 0.0, 0.0),
+                                               ("XLY", 0, 0.01, None)]):
+        db.execute("INSERT INTO picks (id, belief_id, ticker, name, direction, entry_date, entry_price, final_rank, shown) "
+                   "VALUES (?,?,?,?,?,?,?,?,?)", (f"q{i}", "b-aaaa000000000004", t, t, "bearish", "2026-09-01", 1.0, i, shown))
+        db.execute("""INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at,
+                      bench_ret, belief_right, bench_kind, sel_edge) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   (f"q{i}", 7, "2026-09-08", 1.0, ret, -0.04, 0.0, "2026-09-09", 0.01, 0, "fund", edge))
+    j4 = c.get("/c/b-aaaa000000000004.json").json()
+    assert j4["picks"] == ["EAT", "DRI"] and j4["measured_on"] == "XLY, the theme's fund"
+    assert "EAT, DRI · calling down" in j4["copy_text"] and "(graded on XLY, the theme's fund)" in j4["copy_text"]
+    assert "graded on XLY" in c.get("/c/b-aaaa000000000004").text
+    assert j["measured_on"] == "NVDA"
 
     j2 = c.get("/c/b-aaaa000000000002.json").json()
     assert all(k["status"] == "pending" and k["vs_spy"] is None for k in j2["checks"])
