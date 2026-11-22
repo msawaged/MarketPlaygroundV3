@@ -1555,3 +1555,26 @@ Changed (wording/units only; no numbers or grading changed):
 - MyCallsPage.jsx Image card: headline and pick values in pts; shareCard.js shrinks a pick value's font to fit its box.
 
 Checks: vite build passes, backend tests 238 passed (fresh venv).
+
+## 2026-11-22 (fourth run, ~09:30 UTC = Sun 4:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story (all 7 cards), /account, /brain, /hq, /journey, /reel and the signed-out
+redirects on the live site at 390x844 (story cards at 375x667): no page errors, no 4xx/5xx, no horizontal overflow (only
+the sandbox-proxy-blocked third-party request). No HQ messages from Murad. Cross-checks: Brain "Just graded" feed
+rotates through hits and misses (FXA, NVDA, ARKX, TRIP, ABNB misses are in /v4/brain `graded`); the 698 graded = 697 +
+1 in `activity`; forward-test confidence split 422 + 215 + 99 = 736. Close Call scorecard: brain side right 11/15 =
+73%, market 10/15 = 67%, the one disagreement (XOM) went the brain's way; graded rows check out against their closes.
+Live SPY quote (Nov 27, $700 line): YES $540.01 + profit $459.99 = $1,000 payout, breakeven $695 + $5.40 = $700.40.
+Locally (offline server, throwaway SQLite) Close Call at 390: costs, breakevens, bid/ask breakeven odds (60% / 45%),
+round-trip costs ($59 / $37) and the +-4.1% range (35% vol x sqrt(5/365)) all add up.
+
+Found:
+- Story mode's giant hook read "$45 billion" for "Nscale is reportedly in discussions ... in a deal potentially valued
+  at $45 billion". The hedge rule only knew hedges right before the number ("up to", "about"), so "potentially valued
+  at" was dropped and a possible deal size read like a settled one (the same feed's "up to $44 billion" hook was right).
+
+Changed:
+- movers._hedged: a soft hedge ("potentially", "possibly", "could", "may", "might") up to 3 words before the number in
+  the article puts "Potentially"/"Possibly" on the hook, unless the hook already says it ("A potential ... deal").
+  Case-sensitive, so "May" the month isn't a hedge. Applies to cached stories too (story() re-runs _hook on read).
+  The hook now reads "Potentially $45 billion". Test extended (test_v4.py, the story hook test).

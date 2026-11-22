@@ -541,6 +541,10 @@ def _undate(s: str) -> str:
 _HEDGES = ("up to", "as much as", "as many as", "more than", "less than", "at least", "nearly", "almost", "about",
            "around", "roughly", "approximately", "an estimated", "over", "under")
 _HEDGE_RE = "|".join(re.escape(h) for h in _HEDGES)
+# Words that make a number a possibility, not a fact, when they sit a few words before it ("potentially valued at",
+# "could be worth", "may reach").
+_SOFT_RE = r"[Pp]otentially|[Pp]ossibly|could|may|might"  # case-sensitive: "May" the month is not a hedge
+_SOFT_IN_HOOK = r"\b(?:potential(?:ly)?|possibl[ey]|could|may|might|proposed|reported(?:ly)?|eyes|talks?)\b"
 
 
 def _hedged(s: str, source: str) -> str:
@@ -562,6 +566,15 @@ def _hedged(s: str, source: str) -> str:
         hedges = [re.search(rf"\b({_HEDGE_RE})\s+$", source[: u.start()], re.I) for u in uses]
         if all(hedges):  # every mention is hedged: the bare number overstates it
             h = hedges[0].group(1).lower()
+            out = out[: m.start()] + (h.capitalize() if m.start() == 0 else h) + " " + out[m.start():]
+            continue
+        # A softer hedge a few words back: live 2026-11-22 the article said "a deal potentially valued at $45 billion"
+        # and the giant hook read "$45 billion", as if the deal's size were settled.
+        if re.search(_SOFT_IN_HOOK, s, re.I):
+            continue  # the hook already says it may not happen ("A potential $45 billion deal")
+        soft = [re.search(rf"\b({_SOFT_RE})\b(?:\s+[\w-]+){{0,3}}\s+$", source[: u.start()]) for u in uses]
+        if all(soft):
+            h = "possibly" if soft[0].group(1).lower() == "possibly" else "potentially"
             out = out[: m.start()] + (h.capitalize() if m.start() == 0 else h) + " " + out[m.start():]
     return out
 

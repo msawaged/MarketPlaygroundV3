@@ -1782,3 +1782,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Noticed, not changed (unsure): weekend option IVs read high (SPY ATM 42% on Friday-close quotes; a 7-calendar-day
   clock gives ~35%). Alpaca's snapshot IV convention isn't documented here, so I left Price Check / "How far it could
   move" wording alone. Odds are unaffected (they use sigma*sqrt(T) consistently).
+
+## 2026-11-22 ~09:45 UTC (Polish walk, key `polish`): Story hook keeps "potentially" on a deal size
+- Live Story hook said "$45 billion" for an article's "deal potentially valued at $45 billion". movers._hedged now also
+  carries a soft hedge (potentially/possibly/could/may/might, up to 3 words before the number) onto the hook:
+  "Potentially $45 billion". Re-applied on read, so cached stories change too. No other behavior changed.
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
+  docs/hq/status/polish.json.

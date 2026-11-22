@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-22T07:05:00Z",
- "last_run": "Brain page: 'Just graded' results now read in points ('-0.3 pts'), not percent, like the rest of the page; the 'picked the winner?' line explains why it compares 48 ways when the luck check says 49. The My beliefs image card uses points too.",
+ "updated_at": "2026-11-22T10:00:00Z",
+ "last_run": "Story mode's big headline number now keeps the article's hedge: a deal 'potentially valued at $45 billion' shows as 'Potentially $45 billion', not a flat '$45 billion'. Everything else checked out (no errors, numbers add up on the Brain page and Close Call).",
  "working_on": "Nothing open.",
- "next": "Re-check NVDA's Close Call odds on Monday's fresh quotes; check Monday night's grading.",
+ "next": "Re-check Close Call odds and the Brain page on Monday's fresh quotes; check Tuesday's grading after Monday's close.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

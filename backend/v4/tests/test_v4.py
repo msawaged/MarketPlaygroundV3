@@ -1883,6 +1883,12 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     assert movers._hook("Up to 8 million barrels", src) == "Up to 8 million barrels"
     assert movers._hook("Japan gets 8 million barrels more", src) == ""  # too long once hedged: dropped, not overstated
     assert movers._hook("$51 billion", "A deal worth $51 billion, up from about $40 billion.") == "$51 billion"
+    # a softer hedge a few words back (live 2026-11-22: "a deal potentially valued at $45 billion" -> "$45 billion")
+    src = "Nscale is reportedly in discussions with Anthropic in a deal potentially valued at $45 billion."
+    assert movers._hook("$45 billion", src) == "Potentially $45 billion"
+    assert movers._hook("A potential $45 billion deal", src) == "A potential $45 billion deal"
+    assert movers._hook("$2 billion", "The merger could be worth $2 billion to holders.") == "Potentially $2 billion"
+    assert movers._hook("$5 billion", "Sales in May 2026 rose to $5 billion.") == "$5 billion"  # May the month
 
 
 def test_lineages_evolve_and_snapshot(monkeypatch):
