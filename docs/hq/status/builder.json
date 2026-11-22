@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T02:30:00Z",
- "last_run": "Built 'Would we have picked the winner?' on the Brain page: a standard test (probability of backtest overfitting) of whether choosing the best-looking research rule on half the history would have chosen a winner on the other half.",
+ "updated_at": "2026-11-22T05:30:00Z",
+ "last_run": "Agent HQ: each agent's next run time, the right schedules for Builder and App polish, dates on older meeting messages, and an age on each 'Needs you' item.",
  "working_on": "Nothing open.",
- "next": "Read the first real PBO number after the next research run and check the Brain page wording fits it. Then: save ref=card with sign-ups so share cards can be counted. Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
+ "next": "Read the first real PBO number after the next research run and check the Brain page wording fits it. Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Agent HQ now says when each agent next runs. Every card on the table shows 'next run in 3 h (12:51 AM)' in your phone's time, and under the message box it says when the meeting chair checks for messages next and when the agent you picked runs next. I also fixed two wrong labels: Builder and App polish run every 3 hours around the clock, not just daytime. Older meeting messages now show their date ('Nov 13, 4:40 PM'), so an 8-day-old note no longer looks like last night's, and each 'Needs you' item says how old it is.",
+   "at": "2026-11-22T05:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "The research tries about 50 ways to pick the #1 and the app leans on whichever looks best, but a leaderboard that big always has a lucky leader. I added the standard check a finance professor would ask for (Bailey, Borwein, López de Prado & Zhu 2017): cut the test calls into 8 stretches of time, use every possible half (70 ways) to choose the best way, and see where that choice ranks on the other half. The Brain page's luck check gets one paragraph: how often the chosen way landed in the bottom half (about 10% or less is reassuring, near 50% is a coin flip), its median result there, the same just for the retrained models the new ranker chooses from, and which way was chosen most often. Reporting only: no gate, ranking or grading changed. The number appears after the next research run.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The research log judged each of 46 rules against zero, never against what the app already does. The strongest rule yet (avoid right-skewed stocks, +1.45 pts) has almost the same numbers as the app's own #1, so it may just be the app described another way. Each result now records how often its #1 is the same stock as the app's (rebuilt without the peek), and on the calls where they differ, which one did better and by how much. The Brain page's luck check says it in one paragraph and only quotes the head-to-head with 100+ disagreements. Reporting only: the gates and the live ranking are unchanged. Numbers appear after the next research run.",
    "at": "2026-11-21T02:40:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Option idea cards priced every strike at one at-the-money volatility, so a spread's far strike missed the skew: this morning AAPL's $370 call read $4.06 on the card vs $3.04 listed. Live cards now price each strike at its own implied volatility from listed options (the out-of-the-money side, the way a desk reads the smile), and max loss, max gain, breakeven and Greeks follow. If any strike isn't listed the card keeps one volatility and says so. I checked first that grading never uses card prices (it re-marks every pick at the stock's own volatility), so grading and the research checks are unchanged.",
-   "at": "2026-11-18T17:30:00Z"
   }
  ]
 }

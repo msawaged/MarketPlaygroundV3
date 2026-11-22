@@ -4616,7 +4616,8 @@ def test_yesno_yes_plus_no_never_costs_more_than_the_payout(monkeypatch):
 def test_hq_board_and_messages(monkeypatch, tmp_path):
     from backend.v4 import hq
     (tmp_path / "status").mkdir()
-    (tmp_path / "agents.json").write_text(json.dumps([{"key": "reel", "name": "Reel", "role": "r", "schedule": "s", "trigger": None},
+    (tmp_path / "agents.json").write_text(json.dumps([{"key": "reel", "name": "Reel", "role": "r", "schedule": "s", "trigger": None,
+                                                       "cron": "CRON_TZ=America/Denver 47 7 * * 1-5"},
                                                       {"key": "polish", "name": "Polish", "role": "p", "schedule": "s", "trigger": None}]))
     (tmp_path / "status" / "reel.json").write_text(json.dumps({"updated_at": "2026-11-13T15:00:00Z", "last_run": "Made the reel.",
         "needs_from_murad": ["Post today's reel"], "read_up_to": 1, "replies": [{"re": 1, "body": "On it.", "at": "2026-11-13T15:01:00Z"}]}))
@@ -4632,9 +4633,29 @@ def test_hq_board_and_messages(monkeypatch, tmp_path):
     reel = next(a for a in b["agents"] if a["key"] == "reel")
     pol = next(a for a in b["agents"] if a["key"] == "polish")
     assert reel["unread"] == 2 and pol["unread"] == 2       # reel read #1; #2 (to reel) and #3 (all) are new
-    assert b["needs"] == [{"agent": "reel", "name": "Reel", "need": "Post today's reel"}]
+    assert b["needs"] == [{"agent": "reel", "name": "Reel", "need": "Post today's reel", "at": "2026-11-13T15:00:00Z"}]
+    assert reel["next_run"] and reel["next_run"].endswith("Z") and pol["next_run"] is None   # no cron -> no next run
     kinds = [t["kind"] for t in b["thread"]]
     assert "agent" in kinds and "status" in kinds and kinds.count("murad") == 3
+
+
+def test_hq_next_run_reads_each_agents_cron_in_its_own_time_zone():
+    from backend.v4 import hq
+    from datetime import datetime, timezone
+    now = datetime(2026, 11, 22, 4, 55, tzinfo=timezone.utc)          # Sat 9:55 PM in Denver (UTC-7)
+    nr = lambda c, t=now: hq.next_run(c, t)
+    assert nr("CRON_TZ=America/Denver 51 0-23/3 * * *") == "2026-11-22T07:51:00Z"   # every 3 h from 0:51 -> Sun 0:51 MT
+    assert nr("CRON_TZ=America/Denver 4 * * * *") == "2026-11-22T05:04:00Z"         # hourly at :04
+    assert nr("CRON_TZ=America/Denver 47 7 * * 1-5") == "2026-11-23T14:47:00Z"      # weekdays: skips Sunday
+    assert nr("CRON_TZ=America/Denver 23 18 * * 0") == "2026-11-23T01:23:00Z"       # Sundays 6:23 PM MT
+    assert nr("CRON_TZ=America/Denver 11 6-22/4 * * *") == "2026-11-22T05:11:00Z"   # 6,10,14,18,22 -> 22:11 tonight
+    assert nr("30 9 * * 7") == "2026-11-22T09:30:00Z"                               # no zone = UTC; 7 = Sunday
+    assert nr("0 12 1 * *") == "2026-12-01T12:00:00Z"                               # day of month
+    # summer time: 9:00 in Denver is 15:00 UTC in July, 16:00 in November
+    assert nr("CRON_TZ=America/Denver 0 9 * * *", datetime(2026, 7, 1, 0, 0, tzinfo=timezone.utc)) == "2026-07-01T15:00:00Z"
+    assert nr("CRON_TZ=America/Denver 0 9 * * *") == "2026-11-22T16:00:00Z"
+    assert nr("CRON_TZ=America/Denver 4 * * * *", datetime(2026, 11, 22, 5, 4, tzinfo=timezone.utc)) == "2026-11-22T06:04:00Z"  # strictly after now
+    assert nr(None) is None and nr("") is None and nr("not a cron") is None and nr("CRON_TZ=Nowhere/X 1 * * * *") is None
 
 
 def test_hq_owner_gate(monkeypatch):

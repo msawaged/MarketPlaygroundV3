@@ -1742,3 +1742,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   more it moved than the S&P 500, up or down". New json field `vs_label`. Grades/grading unchanged.
 - Files: backend/v4/share.py, backend/v4/tests/test_v4.py, frontend/src/components/WelcomePage.jsx,
   frontend/src/components/MyCallsPage.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~05:30 UTC (Builder, key `builder`): Agent HQ says when each agent next runs, and dates old messages
+- No HQ messages from Murad (hq_messages empty); no "proposed" items left in feature_ideas.md. Finishing touch on HQ.
+- Found: the table said Builder runs "9:51am-9:51pm" and polish "8:23am-11:23pm", but both run every 3 hours around the
+  clock (scheduled tasks updated Nov 14). The meeting thread showed only a weekday, so the CTO's Nov 13 note read
+  "Fri 4:40 PM", like last night. "Needs you" items had no age, and the composer only said "next run".
+- docs/hq/agents.json: each scheduled agent now carries `cron`, the same string as its scheduled task (Denver time);
+  Builder/polish labels fixed. If you change a scheduled task's time, change its `cron` here too.
+- backend/v4/hq.py: `next_run(cron)` (5-field cron, CRON_TZ prefix, ranges/steps/lists, dom/dow OR rule, DST via
+  zoneinfo) -> roster `next_run` (UTC ISO); `needs` items carry `at` (the status file's updated_at).
+- HQPage.jsx: "next run in 3 h (12:51 AM)" chip on each card (viewer's time zone); thread times "Today / Yesterday /
+  Fri / Nov 13, 4:40 PM"; need items show their age; the composer says when the chair checks next and the chosen
+  agent's next run (CTO: only in the build chat).
+- Tests: test_hq_next_run_reads_each_agents_cron_in_its_own_time_zone (values match the scheduler's next_run_at);
+  test_hq_board_and_messages checks next_run and needs `at`.
+- Files: backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/components/HQPage.jsx, docs/hq/agents.json,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

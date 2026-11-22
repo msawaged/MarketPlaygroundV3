@@ -11,7 +11,27 @@ const ago = (iso) => {
   const h = Math.round(m / 60);
   return h < 36 ? `${h} h ago` : `${Math.round(h / 24)} days ago`;
 };
-const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '');
+const clock = (d) => d.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' });
+const dayDiff = (d) => { const a = new Date(d); a.setHours(0, 0, 0, 0); const b = new Date(); b.setHours(0, 0, 0, 0); return Math.round((a - b) / 86400000); };
+// A past time with its day: "Today 9:30 PM", "Yesterday ...", "Fri ..." within the week, else the date ("Nov 13, 4:40 PM"),
+// so a reply from 8 days ago doesn't read like last night's.
+const when = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso), dd = dayDiff(d);
+  if (dd === 0) return `Today ${clock(d)}`;
+  if (dd === -1) return `Yesterday ${clock(d)}`;
+  if (dd > -7 && dd < 0) return `${d.toLocaleString('en-US', { weekday: 'short' })} ${clock(d)}`;
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+};
+// A future run, in this phone's own time zone: "in 9 min", "in 3 h (12:51 AM)", "Mon 7:47 AM".
+const until = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso), m = Math.max(1, Math.round((d - Date.now()) / 60000));
+  if (m < 60) return `in ${m} min`;
+  if (m < 12 * 60) return `in ${Math.round(m / 60)} h (${clock(d)})`;
+  const dd = dayDiff(d);
+  return `${dd === 0 ? 'today' : dd === 1 ? 'tomorrow' : d.toLocaleString('en-US', { weekday: 'short' })} ${clock(d)}`;
+};
 const initials = (n) => n.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 function Avatar({ k, name, size = 'w-10 h-10' }) {
@@ -45,6 +65,14 @@ export default function HQPage() {
   if (!b) return <Page title="Agent HQ"><div className="mt-6 h-64 rounded-3xl bg-slate-800/50 animate-pulse" /></Page>;
 
   const name = (k) => (k === 'all' ? 'Everyone' : b.agents.find((a) => a.key === k)?.name || k);
+  // Who reads a message to `to`, and when: the chair reads every message each hour; the agent itself at its next run.
+  const chair = b.agents.find((a) => a.key === 'chair');
+  const target = b.agents.find((a) => a.key === to);
+  const readNote = to === 'cto'
+    ? 'The CTO only reads HQ when you chat with it in the build chat.'
+    : [chair?.next_run && `The meeting chair checks for messages ${until(chair.next_run)}${to === 'all' ? ' and wakes whoever needs to act.' : '.'}`,
+       to !== 'all' && to !== 'chair' && target?.next_run && `${target.name}'s next run: ${until(target.next_run)}.`]
+      .filter(Boolean).join(' ') || 'Agents pick this up on their next run.';
 
   return (
     <Page title="Agent HQ" subtitle="Everyone at one table. Talk to all of them or one. They read it when they start and answer when they finish.">
@@ -53,7 +81,7 @@ export default function HQPage() {
           <div className="text-xs uppercase tracking-wider text-amber-300 font-bold">Needs you ({b.needs.length})</div>
           <ul className="mt-2 space-y-2 text-sm">
             {b.needs.map((n, i) => (
-              <li key={i} className="flex gap-2"><Avatar k={n.agent} name={n.name} size="w-6 h-6" /><span><b>{n.name}:</b> {n.need}</span></li>
+              <li key={i} className="flex gap-2"><Avatar k={n.agent} name={n.name} size="w-6 h-6" /><span><b>{n.name}:</b> {n.need} {n.at && <span className="text-[11px] text-slate-400 whitespace-nowrap">· {ago(n.at)}</span>}</span></li>
             ))}
           </ul>
         </Card>
@@ -78,6 +106,7 @@ export default function HQPage() {
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
                 <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">{a.schedule}</span>
+                {a.next_run && <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">next run {until(a.next_run)}</span>}
                 {a.unread > 0 && <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200">{a.unread} unread from you</span>}
                 {(s.needs_from_murad || []).length > 0 && <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200">needs you</span>}
               </div>
@@ -127,7 +156,7 @@ export default function HQPage() {
               className="flex-1 min-w-0 resize-none rounded-2xl bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-400 outline-none" />
             <button disabled={sending || !text.trim()} className="rounded-2xl bg-blue-600 px-4 font-bold disabled:opacity-40">Send</button>
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">Agents pick this up on their next run. For something urgent, tell the CTO in the build chat.</p>
+          <p className="mt-2 text-[11px] text-slate-500">{readNote}{to !== 'cto' && ' For something urgent, tell the CTO in the build chat.'}</p>
         </form>
       </Card>
     </Page>

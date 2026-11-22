@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import time
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -50,12 +50,69 @@ def _json(name: str, default):
         return default
 
 
+def _cron_field(f: str, lo: int, hi: int) -> Optional[set]:
+    """One cron field -> the set of values it allows (None = '*', any). Supports a, a-b, */n, a-b/n and lists."""
+    if f == "*":
+        return None
+    out: set = set()
+    for part in f.split(","):
+        rng, _, step = part.partition("/")
+        if rng == "*":
+            a, b = lo, hi
+        elif "-" in rng:
+            a, b = (int(x) for x in rng.split("-", 1))
+        else:
+            a = int(rng)
+            b = hi if step else a
+        out.update(range(a, b + 1, int(step) if step else 1))
+    return out
+
+
+def next_run(cron: Optional[str], now: Optional[datetime] = None) -> Optional[str]:
+    """When a scheduled agent next starts (UTC ISO), from its 5-field cron with an optional 'CRON_TZ=<zone> ' prefix,
+    the same string its scheduled task uses (docs/hq/agents.json "cron"). None if there's no schedule or it can't be read.
+    Shown on the HQ page so Murad knows when a message he sends will be read."""
+    if not cron:
+        return None
+    try:
+        from zoneinfo import ZoneInfo
+        tz = timezone.utc
+        c = cron.strip()
+        if c.startswith("CRON_TZ="):
+            z, c = c[len("CRON_TZ="):].split(None, 1)
+            tz = ZoneInfo(z)
+        mi, ho, dom, mon, dow = c.split()
+        mins, hours = _cron_field(mi, 0, 59), _cron_field(ho, 0, 23)
+        doms, mons, dows = _cron_field(dom, 1, 31), _cron_field(mon, 1, 12), _cron_field(dow, 0, 7)
+        if dows is not None and 7 in dows:
+            dows = dows | {0}
+        now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+        local = now.astimezone(tz)
+        for d in range(0, 367):
+            day = (local + timedelta(days=d)).date()
+            if mons is not None and day.month not in mons:
+                continue
+            dom_ok = doms is None or day.day in doms
+            dow_ok = dows is None or ((day.weekday() + 1) % 7) in dows
+            # standard cron: when both day fields are restricted, either one matching is enough
+            if not ((dom_ok or dow_ok) if (doms is not None and dows is not None) else (dom_ok and dow_ok)):
+                continue
+            for h in sorted(hours if hours is not None else range(24)):
+                for m in sorted(mins if mins is not None else range(60)):
+                    t = datetime(day.year, day.month, day.day, h, m, tzinfo=tz).astimezone(timezone.utc)
+                    if t > now:
+                        return t.isoformat().replace("+00:00", "Z")
+    except Exception:
+        return None
+    return None
+
+
 def roster() -> list[dict]:
     agents = _json("agents.json", [])
     out = []
     for a in agents:
         st = _json(f"status/{a['key']}.json", None) or {}
-        out.append({**a, "status": st})
+        out.append({**a, "status": st, "next_run": next_run(a.get("cron"))})
     return out
 
 
@@ -88,5 +145,6 @@ def board() -> dict:
     for a in agents:  # which of Murad's messages each agent hasn't read yet
         upto = int((a["status"] or {}).get("read_up_to") or 0)
         a["unread"] = sum(1 for m in msgs if m["id"] > upto and m["to_agent"] in ("all", a["key"]))
-    needs = [{"agent": a["key"], "name": a["name"], "need": n} for a in agents for n in (a["status"].get("needs_from_murad") or [])]
+    needs = [{"agent": a["key"], "name": a["name"], "need": n, "at": a["status"].get("updated_at")}
+             for a in agents for n in (a["status"].get("needs_from_murad") or [])]
     return {"agents": agents, "thread": thread[-150:], "needs": needs}
