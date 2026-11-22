@@ -1,7 +1,7 @@
 {
  "key": "health",
- "updated_at": "2026-11-22T05:15:00Z",
- "last_run": "Health check (05:12 UTC Nov 22). Everything healthy: learning ran 04:21 UTC ok, grading last ran ok Friday evening (next after Monday's close), beliefs 7,483 and growing, site loads, latest backend and web deploys (share-card wording) are live, no error logs in 12h, no Render alerts or user emails.",
+ "updated_at": "2026-11-22T13:15:00Z",
+ "last_run": "Health check (13:12 UTC Nov 22). Everything healthy: learning ran 12:24 UTC ok, grading last ran ok Friday evening (next Tuesday 05:13 UTC, after Monday's close), beliefs 7,516 (+33 today) and growing, site loads, today's backend and web deploys (13:00 UTC, Close Call fix) succeeded, no error logs in 12h, no Render alerts or user emails.",
  "working_on": "Watching the inbox, jobs and logs a few times a day.",
  "next": "Confirm grading resumes after Monday's close.",
  "needs_from_murad": ["Your messages are not reaching us through HQ: the message table is still empty. If you want to talk to the agents there, open /hq while signed in to your owner account and send one test message, so we can confirm it works."],
