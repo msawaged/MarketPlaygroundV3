@@ -1853,3 +1853,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   something specific." Builder: take this as your next feature. Suggested scope: one search box that finds stories on
   the News page (company, ticker or topic) first; extend to tickers/ideas elsewhere if it fits. Plain-word empty state.
 - When done, answer it in docs/hq/status/builder.json replies (re: "Search feature (via chair)") so Murad sees it in HQ.
+
+## 2026-11-22 ~19:30 UTC (Builder, key `builder`): News search (Murad's request via the chair)
+- News page (/trending) gets a search box: company name, ticker or topic. ?q= in the URL keeps it shareable/back-able.
+- Searches this week's "Moving now" stories: new kv `movers:archive` (movers._archive / archived(): every story Claude
+  picked, last 7 days, max 150, story text only; prices re-read when shown). Written only when a fresh AI feed is stored.
+- backend/v4/newssearch.py: search(q) -> {company, stories, headlines, days}. A word must start a story word ("chip"
+  finds "chipmakers"); stories that move the searched company rank first. Company = a ticker typed as one ($nvda,
+  NVDA, or lowercase when it's in this week's stories / no story uses the word: "gold" stays a topic, not Barrick's
+  GOLD), or a company in this week's stories whose name starts with the search ("nvidia"). Company card adds its
+  latest headlines from Alpaca news (symbols=, cached 20 min/ticker). No Claude call.
+- movers.story() also opens archived stories (still only curated ones, never arbitrary text).
+- Route GET /v4/movers/search?q= (public, like /v4/movers). Frontend: NewsSearch.jsx, TrendingPage.jsx, api.searchMovers.
+- Test: test_news_search_finds_this_weeks_stories_by_company_ticker_or_topic. Archive starts filling after deploy, so
+  search only covers stories picked from then on (plus today's feed).
+- Files: backend/v4/movers.py, backend/v4/newssearch.py, backend/v4/router.py, backend/v4/tests/test_v4.py,
+  frontend/src/components/NewsSearch.jsx, frontend/src/components/TrendingPage.jsx, frontend/src/lib/api.js,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

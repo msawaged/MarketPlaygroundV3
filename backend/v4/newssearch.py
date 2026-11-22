@@ -1,0 +1,162 @@
+"""
+News search: find stories about something specific (a company, a ticker or a topic) on the News page.
+
+Reads only what the app already has: this week's "Moving now" stories (today's feed plus movers.archived()), and,
+when the search names a company, that company's latest headlines from the same news source. No Claude call, so a
+search costs nothing and can't be used to prompt the model.
+"""
+from __future__ import annotations
+
+import re
+import threading
+import time
+from typing import Any, Optional
+
+from . import market, movers
+
+MAX_STORIES = 10
+MAX_HEADLINES = 6
+_TICKERISH = re.compile(r"^\$?[A-Za-z][A-Za-z.]{0,5}$")
+_STOP = {"the", "a", "an", "of", "and", "or", "in", "on", "for", "to", "about", "news", "stock", "stocks", "shares",
+         "inc", "corp", "company", "is", "are", "what", "whats", "with"}
+_lock = threading.Lock()
+_news_cache: dict[str, tuple[float, list[dict]]] = {}
+
+
+def _words(s: Any) -> list[str]:
+    return re.findall(r"[a-z0-9&']+", str(s or "").lower())
+
+
+def terms(q: str) -> list[str]:
+    """The words a search must find ("nvidia news" -> ["nvidia"]); a search of only filler words keeps them."""
+    ws = _words(q)
+    kept = [w for w in ws if w not in _STOP]
+    return kept or ws
+
+
+def _story_text(it: dict) -> list[str]:
+    parts = [it.get("headline"), it.get("summary"), it.get("hunch"), it.get("why")]
+    parts += [c.get("why") for c in it.get("companies") or []]
+    return _words(" ".join(str(p or "") for p in parts))
+
+
+def _matches(it: dict, ts: list[str], ticker: Optional[str]) -> int:
+    """0 = no match. Otherwise a rank: 3 the story moves the searched company, 2 every word in the headline,
+    1 every word somewhere in the story. A word matches the start of a story word ("chip" finds "chipmaker")."""
+    tickers = {str(c.get("ticker") or "").upper() for c in it.get("companies") or []}
+    if ticker and ticker in tickers:
+        return 3
+    if not ts:
+        return 0
+    if len(ts) == 1 and ts[0].upper() in tickers:
+        return 3
+    head = _words(it.get("headline"))
+    if all(any(w.startswith(t) for w in head) for t in ts):
+        return 2
+    body = _story_text(it)
+    return 1 if all(any(w.startswith(t) for w in body) for t in ts) else 0
+
+
+def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[dict]:
+    """The company the search names: a ticker typed as one ("NVDA", "$nvda", or "nvda" when it's a ticker in this
+    week's stories or no story uses the word), or a company whose name starts with the search ("nvidia") among the
+    companies this week's stories move. A topic word that happens to be a ticker ("gold" is Barrick's GOLD) stays
+    a topic."""
+    raw = q.strip()
+    pool_syms = {str(c.get("ticker") or "").upper() for it in stories for c in it.get("companies") or []}
+    if _TICKERISH.match(raw) and (raw.startswith("$") or raw.isupper() or raw.upper() in pool_syms
+                                  or (len(raw) <= 5 and not topic_hits)):
+        sym = raw.lstrip("$").upper()
+        try:
+            info = market.asset_info(sym)
+        except Exception:
+            info = None
+        if info:
+            return {"ticker": info["symbol"], "name": info.get("name") or ""}
+    ts = terms(q)
+    if not ts:
+        return None
+    seen: set[str] = set()
+    for it in stories:
+        for c in it.get("companies") or []:
+            sym = str(c.get("ticker") or "").upper()
+            if not sym or sym in seen:
+                continue
+            seen.add(sym)
+            try:
+                info = market.asset_info(sym)
+            except Exception:
+                info = None
+            name = [w for w in _words((info or {}).get("name")) if w not in movers._NAME_FILLER]
+            if name and name[:len(ts)] == ts:
+                return {"ticker": sym, "name": info.get("name") or ""}
+    return None
+
+
+def headlines_for(sym: str) -> list[dict]:
+    """The company's latest headlines from the news source, cached 20 minutes per ticker. [] when unavailable."""
+    now = time.time()
+    with _lock:
+        hit = _news_cache.get(sym)
+        if hit and now - hit[0] < 1200:
+            return hit[1]
+    try:
+        r = market._session.get(f"{market._data_base()}/v1beta1/news", headers=market._headers(),
+                                params={"symbols": sym, "limit": 12, "sort": "desc", "include_content": "false"},
+                                timeout=8)
+        raw = r.json().get("news", []) if r.status_code == 200 else []
+    except Exception:
+        return []
+    out, seen = [], set()
+    for n in raw:
+        h = (n.get("headline") or "").strip()
+        if not h or h.lower()[:60] in seen or len(h) > 200:
+            continue
+        seen.add(h.lower()[:60])
+        out.append({"headline": h, "source": n.get("source") or "", "url": n.get("url") or "",
+                    "created_at": n.get("created_at") or ""})
+        if len(out) == MAX_HEADLINES:
+            break
+    with _lock:
+        if len(_news_cache) > 300:
+            _news_cache.clear()
+        _news_cache[sym] = (now, out)
+    return out
+
+
+def search(q: str) -> dict:
+    q = re.sub(r"\s+", " ", str(q or "")).strip()[:60]
+    if len(q.lstrip("$")) < 2:
+        return {"q": q, "company": None, "stories": [], "headlines": [], "days": movers.ARCHIVE_DAYS}
+    cur = movers.feed()
+    seen, pool = set(), []
+    for it in list(cur.get("items") or []) + movers.archived():
+        if it.get("headline") and it["headline"] not in seen:
+            seen.add(it["headline"])
+            pool.append(it)
+    ts = terms(q)
+    company = _company(q, pool, topic_hits=any(_matches(it, ts, None) for it in pool))
+    ranked = [(r, i, it) for i, it in enumerate(pool) if (r := _matches(it, ts, company and company["ticker"]))]
+    ranked.sort(key=lambda x: (-x[0], -_ts(x[2]), x[1]))
+    stories = [it for _, _, it in ranked[:MAX_STORIES]]
+    # today's prices, the same way the feed shows them (feed items already carry them)
+    syms = sorted({c["ticker"] for it in stories for c in it["companies"] if "change" not in c}
+                  | ({company["ticker"]} if company else set()) | {movers.BENCH})
+    snaps = movers._snapshots(syms)
+    bench = snaps.get(movers.BENCH) or {}
+    stories = [it if all("change" in c for c in it["companies"]) else
+               dict(it, companies=[movers._with_timing(movers._vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
+                                                       it.get("created_at")) for c in it["companies"]])
+               for it in stories]
+    heads: list[dict] = []
+    if company:
+        company = movers._vs_market(dict(company, **snaps.get(company["ticker"], {})), bench)
+        shown = {it["headline"].lower()[:60] for it in stories}
+        heads = [h for h in headlines_for(company["ticker"]) if h["headline"].lower()[:60] not in shown]
+    return {"q": q, "company": company, "stories": stories, "headlines": heads, "days": movers.ARCHIVE_DAYS,
+            "benchmark": cur.get("benchmark")}
+
+
+def _ts(it: dict) -> float:
+    age = movers._news_age_hours(it)
+    return -age if age is not None else -1e9

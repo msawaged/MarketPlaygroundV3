@@ -180,6 +180,11 @@ export function getMovers() {
   return request("/v4/movers");
 }
 
+/** News search: this week's stories about a company, ticker or topic. */
+export function searchMovers(q, signal) {
+  return request(`/v4/movers/search?q=${encodeURIComponent(q)}`, { signal });
+}
+
 /** Story mode: one of today's news stories as full-screen cards. */
 export function getStory(headline) {
   return request(`/v4/movers/story?h=${encodeURIComponent(headline)}`);

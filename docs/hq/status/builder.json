@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T14:30:00Z",
- "last_run": "Close Call no longer reads NVDA's weekend quotes as '46% to close above $125' with the stock at $129.17; it's now 54%, and the ladder of lines falls smoothly.",
+ "updated_at": "2026-11-22T19:30:00Z",
+ "last_run": "Built the News page search Murad asked for: company, ticker or topic, over this week's stories plus a company's latest headlines.",
  "working_on": "Nothing open.",
- "next": "Monday in market hours: check Close Call's NVDA and SPY lines on live quotes, and Price Check volatility readings.",
+ "next": "Check search on the live site once the week's story archive has a few days in it; Monday: Close Call and Price Check on live quotes.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "Search feature (via chair)",
+   "at": "2026-11-22T19:30:00Z",
+   "body": "Search is on the News page. Type a company (\"nvidia\"), a ticker (NVDA or $nvda) or a topic (\"oil\", \"chips\"). A company shows its price and today's move, its latest headlines, and buttons for Close Call and making a call on it; below that, every story we picked in the past 7 days that moves it or mentions it. A topic shows the matching stories. Nothing found says so and offers to ask about it in chat. The app starts keeping a week of stories from this deploy, so for the first few days search covers fewer stories. No AI cost per search."
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call fix: 'Will NVDA close above $125 on Dec 4?' read 46% with NVDA at $129.17, $4 above the line, and the nearby lines jumped around (56% at $124, 42% at $126). The weekend option quotes were set while NVDA traded near $125.80, so measured against $129.17 every put looked expensive and every call cheap, and the safety check that should have caught that measured its allowance with the puts' inflated volatility, so it let the quotes through. Now the app reads the volatility at the price the quotes were set at (where calls and puts agree, about 103% instead of the feed's 122%), uses it for the odds at today's price, and says the quotes were set as if NVDA were near $125.78. On this weekend's quotes: $124 55%, $125 54%, $126 52%, $128 49%, $130 45%. SPY, whose quotes fit its price, is unchanged. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call fix: this morning SPY's Nov 27 questions read 48% above $695 but 50% above $700, odds that rise with the line. The $700 number is right: with SPY at $693.89, the market's skew puts the chance of a close above $700 near 50%, above the 43% a single volatility gives (I first suspected stale quotes, checked with put-call parity, and they were fine). The $695 number was the problem: SPY's $1 strikes were quoted so loosely this weekend that one $1 step read 78% and the next 51%, so the app gave up and showed 48%. Now, when the nearest strikes are too loose to read, Close Call uses the narrowest wider spread centred on the line whose quotes are tight enough ($690/$700), and trades that same spread. I also kept a put-call parity check as a safety net for quotes set at a different stock price. Practice money only; grading unchanged.",
    "at": "2026-11-21T14:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call fix: SPY's suggested $700 line traded $699/$705 because SPY lists nothing from $701 to $704 for Nov 27. That spread is really a bet on a close above $702, so the screen said 'market's odds 43%' while YES cost 41% of its payout and both breakevens sat at $701.45. Now it takes strikes the same distance either side of the line ($695/$705) and reads the odds off that same spread, so YES costs the market's odds and both sides break even at the line. When no such pair exists, it says which close the trade really bets on. Practice money only; grading unchanged.",
-   "at": "2026-11-21T12:10:00Z"
   }
  ]
 }

@@ -6176,3 +6176,43 @@ def test_yesno_quotes_set_at_another_price_read_their_vol_at_that_price(monkeypa
     assert abs(q["vol"] - 1.03) < 0.06 and q["market_p"] > 0.5                # the stock sits ~3% above the line
     if q["market_p"] == q["market_p_flat_vol"]:
         assert "set as if WINR were near" in q["odds_source"]
+
+
+def test_news_search_finds_this_weeks_stories_by_company_ticker_or_topic(monkeypatch):
+    from backend.v4 import movers, newssearch
+    now = datetime.now(timezone.utc)
+    iso = lambda h: (now - timedelta(hours=h)).isoformat()
+    chips = {"headline": "Chipmakers rally as Nvidia lifts its forecast", "hunch": "AI demand keeps growing",
+             "why": "", "summary": "", "created_at": iso(2),
+             "companies": [{"ticker": "NVDA", "direction": "up", "why": "sells the chips"}]}
+    oil = {"headline": "Crude jumps after OPEC cut", "hunch": "Oil prices will stay high", "why": "", "summary": "",
+           "created_at": iso(30), "companies": [{"ticker": "XOM", "direction": "up", "why": "gold standard driller"}]}
+    stale = dict(oil, headline="Old oil story", created_at=iso(24 * 9))
+    monkeypatch.setattr(movers, "feed", lambda client=None: {"items": [chips], "benchmark": None})
+    # the archive keeps a week of picked stories, newest first, without prices
+    movers._archive([dict(oil, companies=[dict(oil["companies"][0], change=0.01)]), stale, chips])
+    arch = movers.archived()
+    assert [a["headline"] for a in arch] == [chips["headline"], oil["headline"]]
+    assert "change" not in arch[1]["companies"][0]
+    names = {"NVDA": "NVIDIA Corporation Common Stock", "XOM": "Exxon Mobil Corporation", "GOLD": "Barrick Mining"}
+    monkeypatch.setattr(movers.market, "asset_info",
+                        lambda s: {"symbol": s, "name": names[s]} if s in names else None)
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 10.0, "change": 0.02, "change_day": "2026-11-20"} for s in syms})
+    monkeypatch.setattr(newssearch, "headlines_for", lambda sym: [{"headline": f"{sym} headline", "url": ""},
+                                                                  {"headline": chips["headline"], "url": ""}])
+    by_name = newssearch.search("nvidia news")
+    assert by_name["company"]["ticker"] == "NVDA" and [s["headline"] for s in by_name["stories"]] == [chips["headline"]]
+    assert [h["headline"] for h in by_name["headlines"]] == ["NVDA headline"]  # not the story shown above it
+    assert newssearch.search("$xom")["stories"][0]["headline"] == oil["headline"]
+    assert newssearch.search("xom")["company"]["ticker"] == "XOM"   # lowercase, but a ticker in this week's stories
+    topic = newssearch.search("oil")  # a topic: the archived story (prices re-read), and no company card
+    assert topic["company"] is None and [s["headline"] for s in topic["stories"]] == [oil["headline"]]
+    assert topic["stories"][0]["companies"][0]["change"] == 0.02
+    assert newssearch.search("chip")["stories"][0]["headline"] == chips["headline"]  # word starts: chipmakers
+    gold = newssearch.search("gold")  # used in a story, so a topic, not Barrick's ticker GOLD
+    assert gold["company"] is None and gold["stories"][0]["headline"] == oil["headline"]
+    assert newssearch.search("zzzz")["stories"] == [] and newssearch.search("a")["stories"] == []
+    # Story mode opens an archived story too, but nothing outside the curated stories
+    monkeypatch.setattr(movers, "_write_story", lambda item, client=None: {"ai": False, "hook_big": "", "title": item["headline"]})
+    assert movers.story(oil["headline"])["item"]["headline"] == oil["headline"]
+    assert movers.story("Something nobody picked") is None

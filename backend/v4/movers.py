@@ -328,6 +328,41 @@ def _carry(fresh: list[dict], old: list[dict]) -> list[dict]:
     return out
 
 
+ARCHIVE_KEY = "movers:archive"
+ARCHIVE_DAYS = float(os.getenv("MP_MOVERS_ARCHIVE_DAYS", "7"))
+ARCHIVE_MAX = 150  # ~11 picked stories a rebuild at most every 30 min; a week of distinct ones stays well under this
+
+
+def archived() -> list[dict]:
+    """Stories Claude picked for "Moving now" over the last ARCHIVE_DAYS, newest first (what News search reads)."""
+    row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (ARCHIVE_KEY,))
+    try:
+        return list(json.loads(row["v"])) if row else []
+    except Exception:
+        return []
+
+
+def _archive(items: list[dict]) -> None:
+    """Keep each curated story (only what the story says; prices are re-read when shown) for News search."""
+    try:
+        old = archived()
+        seen, out = set(), []
+        for it in list(items) + old:
+            h = it.get("headline")
+            age = _news_age_hours(it)
+            if not h or h in seen or not it.get("companies") or age is None or age > ARCHIVE_DAYS * 24:
+                continue
+            seen.add(h)
+            out.append({k: it.get(k) or "" for k in ("headline", "source", "url", "created_at", "summary", "hunch", "why")}
+                       | {"companies": [{k: c.get(k) for k in ("ticker", "direction", "why")} for c in it["companies"]]})
+        out.sort(key=lambda it: str(it.get("created_at") or ""), reverse=True)
+        db.execute("DELETE FROM kv_cache WHERE k = ?", (ARCHIVE_KEY,))
+        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
+                   (ARCHIVE_KEY, json.dumps(out[:ARCHIVE_MAX]), datetime.now(timezone.utc).isoformat()))
+    except Exception as e:  # search history is a nice-to-have; never break the feed over it
+        log.warning("movers archive: %s", e)
+
+
 def _age(feed: dict, key: str = "checked_at") -> float:
     """Seconds since the feed was last rebuilt or re-checked (key='built_at': since its stories were picked)."""
     try:
@@ -357,6 +392,8 @@ def feed(client: Any = None) -> dict:
                     elif fresh["items"] or not (cur and cur.get("items")):
                         if fresh.get("ai") and cur and cur.get("ai"):
                             fresh["items"] = _carry(fresh["items"], cur.get("items") or [])
+                        if fresh.get("ai"):
+                            _archive(fresh["items"])
                         db.execute("DELETE FROM kv_cache WHERE k = ?", (KEY,))
                         db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)",
                                    (KEY, json.dumps(fresh), fresh["built_at"]))
@@ -670,12 +707,14 @@ def _write_story(item: dict, client: Any = None) -> dict:
 
 
 def story(headline: str, client: Any = None) -> Optional[dict]:
-    """The story for one headline in today's feed (None if it isn't in the feed: no arbitrary prompts)."""
+    """The story for one headline in today's feed or this week's archive (None otherwise: no arbitrary prompts)."""
     headline = (headline or "").strip()
     if not headline:
         return None
     cur = feed(client)
     item = next((it for it in cur.get("items", []) if it["headline"] == headline), None)
+    if not item:  # a story from earlier this week, found through News search (still one Claude picked)
+        item = next((it for it in archived() if it.get("headline") == headline), None)
     if not item:
         return None
     key = _story_key(headline)

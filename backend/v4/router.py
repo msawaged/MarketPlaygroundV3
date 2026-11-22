@@ -10,7 +10,7 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, brokerage, db, engine, grader, interpreter, market, movers, nn, notify, passkeys, brain, push
+from . import auth, brokerage, db, engine, grader, interpreter, market, movers, newssearch, nn, notify, passkeys, brain, push
 
 router = APIRouter()
 
@@ -586,6 +586,12 @@ async def get_brain():
 async def get_movers():
     """Today's headlines as hunches, with the companies each one moves and their move today."""
     return await run_in_threadpool(movers.feed)
+
+
+@router.get("/movers/search")
+async def search_movers(q: str = ""):
+    """News search: this week's stories about a company, ticker or topic, plus that company's latest headlines."""
+    return await run_in_threadpool(newssearch.search, q[:60])
 
 
 @router.get("/movers/story")

@@ -8,6 +8,7 @@ import { themeLabel } from '../lib/text';
 import { useMovers, MoverCard, MarketLine, ago } from './MoversFeed';
 import { useAccount } from '../lib/auth';
 import { signedPct } from '../lib/figures';
+import { SearchBox, SearchResults, useNewsQuery } from './NewsSearch';
 
 function pct(v) {
   if (v == null) return null;
@@ -27,6 +28,7 @@ export default function TrendingPage() {
   }, []);
 
   const account = useAccount();
+  const [query, setQuery] = useNewsQuery();
   const movers = useMovers();
   const items = movers.data?.items || [];
   const themes = state.data?.themes || [];
@@ -47,7 +49,9 @@ export default function TrendingPage() {
         )}
         <h1 className="text-3xl font-extrabold">Moving now</h1>
         <p className="mt-1 text-slate-300">Today's market news and the companies it touches.</p>
-        {movers.data?.built_at && <p className="mt-1 text-[11px] text-slate-500">Updated {ago(movers.data.built_at)}</p>}
+        <SearchBox q={query} setQ={setQuery} />
+        {query ? <SearchResults q={query} setQ={setQuery} /> : (<>
+        {movers.data?.built_at && <p className="mt-3 text-[11px] text-slate-500">Updated {ago(movers.data.built_at)}</p>}
         {items.length > 0 && <MarketLine bench={movers.data?.benchmark} />}
         {movers.loading && <div className="mt-6 text-slate-400">Reading today's news…</div>}
         {!movers.loading && items.length === 0 && (
@@ -129,6 +133,7 @@ export default function TrendingPage() {
             "vs S&amp;P" is how a pick did against the S&amp;P 500, in the direction people expected, {state.data?.label_days || 90} days after it was suggested. Past results don't predict future ones.
           </p>
         )}
+        </>)}
       </div>
       {account && <BottomNavigation />}
     </div>
