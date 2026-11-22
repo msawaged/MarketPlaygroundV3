@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-21T23:10:00Z",
- "last_run": "Built 'I called it' share cards, the chair's sprint item: every call on My beliefs now has its own share link with a preview picture showing its 7, 30 and 90-day checks against the S&P 500.",
+ "updated_at": "2026-11-22T02:30:00Z",
+ "last_run": "Built 'Would we have picked the winner?' on the Brain page: a standard test (probability of backtest overfitting) of whether choosing the best-looking research rule on half the history would have chosen a winner on the other half.",
  "working_on": "Nothing open.",
- "next": "Check a real share link's preview in a chat app once a user shares one. Then: save ref=card with sign-ups so cards can be counted. Monday in market hours: Close Call SPY ladder check and NVDA's parity guard.",
+ "next": "Read the first real PBO number after the next research run and check the Brain page wording fits it. Then: save ref=card with sign-ups so share cards can be counted. Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The research tries about 50 ways to pick the #1 and the app leans on whichever looks best, but a leaderboard that big always has a lucky leader. I added the standard check a finance professor would ask for (Bailey, Borwein, López de Prado & Zhu 2017): cut the test calls into 8 stretches of time, use every possible half (70 ways) to choose the best way, and see where that choice ranks on the other half. The Brain page's luck check gets one paragraph: how often the chosen way landed in the bottom half (about 10% or less is reassuring, near 50% is a coin flip), its median result there, the same just for the retrained models the new ranker chooses from, and which way was chosen most often. Reporting only: no gate, ranking or grading changed. The number appears after the next research run.",
+   "at": "2026-11-22T02:30:00Z"
+  },
   {
    "re": "(chair's sprint: one shareable growth feature)",
    "body": "Share cards are built. On My beliefs, Share now sends a link to that call (it was only a picture before). In chats and on social sites the link shows a preview picture: the call in quotes, the stock, and a box for each check at 7, 30 and 90 days, green if it beat the S&P 500, red if it didn't, grey 'not graded yet'. Misses look exactly like wins, and nothing shows a result before it is graded. Where previews don't show, the text has Wordle-style squares (7d 🟩 30d 🟥 90d ⬜). Tapping the link opens the welcome page with that call on top and 'What's your call?' above sign-up. No names or emails on the card; only users' own calls can be shared. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Option idea cards priced every strike at one at-the-money volatility, so a spread's far strike missed the skew: this morning AAPL's $370 call read $4.06 on the card vs $3.04 listed. Live cards now price each strike at its own implied volatility from listed options (the out-of-the-money side, the way a desk reads the smile), and max loss, max gain, breakeven and Greeks follow. If any strike isn't listed the card keeps one volatility and says so. I checked first that grading never uses card prices (it re-marks every pick at the stock's own volatility), so grading and the research checks are unchanged.",
    "at": "2026-11-18T17:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Option idea cards price each leg at one implied volatility and show a price like '$370 strike · $4.06', but the 'Is this a fair price?' check never mentioned that number, so a professor comparing with his own screen would see two prices and no explanation. The check now puts the card's price beside the listed mid and bid/ask for each leg, says why they differ (this morning AAPL's $370 call was $4.06 on the card vs $3.04 listed, because that strike trades at a lower volatility than the one the card uses), and totals the whole trade: card $7.45, at listed mids $8.57, paying the ask $9.84. Information only: card prices and grading unchanged.",
-   "at": "2026-11-18T14:30:00Z"
   }
  ]
 }

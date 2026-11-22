@@ -36,6 +36,16 @@ has only ~100 dates, so one negative stretch alone is not a failure. Reporting o
 row's n_eff = n with t_nw > t: `_se_overlap` can come out below the plain se when residuals on nearby dates lean
 opposite ways; n_eff is capped at n, so that reads as n_eff = n. Not a bug.)
 
+Since 2026-11-22 each run also stores **"would we have picked the winner?"** (`research.pbo`, probability of backtest
+overfitting by CSCV, Bailey, Borwein, Lopez de Prado & Zhu 2017) in `luck.pbo`: the test calls cut on dates into 8
+chronological blocks; for each of the 70 ways to call 4 blocks in-sample, the method with the best pooled lift there is
+the winner and is ranked on the other 4. `pbo` = share of splits where it ranks at or below the median out of sample,
+`oos_lift_med`, `p_loss` (winner's out-of-sample lift < 0), `slope` (out-of-sample on in-sample lift), `winners`,
+`n_methods` (methods with calls in all 8 blocks; the look-ahead "app (current #1)" row is left out).
+`luck.pbo_learned` = the same among the ranker v2 candidates and their mixes. Quote pbo with n_methods: about 0.1 or
+less is reassuring, near 0.5 means the leaderboard is reshuffling noise; near-copy rules flatter it and each block is
+small, so it is a rough guide. Reporting only: gates unchanged.
+
 ## Baseline (kv_cache `research:ranker`, run 2026-11-02 08:13 UTC, 3,676 beliefs, test from 2024-12-03, n=2,256)
 
 | Method | Lift | Beat | t |

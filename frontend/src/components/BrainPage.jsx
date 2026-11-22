@@ -492,6 +492,29 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     );
                   })()}
+                  {sk.luck.pbo?.pbo != null && (() => {
+                    // "Would we have picked the winner?" (research.pbo, CSCV; Bailey, Borwein, Lopez de Prado & Zhu 2017).
+                    // Reporting only: the gate never reads it.
+                    const P = sk.luck.pbo, L = sk.luck.pbo_learned;
+                    const label = (name) => name.replace(/\s*\((?:-?z_|vp|rvol|frog)[^)]*\)\s*$/, '');
+                    const top = Object.entries(P.winners || {})[0];
+                    const v = Number(P.pbo);
+                    const verdict = v <= 0.1 ? ' That is low, so picking the best-looking way mostly picks something real.'
+                      : v < 0.35 ? ' Better than a coin flip, but not proof the best-looking way is the best.'
+                        : ' That is close to a coin flip, so the top of our leaderboard is mostly reshuffled luck.';
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-slate-200">Would we have picked the winner?</span>
+                        {' '}We cut the test calls into {P.n_blocks} stretches of time and tried all {P.n_splits} ways of using half of them to choose the best of {P.n_methods} ways to pick the #1.
+                        {' '}The chosen one landed in the bottom half on the other half {Math.round(v * 100)}% of the time
+                        {' '}(median {pts(Number(P.oos_lift_med || 0))} pts there; behind our other ideas in {Math.round(Number(P.p_loss || 0) * 100)}% of tries).
+                        {verdict}
+                        {L?.pbo != null && ` Among just the ${L.n_methods} retrained models the new ranker chooses from: ${Math.round(Number(L.pbo) * 100)}%.`}
+                        {top && ` Chosen most often: “${label(top[0])}”, ${top[1]} of ${P.n_splits}.`}
+                        {' '}Many of our ways are near-copies of each other, which makes this look better than it is, and each stretch is only a few months, so read it as a rough guide.
+                      </div>
+                    );
+                  })()}
                   {(sk.luck.is_new || []).length > 0 && (() => {
                     // "Is it new?" (research.is_new, reporting only): does the strongest other way pick a different #1
                     // from ours, and is it ahead on the calls where it does? Compared with our #1 rebuilt without the peek.

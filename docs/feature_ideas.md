@@ -490,7 +490,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-21 (late) — "Would we have picked the winner?": probability of backtest overfitting across all research rules
 - **Area:** brain (research honesty). Reporting only.
-- **Status:** proposed
+- **Status:** built 2026-11-22, commit "Research: would we have picked the winner? (probability of backtest overfitting)" (Builder). Built as sketched: `research.pbo` in `luck.pbo` / `luck.pbo_learned`, ranked on plain lift (not lift_adj); Brain page luck card line "Would we have picked the winner?".
 - **Problem:** the research run now tries 47 ways to choose the #1 (48 after idea 19), and the honest question about the
   *process*, not any single rule, is: when we pick the best-looking way on one stretch of history, does it stay good on
   the rest? The luck bar (3.27 for 47 tries) and "Does it hold every year?" judge rules one at a time; neither measures

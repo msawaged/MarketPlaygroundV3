@@ -2051,6 +2051,9 @@ def test_research_walk_forward_runs_and_stores(monkeypatch):
     assert r["ridge (learned)"]["lift"] > 0.02  # learns the planted signal out of sample
     assert abs(r["app (current #1)"]["lift"]) < 0.03
     assert db.query_one("SELECT v FROM kv_cache WHERE k = ?", (research.KEY,))
+    pb = out["luck"]["pbo"]  # "would we have picked the winner?" rides along (reporting only)
+    assert pb.get("n_splits") == 70 and "app (current #1)" not in pb["winners"]
+    assert set(out["luck"]["pbo_learned"].get("winners") or {}) <= set(r) - {"app (current #1)"}
 
 
 def test_ranker_v2_turns_on_only_with_an_out_of_sample_edge(monkeypatch):
@@ -5759,6 +5762,38 @@ def test_research_time_blocks_flag_a_rule_carried_by_one_stretch():
     app = {"beat": 0.0, "beat_adj": 0.0}
     strip = {k: x for k, x in e.items() if k not in ("blocks", "pos_blocks", "n_blocks", "last_block_lift", "block_spread")}
     assert research._passes(e, app) == research._passes(strip, app)
+
+
+def test_pbo_is_near_half_for_noise_rules_and_near_zero_with_a_real_edge():
+    """"Would we have picked the winner?" (Bailey, Borwein, Lopez de Prado & Zhu 2017, CSCV): 40 pure-noise rules give
+    a probability of backtest overfitting near 0.5; add one rule with a real planted edge and the in-sample winner is
+    that rule in most splits, so PBO falls near 0. The look-ahead app row never takes part. Reporting only."""
+    from backend.v4 import research
+    import datetime as _dt
+    rng = random.Random(5)
+    d0 = _dt.date(2025, 1, 1)
+    dates = [(d0 + _dt.timedelta(days=k)).isoformat() for k in range(240)]
+
+    def rule(edge):
+        out = []
+        for d in dates:
+            for _ in range(3):
+                mean = rng.gauss(0, 0.002)
+                out.append((mean + edge + rng.gauss(0, 0.03), mean, 0.0, 0.0, d))
+        return out
+    noise = {f"noise {i}": rule(0.0) for i in range(40)}
+    p0 = research.pbo(noise)
+    assert p0["n_splits"] == 70 and p0["n_methods"] == 40 and p0["n_blocks"] == 8
+    assert 0.25 <= p0["pbo"] <= 0.75 and sum(p0["winners"].values()) == 70
+    real = {**noise, "real edge": rule(0.01), "app (current #1)": rule(0.05)}
+    p1 = research.pbo(real)
+    assert p1["n_methods"] == 41 and "app (current #1)" not in p1["winners"]
+    assert p1["pbo"] <= 0.1 and p1["winners"].get("real edge", 0) >= 60 and p1["oos_lift_med"] > 0.005
+    assert p1["p_loss"] <= 0.1
+    # only: restrict the pool; too few dates or methods: nothing reported
+    assert research.pbo(real, only=["noise 1", "real edge"])["n_methods"] == 2
+    assert research.pbo({"a": noise["noise 0"]}) == {}
+    assert research.pbo({k: v[:9] for k, v in noise.items()}) == {}
 
 
 def test_lone_ranker_is_vetoed_by_real_time_calls_and_ranker_ordered_calls_are_left_out(monkeypatch):

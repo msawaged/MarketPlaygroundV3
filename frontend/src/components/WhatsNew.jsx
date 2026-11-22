@@ -2,8 +2,9 @@
 // To update: add a line at the top of UPDATES and bump the date.
 import React from 'react';
 
-export const UPDATED = 'Nov 21';
+export const UPDATED = 'Nov 22';
 export const UPDATES = [
+  "New: the Brain page's luck check asks whether picking the best-looking research rule on half the history would have picked a winner on the other half (probability of backtest overfitting)",
   "New: Share on My beliefs gives each call its own link: the preview shows its 7, 30 and 90-day checks against the S&P 500, misses included, and anything not graded yet says so",
   "New: the Brain page's luck check splits the research into four stretches of time and says whether the #1 pick's lead held in each, not just on average",
   "Fixed: Close Call's odds now include the option smile (skew), checked across many strikes, so they fall steadily as the line rises, even on weekend quotes (SPY Nov 27: $690 had read 55% beside 57% for $695)",

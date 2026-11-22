@@ -1721,3 +1721,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   New card/json fields `picks`, `measured_on`. Grades and grading unchanged. Double period in og description fixed.
 - Files: backend/v4/share.py, backend/v4/tests/test_v4.py, frontend/src/components/WelcomePage.jsx,
   docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~02:30 UTC (Builder, key `builder`): "Would we have picked the winner?" (probability of backtest overfitting)
+- No HQ messages from Murad (hq_messages empty). Built the scout's proposed PBO item from docs/feature_ideas.md.
+- research.pbo (CSCV, Bailey et al. 2017): test calls cut on dates into 8 blocks (same date rule as _time_blocks, via
+  new `_date_blocks`), 70 in/out-of-sample splits; stores `luck.pbo` (all methods except the look-ahead app row) and
+  `luck.pbo_learned` (ranker v2 candidates + mixes): pbo, oos_lift_med, p_loss, slope, winners, n_methods. Wrapped in
+  try/except inside run(); a few hundred numbers, no new data or memory.
+- Brain page luck card: new "Would we have picked the winner?" paragraph (shows after the next research run).
+  WhatsNew line added (UPDATED Nov 22).
+- Reporting only: _passes, fit_production, luck bar, MIN_LIFT/MIN_T untouched.
+- Tests: test_pbo_is_near_half_for_noise_rules_and_near_zero_with_a_real_edge; walk-forward test now checks luck.pbo.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md,
+  docs/hq/status/builder.json.

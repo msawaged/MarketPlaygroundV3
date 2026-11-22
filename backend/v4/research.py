@@ -494,6 +494,84 @@ def _time_blocks(lift: np.ndarray, ex: np.ndarray, dates: list[str], k: int = TI
     return out
 
 
+PBO_BLOCKS = 8  # "would we have picked the winner?": CSCV blocks (C(8,4) = 70 in-sample / out-of-sample splits)
+PBO_EXCLUDE = ("app (current #1)",)  # its stored score carries look-ahead; the no-look-ahead app row stands in for it
+
+
+def _date_blocks(dates: list[str], k: int) -> dict:
+    """Date -> block index for k chronological blocks of about equal call count (the _time_blocks rule: a date goes
+    where its middle call falls, so a date never splits and outcomes never decide a cut)."""
+    cnt: dict[str, int] = {}
+    for d in dates:
+        cnt[d] = cnt.get(d, 0) + 1
+    n, seen, blk = len(dates), 0, {}
+    for d in sorted(cnt):
+        blk[d] = min(k - 1, int((seen + cnt[d] / 2) * k / n))
+        seen += cnt[d]
+    return blk
+
+
+def pbo(res: dict, s: int = PBO_BLOCKS, only: tuple | list | None = None, exclude=PBO_EXCLUDE) -> dict:
+    """Probability of backtest overfitting (Bailey, Borwein, Lopez de Prado & Zhu 2017, CSCV). res: {method: picks as
+    _pick makes them (lift = p[0] - p[1], call date = p[4])}, all scored on the walk-forward test calls. The test calls
+    are cut into s chronological blocks on dates; for each of the C(s, s/2) ways to call half the blocks "in-sample",
+    the method with the best pooled lift there is the winner, and we see where it ranks on the other half.
+    pbo = share of splits where the winner ranks at or below the out-of-sample median (logit <= 0, as in the paper);
+    oos_lift_med = the winner's median out-of-sample lift; p_loss = share of splits where it trails the belief average
+    out of sample; slope = OLS slope of the winner's out-of-sample on in-sample lift; winners = method -> splits won.
+    Only methods with calls in every block take part (n_methods). Reporting only: _passes / fit_production and the
+    luck bar never read this."""
+    from itertools import combinations
+    names = [k for k, v in (res or {}).items() if v and k not in exclude and (only is None or k in only)]
+    rows = {k: [(float(p[0] - p[1]), str(p[4])[:10]) for p in res[k] if len(p) >= 5 and p[4]] for k in names}
+    pool = sorted({d for r in rows.values() for _, d in r})
+    if len(names) < 2 or len(pool) < 2 * s:
+        return {}
+    ref = max(rows, key=lambda k: len(rows[k]))  # the fullest method sets the blocks' call counts
+    blk = _date_blocks([d for _, d in rows[ref]], s)
+    # dates some method has but the reference lacks go to the block of the nearest earlier reference date
+    ref_dates = sorted(blk)
+    for d in pool:
+        if d not in blk:
+            i = max(0, int(np.searchsorted(ref_dates, d, side="right")) - 1)
+            blk[d] = blk[ref_dates[i]]
+    sums, cnts, keep = [], [], []
+    for k in names:
+        sm, ct = np.zeros(s), np.zeros(s)
+        for x, d in rows[k]:
+            sm[blk[d]] += x
+            ct[blk[d]] += 1
+        if (ct > 0).all():
+            keep.append(k); sums.append(sm); cnts.append(ct)
+    if len(keep) < 2:
+        return {}
+    S, C = np.array(sums), np.array(cnts)
+    half = s // 2
+    lam, oos_w, is_w, wins = [], [], [], {}
+    for ins in combinations(range(s), half):
+        m = np.zeros(s, dtype=bool); m[list(ins)] = True
+        is_l = S[:, m].sum(1) / C[:, m].sum(1)
+        oos_l = S[:, ~m].sum(1) / C[:, ~m].sum(1)
+        w = int(np.argmax(is_l))
+        below = float((oos_l < oos_l[w]).sum()); ties = float((oos_l == oos_l[w]).sum()) - 1
+        omega = (below + 0.5 * ties + 1) / (len(keep) + 1)  # relative rank out of sample, in (0, 1)
+        lam.append(math.log(omega / (1 - omega)))
+        oos_w.append(float(oos_l[w])); is_w.append(float(is_l[w]))
+        wins[keep[w]] = wins.get(keep[w], 0) + 1
+    lam_a, oos_a, is_a = np.array(lam), np.array(oos_w), np.array(is_w)
+    slope = None
+    if is_a.std() > 0:
+        slope = round(float(np.polyfit(is_a, oos_a, 1)[0]), 3)
+    return {"pbo": round(float((lam_a <= 0).mean()), 3), "n_splits": len(lam), "n_methods": len(keep),
+            "n_blocks": s, "oos_lift_med": round(float(np.median(oos_a)), 4),
+            "p_loss": round(float((oos_a < 0).mean()), 3), "slope": slope,
+            "winners": dict(sorted(wins.items(), key=lambda kv: -kv[1]))}
+
+
+LEARNED = ("ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)", "neural net (learned)",
+           "neural net (risk-adjusted)", "gbm (+ shifted)", "gbm (risk-adjusted, + shifted)")
+
+
 VS_APP_BASE = "app, no look-ahead"  # the app's #1 the head-to-head compares against (no look-ahead, see _pit_score)
 VS_APP_MIN = 100  # disagreements needed before the Brain page quotes a head-to-head
 
@@ -1018,6 +1096,11 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             out["results"][name].update(_vs_app(rows, base))
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
     out["luck"]["is_new"] = is_new(out["results"])
+    try:  # "would we have picked the winner?" across every way tested, and among the ranker v2 candidates (reporting only)
+        out["luck"]["pbo"] = pbo(res)
+        out["luck"]["pbo_learned"] = pbo(res, only=[k for k in res if k in LEARNED or (k.endswith(MIX) and k[:-len(MIX)] in LEARNED)])
+    except Exception as e:
+        out["luck"]["pbo"] = {"error": str(e)[:200]}
     if out["winsor"]:
         out["luck"]["winsor"] = out["winsor"]
     # feature coverage on the test-period calls (the ones every result is scored on); reporting only
