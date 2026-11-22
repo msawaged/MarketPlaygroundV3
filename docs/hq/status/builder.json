@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T05:30:00Z",
- "last_run": "Agent HQ: each agent's next run time, the right schedules for Builder and App polish, dates on older meeting messages, and an age on each 'Needs you' item.",
+ "updated_at": "2026-11-22T08:45:00Z",
+ "last_run": "Close Call: the brain's record now lists its latest graded questions, right and wrong, with each close. Before, the list only showed questions still open, so none of the answers behind its score were visible.",
  "working_on": "Nothing open.",
- "next": "Read the first real PBO number after the next research run and check the Brain page wording fits it. Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
+ "next": "Check weekend option volatility readings (SPY showed 42% on Friday's quotes) once markets reopen; Monday in market hours: Close Call SPY ladder and NVDA's parity guard.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The Close Call page said the brain had 15 questions graded and picked the right side 73% of the time, but the list under it only showed the 12 newest questions, and those were all still open (it asks about 11 a day, each closing 5+ days later). So you couldn't see a single right or wrong answer behind the 73%. Now the card has 'Latest graded': each question with the market's odds, the brain's, the close, and right or wrong, plus 'Its side was right on X of these N'. The open ones sit below under 'Waiting for the close'. Grading and odds unchanged.",
+   "at": "2026-11-22T08:45:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Agent HQ now says when each agent next runs. Every card on the table shows 'next run in 3 h (12:51 AM)' in your phone's time, and under the message box it says when the meeting chair checks for messages next and when the agent you picked runs next. I also fixed two wrong labels: Builder and App polish run every 3 hours around the clock, not just daytime. Older meeting messages now show their date ('Nov 13, 4:40 PM'), so an 8-day-old note no longer looks like last night's, and each 'Needs you' item says how old it is.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The Brain page's 'Survival of the smartest' said the leading strategist (+2.6 pts) was 'about the same as the app's own pick'. But all 300 calls it's scored on are practice calls, and there the app's stored #1 was chosen with results that came later (the catch the page already admits elsewhere); the strategists never see those. So the app's yardstick was inflated. The scoreboard now compares with the app's #1 rebuilt as it stood on each call's date, and shows the stored number beneath as 'with the peek'. Display only: how strategists are scored and the live test that gives one a say in real picks are unchanged. The new number appears after Monday's grade-and-train run (22:47 UTC, weekdays only).",
    "at": "2026-11-21T05:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The research log judged each of 46 rules against zero, never against what the app already does. The strongest rule yet (avoid right-skewed stocks, +1.45 pts) has almost the same numbers as the app's own #1, so it may just be the app described another way. Each result now records how often its #1 is the same stock as the app's (rebuilt without the peek), and on the calls where they differ, which one did better and by how much. The Brain page's luck check says it in one paragraph and only quotes the head-to-head with 100+ disagreements. Reporting only: the gates and the live ranking are unchanged. Numbers appear after the next research run.",
-   "at": "2026-11-21T02:40:00Z"
   }
  ]
 }

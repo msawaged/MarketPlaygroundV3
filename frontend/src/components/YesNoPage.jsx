@@ -54,37 +54,59 @@ function MyRecord({ rec }) {
 
 // The brain's own daily questions, in the open: the market's odds and the brain's when it asked, then the close and
 // right / wrong. Its lean only nudges the market's odds, so it takes the other side only near 50%; those are marked.
-function BrainQuestions({ rows }) {
+// Graded ones get their own list: it asks ~11 a day, 5+ days out, so the newest-asked list is nearly all open and the
+// record's right / wrong answers would never show.
+function QuestionRow({ r }) {
+  return (
+    <div className="py-2 flex items-center justify-between gap-2">
+      <span className="min-w-0">
+        <span className="block">{r.ticker} above {usd(r.level, r.level % 1 ? 2 : 0)} <span className="whitespace-nowrap">on {fmtDay(r.expiration)}</span></span>
+        <span className="block text-[11px] text-slate-500 tabular-nums">
+          {r.asked && <><span className="whitespace-nowrap">Asked {fmtShort(r.asked)}</span>{' · '}</>}
+          <span className="whitespace-nowrap">market {pcSide(r.market_p)} yes</span>{' · '}<span className="whitespace-nowrap">brain {pcSide(r.brain_p)} yes</span>
+          {r.close_price != null && <>{' · '}<span className="whitespace-nowrap">closed {usd(r.close_price, 2)}</span></>}
+        </span>
+        {r.disagrees && <span className="block text-[11px] text-amber-300">Took the other side from the market</span>}
+      </span>
+      <span className="shrink-0 flex items-center gap-2">
+        <b className={r.side === 'yes' ? 'text-green-300' : 'text-red-300'}>{r.side.toUpperCase()}</b>
+        <span className={`text-xs px-2 py-0.5 rounded-full ${r.result === 'right' ? 'bg-green-500/20 text-green-200' : r.result === 'wrong' ? 'bg-red-500/20 text-red-200' : 'bg-slate-700 text-slate-300'}`}>{r.result}</span>
+      </span>
+    </div>
+  );
+}
+
+function QuestionList({ title, note, rows, first }) {
   const [all, setAll] = useState(false);
   if (!rows || !rows.length) return null;
-  const shown = all ? rows : rows.slice(0, 6);
+  const shown = all ? rows : rows.slice(0, first);
+  const key = (r, i) => `${r.ticker}-${r.level}-${r.expiration}-${i}`;
   return (
     <div className="mt-3">
-      <div className="text-xs text-slate-400 font-semibold">Its latest questions</div>
+      <div className="text-xs text-slate-400 font-semibold">{title}</div>
+      {note && <div className="text-[11px] text-slate-500">{note}</div>}
       <div className="mt-1 divide-y divide-slate-800">
-        {shown.map((r, i) => (
-          <div key={`${r.ticker}-${r.level}-${r.expiration}-${i}`} className="py-2 flex items-center justify-between gap-2">
-            <span className="min-w-0">
-              <span className="block">{r.ticker} above {usd(r.level, r.level % 1 ? 2 : 0)} <span className="whitespace-nowrap">on {fmtDay(r.expiration)}</span></span>
-              <span className="block text-[11px] text-slate-500 tabular-nums">
-                {r.asked && <><span className="whitespace-nowrap">Asked {fmtShort(r.asked)}</span>{' · '}</>}
-                <span className="whitespace-nowrap">market {pcSide(r.market_p)} yes</span>{' · '}<span className="whitespace-nowrap">brain {pcSide(r.brain_p)} yes</span>
-                {r.close_price != null && <>{' · '}<span className="whitespace-nowrap">closed {usd(r.close_price, 2)}</span></>}
-              </span>
-              {r.disagrees && <span className="block text-[11px] text-amber-300">Took the other side from the market</span>}
-            </span>
-            <span className="shrink-0 flex items-center gap-2">
-              <b className={r.side === 'yes' ? 'text-green-300' : 'text-red-300'}>{r.side.toUpperCase()}</b>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${r.result === 'right' ? 'bg-green-500/20 text-green-200' : r.result === 'wrong' ? 'bg-red-500/20 text-red-200' : 'bg-slate-700 text-slate-300'}`}>{r.result}</span>
-            </span>
-          </div>
-        ))}
+        {shown.map((r, i) => <QuestionRow key={key(r, i)} r={r} />)}
       </div>
-      {rows.length > 6 && (
-        <button onClick={() => setAll(!all)} className="mt-1 text-xs text-blue-300">{all ? 'Show fewer' : `Show the latest ${rows.length}`}</button>
+      {rows.length > first && (
+        <button onClick={() => setAll(!all)} className="mt-1 text-xs text-blue-300">{all ? 'Show fewer' : `Show all ${rows.length}`}</button>
       )}
-      <p className="mt-2 text-xs text-slate-400">Odds are as they stood when it asked, with the line set near that day's price. Its lean starts from the market's odds and moves them a few points, so it picks a different side only when the market is close to 50%.</p>
     </div>
+  );
+}
+
+function BrainQuestions({ graded, recent }) {
+  const open = (recent || []).filter((r) => r.result === 'open');
+  const g = graded || [];
+  if (!g.length && !open.length) return null;
+  const right = g.filter((r) => r.result === 'right').length;
+  return (
+    <>
+      <QuestionList title="Latest graded" rows={g} first={6}
+        note={g.length ? `Its side was right on ${right} of these ${g.length}, latest closing day first.` : null} />
+      <QuestionList title="Waiting for the close" rows={open} first={g.length ? 3 : 6} />
+      <p className="mt-2 text-xs text-slate-400">Odds are as they stood when it asked, with the line set near that day's price. Its lean starts from the market's odds and moves them a few points, so it picks a different side only when the market is close to 50%.</p>
+    </>
   );
 }
 
@@ -400,7 +422,7 @@ export default function YesNoPage() {
           ) : (
             <p className="mt-2 text-slate-300">New. Every trading day the brain asks itself one question on each of 15 big stocks (skipping any it already has open); each is graded after its expiration. {score.brain_open ? `${score.brain_open} of its questions are waiting now.` : ''}</p>
           )}
-          <BrainQuestions rows={score.recent} />
+          <BrainQuestions graded={score.graded_recent} recent={score.recent} />
         </Card>
       )}
     </Page>

@@ -1766,3 +1766,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   it compares 48 ways when the luck check says 49 (the old #1's peeked score is left out). Wording/units only.
 - Files: frontend/src/components/BrainPage.jsx, frontend/src/components/MyCallsPage.jsx, frontend/src/lib/shareCard.js,
   docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~08:45 UTC (Builder, key `builder`): Close Call's brain record shows its graded questions
+- No HQ messages from Murad (hq_messages empty); no "proposed" items in feature_ideas.md.
+- Found: the record said "15 questions graded ... right side 73%", but its list was the 12 newest-ASKED questions, and
+  the brain asks ~11 a day 5+ days out, so all 12 were open. None of the right/wrong answers behind the 73% ever showed.
+- yesno.brain_questions(graded=True): the brain's graded questions, latest expiration first. scorecard returns them as
+  `graded_recent` (beside the unchanged `recent`).
+- YesNoPage: record card now has "Latest graded" (right/wrong, close, "Its side was right on X of these N") and
+  "Waiting for the close" (open ones only, 3 shown when graded ones exist). WhatsNew line.
+- Not changed: grading, odds, the brain's lean, research gates. Test: the scorecard test checks graded_recent order,
+  users excluded, empty case.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx,
+  frontend/src/components/WhatsNew.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
+- Noticed, not changed (unsure): weekend option IVs read high (SPY ATM 42% on Friday-close quotes; a 7-calendar-day
+  clock gives ~35%). Alpaca's snapshot IV convention isn't documented here, so I left Price Check / "How far it could
+  move" wording alone. Odds are unaffected (they use sigma*sqrt(T) consistently).

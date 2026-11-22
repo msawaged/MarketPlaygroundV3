@@ -1063,11 +1063,17 @@ def _disagrees(market_p, brain_p) -> bool:
     return (float(brain_p) >= 0.5) != (float(market_p) >= 0.5)
 
 
-def brain_questions(limit: int = 12) -> list[dict]:
+def brain_questions(limit: int = 12, graded: bool = False) -> list[dict]:
     """Public: the brain's own daily questions, newest asked first, each with the market's odds and the brain's at
-    the time of asking and, once graded, the expiration-day close and right / wrong. Users' questions stay private."""
-    rows = db.query("SELECT * FROM yesno_calls WHERE user_id = 'brain' ORDER BY created_at DESC LIMIT ?",
-                    (max(1, min(int(limit), 60)),))
+    the time of asking and, once graded, the expiration-day close and right / wrong. Users' questions stay private.
+    graded=True: only graded ones, latest expiration first. The newest-asked list is all open questions most days
+    (it asks ~11 a day, 5+ days out), so without this the record's right / wrong answers never show."""
+    n = max(1, min(int(limit), 60))
+    if graded:
+        rows = db.query("SELECT * FROM yesno_calls WHERE user_id = 'brain' AND graded_at IS NOT NULL "
+                        "ORDER BY expiration DESC, created_at DESC LIMIT ?", (n,))
+    else:
+        rows = db.query("SELECT * FROM yesno_calls WHERE user_id = 'brain' ORDER BY created_at DESC LIMIT ?", (n,))
     out = []
     for r in rows:
         v = {k: r[k] for k in ("ticker", "level", "expiration", "side", "spot", "close_price")}
@@ -1086,6 +1092,10 @@ def scorecard() -> dict:
         recent = brain_questions()
     except Exception:
         recent = []
+    try:
+        graded_recent = brain_questions(graded=True)
+    except Exception:
+        graded_recent = []
     brain_open = int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL AND user_id = 'brain'")
                       or {}).get("n") or 0)  # the brain's own; "open" below counts every asker's
     rows = db.query("SELECT market_p, brain_p, above, side, user_id, expiration FROM yesno_calls WHERE graded_at IS NOT NULL")
@@ -1095,7 +1105,7 @@ def scorecard() -> dict:
     rows = list(seen.values())
     n = len(rows)
     if not n:
-        return {"graded": 0, "recent": recent, "brain_open": brain_open,
+        return {"graded": 0, "recent": recent, "graded_recent": graded_recent, "brain_open": brain_open,
                 "open": int((db.query_one("SELECT COUNT(*) AS n FROM yesno_calls WHERE graded_at IS NULL") or {}).get("n") or 0)}
     bm = sum(brier(float(r["market_p"]), bool(r["above"])) for r in rows) / n
     bb = sum(brier(float(r["brain_p"]), bool(r["above"])) for r in rows) / n
@@ -1109,7 +1119,7 @@ def scorecard() -> dict:
                 "days": len({str(r.get("expiration") or "") for r in split})}
     st = model_status() or {}
     learning = {k: st.get(k) for k in ("active", "graded", "test_n", "brier_gain", "t", "note", "at")}
-    return {"learning": learning, "graded": n, "recent": recent, "disagree": disagree, "open": open_n, "brain_open": brain_open, "brier_market": round(bm, 4), "brier_brain": round(bb, 4),
+    return {"learning": learning, "graded": n, "recent": recent, "graded_recent": graded_recent, "disagree": disagree, "open": open_n, "brain_open": brain_open, "brier_market": round(bm, 4), "brier_brain": round(bb, 4),
             "brain_better": v["verdict"] == "better", "brain_side_right": round(lean_right, 3),
             "market_side_right": round(market_right, 3), "days": v["days"], "brier_gain": v["gain"], "brier_se": v["se"],
             "verdict": v["verdict"], "min_days": MIN_VERDICT_DAYS,
