@@ -762,3 +762,31 @@ first clean test of ranker v2 (the live veto) and the only labels without practi
 only. (2) Confirm the split repair on Nov 24 (ITA/SOXX real-time grades over 40% → 0 rows). (3) The real-time 7-day
 #1 pick is not beating the belief's other ideas yet (lift about 0 across sessions), so the next upgrade should come
 from the 30-day real-time results, not from more practice-call tuning.
+
+## 2026-11-22 ~21:00 UTC (weekly) — Nothing built: ranker v2 switched itself off tonight, the gate is working as designed
+
+**Checked.** Health OK (learning 20:22 UTC, grading Nov 20; next grading Nov 24 05:13 UTC). No HQ messages from Murad.
+No brain-side "proposed" items in docs/feature_ideas.md (the composite was built today by the Builder).
+
+**What changed since this morning (real numbers).** The 20:37 UTC refit turned ranker v2 **off** (model shown: ridge,
+inactive). Same 2,703 test calls as last night, but the learned models now also see the scout's newly filled features
+(`cvvol`, `hi_age`, `ldvol`; `vov` still held back at 12.6% coverage). Neural net (learned) **+1.69% (t 5.23) → +1.19%
+(t 3.78, t_nw 3.27)**; risk-matched beat 53.7% vs the stored app #1's 54.2%, so `_passes` fails; neural net
+(risk-adjusted) has risk-matched beat 54.4% but raw beat 51.3% (outside the 1-point slack vs 53.4%). gbm (learned)
++1.24% (t 3.81) fails the same way. Against the no-look-ahead app (+0.53%, beat 52.2%) every learned model is clearly
+ahead, but the gate compares with the stored #1 (look-ahead on practice calls) and that is not mine to change.
+
+**Ideas checked and not built.** (1) The separate shadow network in `nn.py` has trained on the same 11,408 rows since
+Nov 3 with identical metrics since Nov 9. Not a bug: it learns 90-day labels, and real-time calls (from Oct 28) reach
+90 days only from late January; ranker v2's own net (30/90-day mixed labels) is the live contender anyway.
+(2) Real-time 7-day #1 vs the belief's other ideas by direction and fund/stock (ITA/SOXX excluded): bullish stock #1s
+**-1.12% (n 892)**, bearish stock #1s **+1.48% (n 717)**, overall **-0.01% (n 1,985)**. The mirror-image split is the
+market's three-week drop hitting the higher-beta #1 in both directions, not a weak segment; dropping or down-weighting
+either side would fit one market move. (3) Learned-model inputs now grow by one scout feature most days (48 keys),
+and the net moved ±0.5 points with them; a fold-internal input screen could steady it, but I can't measure it outside
+the Render job and one night's swing is not evidence enough to change what users see.
+
+**What would most move the numbers.** Unchanged from this morning: the first real-time 30-day grades (~Nov 28; the
+lone-ranker live veto decides at 300+, ~Dec 2) and the Nov 24 split repair (ITA/SOXX real-time grades over 40% → 0).
+If the ranker keeps flipping on/off as features join, next week's run should consider the in-fold input screen above,
+judged by the same gate.

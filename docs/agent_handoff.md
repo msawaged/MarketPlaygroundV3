@@ -1912,3 +1912,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - First live run (20:36 UTC, n=2,703): composite lift +0.57% (t 1.71, t_nw 0.99), 3 of 4 stretches, beats 21 of 34
   singles; best single negative coskewness t_nw 3.12. Members mostly momentum-family (12-7, resid, frog 5/5). Verdict
   wording on the Brain page adjusted to "short of the best one, so averaging hasn't added an edge of its own yet".
+
+## 2026-11-22 ~21:00 UTC (Weekly brain upgrade, key `brain`): nothing built (docs only)
+- Ranker v2 switched off at the 20:37 refit through the unchanged gate (net +1.19%, risk-matched beat 53.7% < stored
+  app 54.2%). Not a bug. Details and the checks behind "no clear win" in docs/brain_upgrades.md.
+- Files: docs/brain_upgrades.md, docs/hq/status/brain.json, docs/agent_handoff.md. No code changed.

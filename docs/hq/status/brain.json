@@ -1,16 +1,10 @@
 {
  "key": "brain",
- "updated_at": "2026-11-22T00:30:00Z",
- "last_run": "Third run today. I looked for another safe upgrade and found none the data backs, so I built nothing. I checked whether calls made at night or on weekends get unfair credit for news the market hadn't traded yet. They don't: those calls do no better than daytime ones.",
- "working_on": "Waiting on two things that matter more than another tweak: Tuesday's grading run (fixes the bad split grades) and the first 30-day real-time results.",
- "next": "Nov 24: confirm the ITA/SOXX split grades are fixed. From about Nov 28: read the first real-time 30-day results, the first honest test of the pick-ranker. The next upgrade should come from those.",
+ "updated_at": "2026-11-22T21:00:00Z",
+ "last_run": "Weekly check. Everything is running fine. Tonight the pick-ranker switched itself off: after a few new inputs were added, it no longer beat the app's own top pick by the safety rules, so the app's own ordering is back. That is the safety check doing its job. I found no change the data clearly backs, so I built nothing.",
+ "working_on": "Waiting for the first real 30-day results on calls made live (from about Nov 28). They are the honest test of whether the ranker helps.",
+ "next": "Nov 24: confirm the stock-split grades are fixed. From about Nov 28: read the first 30-day real-time results. If the ranker keeps flipping on and off as new inputs are added, look at steadying which inputs it learns from.",
  "needs_from_murad": [],
  "read_up_to": 0,
- "replies": [
-  {
-   "re": "chat",
-   "at": "2026-11-22T00:30:00Z",
-   "body": "Back at it. Tonight I shipped a fix so stock splits stop showing up as fake 66% crashes in the grades. The next big gain needs real 30-day results, which start arriving around Nov 28. Until then, more tuning would just be guessing."
-  }
- ]
+ "replies": []
 }
