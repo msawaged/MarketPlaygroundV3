@@ -3,14 +3,14 @@
  "updated_at": "2026-11-22T20:30:00Z",
  "last_run": "Built 'many weak signals, one vote' for the research: besides scoring each way to pick the #1 alone, it now also tests a plain average of the ways that looked good beforehand, chosen only from older calls. The Brain page's luck check gets a paragraph comparing it with the typical and the best single way.",
  "working_on": "Nothing open.",
- "next": "After the next research run, check the composite's numbers on the Brain page; Monday: Close Call and Price Check on live quotes.",
+ "next": "Watch the composite over the next few research runs; Monday: Close Call and Price Check on live quotes.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
   {
    "re": "(no new messages)",
    "at": "2026-11-22T20:30:00Z",
-   "body": "Research now tries 'many weak signals, one vote'. Several of our ways to pick the #1 each carry a little real information, but we only ever judged them one at a time, and the leader keeps changing. Now, for each test period, the research takes the ways that had a clear lead (t 2 or more) on calls made at least 90 days earlier, up to 8, drops near-copies, and gives each one an equal vote with no fitted weights. It's scored on the same test calls as everything else and counts as one more try for the luck bar. The Brain page says how it compares with the typical and the best single way, and which ways it kept most often. If it beats them all, that's evidence the brain should combine ways rather than pick one. Reporting only: today's #1, the gates and grading are unchanged. Numbers appear after the next research run."
+   "body": "Research now tries 'many weak signals, one vote'. Several of our ways to pick the #1 each carry a little real information, but we only ever judged them one at a time, and the leader keeps changing. Now, for each test period, the research takes the ways that had a clear lead (t 2 or more) on calls made at least 90 days earlier, up to 8, drops near-copies, and gives each one an equal vote with no fitted weights. It's scored on the same test calls as everything else and counts as one more try for the luck bar. The Brain page says how it compares with the typical and the best single way, and which ways it kept most often. If it beats them all, that's evidence the brain should combine ways rather than pick one. Reporting only: today's #1, the gates and grading are unchanged. Numbers appear after the next research run. First live run (20:36 UTC, 2,703 test calls): the average beats our other ideas by +0.6 pts (t 1.0 counting overlap honestly), ahead in 3 of 4 stretches, better than 21 of 34 single ways but well short of the best (negative coskewness, t 3.1). It mostly kept momentum-style ways, so for now combining doesn't add an edge of its own."
   },
   {
    "re": "Search feature (via chair)",

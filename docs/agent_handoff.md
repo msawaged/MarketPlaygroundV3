@@ -1909,3 +1909,6 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test_composite_in_run_never_keeps_a_rule_that_only_works_in_its_own_test_period.
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/builder.json.
+- First live run (20:36 UTC, n=2,703): composite lift +0.57% (t 1.71, t_nw 0.99), 3 of 4 stretches, beats 21 of 34
+  singles; best single negative coskewness t_nw 3.12. Members mostly momentum-family (12-7, resid, frog 5/5). Verdict
+  wording on the Brain page adjusted to "short of the best one, so averaging hasn't added an edge of its own yet".

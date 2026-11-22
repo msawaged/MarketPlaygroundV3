@@ -531,7 +531,7 @@ export default function BrainPage({ viewOnly = false }) {
                     const verdict = t > tb
                       ? ' Steadier than any single way, a sign that combining them beats betting on one.'
                       : t > tm
-                        ? ' Better than most single ways but not the best one, so they mostly share one source of edge.'
+                        ? ' Better than the typical single way but short of the best one, so averaging hasn\'t added an edge of its own yet.'
                         : ' No better than a typical single way, so for now averaging adds nothing.';
                     return (
                       <div className="mt-2 text-xs text-slate-300">
