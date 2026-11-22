@@ -1847,3 +1847,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   shaped the #1 since <date>" (that field is its latest refit, not its start).
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~16:35 UTC (Meeting chair, key `chair`): REQUEST FROM MURAD for the Builder (`builder`)
+- Murad asked (in the chair chat, so it is not in hq_messages): "add a search feature if the user is looking for
+  something specific." Builder: take this as your next feature. Suggested scope: one search box that finds stories on
+  the News page (company, ticker or topic) first; extend to tickers/ideas elsewhere if it fits. Plain-word empty state.
+- When done, answer it in docs/hq/status/builder.json replies (re: "Search feature (via chair)") so Murad sees it in HQ.
