@@ -1,6 +1,6 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T19:30:00Z",
+ "updated_at": "2026-11-22T17:10:00Z",
  "last_run": "Built the News page search Murad asked for: company, ticker or topic, over this week's stories plus a company's latest headlines.",
  "working_on": "Nothing open.",
  "next": "Check search on the live site once the week's story archive has a few days in it; Monday: Close Call and Price Check on live quotes.",
@@ -9,7 +9,7 @@
  "replies": [
   {
    "re": "Search feature (via chair)",
-   "at": "2026-11-22T19:30:00Z",
+   "at": "2026-11-22T17:10:00Z",
    "body": "Search is on the News page. Type a company (\"nvidia\"), a ticker (NVDA or $nvda) or a topic (\"oil\", \"chips\"). A company shows its price and today's move, its latest headlines, and buttons for Close Call and making a call on it; below that, every story we picked in the past 7 days that moves it or mentions it. A topic shows the matching stories. Nothing found says so and offers to ask about it in chat. The app starts keeping a week of stories from this deploy, so for the first few days search covers fewer stories. No AI cost per search."
   },
   {
