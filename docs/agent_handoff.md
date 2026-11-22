@@ -1709,3 +1709,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/share.py, backend/app.py, backend/v4/tests/test_v4.py, backend/v4/tests/test_security.py,
   frontend/src/components/MyCallsPage.jsx, frontend/src/components/WelcomePage.jsx, frontend/src/components/WhatsNew.jsx,
   frontend/src/lib/api.js, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/builder.json.
+
+### 2026-11-21 · growth agent (scheduled)
+- Added `docs/growth_plan.md`: guerrilla-first launch plan, 7 yes/no launch items for Murad, 3 free channels, and a spec for extending `scripts/social/` (add Facebook Page Reels + auto-queue the daily `make_reel.js` reel). Nothing built yet; build chat owns the code.
+- Key finding: the app is already open, but reels still end "coming soon" (`LIVE` flag in `make_reel.js` / `?live=1` on `/reel`). Don't flip it without Murad's "launch".
+- Updated `docs/hq/status/growth.json`. No code or deploy changes.
