@@ -616,6 +616,78 @@ def is_new(results: dict, k: int = 3) -> list[dict]:
     return [{"name": n, **{q: m.get(q) for q in keys}} for n, m in rows[:k]]
 
 
+COMPOSITE = "equal-weight composite (chosen in-fold)"
+COMP_MIN_T = 2.0      # a rule joins a fold's composite only with training lift > 0 and plain training t >= this
+COMP_MAX = 8          # at most this many rules per fold, strongest training t first
+COMP_OVERLAP = 0.70   # a rule whose training #1 matches an already-kept rule's more often than this is a near copy
+
+
+def composite_members(train: list[dict], rules: dict, min_t: float = COMP_MIN_T, k: int = COMP_MAX,
+                      overlap: float = COMP_OVERLAP) -> list[tuple[str, float]]:
+    """"Many weak signals, one vote" (DeMiguel, Garlappi & Uppal 2009; Claeskens et al. 2016): which fixed rules join
+    one walk-forward fold's equal-weight composite. Judged on that fold's TRAINING calls only (the same 90-day embargo
+    as every other method), with a cutoff fixed here before any run: training lift > 0, plain t >= min_t, at most k,
+    strongest t first, skipping near copies (training #1 the same as a kept rule's on more than `overlap` of calls).
+    Returns [(rule, training t)]. Reporting only: no gate, ranking or grading reads it."""
+    if len(train) < 2:
+        return []
+    base = np.array([float(np.mean([c["ex"] for c in b["cands"]])) for b in train])
+    rows = []
+    for name, fn in rules.items():
+        try:
+            idx = np.array([_top(b, [fn(c["f"]) for c in b["cands"]]) for b in train])
+        except Exception:
+            continue
+        lift = np.array([float(b["cands"][i]["ex"]) for b, i in zip(train, idx)]) - base
+        se = lift.std(ddof=1) / math.sqrt(len(lift))
+        t = float(lift.mean() / se) if se > 0 else 0.0
+        if lift.mean() > 0 and t >= min_t:
+            rows.append((t, name, idx))
+    rows.sort(key=lambda r: (-r[0], r[1]))
+    kept: list[tuple[float, str, np.ndarray]] = []
+    for t, name, idx in rows:
+        if any(float(np.mean(idx == q)) > overlap for _, _, q in kept):
+            continue
+        kept.append((t, name, idx))
+        if len(kept) >= k:
+            break
+    return [(name, round(t, 2)) for t, name, _ in kept]
+
+
+def composite_scores(b: dict, fns: list) -> np.ndarray:
+    """The composite's score for each of a belief's ideas: every kept rule's scores z-scored within the belief (so a
+    rule on a wide scale doesn't outvote one on a narrow scale), then a plain average. No fitted weights."""
+    tot = np.zeros(len(b["cands"]))
+    for fn in fns:
+        s = np.array([float(fn(c["f"])) for c in b["cands"]])
+        sd = s.std()
+        if sd > 1e-9:
+            tot += (s - s.mean()) / sd
+    return tot / max(1, len(fns))
+
+
+def composite_summary(results: dict, comp: dict, singles: list[str]) -> dict:
+    """What the Brain page says about the composite: its own numbers next to the median and the best single rule
+    (by overlap-honest t, else plain t) among `singles`, plus how often each rule was kept. Reporting only."""
+    m = (results or {}).get(COMPOSITE) or {}
+    if not m.get("n"):
+        return {}
+    t = lambda r: float(r.get("lift_t_nw") if r.get("lift_t_nw") is not None else r.get("lift_t") or 0)
+    rows = [(n, results[n]) for n in singles if (results.get(n) or {}).get("n")]
+    keys = ("n", "lift", "lift_t", "lift_t_nw", "pos_blocks", "n_blocks", "last_block_lift", "same_as_app", "n_diff",
+            "lift_diff", "lift_diff_t", "lift_diff_t_nw")
+    out = {"name": COMPOSITE, **{q: m.get(q) for q in keys}, **(comp or {})}
+    if rows:
+        ts = sorted(t(r) for _, r in rows)
+        bn, br = max(rows, key=lambda x: t(x[1]))
+        out.update({"singles": len(rows), "median_single_t": round(float(np.median(ts)), 2),
+                    "beats_singles": sum(1 for v in ts if t(m) > v),
+                    "best_single": {"name": bn, "lift": br.get("lift"), "lift_t": br.get("lift_t"),
+                                    "lift_t_nw": br.get("lift_t_nw"), "pos_blocks": br.get("pos_blocks"),
+                                    "n_blocks": br.get("n_blocks")}})
+    return out
+
+
 def mix_scores(app, model, w: float) -> np.ndarray:
     """The app's score with a model mixed in, exactly as the engine does it live: the model's scores are put on the
     app's scale for this belief (z-scored, clipped to +-2, times the app's spread, at least 0.08), then weighted."""
@@ -999,6 +1071,13 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)",
                                           "neural net (learned)", "neural net (risk-adjusted)"]
                + (["gbm (+ shifted)", "gbm (risk-adjusted, + shifted)"] if aug else [])}
+    # "many weak signals, one vote" (reporting only): the fixed rules a fold's composite may choose from. Not the app's
+    # rows (the stored one has look-ahead), not the learned models, not a rule whose input is still filling in.
+    _prov = provisional(fixed, coverage([b for b in data if b["date"] >= dates[int(len(dates) * 0.4)]]))
+    comp_rules = {k: fn for k, fn in fixed.items() if fn is not None and k not in _prov}
+    res[COMPOSITE] = []
+    comp_kept: dict[str, int] = {}
+    comp_folds = comp_fallback = 0
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
@@ -1064,6 +1143,19 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
                     i = _top(b, [fn(c["f"]) for c in b["cands"]])
                     res[name].append(_pick(b, b["cands"][i]))
                     chose.setdefault(name, []).append((id(b), i, b))
+        # the composite: rules chosen on this fold's training calls only, then an equal-weight vote on its test calls;
+        # with nothing qualifying it falls back to the app's no-look-ahead #1
+        mem = composite_members(train, comp_rules)
+        comp_folds += 1
+        comp_fallback += 0 if mem else 1
+        for name, _ in mem:
+            comp_kept[name] = comp_kept.get(name, 0) + 1
+        fns = [comp_rules[name] for name, _ in mem]
+        for b in test:
+            sc = composite_scores(b, fns) if fns else [c.get("pit", 0.0) for c in b["cands"]]
+            i = _top(b, sc)
+            res[COMPOSITE].append(_pick(b, b["cands"][i]))
+            chose.setdefault(COMPOSITE, []).append((id(b), i, b))
         ridge, weights = _fit_ridge(train, zkeys)
         learned("ridge (learned)", ridge, test)
         try:
@@ -1102,7 +1194,13 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     for name, rows in chose.items():  # "is it new?": agreement with the app's #1 and the head-to-head where they differ
         if name != VS_APP_BASE and name in out["results"]:
             out["results"][name].update(_vs_app(rows, base))
+    out["composite"] = {"members": dict(sorted(comp_kept.items(), key=lambda kv: (-kv[1], kv[0]))), "folds": comp_folds,
+                        "fallback_folds": comp_fallback, "min_t": COMP_MIN_T, "max": COMP_MAX, "overlap": COMP_OVERLAP}
+    if (out["results"].get(COMPOSITE) or {}).get("n"):
+        out["results"][COMPOSITE]["composite_members"] = out["composite"]["members"]
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
+    out["luck"]["composite"] = composite_summary(out["results"], out["composite"],
+                                                 [k for k in fixed if fixed[k] is not None])
     out["luck"]["is_new"] = is_new(out["results"])
     try:  # "would we have picked the winner?" across every way tested, and among the ranker v2 candidates (reporting only)
         out["luck"]["pbo"] = pbo(res)

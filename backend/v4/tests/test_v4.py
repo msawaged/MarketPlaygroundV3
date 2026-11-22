@@ -6288,3 +6288,82 @@ def test_news_search_finds_this_weeks_stories_by_company_ticker_or_topic(monkeyp
     monkeypatch.setattr(movers, "_write_story", lambda item, client=None: {"ai": False, "hook_big": "", "title": item["headline"]})
     assert movers.story(oil["headline"])["item"]["headline"] == oil["headline"]
     assert movers.story("Something nobody picked") is None
+
+
+def test_equal_weight_composite_beats_two_weak_signals_and_picks_rules_on_training_calls_only():
+    """"Many weak signals, one vote" (DeMiguel, Garlappi & Uppal 2009): two weak, independent planted signals, each
+    alone about t 2-3; an equal vote of the two beats both on unseen calls. Near copies don't double-vote, rules
+    are kept only on training lift and t (fixed cutoff), and with nothing qualifying the fold falls back to the app's
+    no-look-ahead #1. Reporting only."""
+    from backend.v4 import research
+    rng = random.Random(21)
+
+    def beliefs(n, a_edge=0.01, b_edge=0.01):
+        out = []
+        for _ in range(n):
+            cands = []
+            for _ in range(5):
+                a, b, z = rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 1)
+                ex = a_edge * a + b_edge * b + rng.gauss(0, 0.08)
+                cands.append({"f": {"z_a": a, "z_b": b, "z_n": z}, "ex": ex, "exa": ex, "pit": 0.0})
+            out.append({"cands": cands, "date": None})
+        return out
+
+    rules = {"a": lambda f: f["z_a"], "b": lambda f: f["z_b"], "a copy": lambda f: f["z_a"] + 1e-6 * f["z_n"],
+             "noise": lambda f: f["z_n"], "anti a": lambda f: -f["z_a"]}
+    train, test = beliefs(1500), beliefs(3000)
+    mem = dict(research.composite_members(train, rules))
+    assert set(mem) == {"a", "b"} or set(mem) == {"a copy", "b"}  # one of the near copies, never both; no noise
+    assert all(t >= research.COMP_MIN_T for t in mem.values())
+
+    def lift(score):
+        return float(np.mean([b["cands"][research._top(b, score(b))]["ex"] - np.mean([c["ex"] for c in b["cands"]])
+                              for b in test]))
+    fns = [rules[k] for k in mem]
+    comp = lift(lambda b: research.composite_scores(b, fns))
+    one_a = lift(lambda b: [c["f"]["z_a"] for c in b["cands"]])
+    one_b = lift(lambda b: [c["f"]["z_b"] for c in b["cands"]])
+    assert comp > one_a and comp > one_b
+    # z-scored within the belief: a rule on a 1000x scale doesn't outvote the other
+    big = research.composite_scores(test[0], [lambda f: 1000 * f["z_a"], rules["b"]])
+    small = research.composite_scores(test[0], [rules["a"], rules["b"]])
+    assert np.allclose(big, small)
+    # nothing in training clears the cutoff: no members (run() then uses the app's no-look-ahead #1)
+    assert research.composite_members(beliefs(300, 0.0, 0.0), {"noise": rules["noise"]}) == []
+    # summary: compared with the median and the best single rule
+    res = {research.COMPOSITE: {"n": 10, "lift": 0.02, "lift_t_nw": 3.0, "pos_blocks": 4, "n_blocks": 4},
+           "a": {"n": 10, "lift": 0.01, "lift_t_nw": 2.0, "pos_blocks": 3}, "b": {"n": 10, "lift": 0.012, "lift_t_nw": 2.5}}
+    s = research.composite_summary(res, {"members": {"a": 5}}, ["a", "b"])
+    assert s["median_single_t"] == 2.25 and s["beats_singles"] == 2 and s["best_single"]["name"] == "b"
+    assert s["members"] == {"a": 5} and research.composite_summary({}, {}, ["a"]) == {}
+
+
+def test_composite_in_run_never_keeps_a_rule_that_only_works_in_its_own_test_period(monkeypatch):
+    from backend.v4 import research
+    rng = random.Random(8)
+    d0 = __import__("datetime").date(2024, 1, 1)
+    for i in range(400):
+        bid = f"b-cmp{i}"
+        asof = (d0 + __import__("datetime").timedelta(days=i * 2)).isoformat()
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for j in range(4):
+            mom, vol = rng.uniform(-0.3, 0.3), rng.uniform(0.2, 0.6)
+            # momentum works throughout; low volatility works only in the last test block (i >= 352)
+            ex = mom * 0.3 + (-(vol - 0.4) * 0.5 if i >= 352 else 0.0) + rng.gauss(0, 0.05)
+            pid = f"p-cmp{i}-{j}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{j}", "bullish", asof, 10.0, db.dumps({"num": {"mom60": mom, "vol60": vol}}), j + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex, asof))
+    out = research.run()
+    r, comp = out["results"], out["composite"]
+    assert r[research.COMPOSITE]["n"] == r["momentum (z_mom60)"]["n"] > 100
+    assert r[research.COMPOSITE]["lift"] > 0.02  # the planted momentum carries it
+    assert comp["folds"] == 5 and comp["members"].get("momentum (z_mom60)") == 5
+    assert "low vol (-z_vol60)" not in comp["members"]  # its only edge is in a block no fold trained on
+    assert "app (current #1)" not in comp["members"] and "app, no look-ahead" not in comp["members"]
+    assert r[research.COMPOSITE]["composite_members"] == comp["members"]
+    s = out["luck"]["composite"]
+    assert s["name"] == research.COMPOSITE and s["best_single"]["name"] and s["singles"] >= 30
+    assert out["luck"]["tests"] == len([k for k, v in r.items() if v.get("n")])

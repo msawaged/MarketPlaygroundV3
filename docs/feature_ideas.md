@@ -583,7 +583,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-22 — "Many weak signals, one vote": an equal-weight composite of the research rules, chosen inside each fold
 - **Area:** brain (accuracy and honesty of research). Reporting only: a new research row, never the live ranking.
-- **Status:** proposed
+- **Status:** built 2026-11-22, commit "Research: many weak signals, one vote (equal-weight composite chosen in-fold)" (Builder). Built as sketched: `research.composite_members` / `composite_scores` / `composite_summary`, method "equal-weight composite (chosen in-fold)", `out["composite"]`, `luck.composite`, Brain page luck card line "Many weak signals, one vote.". Differences: each kept rule's scores are z-scored within the belief before averaging (several rules aren't single z's, e.g. the VP and MuLine blends); provisional rules (input still filling in) can't join.
 - **Problem:** research now tests 49 single rules (50 with today's idea 21), and the leaderboard of which one is "best"
   reshuffles. Run 2026-11-22 17:21 UTC (n=2,703 test calls, test from 2024-12-03): PBO 0.343 over 48 methods, and the
   in-sample winner of the 70 splits was spread over 12 different rules (rskew 21, neural net 16, amihud 7, frog-in-the-

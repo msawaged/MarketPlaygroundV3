@@ -519,6 +519,33 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     );
                   })()}
+                  {sk.luck.composite?.n > 0 && sk.luck.composite.best_single && (() => {
+                    // "Many weak signals, one vote" (research.composite_members / composite_summary; DeMiguel, Garlappi &
+                    // Uppal 2009). Rules chosen on each fold's training calls only; reporting only, never today's #1.
+                    const C = sk.luck.composite, B = C.best_single;
+                    const label = (name) => name.replace(/\s*\((?:-?z_|vp|rvol|frog)[^)]*\)\s*$/, '');
+                    const tOf = (x) => Number(x.lift_t_nw != null ? x.lift_t_nw : x.lift_t || 0);
+                    const t = tOf(C), tb = tOf(B), tm = Number(C.median_single_t || 0);
+                    const nw = C.lift_t_nw != null ? ', counting overlap honestly' : '';
+                    const kept = Object.entries(C.members || {}).slice(0, 3);
+                    const verdict = t > tb
+                      ? ' Steadier than any single way, a sign that combining them beats betting on one.'
+                      : t > tm
+                        ? ' Better than most single ways but not the best one, so they mostly share one source of edge.'
+                        : ' No better than a typical single way, so for now averaging adds nothing.';
+                    return (
+                      <div className="mt-2 text-xs text-slate-300">
+                        <span className="font-semibold text-slate-200">Many weak signals, one vote.</span>
+                        {' '}Instead of betting on whichever way looks best, we also tried a plain average of the ways that looked good beforehand: for each of the {C.folds} test periods, using only calls made 90+ days before it, up to {C.max} ways with a lead of t {Number(C.min_t).toFixed(0)} or more, near-copies dropped, no fitted weights.
+                        {' '}On the same {Number(C.n).toLocaleString()} test calls it beats our other ideas by {pts(Number(C.lift || 0))} pts (t {t.toFixed(1)}{nw}){C.pos_blocks != null ? `, ahead in ${C.pos_blocks} of ${C.n_blocks} stretches` : ''}.
+                        {' '}The typical single way scores t {tm.toFixed(1)}; the best, “{label(B.name)}”, t {tb.toFixed(1)}{B.pos_blocks != null ? ` (ahead in ${B.pos_blocks} of ${B.n_blocks || C.n_blocks})` : ''}. The average beat {C.beats_singles} of {C.singles} single ways.
+                        {verdict}
+                        {kept.length > 0 && ` Kept most often: ${kept.map(([n, k]) => `“${label(n)}” (${k} of ${C.folds})`).join(', ')}.`}
+                        {C.fallback_folds > 0 && ` In ${C.fallback_folds} of ${C.folds} periods no way qualified, so it used our own #1 rebuilt without the peek.`}
+                        {' '}Reporting only: it doesn't pick today's #1.
+                      </div>
+                    );
+                  })()}
                   {(sk.luck.is_new || []).length > 0 && (() => {
                     // "Is it new?" (research.is_new, reporting only): does the strongest other way pick a different #1
                     // from ours, and is it ahead on the calls where it does? Compared with our #1 rebuilt without the peek.

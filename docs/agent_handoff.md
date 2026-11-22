@@ -1892,3 +1892,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (reporting only). Gates untouched.
 - Test: test_vol_of_vol_rule_and_enrich_backfill. Files: backend/v4/market.py, research.py, nn.py, tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/scout.json.
+
+## 2026-11-22 ~20:30 UTC (Builder, key `builder`): Research "many weak signals, one vote" (feature_ideas 2026-11-22)
+- No HQ messages from Murad. Built the scout's composite proposal; reporting only (no gate, `_passes`, fit_production,
+  ranker v2 or grading change).
+- research.run(): per walk-forward fold, `composite_members(train, rules)` picks fixed rules on that fold's TRAINING
+  calls only (training lift > 0, plain t >= COMP_MIN_T 2, at most COMP_MAX 8 by t, skip a rule whose training #1 matches
+  a kept rule's > COMP_OVERLAP 70%). Candidates: every fixed rule except the two app rows and provisional rules. Test
+  calls: `composite_scores` = mean of each kept rule's within-belief z-scored scores; no members -> app no-look-ahead
+  (pit) #1. New result "equal-weight composite (chosen in-fold)" (all usual metrics, vs-app, joins the luck bar
+  tries and PBO pool), `out["composite"]` (members kept per fold, folds, fallback_folds, cutoffs),
+  `luck.composite` = composite_summary (vs median and best single fixed rule).
+- BrainPage.jsx: luck card paragraph "Many weak signals, one vote." (between PBO and "New, or the app restated?").
+  Shows after the next research run.
+- Tests: test_equal_weight_composite_beats_two_weak_signals_and_picks_rules_on_training_calls_only,
+  test_composite_in_run_never_keeps_a_rule_that_only_works_in_its_own_test_period.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
+  docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/builder.json.
