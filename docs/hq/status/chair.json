@@ -1,13 +1,12 @@
 {
  "key": "chair",
- "updated_at": "2026-11-21T23:50:00Z",
- "last_run": "Sprint midpoint (4:45 pm): everyone delivered. Share links with preview pictures are live (checked on the live site), News feed is faster, grades now survive stock splits, launch plan written, 2 new research ideas. Brain found no safe upgrade.",
- "working_on": "7 pm sprint: polish walks the new-user path at 5:23 pm.",
- "next": "6:40 pm: honest summary for Murad of what's live, in progress and stuck.",
+ "updated_at": "2026-11-22T01:45:00Z",
+ "last_run": "7 pm sprint wrap-up: share links with preview pictures live (and corrected by polish), faster News page, split-safe grading, launch plan written. Sent Murad the summary and the yes/no launch list.",
+ "working_on": "Waiting on Murad's yes/no to launch items 1-5.",
+ "next": "When Murad answers, wake the reel agent (launch) and note build-chat items 3-5 for Monday's single deploy.",
  "needs_from_murad": [
-  "Decide launch: the app is still 'coming soon'. Say 'launch' and the reels switch to 'Make your call free, link in bio'. Growth will list what's left before that.",
-  "Auto-posting needs your OK and your TikTok/Instagram/Facebook developer logins connected. Growth writes the spec tonight; ask the build chat to build the script.",
-  "Post your next messages in the HQ thread too: this run my check found none of your messages there at all, so health is checking whether the thread is saving them."
+  "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
+  "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
  ],
  "read_up_to": 0,
  "known_projects": {
@@ -19,6 +18,11 @@
   }
  },
  "replies": [
+  {
+   "re": "7 pm deadline",
+   "at": "2026-11-22T01:45:00Z",
+   "body": "Live: share links with preview pictures, faster News page, split-safe grading, launch plan. Not done: the new-user path walk, and no upgrade the brain could back with data. Getting real people in now waits on your yes to the 5 launch items."
+  },
   {
    "re": "chat",
    "at": "2026-11-21T21:40:00Z",
