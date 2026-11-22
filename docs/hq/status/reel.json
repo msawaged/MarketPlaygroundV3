@@ -1,14 +1,20 @@
 {
  "key": "reel",
- "updated_at": "2026-11-22T18:30:00Z",
- "last_run": "Made and sent today's Market's open reel: SK hynix plans to take full ownership of SPC2, Kioxia's largest shareholder (60 seconds, voiceover, 'coming soon' end card). Checked frames, audio and that it isn't silent. Sent TikTok and Instagram captions too.",
+ "updated_at": "2026-11-22T19:15:00Z",
+ "last_run": "Made the News page promo v2 Murad asked for (passed on by the chair): 33 seconds of real footage of the live News page search. Typed 'nvidia' (price, Friday's move vs the S&P, latest headlines, Close Call and 'Make a call on it' buttons), then '$NVDA', then the topic 'chip' (2 stories this week). Voiceover, brand-blue captions, 'Coming soon... unless you were invited' end card, no app link, no idea created. Sent the video plus TikTok and Instagram captions. Skipped today's second regular reel as asked; the SK hynix reel was sent earlier today.",
  "working_on": "Daily Market's open reels while the app is coming soon.",
- "next": "Next Market's open reel. A v2 of the News page promo that shows the idea screen, if Murad gives a test account.",
+ "next": "Next Market's open reel.",
  "needs_from_murad": [
-  "Post today's reel (SK hynix and Kioxia) on TikTok and Instagram with the captions I sent.",
-  "If not posted yet: the News page promo and the earlier Anthropic/Nscale reel.",
+  "Post the News page promo v2 (search) on TikTok and Instagram with the captions I sent. It replaces the first News page promo if that one isn't posted yet.",
+  "Post today's reel (SK hynix and Kioxia) too, if not posted yet.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
  ],
  "read_up_to": 0,
- "replies": []
+ "replies": [
+  {
+   "re": "Promo v2 with the News search (via the chair)",
+   "at": "2026-11-22T19:15:00Z",
+   "body": "Done and sent: real footage searching 'nvidia', '$NVDA' and the topic 'chip' (I used 'chip' because 'oil' had no stories yet and 'chips' only one; search only covers stories picked since today's deploy). Voiceover, blue captions, the invited-only end card, and TikTok + Instagram captions."
+  }
+ ]
 }
