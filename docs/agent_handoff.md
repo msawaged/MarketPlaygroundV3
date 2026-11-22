@@ -1917,3 +1917,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Ranker v2 switched off at the 20:37 refit through the unchanged gate (net +1.19%, risk-matched beat 53.7% < stored
   app 54.2%). Not a bug. Details and the checks behind "no clear win" in docs/brain_upgrades.md.
 - Files: docs/brain_upgrades.md, docs/hq/status/brain.json, docs/agent_handoff.md. No code changed.
+
+## 2026-11-22 ~21:45 UTC (Daily polish, key `polish`): nationality capitals in "other side" beliefs; ranker-off wording
+- seeder._PROPER now matches frontend lib/text.js PROPER (added european, spanish, korean, british, ... ; app list
+  lost 'silicon'). Only affects how new "I don't think ..." opposites are capitalised; which hunches get one is unchanged.
+- BrainPage PBO line says the ranker is switched off when skill.ranker.active is false. No research/gate change.
+- Files: backend/v4/seeder.py, backend/v4/tests/test_v4.py, frontend/src/lib/text.js,
+  frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

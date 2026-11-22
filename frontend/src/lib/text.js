@@ -13,8 +13,11 @@ const PROPER = new Set(['iran', 'israel', 'china', 'canada', 'mexico', 'europe',
   'brazil', 'taiwan', 'korea', 'germany', 'britain', 'france', 'italy', 'venezuela', 'gaza', 'gulf', 'saudi', 'english',
   'fed', 'congress', 'senate', 'democrats', 'republicans', 'democratic', 'republican', 'trump', 'musk', 'washington',
   'wall', 'medicare', 'medicaid', 'opec', 'hormuz', 'microsoft', 'apple', 'tesla', 'nvidia', 'amazon', 'google',
-  'alphabet', 'meta', 'intel', 'oracle', 'boeing', 'netflix', 'walmart', 'palantir', 'anthropic', 'openai', 'german', 'european', 'american', 'african', 'asian', 'british', 'french',
-  'dutch', 'swiss', 'texas', 'california', 'florida', 'wall', 'silicon']);
+  'alphabet', 'meta', 'intel', 'oracle', 'boeing', 'netflix', 'walmart', 'palantir', 'anthropic', 'openai',
+  // Nationalities and places the -ian / -ese rule misses; same list as backend seeder._PROPER.
+  'american', 'african', 'asian', 'european', 'korean', 'chilean', 'mexican', 'british', 'spanish', 'irish',
+  'danish', 'swedish', 'finnish', 'turkish', 'scottish', 'french', 'german', 'dutch', 'swiss', 'greek', 'thai',
+  'israeli', 'argentine', 'texas', 'california', 'florida']);
 const NEGATED = /\b(not|no|never|won't|can't|cannot|don't|doesn't|isn't|aren't|wasn't|weren't|shouldn't|wouldn't)\b|n['’]t\b/i;
 
 /** Lower-case the first letter so it reads after "I don't think", unless the first word is a name or acronym

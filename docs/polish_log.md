@@ -1658,3 +1658,33 @@ Changed:
   only names that aren't everyday topic words (gold/oil stay topics). Test lines added to the news search test.
 
 Checks: vite build passes, backend tests 242 passed (fresh venv).
+
+## 2026-11-22 (eighth run, ~21:30 UTC = Sun 4:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story (all 6 slides), /account, /brain, /close-call, /hot-trades, /journey on the
+live site at 390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party
+request). No HQ messages from Murad. Moving now's "vs S&P" figures add up (S&P -3.1%: TMO -2.7 -> +0.4, MRK +0.7 ->
++3.8, BBVA -3.6 -> -0.5). Locally signed in (offline server) at 375: bearish shares call (CMG "Stay out", with the
+"to bet on a fall, tap Options" note) and a big-move options call: NVDA Long Strangle $192.50C $4.26 + $177.50P $3.29
+= $755, breakevens $169.95 / $200.05, +/-20% -> +$2,195 (+291%), the "doesn't fit $500" note shown: all consistent.
+
+Found:
+- The brain's "other side" beliefs lower-case nationality words the -ian/-ese rule misses. Live DB (beliefs,
+  source seed_news): "I don't think spanish banks will face higher taxes ..." (today 20:20 UTC, shown in the Brain
+  page's "Just learned"), "I don't think european solar output ..." (Nov 19), "british", "california", "mexican"
+  earlier. The app's own lib/text.js already had some of these; the backend list didn't.
+- Brain page luck check: "Among just the 14 retrained models the new ranker chooses from: 29%." Ranker v2 was switched
+  off at tonight's refit (/v4/brain skill.ranker.active = false), so nothing else on the page mentions a "new ranker"
+  and the sentence implied one is running.
+
+Changed:
+- seeder._PROPER and frontend lib/text.js PROPER: one shared list of nationalities/places (american, european, korean,
+  spanish, british, french, german, ... texas, california, florida). Dropped 'silicon' from the app list ("Silicon
+  photonics" is a common noun; "Silicon Valley" stays capitalised by the two-word-name rule). Test lines added.
+- BrainPage.jsx: when the ranker is off, "... retrained models a new ranker would choose from (switched off: it hasn't
+  passed its test against the way we pick today's #1): 29%." Unchanged when it's on.
+- Noticed, left alone (brain data, not UI): opposites of hunches with a trailing ", lifting/boosting X" clause read
+  ambiguously ("I don't think AI data center buildout will spread to Norway, boosting chip and cloud demand" -> NVDA ▼);
+  _negatable only treats ", and/but/..." as two claims. engine already drops same-direction misreads.
+
+Checks: vite build passes, backend tests 245 passed (fresh venv).

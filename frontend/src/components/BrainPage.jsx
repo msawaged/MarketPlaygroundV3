@@ -513,7 +513,9 @@ export default function BrainPage({ viewOnly = false }) {
                         {' '}The chosen one landed in the bottom half on the other half {Math.round(v * 100)}% of the time
                         {' '}(median {pts(Number(P.oos_lift_med || 0))} pts there; behind our other ideas in {Math.round(Number(P.p_loss || 0) * 100)}% of tries).
                         {verdict}
-                        {L?.pbo != null && ` Among just the ${L.n_methods} retrained models the new ranker chooses from: ${Math.round(Number(L.pbo) * 100)}%.`}
+                        {L?.pbo != null && (sk.ranker?.active
+                          ? ` Among just the ${L.n_methods} retrained models the new ranker chooses from: ${Math.round(Number(L.pbo) * 100)}%.`
+                          : ` Among just the ${L.n_methods} retrained models a new ranker would choose from (switched off: it hasn't passed its test against the way we pick today's #1): ${Math.round(Number(L.pbo) * 100)}%.`)}
                         {top && ` Chosen most often: “${label(top[0])}”, ${top[1]} of ${P.n_splits}.`}
                         {' '}Many of our ways are near-copies of each other, which makes this look better than it is, and each stretch is only a few months, so read it as a rough guide.
                       </div>

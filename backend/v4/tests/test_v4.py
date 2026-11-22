@@ -1502,6 +1502,11 @@ def test_opposite_side_keeps_names_and_acronyms_capitalised():
     assert f("Giant AI-driven deals will grow") == "giant AI-driven deals will grow"
     assert f("New York lenders will pull back") == "New York lenders will pull back"
     assert f("Fresenius will win clinics", "rivals lose, Fresenius gains") == "Fresenius will win clinics"
+    # Live Nov 22 / Nov 19: "I don't think spanish banks ...", "I don't think european solar output ...".
+    assert f("Spanish banks will face higher taxes") == "Spanish banks will face higher taxes"
+    assert f("European solar output will keep growing") == "European solar output will keep growing"
+    assert f("Korean chipmakers will gain") == "Korean chipmakers will gain"
+    assert f("Silicon photonics chips will spread") == "silicon photonics chips will spread"
 
 
 def test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch(monkeypatch):

@@ -96,6 +96,11 @@ _PROPER = {
     "congress", "senate", "democrats", "republicans", "democratic", "republican", "trump", "musk", "washington",
     "wall", "medicare", "medicaid", "opec", "hormuz", "microsoft", "apple", "tesla", "nvidia", "amazon", "google",
     "alphabet", "meta", "intel", "oracle", "boeing", "netflix", "walmart", "palantir", "anthropic", "openai",
+    # Nationalities and places the -ian / -ese rule misses (live: "I don't think spanish banks ...", Nov 22;
+    # "european solar output", Nov 19). Same list as the app's lib/text.js PROPER.
+    "american", "african", "asian", "european", "korean", "chilean", "mexican", "british", "spanish", "irish",
+    "danish", "swedish", "finnish", "turkish", "scottish", "french", "german", "dutch", "swiss", "greek", "thai",
+    "israeli", "argentine", "texas", "california", "florida",
 }
 
 

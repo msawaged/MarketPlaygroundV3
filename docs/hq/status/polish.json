@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-22T18:10:00Z",
- "last_run": "Checked the new News search. Typing an everyday word like 'gold' or 'car' showed an unrelated company (Gold.com, Avis) as if it were the answer; now the page first says no stories mention the word and offers the stock only 'in case you meant the company'. Searching 'apple' or 'tesla' found nothing before; well-known company names now find the company and its latest headlines.",
+ "updated_at": "2026-11-22T21:45:00Z",
+ "last_run": "Walked every public page and the signed-in chat (shares and options) on a phone: nothing broken, the numbers add up. Fixed the brain writing 'I don't think spanish banks ...' / 'european ...' in lower case on its other-side beliefs, and a Brain page line that still talked about 'the new ranker' after it was switched off tonight.",
  "working_on": "Nothing open.",
  "next": "Monday with live quotes: walk Close Call and Price Check again, and check the week's first Story hooks.",
  "needs_from_murad": [],
