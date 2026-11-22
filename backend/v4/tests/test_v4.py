@@ -5670,6 +5670,55 @@ def test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol(monkeypatc
     assert "call spread" in q["odds_source"] and q["market_p"] != q["market_p_flat_vol"]
 
 
+def test_yesno_calls_and_puts_set_at_different_prices_are_not_read_as_odds(monkeypatch):
+    """Live Sun Nov 22, NVDA $129.17, Nov 27: the $127/$133 call spread's mid ($3.06) read "51% to close above $130",
+    while the matching put spread's mid was $3.85: $6.91 for a spread that pays $6. By parity the two always add up to
+    the strike gap (a dividend cancels), so the calls and puts were set at different stock prices and neither can be
+    read against the last price. The quotes' own stock price (~$126) sat inside quotes_out_of_step's 2% dividend room,
+    so this check catches it: the one-vol answer at the last price, said plainly, and the listed box says the quotes
+    don't fit together. Quotes that do add up are untouched."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price
+    e = date(2026, 11, 27)
+    yrs = 5 / 365
+
+    def row(t, k, bid, ask):
+        return {"symbol": f"N{k}{t}", "type": t, "strike": k, "expiration": e, "bid": bid, "ask": ask, "iv": 0.94}
+    nvda = [row("call", 127.0, 7.46, 7.47), row("call", 133.0, 4.32, 4.49),
+            row("put", 127.0, 7.91, 7.92), row("put", 133.0, 11.47, 12.06)]
+    assert yesno.calls_puts_disagree(nvda, 127.0, 133.0, yrs)
+    c = yesno.listed_costs(nvda, 127.0, 133.0, e, {"yes": {"cost": 305.97}, "no": {"cost": 293.70}})
+    assert c["out_of_step"] and not c["wide"] and c["yes"]["bid"] + c["no"]["bid"] > c["payout"]
+    # The same strikes priced at one stock price: they add up, nothing flagged.
+    s = 129.17
+    ok = [row(t, k, round(bs_price(s, k, yrs, 0.94, t) - 0.03, 2), round(bs_price(s, k, yrs, 0.94, t) + 0.03, 2))
+          for t in ("call", "put") for k in (127.0, 133.0)]
+    assert not yesno.calls_puts_disagree(ok, 127.0, 133.0, yrs)
+    assert not yesno.listed_costs(ok, 127.0, 133.0, e, {})["out_of_step"]
+    assert not yesno.calls_puts_disagree(ok[:2], 127.0, 133.0, yrs)              # no puts quoted: can't tell
+
+    # quote(): calls at the last price, puts as if the stock were 1.5% lower (inside the dividend room).
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=6)
+    y6 = 6 / 365
+
+    def chain(u, strike, ex, days=21, band=0.15):
+        out = []
+        for k in range(int(spot * 0.9), int(spot * 1.1) + 1):
+            for t, at in (("call", spot), ("put", spot * 0.985)):
+                mid = bs_price(at, float(k), y6, 0.35, t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(max(0.01, mid - 0.02), 2), "ask": round(mid + 0.02, 2), "iv": 0.35})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    lvl = float(int(spot) + 2)
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    if not yesno.calls_puts_disagree(chain("WINR", lvl, exp), *q["strikes"], y6):
+        pytest.skip("this synthetic price's strike gap is too narrow for the shift to show")
+    assert q["market_p"] == q["market_p_flat_vol"] and q["leg_vols"] is None
+    assert "disagree with each other" in q["odds_source"]
+
+
 def test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread(monkeypatch):
     """Live Sat Nov 21, SPY $693.89, Nov 27 on $1 strikes: $694/$695/$696 quoted so that one $1 step read 78% and the
     next 51%, so the $695 line fell back to the one-vol 48% while $700 read a skew-included 50% (odds rising with the

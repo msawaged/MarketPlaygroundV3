@@ -185,6 +185,26 @@ def quotes_out_of_step(spot: float, fwd: Optional[tuple[float, float]], vol: flo
     return gap > band or gap < -(band + 0.02 * spot)
 
 
+def calls_puts_disagree(chain: list[dict], k1: float, k2: float, years: float) -> bool:
+    """True when the k1/k2 call spread and the k2/k1 put spread, read off their own mids, add up to clearly more or
+    less than the strike gap. Put-call parity makes them sum to (k2 - k1) * exp(-r T) whatever the stock price,
+    dividend or volatility (a dividend shifts every strike's parity forward by the same amount, so it cancels), so a
+    gap beyond the quotes' own noise means the calls and puts were set at different stock prices: stale quotes.
+    Live Sun Nov 22, NVDA $129.17, Nov 27 $127/$133: the call spread's mid $3.06 read "51% to close above $130" and
+    the put spread's $3.85 read 64% for NO, $6.91 for a $6 spread. quotes_out_of_step let it through (the quotes'
+    stock price, ~$126, sat inside its 2% dividend room). The bar: 5% of the gap or half the four legs' bid/ask
+    widths, whichever is bigger."""
+    from .strategy import RISK_FREE
+    calls = _mids([r for r in chain if r["type"] == "call"])
+    puts = _mids([r for r in chain if r["type"] == "put"])
+    if not all(k in calls and k in puts for k in (k1, k2)) or k2 <= k1:
+        return False
+    total = (calls[k1] - calls[k2]) + (puts[k2] - puts[k1])
+    gaps = {(r["type"], float(r["strike"])): float(r.get("ask") or 0) - float(r.get("bid") or 0) for r in chain}
+    noise = 0.5 * sum(gaps.get((t, k), 0) for t in ("call", "put") for k in (k1, k2))
+    return abs(total - (k2 - k1) * math.exp(-RISK_FREE * max(0.0, years))) > max(0.05 * (k2 - k1), noise)
+
+
 SKEW_BAND = 0.02          # strikes within 2% of the line feed the local skew fit
 SKEW_REACH = 0.08         # ... and the two nearest on each side out to 8% where the grid is coarse
 MAX_SKEW_TERM = 0.15      # a skew term over 15 points of odds is a bad fit, not skew
@@ -684,6 +704,11 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     fwd = parity_forward(chain, sorted({k1, k2, *(dig[3] if dig else [])}), years) if dig else None
     off_step = bool(dig) and quotes_out_of_step(spot, fwd, vol, years)
     stale = stale or off_step
+    # The trade's own call and put spreads must add up to the payout (parity, dividend-free): when they don't, the
+    # calls and puts were quoted at different stock prices, so neither the call spread's odds nor a smile mixing
+    # puts and calls can be read against the last price. Then the one-vol answer at the last price, and say so.
+    split = calls_puts_disagree(chain, k1, k2, years)
+    stale = stale or split
     # When the trade's strikes sit the same distance either side of the line, read the odds off that very spread
     # ((C(k1) - C(k2)) / (k2 - k1), the chance at its middle = the line), so YES's price is the odds shown. On an
     # even grid this is the same number as the reading above; on an uneven one (live SPY $699/$700/$705, trade
@@ -706,7 +731,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # and a weekend reading of one spread drifts a few points with its quote noise (live Sat Nov 21, SPY Nov 27:
     # $690 read 69.7% from $687/$693 but $692 read 58.7% from $685/$699, the smile 65% and 63%).
     spread_ok = bool(dig) and not stale and not wide
-    smile = bool(sk) and not off_step and (closed or not spread_ok)
+    smile = bool(sk) and not off_step and not split and (closed or not spread_ok)
     if spread_ok and not smile:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
     elif smile:
@@ -723,6 +748,8 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
         m_p, odds_source = m_p_flat, (f"one implied volatility (the option quotes were set as if {u} were near "
                                       f"${implied:,.2f}, not its last price ${spot:,.2f}, so their spreads would "
                                       f"misread the odds)" if named
+                                      else "one implied volatility (the call and put quotes on these strikes "
+                                           "disagree with each other, so they were set at different moments)" if split
                                       else "one implied volatility (the spread quotes looked out of date)" if stale
                                       else "one implied volatility (the listed quotes are too wide to read skew "
                                            "from, usual outside market hours)" if wide and dig
@@ -829,6 +856,11 @@ def listed_costs(chain: list[dict], k1: float, k2: float, exp: date, sides: dict
                      "odds_at_practice": round(practice / width, 4) if practice is not None else None}
     out["payout"] = width
     out["wide"] = out["yes"]["wide"] or out["no"]["wide"]
+    # YES + NO always pay exactly `width` together, so on quotes from one moment both bids can't add up to more than
+    # the payout, nor both asks to less (that would be free money). When they do, the call and put quotes were set at
+    # different stock prices (live Sun Nov 22, NVDA $127/$133: bids $297 + $355 = $652 for a $600 payout).
+    out["out_of_step"] = (out["yes"]["bid"] + out["no"]["bid"] > width + 0.005
+                          or out["yes"]["ask"] + out["no"]["ask"] < width - 0.005)
     return out
 
 

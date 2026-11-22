@@ -178,7 +178,7 @@ function ListedCosts({ c }) {
   const sides = [['yes', 'YES', 'text-green-300'], ['no', 'NO', 'text-red-300']];
   const outside = sides.map(([k, label]) => {
     const s = c[k];
-    if (s.wide || s.practice == null) return null;
+    if (s.wide || c.out_of_step || s.practice == null) return null;
     if (s.practice < s.bid) return `Practice ${label} at ${usd(s.practice)} is below the listed bid, cheaper than a real fill right now.`;
     if (s.practice > s.ask) return `Practice ${label} at ${usd(s.practice)} is above the listed ask, dearer than a real fill right now.`;
     return null;
@@ -196,7 +196,9 @@ function ListedCosts({ c }) {
           </div>
         ))}
       </div>
-      {c.wide ? (
+      {c.out_of_step && !c.wide ? (
+        <p className="mt-2 text-xs text-amber-300">These quotes don't fit together: YES and NO always pay {usd(c.payout)} between them, yet {c.yes.bid + c.no.bid > c.payout ? `selling both at the bid would bring in ${usd(c.yes.bid + c.no.bid)}` : `buying both at the ask would cost only ${usd(c.yes.ask + c.no.ask)}`}. The call and put quotes were set at different moments (common outside market hours, 9:30 AM to 4 PM ET), so a real order wouldn't fill like this. Read the practice price as a fair-value estimate.</p>
+      ) : c.wide ? (
         <p className="mt-2 text-xs text-amber-300">These quotes are too wide to trade as shown{over.length ? ` (the ${over.join(' and ')} ask is at or above the ${usd(c.payout)} the spread can pay)` : ''}. That's usual outside market hours (9:30 AM to 4 PM ET). Read the practice price as a fair-value estimate, not a fill you could get now.</p>
       ) : (
         <p className="mt-2 text-xs text-slate-400">Practice trades fill at the practice price. A real order to buy pays up to the ask: there, YES needs a {pc(c.yes.odds_at_ask)} chance to break even{c.yes.odds_at_practice != null ? ` (not ${pc(c.yes.odds_at_practice)})` : ''} and NO {pc(c.no.odds_at_ask)}{c.no.odds_at_practice != null ? ` (not ${pc(c.no.odds_at_practice)})` : ''}. Selling before expiration gets the bid, so a round trip costs about {usd(c.yes.ask - c.yes.bid)} on YES and {usd(c.no.ask - c.no.bid)} on NO.</p>

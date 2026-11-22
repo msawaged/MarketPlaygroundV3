@@ -1578,3 +1578,33 @@ Changed:
   the article puts "Potentially"/"Possibly" on the hook, unless the hook already says it ("A potential ... deal").
   Case-sensitive, so "May" the month isn't a hedge. Applies to cached stories too (story() re-runs _hook on read).
   The hook now reads "Potentially $45 billion". Test extended (test_v4.py, the story hook test).
+
+## 2026-11-22 (fifth run, ~12:30 UTC = Sun 7:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). Render
+logs: no 5xx and no app errors in the last 24h. No HQ messages from Murad. Locally (offline server, throwaway SQLite)
+signed in at 375: /basket-builder, /select-tool, /portfolio, /my, /chat, /yes-no render with no errors or overflow
+(the offline server has no basket model, so a basket can't be built there).
+
+Found (live Close Call quotes, public /v4/yesno/quote and /v4/price_check):
+- "Will NVDA close above $130 on Fri Nov 27?" read Market's odds 51% from the $127/$133 call spread (mid $3.06), with
+  NVDA at $129.17. The matching put spread's mid was $3.85: YES + NO = $6.91 for a spread that pays $6, impossible on
+  quotes from one moment (parity makes them add to the strike gap whatever the price or dividend). Per-strike parity
+  says the option quotes were set with NVDA near $126 (127: $126.55, 130: $126.22, 133: $125.64), i.e. before the
+  stock's late move. quotes_out_of_step let it through: a forward below the price gets 2% "dividend" room, and $126 vs
+  $129.17 is 2.4% minus the band. The "What a real order would pay" box then showed NO at $355 bid / $415 ask and "NO
+  needs a 69% chance to break even", from quotes where selling both sides at the bid brings $652 for a $600 payout.
+
+Changed:
+- yesno.calls_puts_disagree: the trade's own call spread + put spread (mids) must add to the strike gap within 5% of
+  it or half the legs' bid/ask widths; when they don't, the quote is treated as stale: the one-vol answer at the last
+  price (45.7% for that NVDA line), practice prices at the line IV, the smile isn't used either (it mixes puts and
+  calls), and the source reads "one implied volatility (the call and put quotes on these strikes disagree with each
+  other, so they were set at different moments)". Dividends cancel in this sum, so they don't trip it.
+- yesno.listed_costs: `out_of_step` when YES + NO bids top the payout or asks fall short of it. YesNoPage's listed box
+  then says the quotes don't fit together (with the numbers) instead of break-even odds and "below the listed bid".
+- Test: test_yesno_calls_and_puts_set_at_different_prices_are_not_read_as_odds (the live NVDA legs, a consistent
+  chain, and quote() on calls/puts set 1.5% apart).
+- Not changed: research gates, grading, the brain's lean. Noticed, left alone: NVDA Dec 4 $125 reads 46% off the
+  smile (puts near the line priced as if NVDA were ~$126); skew_odds' own parity guard is borderline there.

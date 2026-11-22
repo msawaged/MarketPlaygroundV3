@@ -1810,3 +1810,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_option_vol_uses_the_quote_clock_so_a_weekend_does_not_inflate_it.
 - Files: backend/v4/market.py, backend/v4/yesno.py, backend/v4/pricecheck.py, backend/v4/tests/test_v4.py,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-22 ~13:00 UTC (Polish walk, key `polish`): Close Call doesn't read odds off calls and puts that don't fit together
+- Live NVDA Nov 27 $130 read "51%" from the $127/$133 call spread while its put spread cost $3.85 (YES + NO $6.91 on a
+  $6 spread): calls and puts set at different stock prices (~$126 vs $129.17), inside quotes_out_of_step's 2% dividend room.
+- yesno.calls_puts_disagree(chain, k1, k2, years) -> stale (one-vol answer, no smile, plain source text).
+  listed_costs gains `out_of_step`; YesNoPage's "What a real order would pay" box says the quotes don't fit together.
+- Builder: quotes_out_of_step's 2% room is untouched; the new check is dividend-free (parity sum). Still open: NVDA Dec 4
+  $125 smile reads 46% with the stock at $129.17 (skew_odds' parity guard is borderline there).
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.

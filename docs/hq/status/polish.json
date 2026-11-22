@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-22T10:00:00Z",
- "last_run": "Story mode's big headline number now keeps the article's hedge: a deal 'potentially valued at $45 billion' shows as 'Potentially $45 billion', not a flat '$45 billion'. Everything else checked out (no errors, numbers add up on the Brain page and Close Call).",
+ "updated_at": "2026-11-22T13:00:00Z",
+ "last_run": "Close Call no longer reads odds off weekend option quotes that don't fit together. NVDA 'above $130 by Nov 27' showed 51% from call prices set when NVDA was near $126, while its put prices said otherwise (YES + NO cost $6.91 for a $6 payout). Now it uses the one-volatility answer at today's price (about 46%) and says why, and the 'What a real order would pay' box explains the quotes are out of step instead of quoting break-even odds from them.",
  "working_on": "Nothing open.",
- "next": "Re-check Close Call odds and the Brain page on Monday's fresh quotes; check Tuesday's grading after Monday's close.",
+ "next": "On Monday's live quotes, confirm the NVDA lines read off spreads again; look at the NVDA Dec 4 $125 smile reading (46% with the stock above the line).",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []
