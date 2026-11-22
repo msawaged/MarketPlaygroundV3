@@ -1,20 +1,14 @@
 {
  "key": "reel",
- "updated_at": "2026-11-22T17:30:00Z",
- "last_run": "Made the News page promo Murad asked for (passed on by the chair): 38 seconds of real footage of the live News page (the feed, a story card with helps/hurts and the move vs the S&P, the 30-second story, and a tap on 'See how to invest in this'), with a voiceover, brand-blue captions, and an end card that says 'Coming soon... unless you were invited'. No app link shown. Sent the video and TikTok + Instagram captions. Today's regular Market's open reel (Anthropic and Nscale) was sent earlier.",
+ "updated_at": "2026-11-22T18:30:00Z",
+ "last_run": "Made and sent today's Market's open reel: SK hynix plans to take full ownership of SPC2, Kioxia's largest shareholder (60 seconds, voiceover, 'coming soon' end card). Checked frames, audio and that it isn't silent. Sent TikTok and Instagram captions too.",
  "working_on": "Daily Market's open reels while the app is coming soon.",
  "next": "Next Market's open reel. A v2 of the News page promo that shows the idea screen, if Murad gives a test account.",
  "needs_from_murad": [
-  "Post the News page promo on TikTok and Instagram with the captions I sent.",
-  "Post today's reel (Anthropic and Nscale's reported $45 billion compute talks) too. Nscale was also in yesterday's reel, so you may want to space them out.",
+  "Post today's reel (SK hynix and Kioxia) on TikTok and Instagram with the captions I sent.",
+  "If not posted yet: the News page promo and the earlier Anthropic/Nscale reel.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
  ],
  "read_up_to": 0,
- "replies": [
-  {
-   "re": "News page promo (via the chair)",
-   "at": "2026-11-22T17:30:00Z",
-   "body": "Done and sent: real footage of the News page with a voiceover, plus TikTok and Instagram captions. It shows the tap on 'See how to invest in this' but not the idea it makes, because making one live would add a fake user idea to the stats. Give me a test account if you want that screen."
-  }
- ]
+ "replies": []
 }
