@@ -1889,6 +1889,13 @@ def test_story_mode_cards_are_grounded_and_cached(monkeypatch):
     assert movers._hook("A potential $45 billion deal", src) == "A potential $45 billion deal"
     assert movers._hook("$2 billion", "The merger could be worth $2 billion to holders.") == "Potentially $2 billion"
     assert movers._hook("$5 billion", "Sales in May 2026 rose to $5 billion.") == "$5 billion"  # May the month
+    # live 2026-11-22: "Up 10% supply" for a company's projection; say it plainly and say it's a forecast
+    src = ("Mission Produce Projects 10% Increase in Avocado Industry Volumes for Q4 FY26\nMission Produce announced that it "
+           "expects avocado industry volumes for the fourth quarter of fiscal year 2026 to rise by approximately 10%.")
+    assert movers._hook("Up 10% supply", src) == "Forecast: Supply up 10%"
+    assert movers._hook("Up 12% revenue", "Revenue rose 12% last quarter. The company expects more.") == "Revenue up 12%"
+    assert movers._hook("Up 10% in a week") == "Up 10% in a week"
+    assert movers._hook("Expected 10% more avocados", src) == "Expected 10% more avocados"
 
 
 def test_lineages_evolve_and_snapshot(monkeypatch):

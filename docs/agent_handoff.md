@@ -1838,3 +1838,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - On the live quotes: NVDA Dec 4 now $124 55%, $125 54%, $126 52%, $128 49%, $130 45%. SPY Nov 27 not flagged.
 - Test: test_yesno_quotes_set_at_another_price_read_their_vol_at_that_price. Not changed: grading, lean, research gates.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-22 ~15:45 UTC (Polish walk, key `polish`): Story hook "Up 10% supply" -> "Forecast: Supply up 10%"; Brain ranker date wording
+- movers._hook now runs _reordered ("Up 10% supply" -> "Supply up 10%") and _forecast ("Forecast:" when the article
+  only gives the number after projects/expects/forecast/guidance/outlook in its sentence). Read-time, so cached stories
+  change too. Existing hedge rules (_hedged) unchanged.
+- BrainPage.jsx: ranker card says "last retrained <date>" and the nightly-runs note no longer says the ranker "has
+  shaped the #1 since <date>" (that field is its latest refit, not its start).
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.

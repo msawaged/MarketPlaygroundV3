@@ -1608,3 +1608,29 @@ Changed:
   chain, and quote() on calls/puts set 1.5% apart).
 - Not changed: research gates, grading, the brain's lean. Noticed, left alone: NVDA Dec 4 $125 reads 46% off the
   smile (puts near the line priced as if NVDA were ~$126); skew_odds' own parity guard is borderline there.
+
+## 2026-11-22 (sixth run, ~15:20 UTC = Sun 10:20 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ
+messages from Murad. Moving now's "vs S&P" figures check out against S&P -3.1% on Fri (KR +0.8% -> +3.8 pts, MU -12.3%
+-> -9.2 pts). Locally signed in at 375: /portfolio, /my, /yes-no, /chat render with no errors or overflow.
+
+Found:
+- Story mode's first card read "Up 10% supply" in giant type for "Mission Produce Projects 10% Increase in Avocado
+  Industry Volumes" (summary: "it expects ... to rise by approximately 10%"). Ungrammatical, and a company forecast
+  shown like a result.
+- Brain page: the "Updated #1 pick · retrained Nov 22" card sits under the "Training runs ... last 41h ago" tile, and
+  the note under the nightly runs said the #1-pick model "has shaped the #1 since Nov 22". `since` is the ranker's
+  latest refit (kv_cache ranker:v2 keeps only the newest row, 2026-11-22 14:22 UTC), and the same line read "since
+  Nov 16" a week ago, so "since" understated how long it has shaped the #1.
+
+Changed:
+- movers._reordered: "Up/Down N% <short noun phrase>" -> "<Noun phrase> up/down N%" ("Up 10% in a week" untouched).
+  movers._forecast: a hook number that every mention in the article gives after a forecast word in its sentence
+  (projects, expects, forecast, guidance, outlook, predicts, anticipates) gets "Forecast:" unless the hook already
+  hedges. Applied on read, so the cached story now reads "Forecast: Supply up 10%". Test lines added to the hook test.
+- BrainPage.jsx: "Updated #1 pick · last retrained Nov 22"; nightly-runs note: "trained separately, on its own
+  schedule (last retrained Nov 22), so its date can be newer than the runs below".
+
+Checks: vite build passes, backend tests 241 passed (fresh venv).

@@ -557,7 +557,7 @@ export default function BrainPage({ viewOnly = false }) {
                 const ahead = (o.lift || 0) >= (old.lift || 0) && (o.beat || 0) >= (old.beat || 0);
                 return (
                 <div className="mt-3 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">{ahead ? 'New: a smarter #1 pick' : 'Updated #1 pick'} · retrained {new Date(r.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-green-300">{ahead ? 'New: a smarter #1 pick' : 'Updated #1 pick'} · last retrained {new Date(r.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                   <div className="mt-1 text-xs text-slate-200">
                     Tested on {Number(o.n).toLocaleString()} past calls it never saw: its #1 pick beat the S&P {Math.round(o.beat * 100)}% of the time
                     and beat our other ideas by {pts(o.lift)} pts.
@@ -794,7 +794,7 @@ export default function BrainPage({ viewOnly = false }) {
               <>
                 <p className="text-xs text-slate-400">{total} training runs so far · {kept ? `${kept} of the latest ${versions.length} earned a vote` : `none of the latest ${versions.length} has earned a vote`}. Newest first:</p>
                 {d?.skill?.ranker?.active && d.skill.ranker.since && (
-                  <p className="text-xs text-slate-400">These are the nightly brain's runs. The #1 pick model in the scorecard above is trained separately and has shaped the #1 since {new Date(d.skill.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.</p>
+                  <p className="text-xs text-slate-400">These are the nightly brain's runs. The #1 pick model in the scorecard above is trained separately, on its own schedule (last retrained {new Date(d.skill.ranker.since).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}), so its date can be newer than the runs below.</p>
                 )}
                 {same >= 2 && (
                   <p className="text-xs text-slate-400">The last {same} retrains used the same {newest.n_train.toLocaleString()} graded calls. This brain learns from 90-day results, and no new ones have come in{first90 ? ` (the first real-time calls reach 90 days on ${first90})` : ' since'}. So read these as the same brain re-checked, not new ones.</p>

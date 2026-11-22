@@ -547,6 +547,46 @@ _SOFT_RE = r"[Pp]otentially|[Pp]ossibly|could|may|might"  # case-sensitive: "May
 _SOFT_IN_HOOK = r"\b(?:potential(?:ly)?|possibl[ey]|could|may|might|proposed|reported(?:ly)?|eyes|talks?)\b"
 
 
+# Words that make a number a company's or analyst's forecast, not a result, when they come earlier in its sentence
+# ("Mission Produce Projects 10% Increase", "it expects volumes to rise by approximately 10%").
+_FORECAST_RE = r"\b(?:project(?:s|ed|ing|ions?)?|forecast(?:s|ed|ing)?|expect(?:s|ed|ing|ations?)?|predict(?:s|ed|ing)?|guid(?:es|ed|ance)|outlook|anticipat\w*)\b"
+_FORECAST_IN_HOOK = _FORECAST_RE + r"|\b(?:set to|on track|could|may|might|potential(?:ly)?|plans?|aims?|targets?|estimated?)\b"
+_NOT_A_NOUN = {"in", "on", "at", "since", "from", "for", "over", "after", "before", "this", "last", "a", "an", "the", "to",
+               "than", "by", "and", "or", "year", "years", "week", "weeks", "day", "days", "month", "months", "quarter",
+               "yoy", "ytd", "y/y", "again", "more", "today"}
+
+
+def _reordered(s: str) -> str:
+    """"Up 10% supply" (live 2026-11-22, Story hook) reads like a typo; say it the plain way: "Supply up 10%".
+    Only when what follows the number is a short noun phrase ("Up 10% in a week" stays as it is)."""
+    m = re.match(r"^(Up|Down)\s+(\$?\d[\d,]*(?:\.\d+)?%?)\s+([A-Za-z][\w'-]*(?:\s+[A-Za-z][\w'-]*){0,2})$", s)
+    if not m or any(w.lower() in _NOT_A_NOUN for w in m.group(3).split()):
+        return s
+    rest = m.group(3)
+    rest = rest[0].upper() + rest[1:]
+    return f"{rest} {m.group(1).lower()} {m.group(2)}"
+
+
+def _forecast(s: str, source: str) -> str:
+    """A number the article only gives as a forecast ("projects", "expects", "guidance") gets "Forecast:" on the hook,
+    so the giant hook doesn't read like a result. Live 2026-11-22: "Up 10% supply" for "Mission Produce Projects 10%
+    Increase in Avocado Industry Volumes" (the summary: "it expects ... to rise by approximately 10%")."""
+    if not s or not source or re.search(_FORECAST_IN_HOOK, s, re.I):
+        return s
+    for m in re.finditer(r"\$?\d[\d,]*(?:\.\d+)?", s):
+        num = m.group()
+        if _BARE_YEAR.match(num):
+            continue
+        pat = rf"(?<![\w$.,]){re.escape(num)}(?![\d]|[.,]\d)"
+        uses = list(re.finditer(pat, source))
+        if not uses:
+            continue
+        sentences = [re.split(r"[.;!?\n]\s", source[: u.start()])[-1] for u in uses]
+        if all(re.search(_FORECAST_RE, x, re.I) for x in sentences):
+            return f"Forecast: {s}"
+    return s
+
+
 def _hedged(s: str, source: str) -> str:
     """Keep the article's hedge on a hook's number. Live 2026-11-21: the article said Saudi Arabia will supply "up to
     8 million barrels" and the giant hook read "8 million barrels", a firmer claim than the news. If the article only
@@ -583,7 +623,8 @@ def _hook(s: Any, source: str = "") -> str:
     """The big hook phrase, whole or not at all: clipping it can flip its meaning
     ("Credit stress looks contained" -> "Credit stress looks…"). With the article's text, a number the article
     hedges ("up to 8 million") keeps its hedge, or the hook is dropped if that makes it too long."""
-    s = _hedged(_undate(re.sub(r"\s+", " ", str(s or "")).strip()), source)
+    s = _undate(re.sub(r"\s+", " ", str(s or "")).strip())
+    s = _forecast(_hedged(_reordered(s), source), source)
     whole = not s.endswith(("…", "..."))  # a hook cut by an older rule ("11,000 satellites, still…")
     if _BARE_YEAR.match(s):  # live 2026-11-17: "2026" (a conference's year) as the giant hook under "Moving now"
         return ""
