@@ -129,14 +129,38 @@ def post(body: str, to: str = "all") -> dict:
     return {"ok": True, "id": new_id, "to": to}
 
 
+NO_MESSAGE = {"", "(no new messages)", "no new messages", "none", "-"}
+
+
+def newest_replies(status: dict, n: int = 10) -> list[dict]:
+    """An agent's n newest replies, whatever order its status file keeps them in (most write newest first)."""
+    rs = [r for r in (status.get("replies") or []) if isinstance(r, dict)]
+    return sorted(rs, key=lambda r: str(r.get("at") or ""), reverse=True)[:n]
+
+
+def reply_to(re, by_id: dict) -> dict:
+    """What a reply answers, for its label on the page. Agents write "re" as Murad's message id (12, "12", "#12"),
+    as a short topic ("Search feature (via chair)"), or as "(no new messages)" on a routine update.
+    -> {"re": topic or None, "re_id": id or None, "re_body": the start of Murad's message when the id is his}."""
+    txt = str(re if re is not None else "").strip()
+    num = txt.lstrip("#").strip()
+    if num.isdigit():
+        i = int(num)
+        body = by_id.get(i)
+        snip = None if body is None else (body if len(body) <= 80 else body[:77].rstrip() + "...")
+        return {"re": None, "re_id": i, "re_body": snip}
+    return {"re": None if txt.lower() in NO_MESSAGE else txt, "re_id": None, "re_body": None}
+
+
 def board() -> dict:
     agents = roster()
     msgs = db.query("SELECT id, author, to_agent, body, created_at FROM hq_messages ORDER BY id DESC LIMIT 200")
     thread = [{"kind": "murad", "id": m["id"], "to": m["to_agent"], "body": m["body"], "at": m["created_at"]} for m in msgs]
+    by_id = {int(m["id"]): m["body"] for m in msgs}
     for a in agents:
         st = a["status"]
-        for r in (st.get("replies") or [])[-10:]:
-            thread.append({"kind": "agent", "agent": a["key"], "name": a["name"], "re": r.get("re"),
+        for r in newest_replies(st):
+            thread.append({"kind": "agent", "agent": a["key"], "name": a["name"], **reply_to(r.get("re"), by_id),
                            "body": str(r.get("body", ""))[:2000], "at": r.get("at") or st.get("updated_at")})
         if st.get("last_run"):
             thread.append({"kind": "status", "agent": a["key"], "name": a["name"], "body": st["last_run"],
@@ -147,4 +171,5 @@ def board() -> dict:
         a["unread"] = sum(1 for m in msgs if m["id"] > upto and m["to_agent"] in ("all", a["key"]))
     needs = [{"agent": a["key"], "name": a["name"], "need": n, "at": a["status"].get("updated_at")}
              for a in agents for n in (a["status"].get("needs_from_murad") or [])]
+    needs.sort(key=lambda n: n["at"] or "", reverse=True)   # newest first: the page shows the first few
     return {"agents": agents, "thread": thread[-150:], "needs": needs}

@@ -32,6 +32,10 @@ const until = (iso) => {
   const dd = dayDiff(d);
   return `${dd === 0 ? 'today' : dd === 1 ? 'tomorrow' : d.toLocaleString('en-US', { weekday: 'short' })} ${clock(d)}`;
 };
+// What an agent's reply answers: Murad's own message (quoted), a topic, or nothing (a routine update after a run).
+const reLabel = (t) => (t.re_id != null ? (t.re_body ? `re your “${t.re_body}”` : `re your message #${t.re_id}`)
+  : t.re ? `re: ${t.re}` : 'update');
+const NEEDS_SHOWN = 4;
 const initials = (n) => n.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 function Avatar({ k, name, size = 'w-10 h-10' }) {
@@ -45,6 +49,7 @@ export default function HQPage() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(null);
+  const [allNeeds, setAllNeeds] = useState(false);
   const end = useRef(null);
 
   const load = useCallback(() => {
@@ -68,6 +73,9 @@ export default function HQPage() {
   // Who reads a message to `to`, and when: the chair reads every message each hour; the agent itself at its next run.
   const chair = b.agents.find((a) => a.key === 'chair');
   const target = b.agents.find((a) => a.key === to);
+  // The message box sits under the table and the thread; on a phone that's several screens down.
+  const toComposer = () => { const el = document.getElementById('hq-input'); el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); el?.focus({ preventScroll: true }); };
+  const needs = allNeeds ? b.needs : b.needs.slice(0, NEEDS_SHOWN);
   const readNote = to === 'cto'
     ? 'The CTO only reads HQ when you chat with it in the build chat.'
     : [chair?.next_run && `The meeting chair checks for messages ${until(chair.next_run)}${to === 'all' ? ' and wakes whoever needs to act.' : '.'}`,
@@ -76,14 +84,20 @@ export default function HQPage() {
 
   return (
     <Page title="Agent HQ" subtitle="Everyone at one table. Talk to all of them or one. They read it when they start and answer when they finish.">
+      <button type="button" onClick={toComposer} className="mt-4 w-full rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold">Write to the team ↓</button>
       {b.needs.length > 0 && (
-        <Card className="mt-6 border-amber-400/50 bg-amber-500/[0.07]">
-          <div className="text-xs uppercase tracking-wider text-amber-300 font-bold">Needs you ({b.needs.length})</div>
+        <Card className="mt-4 border-amber-400/50 bg-amber-500/[0.07]">
+          <div className="text-xs uppercase tracking-wider text-amber-300 font-bold">Needs you ({b.needs.length}){b.needs.length > NEEDS_SHOWN && !allNeeds ? ` · newest ${NEEDS_SHOWN}` : ''}</div>
           <ul className="mt-2 space-y-2 text-sm">
-            {b.needs.map((n, i) => (
+            {needs.map((n, i) => (
               <li key={i} className="flex gap-2"><Avatar k={n.agent} name={n.name} size="w-6 h-6" /><span><b>{n.name}:</b> {n.need} {n.at && <span className="text-[11px] text-slate-400 whitespace-nowrap">· {ago(n.at)}</span>}</span></li>
             ))}
           </ul>
+          {b.needs.length > NEEDS_SHOWN && (
+            <button type="button" onClick={() => setAllNeeds(!allNeeds)} className="mt-2 text-xs font-semibold text-amber-200 underline">
+              {allNeeds ? 'Show fewer' : `Show all ${b.needs.length}`}
+            </button>
+          )}
         </Card>
       )}
 
@@ -138,7 +152,7 @@ export default function HQPage() {
             <div key={i} className="flex gap-2">
               <Avatar k={t.agent} name={t.name} size="w-7 h-7" />
               <div className={`max-w-[85%] rounded-2xl rounded-bl-md px-3 py-2 text-sm ${t.kind === 'status' ? 'bg-slate-800/60 text-slate-300' : 'bg-slate-800'}`}>
-                <div className="text-[10px] text-slate-400 mb-0.5">{t.name} · {t.kind === 'status' ? 'finished a run' : `re #${t.re}`} · {when(t.at)}</div>
+                <div className="text-[10px] text-slate-400 mb-0.5">{t.name} · {t.kind === 'status' ? 'finished a run' : reLabel(t)} · {when(t.at)}</div>
                 <div className="whitespace-pre-wrap">{t.body}</div>
               </div>
             </div>

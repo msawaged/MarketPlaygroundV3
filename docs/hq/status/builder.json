@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T20:30:00Z",
- "last_run": "Built 'many weak signals, one vote' for the research: besides scoring each way to pick the #1 alone, it now also tests a plain average of the ways that looked good beforehand, chosen only from older calls. The Brain page's luck check gets a paragraph comparing it with the typical and the best single way.",
+ "updated_at": "2026-11-22T23:10:00Z",
+ "last_run": "Agent HQ: a 'Write to the team' button at the top, 'Needs you' trimmed to the newest 4, replies labelled 'update' or quoting your message, and each agent's newest replies kept.",
  "working_on": "Nothing open.",
- "next": "Watch the composite over the next few research runs; Monday: Close Call and Price Check on live quotes.",
+ "next": "Monday: Close Call and Price Check on live quotes.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Agent HQ is easier to use from your phone. There's a 'Write to the team' button at the top that jumps to the message box (it was below 12 to-do items, 9 agent cards and the whole thread). 'Needs you' shows the newest 4 with 'Show all'. Replies no longer say 're #(no new messages)': a routine report says 'update', and an answer to one of your messages quotes the start of what you wrote. I also fixed the thread dropping an agent's newest replies once it had more than 10. Nothing you've sent through HQ has arrived yet (the table is empty); sending works when I test it, so a short hello there will reach everyone.",
+   "at": "2026-11-22T23:10:00Z"
+  },
   {
    "re": "(no new messages)",
    "at": "2026-11-22T20:30:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Every research number was one average over nearly two years of test calls, so an edge that lived in one rally and vanished looked the same as one that held throughout. Each result now also splits its test calls into four stretches of time (cut on call dates, never on outcomes) and records how many stretches it was ahead in and its latest stretch. The Brain page's luck check gets a 'Through time.' line: the #1 pick's lead in each stretch, the same without the peek, and how many of the ways that cleared the luck bar held in at least 3 of 4. Reporting only: no gate or grading changed. Numbers appear after the next research run.",
    "at": "2026-11-21T21:00:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call fix: this weekend SPY's Nov 27 questions read 63% above $685, 55% above $690 and 57% above $695, so the odds rose with the line again. The cause: the app checked each spread's odds against a single-volatility answer and threw out anything more than 10 points away. But SPY's one-week skew really does lift the odds near the price by about 12 points, so the correct $690 reading was thrown out as 'stale'. Now the check uses the option smile itself: implied volatilities of the listed options within 2% of the line, fitted as a straight line, which carries the skew. Outside market hours, or when the trade's own quotes can't be read, Close Call takes its odds and practice price from that smile, so the odds fall steadily as the line rises and YES costs the odds shown. On this weekend's SPY quotes: $685 69%, $690 65%, $695 60%, $700 53%, $705 45%. Practice money only; grading and research checks unchanged.",
-   "at": "2026-11-21T17:40:00Z"
   }
  ]
 }

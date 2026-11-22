@@ -4663,6 +4663,41 @@ def test_hq_board_and_messages(monkeypatch, tmp_path):
     assert "agent" in kinds and "status" in kinds and kinds.count("murad") == 3
 
 
+def test_hq_thread_labels_replies_and_keeps_each_agents_newest(monkeypatch, tmp_path):
+    """Live (Nov 22): the meeting showed "Builder · re #(no new messages)", and the board kept replies[-10:] although
+    status files list replies newest first, so an agent with more than 10 would lose its newest ones."""
+    from backend.v4 import hq
+    (tmp_path / "status").mkdir()
+    (tmp_path / "agents.json").write_text(json.dumps([{"key": "builder", "name": "Builder", "role": "b", "schedule": "s"},
+                                                      {"key": "growth", "name": "Growth", "role": "g", "schedule": "s"}]))
+    replies = [{"re": "(no new messages)", "body": f"run {i}", "at": f"2026-11-{30 - i:02d}T10:00:00Z"} for i in range(12)]
+    replies[0]["re"] = "#1"          # newest answers Murad's message 1
+    replies[1]["re"] = "Search feature (via chair)"
+    replies[2]["re"] = 99           # an id that isn't in the table
+    (tmp_path / "status" / "builder.json").write_text(json.dumps({"updated_at": "2026-11-30T10:00:00Z", "replies": replies,
+        "needs_from_murad": ["old ask"]}))
+    (tmp_path / "status" / "growth.json").write_text(json.dumps({"updated_at": "2026-12-01T09:00:00Z", "needs_from_murad": ["new ask"]}))
+    monkeypatch.setattr(hq, "ROOT", tmp_path)
+    monkeypatch.setattr(hq, "RAW", "http://127.0.0.1:9/")
+    hq._cache.clear()
+    hq.post("Please make the Close Call page clearer for a first-time visitor who has never traded an option before today", "builder")
+    b = hq.board()
+    mine = [t for t in b["thread"] if t["kind"] == "agent"]
+    assert len(mine) == 10 and {t["body"] for t in mine} == {f"run {i}" for i in range(10)}   # newest 10, not oldest
+    first = next(t for t in mine if t["body"] == "run 0")
+    assert first["re_id"] == 1 and first["re"] is None
+    assert first["re_body"].startswith("Please make the Close Call page") and first["re_body"].endswith("...")
+    assert len(first["re_body"]) <= 80
+    assert next(t for t in mine if t["body"] == "run 1")["re"] == "Search feature (via chair)"
+    gone = next(t for t in mine if t["body"] == "run 2")
+    assert gone["re_id"] == 99 and gone["re_body"] is None
+    routine = next(t for t in mine if t["body"] == "run 5")
+    assert routine["re"] is None and routine["re_id"] is None          # shown as "update", not "re #(no new messages)"
+    assert [n["need"] for n in b["needs"]] == ["new ask", "old ask"]   # newest first
+    assert hq.reply_to("12", {12: "short"}) == {"re": None, "re_id": 12, "re_body": "short"}
+    assert hq.reply_to(None, {})["re"] is None
+
+
 def test_hq_next_run_reads_each_agents_cron_in_its_own_time_zone():
     from backend.v4 import hq
     from datetime import datetime, timezone

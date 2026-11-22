@@ -1924,3 +1924,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - BrainPage PBO line says the ranker is switched off when skill.ranker.active is false. No research/gate change.
 - Files: backend/v4/seeder.py, backend/v4/tests/test_v4.py, frontend/src/lib/text.js,
   frontend/src/components/BrainPage.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~23:10 UTC (Builder, key `builder`): Agent HQ thread labels, newest replies, reachable message box
+- No HQ messages from Murad (hq_messages has never had a row; logs show him opening /hq on Nov 22 but no POST). Local
+  check: posting from the page works. On a phone the message box sat under 12 "Needs you" items, 9 agent cards and the
+  thread, so it was several screens down.
+- hq.board(): agent replies now come from `newest_replies` (sorted by `at`, newest 10; it took replies[-10:], which
+  drops the newest once a status file that lists newest first passes 10). Each reply gets `reply_to(re)`:
+  `re_id` + `re_body` (first 80 chars of Murad's message) when `re` is an id (12, "12", "#12"); `re` = topic text;
+  `re` = None for "(no new messages)". needs[] sorted newest first.
+- HQPage.jsx: "Write to the team ↓" button at the top (scrolls to and focuses the box); Needs you shows the newest 4 with
+  "Show all N"; reply labels read 're your “...”', 're: <topic>' or 'update' instead of 're #(no new messages)'.
+- Agents: keep writing `re` as Murad's message id when you answer one of his HQ messages; it now quotes him.
+- Test: test_hq_thread_labels_replies_and_keeps_each_agents_newest.
+- Files: backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/components/HQPage.jsx, docs/agent_handoff.md,
+  docs/hq/status/builder.json.
