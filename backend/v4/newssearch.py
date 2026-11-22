@@ -19,6 +19,16 @@ MAX_HEADLINES = 6
 _TICKERISH = re.compile(r"^\$?[A-Za-z][A-Za-z.]{0,5}$")
 _STOP = {"the", "a", "an", "of", "and", "or", "in", "on", "for", "to", "about", "news", "stock", "stocks", "shares",
          "inc", "corp", "company", "is", "are", "what", "whats", "with"}
+# Well-known companies people search by name even when no story this week moves them ("apple" -> AAPL). Only
+# names that aren't everyday topic words, so "gold" or "oil" still search the stories as topics.
+_KNOWN = {"apple": "AAPL", "tesla": "TSLA", "microsoft": "MSFT", "amazon": "AMZN", "google": "GOOGL",
+          "alphabet": "GOOGL", "meta": "META", "facebook": "META", "netflix": "NFLX", "nvidia": "NVDA",
+          "palantir": "PLTR", "intel": "INTC", "disney": "DIS", "walmart": "WMT", "costco": "COST", "nike": "NKE",
+          "boeing": "BA", "coca cola": "KO", "coca-cola": "KO", "pepsi": "PEP", "pepsico": "PEP",
+          "mcdonalds": "MCD", "mcdonald's": "MCD", "starbucks": "SBUX", "jpmorgan": "JPM", "exxon": "XOM",
+          "chevron": "CVX", "pfizer": "PFE", "uber": "UBER", "airbnb": "ABNB", "spotify": "SPOT",
+          "salesforce": "CRM", "oracle": "ORCL", "broadcom": "AVGO", "adobe": "ADBE", "paypal": "PYPL",
+          "ford": "F", "berkshire": "BRK.B", "coinbase": "COIN", "robinhood": "HOOD", "amd": "AMD"}
 _lock = threading.Lock()
 _news_cache: dict[str, tuple[float, list[dict]]] = {}
 
@@ -60,10 +70,19 @@ def _matches(it: dict, ts: list[str], ticker: Optional[str]) -> int:
 def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[dict]:
     """The company the search names: a ticker typed as one ("NVDA", "$nvda", or "nvda" when it's a ticker in this
     week's stories or no story uses the word), or a company whose name starts with the search ("nvidia") among the
-    companies this week's stories move. A topic word that happens to be a ticker ("gold" is Barrick's GOLD) stays
-    a topic."""
+    companies this week's stories move, or a well-known name in _KNOWN ("apple"). A lowercase word that no story
+    uses but is a ticker ("gold" is Gold.com's GOLD) comes back with guess=True, so the page says it found no
+    stories about the word and is showing the stock with that ticker instead."""
     raw = q.strip()
     pool_syms = {str(c.get("ticker") or "").upper() for it in stories for c in it.get("companies") or []}
+    known = _KNOWN.get(" ".join(terms(q))) or _KNOWN.get(raw.lower())
+    if known:
+        try:
+            info = market.asset_info(known)
+        except Exception:
+            info = None
+        if info:
+            return {"ticker": info["symbol"], "name": info.get("name") or ""}
     if _TICKERISH.match(raw) and (raw.startswith("$") or raw.isupper() or raw.upper() in pool_syms
                                   or (len(raw) <= 5 and not topic_hits)):
         sym = raw.lstrip("$").upper()
@@ -72,7 +91,11 @@ def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[
         except Exception:
             info = None
         if info:
-            return {"ticker": info["symbol"], "name": info.get("name") or ""}
+            out = {"ticker": info["symbol"], "name": info.get("name") or ""}
+            # a lowercase word no story uses ("gold", "car") may be a topic that happens to be a ticker: say so
+            if not (raw.startswith("$") or raw.isupper() or raw.upper() in pool_syms):
+                out["guess"] = True
+            return out
     ts = terms(q)
     if not ts:
         return None

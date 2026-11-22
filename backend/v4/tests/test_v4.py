@@ -6212,6 +6212,16 @@ def test_news_search_finds_this_weeks_stories_by_company_ticker_or_topic(monkeyp
     gold = newssearch.search("gold")  # used in a story, so a topic, not Barrick's ticker GOLD
     assert gold["company"] is None and gold["stories"][0]["headline"] == oil["headline"]
     assert newssearch.search("zzzz")["stories"] == [] and newssearch.search("a")["stories"] == []
+    # a lowercase word no story uses that is a ticker (live 2026-11-22: "gold" -> Gold.com) is marked a guess, so the
+    # page says no story mentions the word instead of presenting the stock as the answer
+    names["CAR"] = "Avis Budget Group, Inc. Common Stock"
+    car = newssearch.search("car")
+    assert car["company"]["ticker"] == "CAR" and car["company"].get("guess") is True
+    assert not newssearch.search("CAR")["company"].get("guess") and not newssearch.search("xom")["company"].get("guess")
+    # well-known names find the company even when no story this week moves it
+    names["AAPL"] = "Apple Inc. Common Stock"
+    apple = newssearch.search("apple")
+    assert apple["company"]["ticker"] == "AAPL" and not apple["company"].get("guess")
     # Story mode opens an archived story too, but nothing outside the curated stories
     monkeypatch.setattr(movers, "_write_story", lambda item, client=None: {"ai": False, "hook_big": "", "title": item["headline"]})
     assert movers.story(oil["headline"])["item"]["headline"] == oil["headline"]

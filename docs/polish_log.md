@@ -1634,3 +1634,27 @@ Changed:
   schedule (last retrained Nov 22), so its date can be newer than the runs below".
 
 Checks: vite build passes, backend tests 241 passed (fresh venv).
+
+## 2026-11-22 (seventh run, ~18:00 UTC = Sun 1 PM ET, market closed)
+
+Walked /welcome, /trending (plus the new News search: nvidia, gold, xyzzy), /live, /story, /account, /brain,
+/close-call on the live site at 390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the
+sandbox-proxy-blocked third-party request). No HQ messages from Murad. NVDA search card: -11.5% on Fri vs S&P -3.1% =
+-8.4 pts, shown -8.5 (unrounded moves), fine.
+
+Found (live /v4/movers/search):
+- Searching an everyday word that no story uses turned it into an unrelated company presented as the answer: "gold" ->
+  GOLD (Gold.com, Inc.) with "Latest headlines about GOLD" and "None of the stories ... move GOLD"; "car" -> Avis
+  (CAR), "fun" -> Six Flags (FUN), "now" -> ServiceNow (NOW). The code's own docstring said "gold" stays a topic.
+- Searching a famous company by name found nothing unless this week's stories moved it: "apple" and "tesla" returned
+  no company and no headlines, while the empty state tells people to "Try a company's name".
+
+Changed:
+- newssearch._company: a lowercase word that isn't in this week's stories and isn't typed as a ticker ($x or CAPS)
+  still finds the stock but comes back with guess=True; NewsSearch.jsx then says 'No stories mention "gold" in the past
+  7 days. GOLD is also a stock ticker (Gold.com), so here it is in case you meant the company:' above the card (and
+  drops the "None of the stories move GOLD" line). Uppercase/$/this-week tickers are unchanged.
+- newssearch._KNOWN: ~40 well-known company names (apple, tesla, microsoft, google, meta, disney, ...) -> tickers,
+  only names that aren't everyday topic words (gold/oil stay topics). Test lines added to the news search test.
+
+Checks: vite build passes, backend tests 242 passed (fresh venv).

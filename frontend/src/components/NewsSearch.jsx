@@ -72,6 +72,11 @@ export function SearchResults({ q, setQ }) {
   const nothing = !d.stories?.length && !co;
   return (
     <div className={state.loading ? 'opacity-60' : ''}>
+      {co?.guess && !d.stories?.length && (
+        <p className="mt-4 text-sm text-slate-400">
+          No stories mention “{d.q}” in the past {days} days. {co.ticker} is also a stock ticker ({shortName(co.name, true) || co.ticker}), so here it is in case you meant the company:
+        </p>
+      )}
       {co && (
         <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900/90 p-4">
           <div className="flex items-start justify-between gap-3">
@@ -122,7 +127,7 @@ export function SearchResults({ q, setQ }) {
           </div>
         </>
       )}
-      {co && !d.stories?.length && (
+      {co && !co.guess && !d.stories?.length && (
         <p className="mt-4 text-sm text-slate-400">None of the stories we picked in the past {days} days move {co.ticker}.</p>
       )}
 

@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-22T15:45:00Z",
- "last_run": "Story mode's giant headline said 'Up 10% supply' for a company's avocado forecast. It now reads 'Forecast: Supply up 10%' (plain wording, and clear it's a projection, not a result). On the Brain page, the #1-pick model's date now says 'last retrained', not 'has shaped the #1 since' (it has been shaping picks longer than that date).",
+ "updated_at": "2026-11-22T18:10:00Z",
+ "last_run": "Checked the new News search. Typing an everyday word like 'gold' or 'car' showed an unrelated company (Gold.com, Avis) as if it were the answer; now the page first says no stories mention the word and offers the stock only 'in case you meant the company'. Searching 'apple' or 'tesla' found nothing before; well-known company names now find the company and its latest headlines.",
  "working_on": "Nothing open.",
  "next": "Monday with live quotes: walk Close Call and Price Check again, and check the week's first Story hooks.",
  "needs_from_murad": [],

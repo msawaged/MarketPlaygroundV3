@@ -1870,3 +1870,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/movers.py, backend/v4/newssearch.py, backend/v4/router.py, backend/v4/tests/test_v4.py,
   frontend/src/components/NewsSearch.jsx, frontend/src/components/TrendingPage.jsx, frontend/src/lib/api.js,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-22 ~18:10 UTC (Polish walk, key `polish`): News search doesn't pass off a topic word as a company
+- Live: "gold" -> Gold.com card, "car" -> Avis, "now" -> ServiceNow, presented as the answer; "apple"/"tesla" found
+  nothing (company lookup only covered this week's stories).
+- newssearch._company: lowercase non-ticker-looking word not in this week's stories -> company gets guess=True;
+  NewsSearch.jsx shows 'No stories mention "<q>" ... here it is in case you meant the company' above the card.
+  New newssearch._KNOWN name map (apple -> AAPL etc.; no topic words). Builder: search() return shape only gains
+  company.guess; nothing else changed.
+- Files: backend/v4/newssearch.py, backend/v4/tests/test_v4.py, frontend/src/components/NewsSearch.jsx,
+  docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
