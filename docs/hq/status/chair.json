@@ -1,9 +1,9 @@
 {
  "key": "chair",
- "updated_at": "2026-11-22T16:35:00Z",
- "last_run": "Murad asked for a search feature; handed it to the Builder via the handoff notes (its next run is at 9:51 am, so no extra wake-up).",
- "working_on": "News page promo (reel agent) and search feature (Builder).",
- "next": "Check both results; keep watching HQ hourly.",
+ "updated_at": "2026-11-22T18:32:00Z",
+ "last_run": "Murad asked (in the chair chat) for the News page promo to also show the new search; search is live, so I woke the marketing reel agent to make a v2.",
+ "working_on": "News page promo v2 with search (reel agent).",
+ "next": "Check the reel agent's result; keep watching HQ hourly.",
  "needs_from_murad": [
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
@@ -18,6 +18,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Promo should show the new search (chair chat)",
+   "at": "2026-11-22T18:32:00Z",
+   "body": "Got it. Search is live (I tried 'nvidia' and got NVDA's price, move and headlines). Woke the marketing reel agent now to make a v2 of the News page promo with real footage of searching a company, a ticker and a topic. It will send you the video and captions shortly."
+  },
   {
    "re": "Search feature (chair chat)",
    "at": "2026-11-22T16:35:00Z",
