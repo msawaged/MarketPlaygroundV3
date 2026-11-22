@@ -580,3 +580,48 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   belief, which `/v4/belief/{id}` already serves publicly. The PNG renderer must cap text length and handle any
   ticker or quote safely (escape in the HTML, wrap in the image). No posting on anyone's behalf: the user shares it
   themselves. Nothing touches real-money behaviour or research gates.
+
+## 2026-11-22 — "Many weak signals, one vote": an equal-weight composite of the research rules, chosen inside each fold
+- **Area:** brain (accuracy and honesty of research). Reporting only: a new research row, never the live ranking.
+- **Status:** proposed
+- **Problem:** research now tests 49 single rules (50 with today's idea 21), and the leaderboard of which one is "best"
+  reshuffles. Run 2026-11-22 17:21 UTC (n=2,703 test calls, test from 2024-12-03): PBO 0.343 over 48 methods, and the
+  in-sample winner of the 70 splits was spread over 12 different rules (rskew 21, neural net 16, amihud 7, frog-in-the-
+  pan 7, ldvol 6, high vol 6, ...), with a median out-of-sample lift of only +0.63%. Several rules each carry a little
+  real, partly different information (rskew raw +lift, t above the 3.28 bar; amihud +1.21%, t 4.04, 4 of 4 stretches;
+  coskew in `clear_adj_nw`; ldvol +0.81%, t 2.90), but every rule is judged alone, so nothing tests whether averaging
+  them is steadier than betting on whichever is ahead. Meanwhile the app's own #1 was behind our other ideas in its
+  latest stretch (Feb-Jul 2026 lift -0.74%, -1.65% without the peek), so a sturdier baseline matters.
+- **Evidence:** in portfolio choice, the naive 1/N mix beat 14 optimized models out of sample on most datasets
+  because estimated weights are too noisy (DeMiguel, Garlappi & Uppal 2009, "Optimal versus naive diversification: how
+  inefficient is the 1/N portfolio strategy?", Review of Financial Studies 22(5), 1915-1953:
+  https://ideas.repec.org/a/oup/rfinst/v22y2009i5p1915-1953.html). In forecasting the same "forecast combination
+  puzzle" holds: a simple average of forecasts usually beats estimated "optimal" weights, and Claeskens, Magnus,
+  Vasnev & Wang (2016), International Journal of Forecasting 32(3), 754-762
+  (https://econpapers.repec.org/RePEc:eee:intfor:v:32:y:2016:i:3:p:754-762) explain why: estimating weights adds
+  variance that eats the gain. Review: Wang, Hyndman, Li & Kang (2022), "Forecast combinations: an over 50-year
+  review" (https://arxiv.org/pdf/2205.04216).
+- **Build sketch (S-M):**
+  - backend/v4/research.py, in run(): for each walk-forward fold, using only that fold's *training* calls (same
+    embargo), score every fixed rule (not the learned ones, not "app (current #1)", which has look-ahead) and keep the
+    ones with training lift > 0 and plain t >= 2 (a fixed, pre-stated cutoff; at most, say, 8, ranked by training t,
+    and dropping a rule whose training-period #1 matches an already-kept rule's more than 70% of the time so near
+    copies don't double-vote). On the fold's test calls the composite score is the plain average of the kept rules'
+    scores (each already a z-score within the belief, so they're on the same scale); no fitted weights. If no rule
+    qualifies, fall back to the app's no-look-ahead order. Report it as a new method "equal-weight composite (chosen
+    in-fold)" with all the usual metrics (lift, t, t_nw, lift_w, blocks, same_as_app / lift_diff) plus
+    `composite_members` = how often each rule was kept across folds.
+  - It counts as one more try for the luck bar and joins the PBO pool like any rule.
+  - Test (backend/v4/tests/test_v4.py): plant two weak independent signals each under t 3 alone; the composite should
+    beat both; a rule that only works in the test period must never be selected (selection sees training calls only);
+    with no qualifying rule it equals the app's no-look-ahead row.
+  - Memory: reuses the per-rule scores already computed per fold; no new features, no new data. Fine on 512Mi.
+- **How we'd know it worked:** on the same run, the composite has a higher lift_t_nw than the median single rule and
+  at least the best single rule's pos_blocks (3+ of 4), and it is not just the app restated (lift_diff > 0 on a few
+  hundred differing calls). If it beats every single rule out of sample it is evidence the brain should combine
+  rather than pick one; if it doesn't, that's informative too (the rules share one source of edge).
+- **Risks and guardrails:** the selection step is where cheating would hide, so it must use training calls only and
+  the cutoff (t >= 2, max 8) is fixed in code before the run, never tuned on test results. Reporting only: it doesn't
+  touch `_passes`, `fit_production` or ranker v2's activation rules; whether a composite could ever compete for the
+  live #1 is a separate, deliberate decision for Murad written up in docs/brain_upgrades.md. Near-copy rules
+  (rskew/max5, amihud/ldvol) are why the overlap filter is there.

@@ -1880,3 +1880,15 @@ and anything the others must know. Keep entries to a few lines; details go in th
   company.guess; nothing else changed.
 - Files: backend/v4/newssearch.py, backend/v4/tests/test_v4.py, frontend/src/components/NewsSearch.jsx,
   docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-22 ~19:00 UTC (Research scout, key `scout`): idea 21 vol-of-vol; ideas 18-20 recorded; composite proposal
+- No HQ messages from Murad (hq_messages empty for all/scout).
+- Recorded results (run 17:21 UTC, n=2,703, full coverage): 18 cvvol -0.48% (t -1.55), 19 hi_age -0.18% (t -0.53),
+  20 ldvol +0.81% (t 2.90, t_nw 1.43, under the 3.28 bar; a weaker copy of amihud). None is a candidate.
+- Idea 21: `vov` (Baltussen, van Bekkum & van der Grient 2018) = CV of 12 monthly realized vols over ~1 year.
+  market.vov / vov_features, market.features, nn.make_features (not MODEL_NUMERIC), research.FEATS / DIRECTIONAL /
+  NEUTRAL (0.35), enrich backfill (as of each pick's date), rule `steady volatility (-z_vov)`. Luck bar now 50 tries.
+- Part B proposal in docs/feature_ideas.md: equal-weight composite of research rules chosen inside each fold
+  (reporting only). Gates untouched.
+- Test: test_vol_of_vol_rule_and_enrich_backfill. Files: backend/v4/market.py, research.py, nn.py, tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/scout.json.

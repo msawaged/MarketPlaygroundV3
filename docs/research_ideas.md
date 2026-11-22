@@ -677,8 +677,11 @@ the app's (52.9%).
   the wrong way here as MAX (5) and IVOL (13) did.
 - **Note:** until enrich finishes backfilling older picks they read `cvvol = 0`; trust the result once `cvvol` is out of
   `provisional` in the research kv (coverage share >= 99%).
-- **Result:** pending. At run 2026-11-21 21:05 UTC `cvvol` coverage was 12.6% (still in `provisional`); enrich is
-  backfilling it.
+- **Result (run 2026-11-22 17:21 UTC, 4,391 beliefs, test from 2024-12-03, n=2,703, `cvvol` coverage 100%, out of
+  `provisional`):** no edge. Raw lift -0.48% (beat 50.7%, t -1.55, t_nw -0.76); risk-matched lift -0.24% (beat 52.4%,
+  t -0.81). lift_w +0.07%; ahead in 2 of 4 stretches (latest +0.49%); picks the app's #1 24% of the time and is -1.32%
+  behind it where they differ (t -2.26). Far below the luck bar (3.28 over 49 tries). The paper's "steady trading"
+  side does not help here, in line with jumpy, volatile names doing well in this sample. Not a candidate.
 
 ### 19. Timing of the 52-week high: stocks that set their high recently (Bhootra & Hur)
 - **Added:** 2026-11-21 (late)
@@ -708,7 +711,10 @@ the app's (52.9%).
 - **Note:** until enrich finishes backfilling older picks they read the neutral 0.5; trust the result once `hi_age` is
   out of `provisional` in the research kv (coverage share >= 99%). `cvvol` (idea 18) is backfilled first in the same
   loop, so `hi_age` fills in alongside or just after it.
-- **Result:** pending.
+- **Result (run 2026-11-22 17:21 UTC, n=2,703, `hi_age` coverage 100%):** no edge. Raw lift -0.18% (beat 49.9%,
+  t -0.53, t_nw -0.43); risk-matched lift -0.09% (beat 51.4%, t -0.28). Ahead in 2 of 4 stretches (latest -1.05%);
+  same #1 as the app 27% of the time, -0.97% behind it where they differ (t -1.61). Better than "near highs
+  (z_dist_high)" (raw -1.30%, t -3.94) but still nothing. Not a candidate.
 
 ### 20. Level of trading activity: low dollar volume (Brennan, Chordia & Subrahmanyam)
 - **Added:** 2026-11-21 (night, extra run)
@@ -735,4 +741,37 @@ the app's (52.9%).
   nothing; if Amihud beats it clearly, volatility per dollar traded is what carries that rule.
 - **Note:** until enrich finishes backfilling older picks they read the neutral 15.0; trust the result once `ldvol` is
   out of `provisional` (coverage share >= 99%). Backfilled after `cvvol` and `hi_age` in the same loop.
+- **Result (run 2026-11-22 17:21 UTC, n=2,703, `ldvol` coverage 100%):** positive but under the bar. Raw lift +0.81%
+  (beat 52.1%, t 2.90, t_nw 1.43); risk-matched lift +0.71% (beat 53.7%, t 2.67). lift_w +0.69%; ahead in 3 of 4
+  stretches, latest +2.44%. Same #1 as the app 19% of the time, +0.34% where they differ (t 0.64). Below the luck bar
+  (3.28) on every t; not in `clear`, `clear_adj` or `steady`. Picked as the in-sample winner in 6 of 70 PBO splits.
+  As expected it reads as a weaker copy of illiquidity (z_amihud: raw +1.21%, t 4.04, t_nw 2.63, risk-matched +1.00%,
+  t 3.44, 4 of 4 stretches): price impact per dollar carries more than volume alone. Not a candidate on its own.
+
+### 21. Volatility of volatility: stocks whose own risk has been steadiest (Baltussen, van Bekkum & van der Grient)
+- **Added:** 2026-11-22
+- **Source:** Baltussen, van Bekkum & van der Grient (2018), "Unknown unknowns: uncertainty about risk and stock
+  returns", Journal of Financial and Quantitative Analysis 53(4), 1615-1651:
+  https://ideas.repec.org/a/cup/jfinqa/v53y2018i04p1615-1651_00.html (author copy:
+  https://personal.eur.nl/vanbekkum/2018JFQA_unknown_unknowns.pdf)
+- **Why:** stocks whose volatility itself swings the most ("uncertainty about risk") earn *lower* later returns, by
+  about 10% a year top vs bottom quintile in the paper, beyond volatility, idiosyncratic volatility, skewness and
+  other known effects; read as investors overpaying for stocks whose risk is hard to pin down. New to the log: the vol
+  rows (high/low vol60, IVOL 13) read the *level* of risk, rskew (16) and MAX (5) its *shape*; none reads how
+  *unstable* the risk has been. Slow-moving (built from a year), so it suits our ~90-day hold.
+- **Computed as:** `vov` = coefficient of variation (sample std / mean) of the annualized realized volatility of 12
+  consecutive non-overlapping 21-session blocks ending on the pick's own date (closes up to that date only), clipped
+  to [0, 3]; 0.35 (neutral, also `research.NEUTRAL`) without 9 full blocks. The paper uses the daily *implied*
+  volatility of at-the-money options over a month; we have no implied-vol history, so this is a realized stand-in: a
+  data choice, not the paper's measure, and it partly mixes in volatility clustering around events. `market.vov` /
+  `market.vov_features`; stored for new picks via `market.features` and `nn.make_features` (not MODEL_NUMERIC);
+  backfilled for older picks by `research.enrich` (other features untouched). Directional (bearish calls flip it, so
+  the rule shorts the stock whose volatility swings the most). Research rule: `steady volatility (-z_vov)`; `z_vov` is
+  also available to the learned ridge/gbm/net once its coverage passes (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w, same_as_app / lift_diff, pos_blocks /
+  last_block_lift, and the luck bar (now 50 tries). Compare with "low vol (-z_vol60)" and IVOL: if vov only restates
+  low volatility it adds nothing; this sample has rewarded volatile, jumpy names (MAX, IVOL and cvvol all ran the
+  wrong way or flat), so the paper's side may fail here too.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 0.35; trust the result once `vov` is
+  out of `provisional` (coverage share >= 99%).
 - **Result:** pending.

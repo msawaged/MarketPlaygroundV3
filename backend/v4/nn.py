@@ -138,6 +138,8 @@ def make_features(
         "hi_age": market.get("hi_age", 0.5),
         # log mean daily dollar volume over ~1 year (research + ranker v2 only; not MODEL_NUMERIC)
         "ldvol": market.get("ldvol", 15.0),
+        # volatility of volatility, CV of 12 monthly realized vols (research + ranker v2 only; not MODEL_NUMERIC)
+        "vov": market.get("vov", 0.35),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),

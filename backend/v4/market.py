@@ -1178,6 +1178,44 @@ def ldvol_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"ldvol": ldvol(closes, vols, i) if i >= 0 else 15.0}
 
 
+def vov(closes: list[float], i: int, months: int = 12, block: int = 21, min_blocks: int = 9) -> float:
+    """Volatility of volatility (Baltussen, van Bekkum & van der Grient 2018, "Unknown unknowns: uncertainty about risk
+    and stock returns", JFQA): how unsteady a stock's own risk has been. The paper measures the standard deviation of
+    daily at-the-money implied volatility over a month, scaled by its mean, and finds stocks with high vol-of-vol
+    earn *less* (about 10% a year top vs bottom quintile), beyond volatility itself. We have no implied-vol history,
+    so this is a realized proxy: the coefficient of variation (sample std / mean) of the annualized realized vol of
+    `months` consecutive non-overlapping blocks of `block` sessions ending at index i (closes up to i only). Clipped
+    to [0, 3]; 0.35 (neutral, also research.NEUTRAL) without `min_blocks` full blocks of priced sessions."""
+    if i < 0 or i >= len(closes):
+        return 0.35
+    vs = []
+    for m in range(months):
+        hi = i - m * block
+        lo = hi - block
+        if lo < 0:
+            break
+        seg = closes[lo: hi + 1]
+        if any(c <= 0 for c in seg):
+            continue
+        rets = [math.log(seg[k] / seg[k - 1]) for k in range(1, len(seg))]
+        mu = sum(rets) / len(rets)
+        vs.append(math.sqrt(sum((r - mu) ** 2 for r in rets) / (len(rets) - 1)) * math.sqrt(252))
+    if len(vs) < min_blocks:
+        return 0.35
+    mv = sum(vs) / len(vs)
+    if mv <= 0:
+        return 0.35
+    sd = math.sqrt(sum((v - mv) ** 2 for v in vs) / (len(vs) - 1))
+    return max(0.0, min(3.0, sd / mv))
+
+
+def vov_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"vov": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"vov": vov(closes, i) if i >= 0 else 0.35}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1292,6 +1330,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "cvvol": cvvol(closes, daily_volumes(symbol), i),
         "hi_age": hi_age(closes, i),
         "ldvol": ldvol(closes, daily_volumes(symbol), i),
+        "vov": vov(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

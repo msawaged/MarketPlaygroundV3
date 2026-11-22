@@ -1,9 +1,9 @@
 {
  "key": "scout",
- "updated_at": "2026-11-21T22:45:00Z",
- "last_run": "Extra run on the chair's sprint call. Growth idea for the Builder: 'I called it' cards, a share button on every graded call that makes a link with its own picture (the call, the stock, how it did against the S&P 500), so people can post their calls and friends land on the sign-up page. Wordle grew from about 90 players to about 2 million in two months once people could share a small result picture. Right now only 7 real people have made 34 calls, the last on Nov 10, and there is no way to share anything. Also added research idea 20: do thinly traded stocks do better than heavily traded ones (a published finding)?",
- "working_on": "Waiting for ideas 18, 19 and 20 to be filled in on the older calls so they can be tested on calls they never saw.",
- "next": "Next run: record ideas 18-20 once their data is complete, one new idea and one feature proposal.",
+ "updated_at": "2026-11-22T19:00:00Z",
+ "last_run": "Results are in for ideas 18-20: none helps pick the #1 (steady trading -0.5 points, recent 52-week high -0.2, low trading volume +0.8 but not strong enough to trust; it mostly repeats the illiquidity idea that already works). Added idea 21: stocks whose risk stays steady month to month (a 2018 published finding that jumpy-risk stocks do worse). Proposed for the brain: test an even mix of the ideas that work, picked fairly, instead of betting on one.",
+ "working_on": "Waiting for idea 21 to be filled in on the older calls so it can be tested on calls it never saw.",
+ "next": "Next run: record idea 21 once its data is complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

@@ -66,13 +66,16 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          "hi_age",
          # level of trading activity (Brennan, Chordia & Subrahmanyam 1998): log mean daily dollar volume, ~1 year
          "ldvol",
+         # volatility of volatility (Baltussen, van Bekkum & van der Grient 2018): coefficient of variation of 12 monthly
+         # realized vols over ~1 year (a realized stand-in for the paper's implied-vol measure)
+         "vov",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "cvvol", "hi_age", "ldvol", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "cvvol", "hi_age", "ldvol", "vov", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -81,7 +84,7 @@ INTERACTIONS = (("mom60", "reg_trend"), ("mom250", "reg_trend"), ("vol60", "reg_
                 ("mom60", "reg_calm"), ("vp_above_value", "reg_trend"))
 XKEYS = tuple(f"zx_{a}_{b}" for a, b in INTERACTIONS)
 KEY = "research:ranker"
-NEUTRAL = {"rvol": 1.0, "beta": 1.0, "ivol": 0.30, "delay": 0.20, "hi_age": 0.5, "ldvol": 15.0}  # value for a feature a pick never stored (anything else: 0)
+NEUTRAL = {"rvol": 1.0, "beta": 1.0, "ivol": 0.30, "delay": 0.20, "hi_age": 0.5, "ldvol": 15.0, "vov": 0.35}  # value for a feature a pick never stored (anything else: 0)
 # Feature coverage (docs/feature_ideas.md 2026-11-14 extra run): every input a rule can read, with one bit per key
 # on each candidate saying whether the pick stored it. A rule scored while one of its inputs is under COVERAGE_OK
 # is reported "provisional": part of its score comes from placeholder values, not data. Reporting only.
@@ -118,7 +121,7 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%"ltr"%' OR p.features NOT LIKE '%"delay"%'
                   OR p.features NOT LIKE '%"rskew"%' OR p.features NOT LIKE '%"coskew"%'
                   OR p.features NOT LIKE '%"cvvol"%' OR p.features NOT LIKE '%"hi_age"%'
-                  OR p.features NOT LIKE '%"ldvol"%')
+                  OR p.features NOT LIKE '%"ldvol"%' OR p.features NOT LIKE '%"vov"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
@@ -127,7 +130,7 @@ def enrich(limit: int = 300) -> dict:
             or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num \
             or "seas" not in num or "dbeta" not in num or "ivol" not in num or "ltr" not in num or "delay" not in num \
             or "rskew" not in num or "coskew" not in num or "cvvol" not in num \
-            or "hi_age" not in num or "ldvol" not in num
+            or "hi_age" not in num or "ldvol" not in num or "vov" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -175,6 +178,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.hi_age_features(r["ticker"], d0))
             if "ldvol" not in have:
                 vp.update(market.ldvol_features(r["ticker"], d0))
+            if "vov" not in have:
+                vp.update(market.vov_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -974,6 +979,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         # idea log, added 2026-11-21 (night): level of trading activity (Brennan, Chordia & Subrahmanyam 1998) — the
         # stock with the least dollar volume for a long (the most heavily traded one, for a short)
         "low dollar volume (-z_ldvol)": lambda f: -f["z_ldvol"],
+        # idea log, added 2026-11-22: volatility of volatility (Baltussen, van Bekkum & van der Grient 2018) — the stock
+        # whose own risk has been steadiest month to month for a long (the one whose volatility swings most, for a short)
+        "steady volatility (-z_vov)": lambda f: -f["z_vov"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],
