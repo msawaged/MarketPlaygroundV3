@@ -125,6 +125,14 @@ def _measured_on(belief_id: str, core: str, cp: int) -> Optional[str]:
     return tickers[0]
 
 
+def vs_label(c: dict) -> str:
+    """What the numbers measure. A big-move call (straddle-style) is graded on the SIZE of the move either way,
+    |theme| - |S&P| (grader), so "ahead of the S&P" would misread a fund that fell harder than the market as beating it."""
+    if c.get("direction") == "volatile":
+        return "how much more it moved than the S&P 500, up or down"
+    return "vs the S&P 500, in the direction called"
+
+
 def headline(c: dict) -> str:
     """One honest line about the newest graded check, or that none is graded yet."""
     L = c.get("latest")
@@ -133,6 +141,8 @@ def headline(c: dict) -> str:
         when = f" First check {_fmt_date(nxt['due'])}." if nxt and nxt.get("due") else ""
         return f"Not graded yet.{when}"
     pts = abs(L["vs_spy"]) * 100
+    if c.get("direction") == "volatile":
+        return f"{L['days']} days in: moved {pts:.1f} pts {'more' if L['vs_spy'] > 0 else 'less'} than the S&P 500"
     side = "ahead of" if L["vs_spy"] > 0 else "behind"
     return f"{L['days']} days in: {side} the S&P 500 by {pts:.1f} pts"
 
@@ -158,7 +168,8 @@ def copy_text(c: dict, url: str) -> str:
     bits = [f"My call on MarketPlayground: “{c['text']}”"]
     who = _call_line(c)
     bits.append(" · ".join(x for x in (who, f"made {c['made_label']}" if c["made_label"] else "") if x))
-    bits.append(f"{row} vs the S&P 500" + (f" ({_graded_on(c)[0].lower()}{_graded_on(c)[1:]})" if c.get("measured_on") else ""))
+    vs = "size of the move vs the S&P 500's, up or down" if c.get("direction") == "volatile" else "vs the S&P 500"
+    bits.append(f"{row} {vs}" + (f" ({_graded_on(c)[0].lower()}{_graded_on(c)[1:]})" if c.get("measured_on") else ""))
     bits.append(f"Practice call. {url}")
     return "\n".join(b for b in bits if b)
 
@@ -327,7 +338,8 @@ def render_png(c: dict) -> bytes:
             v = k["vs_spy"] * 100
             d.text((bx + 22, by + 50), f"{'+' if v > 0 else ''}{v:.1f} pts", font=_font(40, True), fill=tone)
     on = _graded_on(c)
-    foot = f"vs the S&P 500, in the direction called{'. ' + on if on else ''}. Practice call, no real money."
+    lab = vs_label(c)
+    foot = f"{lab[0].upper()}{lab[1:]}{'. ' + on if on else ''}. Practice call, no real money."
     size = 22
     while size > 16 and d.textlength(_plain(foot), font=_font(size)) > W - 2 * X:
         size -= 1
@@ -371,7 +383,7 @@ async def share_png(belief_id: str):
 async def share_json(belief_id: str, request: Request):
     c = await _card_or_404(belief_id)
     url = f"{_base(request)}/c/{belief_id}"
-    return JSONResponse({**c, "headline": headline(c), "url": url, "copy_text": copy_text(c, url)})
+    return JSONResponse({**c, "headline": headline(c), "vs_label": vs_label(c), "url": url, "copy_text": copy_text(c, url)})
 
 
 @router.get("/c/{belief_id}", response_class=HTMLResponse)

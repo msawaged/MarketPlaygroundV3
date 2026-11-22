@@ -1501,3 +1501,30 @@ Changed (wording/labels only; grades unchanged):
 - Test: test_share_card_shows_only_stored_grades_and_its_own_tags extended with a fund-graded call.
 
 Checks: vite build passes, backend tests 236 passed (fresh venv).
+
+## 2026-11-22 (second run, ~03:30 UTC = Sat 10:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story (all 6 slides), /account, /brain on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ messages from Murad.
+Signed in locally (offline server, throwaway SQLite) at 375: chat -> options card (DAL $58/$64 bull call spread: $2.16
+debit, max gain $3.84, breakeven $60.16, 4 contracts $864 / +$1,536, all consistent), My beliefs, Close Call (SPY $675:
+YES $561.96 + NO payout split = $1,000, breakevens $675.62 / $675.63, ask-side 59% / 46%, round trips $63 / $41) clean.
+Brain page's new "Would we have picked the winner?" (PBO) paragraph reads correctly (21%, below the 50% of noise).
+
+Found (share card /c/{id}, its .png, copy text and the welcome screen's "Shared call", on big-move calls):
+- A "big move either way" call is graded on the size of the move, |theme| - |S&P| (grader, baserate._call_excess),
+  but the card read it as direction: live "Not sure the direction of ai companies" (b-3e2b822983814e42) said
+  "7 days in: ahead of the S&P 500 by 1.7 pts ... vs the S&P 500, in the direction called". DB: SMH -3.6% while SPY
+  -1.9%, so SMH did worse than the S&P; the +1.7 means it moved 1.7 pts more. The phone "Image" card had the same
+  "+1.7% vs the S&P 500" wording, and My beliefs' footnote only explained bearish flips.
+
+Changed (wording/labels only; grades unchanged):
+- share.py: `vs_label` (new json field) and headline for volatile calls: "7 days in: moved 1.7 pts more than the S&P
+  500"; PNG footer "How much more it moved than the S&P 500, up or down"; copy text "size of the move vs the S&P 500's,
+  up or down". Up/down calls unchanged.
+- WelcomePage shared call: same footer for big-move calls. MyCallsPage: Image card headline "Moved X pts more/less than
+  the S&P 500", pick label "move vs S&P"; footnote adds "(for big-move calls, how much more it moved than the S&P, up
+  or down)".
+- Test: test_share_card_shows_only_stored_grades_and_its_own_tags extended with a volatile call.
+
+Checks: vite build passes, backend tests 237 passed (fresh venv).

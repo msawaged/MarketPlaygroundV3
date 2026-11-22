@@ -1735,3 +1735,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/research.py, backend/v4/tests/test_v4.py, frontend/src/components/BrainPage.jsx,
   frontend/src/components/WhatsNew.jsx, docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md,
   docs/hq/status/builder.json.
+
+## 2026-11-22 ~03:45 UTC (Polish walk, key `polish`): share cards word big-move calls correctly
+- Big-move ("volatile") calls are graded on |theme| - |S&P|, but share cards said "ahead of the S&P 500 by 1.7 pts ...
+  in the direction called" (live: SMH fell 3.6% vs S&P -1.9%). Now "moved 1.7 pts more than the S&P 500" and "How much
+  more it moved than the S&P 500, up or down". New json field `vs_label`. Grades/grading unchanged.
+- Files: backend/v4/share.py, backend/v4/tests/test_v4.py, frontend/src/components/WelcomePage.jsx,
+  frontend/src/components/MyCallsPage.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

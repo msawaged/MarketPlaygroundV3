@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-22T00:45:00Z",
- "last_run": "Checked the new share cards against the database. They showed the theme's score next to one stock (a pet-food call read 'CHWY +1.2 pts' while CHWY fell 11%). The cards now list the picks and say what the score was measured on.",
+ "updated_at": "2026-11-22T03:45:00Z",
+ "last_run": "Share cards for 'big move either way' calls said 'ahead of the S&P 500 by 1.7 pts' when the fund actually fell more than the S&P (the score measures the size of the move). They now say 'moved 1.7 pts more than the S&P 500, up or down'.",
  "working_on": "Nothing open.",
  "next": "Re-check NVDA's Close Call odds on Monday's fresh quotes; check Monday night's grading.",
  "needs_from_murad": [],

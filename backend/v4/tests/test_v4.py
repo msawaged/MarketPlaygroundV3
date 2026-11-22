@@ -5968,6 +5968,17 @@ def test_share_card_shows_only_stored_grades_and_its_own_tags():
     png = c.get("/c/b-aaaa000000000002.png")
     assert png.status_code == 200 and png.content[:8] == b"\x89PNG\r\n\x1a\n"
 
+    # A big-move call is graded on the size of the move either way (|theme| - |S&P|): a fund that fell 3.6% while the
+    # S&P fell 1.9% "moved 1.7 pts more", it was not "ahead of the S&P 500".
+    belief("b-aaaa000000000005", "user", text="Not sure which way AI goes", direction="volatile")
+    grade("b-aaaa000000000005", 7, -0.036, -0.019, 1)
+    j5 = c.get("/c/b-aaaa000000000005.json").json()
+    assert j5["headline"] == "7 days in: moved 1.7 pts more than the S&P 500"
+    assert j5["vs_label"] == "how much more it moved than the S&P 500, up or down"
+    assert "size of the move vs the S&P 500's" in j5["copy_text"] and "NVDA · calling a big move" in j5["copy_text"]
+    assert "ahead of" not in c.get("/c/b-aaaa000000000005").text
+    assert c.get("/c/b-aaaa000000000005.png").status_code == 200
+
     assert c.get("/c/b-aaaa000000000003").status_code == 404   # seeded calls get no card
     assert c.get("/c/b-ffff000000000009").status_code == 404
     assert c.get("/c/nonsense.png").status_code == 404

@@ -42,9 +42,11 @@ async function shareImage(b) {
   return shareCard({
     kicker: 'My call, so far',
     belief: b.text,
-    headline: `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)}% vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
+    headline: b.direction === 'volatile'
+      ? `Moved ${(Math.abs(avg) * 100).toFixed(1)} pts ${avg >= 0 ? 'more' : 'less'} than the S&P 500 in ${days} day${days === 1 ? '' : 's'}`
+      : `${avg >= 0 ? '+' : ''}${(avg * 100).toFixed(1)}% vs the S&P 500 in ${days} day${days === 1 ? '' : 's'}`,
     good: avg >= 0,
-    picks: b.picks.map((p) => ({ ticker: p.ticker, label: 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)}%`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
+    picks: b.picks.map((p) => ({ ticker: p.ticker, label: p.direction === 'volatile' ? 'move vs S&P' : 'vs S&P 500', value: p.vs_spy == null ? 'new' : `${p.vs_spy >= 0 ? '+' : ''}${(p.vs_spy * 100).toFixed(1)}%`, good: p.vs_spy == null ? null : p.vs_spy >= 0 })),
     url: window.location.host,
   }, `My call on MarketPlayground: "${b.text}"`);
 }
@@ -362,7 +364,7 @@ export default function MyCallsPage() {
 
       {beliefs.length > 0 && (
         <p className="mt-5 text-[11px] text-slate-500 leading-relaxed">
-          Big numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls: that's how your call is doing. The small line compares each pick with the simple way to trade the same idea (usually the sector fund): that's how well we picked. Options would have moved differently. {acc ? 'Saved to your account.' : 'Saved on this device only.'}
+          Big numbers are each stock's move since the idea, compared with the S&amp;P 500 (<Term k="vs s&p">vs S&amp;P</Term>), flipped for bearish calls (for big-move calls, how much more it moved than the S&amp;P, up or down): that's how your call is doing. The small line compares each pick with the simple way to trade the same idea (usually the sector fund): that's how well we picked. Options would have moved differently. {acc ? 'Saved to your account.' : 'Saved on this device only.'}
         </p>
       )}
     </Page>

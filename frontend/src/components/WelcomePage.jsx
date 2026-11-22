@@ -23,7 +23,7 @@ function SharedCall({ c }) {
           </div>
         ))}
       </div>
-      <div className="mt-2 text-xs text-slate-400">vs the S&amp;P 500, in the direction called.{c.measured_on ? ` Graded on ${c.measured_on}.` : ''} Practice money.</div>
+      <div className="mt-2 text-xs text-slate-400">{c.direction === 'volatile' ? 'How much more it moved than the S&P 500, up or down.' : 'vs the S&P 500, in the direction called.'}{c.measured_on ? ` Graded on ${c.measured_on}.` : ''} Practice money.</div>
     </div>
   );
 }
