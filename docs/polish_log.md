@@ -1793,3 +1793,28 @@ Changed:
 - MakeStory button: side padding, centered text that wraps, icon doesn't shrink.
 - Noticed, left alone: the AI's company reasons can add a cause the sources don't state (lithium: ALB "supply
   concerns from delays"; no source mentions delays). Prompt-level; for the Builder if it recurs.
+
+## 2026-11-23 (fifth run, ~12:30 UTC = Mon 7:30 AM ET, pre-market)
+
+Walked /welcome, /trending, /live, /story (all 6 cards), /account, /brain, /close-call, /hot-trades, /journey on the
+live site at 390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party
+request). HQ: one message from Murad to all (#1, mobile app); answered in the status file, no fix asked. Focus: the
+Builder's custom-story "Ways to play it" and its `against` filter. Opened only stories already made today (cached,
+free) and read their stored plays from kv_cache: lithium's bearish ALB play is hidden (story says ALB up), black
+friday / copper plays agree with their stories, nuclear and weight-loss volatile picks show their long strangle.
+
+Found:
+- "weight loss drugs" told readers "None of the recent headlines it's built from mention “loss” or “drugs”, so this
+  story covers the latest news instead", though its headlines are a Novo Nordisk medication and GLP-1 weight
+  management: on topic, just worded differently. A false "this isn't what you asked for".
+- "nuclear power": CEG "-5.7% on Fri ... before this news", VST and SMR the same. The custom story's time is its
+  NEWEST headline (Sun NuScale halts), but Goldman's CEG and VST target changes came out Fri ~8-9 AM ET, before
+  Friday's open, so the move was after that news, not before it. Weight loss read "partly before" for NVO/LLY, whose
+  news was Fri pre-market.
+
+Changed (backend only):
+- customstory.missing_words: a small same-meaning table (drug(s) ~ medication/pharma/GLP, earnings ~ results/
+  quarterly/EPS, chip ~ semiconductor, oil ~ crude/Brent/WTI, merger ~ acquisition/takeover) and the phrase "weight
+  loss" ~ weight/obesity/GLP. "Costco earnings" with no results headline is still flagged. Test extended.
+- customstory._priced: "before this news" timing uses the OLDEST source headline (the move is entirely before the news
+  only if every headline came after it). The story's "newest Xh ago" is unchanged. New test.

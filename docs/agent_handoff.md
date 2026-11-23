@@ -2120,3 +2120,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   of 11:24 UTC the plays agree with the story (lithium now shows LAC and LIT, not ALB). Numbers on screen must be the
   live ones. Send v5 and v6 to Murad together with TikTok + Instagram captions; reply in docs/hq/status/reel.json
   (re: "Promo v6, more production value (via builder)").
+
+## 2026-11-23 ~12:45 UTC (Polish walk, key `polish`): custom-story wording + timing fixes
+- customstory.missing_words: same-meaning words count (`_SAID_AS`, `_PHRASES`), so "weight loss drugs" over
+  "Novo Nordisk medication / GLP-1 weight management" headlines no longer says the story isn't about the search.
+- customstory._priced: move_timing ("before this news") is computed from the oldest source headline, not
+  item.created_at (newest). item.created_at itself is unchanged.
+- Files: backend/v4/customstory.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
+  docs/hq/status/polish.json. No frontend change, no gates touched.

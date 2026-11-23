@@ -6529,3 +6529,29 @@ def test_custom_story_says_which_search_words_its_headlines_never_mention():
     assert missing_words("Costco sale", item) == []  # "sales" covers "sale"
     assert missing_words("uranium", {"companies": [], "sources": [{"headline": "Cameco names new CFO"}]}) == ["uranium"]
     assert missing_words("x", None) == []
+    # live 2026-11-23: "weight loss drugs" was told its headlines never mention "loss" or "drugs", though they were
+    # about a Novo Nordisk medication and GLP-1 weight management: news words for the same thing count
+    wl = {"companies": [{"ticker": "NVO"}, {"ticker": "LLY"}],
+          "sources": [{"headline": "Danish Health Authorities Address Patient Eye Injuries Linked to Novo Nordisk Medication"},
+                      {"headline": "General Medicine Integrates GLP-1 Weight Management Care into LillyDirect"}]}
+    assert missing_words("weight loss drugs", wl) == []
+    assert missing_words("weight loss lawsuit", wl) == ["lawsuit"]
+    assert missing_words("Costco earnings", dict(item, sources=[{"headline": "Costco quarterly results beat"}])) == []
+    assert missing_words("loss", wl) == ["loss"]  # "loss" alone is not the weight-loss phrase
+
+
+def test_custom_story_times_the_move_from_its_oldest_headline(monkeypatch):
+    # live 2026-11-23: "nuclear power" was built from Fri-Sun headlines; its newest (Sun) made CEG's Friday move read
+    # "before this news", though Goldman's CEG target change came out Fri 8 AM ET, before that session opened
+    from backend.v4 import customstory, movers
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {
+        "SPY": {"price": 600.0, "change": -0.031, "change_day": "2026-11-20"},
+        "CEG": {"price": 237.0, "change": -0.057, "change_day": "2026-11-20"}})
+    item = {"created_at": "2026-11-22T14:02:30Z", "companies": [{"ticker": "CEG", "direction": "up", "why": "w"}],
+            "sources": [{"headline": "NuScale halts", "created_at": "2026-11-22T14:02:30Z"},
+                        {"headline": "Goldman Adjusts Price Target on Constellation", "created_at": "2026-11-20T13:01:55Z"}]}
+    assert customstory._priced({"item": item})["item"]["companies"][0]["move_timing"] is None  # all of it after
+    item["sources"] = [item["sources"][0]]
+    assert customstory._priced({"item": item})["item"]["companies"][0]["move_timing"] == "before"
+    item["sources"] = []  # no sources: the story's own time, as before
+    assert customstory._priced({"item": item})["item"]["companies"][0]["move_timing"] == "before"

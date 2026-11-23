@@ -391,14 +391,34 @@ def plays(q: str, client: Any = None, wait: bool = False) -> dict:
 
 
 def _priced(out: dict) -> dict:
-    """Today's prices on the companies (re-read every time, like the feed; the story itself is cached)."""
+    """Today's prices on the companies (re-read every time, like the feed; the story itself is cached).
+
+    "before this news" is timed from the OLDEST headline the story is built from, not the newest: the move is only
+    entirely before the news when every headline came after it (live 2026-11-23: "nuclear power", newest headline
+    Sun, said CEG's Friday -5.7% was "before this news" though Goldman's CEG target change came out Fri 8 AM ET)."""
     item = out["item"]
     syms = sorted({c["ticker"] for c in item["companies"]} | {movers.BENCH})
     snaps = movers._snapshots(syms)
     bench = snaps.get(movers.BENCH) or {}
+    oldest = min((str(s["created_at"]) for s in item.get("sources") or [] if s.get("created_at")),
+                 default=item.get("created_at"))
     item = dict(item, companies=[movers._with_timing(movers._vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
-                                                     item.get("created_at")) for c in item["companies"]])
+                                                     oldest) for c in item["companies"]])
     return dict(out, item=item)
+
+
+# Words that news writes differently from how people search them: a search word starting with the key also counts
+# as said when a headline word starts with one of these (live 2026-11-23: "weight loss drugs" was told its GLP-1 /
+# "Novo Nordisk medication" headlines never mention "drugs"). Kept small and literal: same meaning, not "related".
+_SAID_AS = {
+    "drug": ("medic", "pharma", "glp"),
+    "earning": ("results", "quarterly", "eps"),
+    "chip": ("semiconductor",),
+    "oil": ("crude", "brent", "wti"),
+    "merger": ("acqui", "takeover"),
+}
+# Two-word phrases: both words count as said when the headlines say one of these ("weight management", "obesity").
+_PHRASES = {("weight", "loss"): ("weight", "obes", "glp")}
 
 
 def missing_words(q: str, item: Optional[dict]) -> list[str]:
@@ -410,8 +430,14 @@ def missing_words(q: str, item: Optional[dict]) -> list[str]:
     tickers = {str(c.get("ticker") or "").lower().replace(".", "") for c in item.get("companies") or []}
     ws = set(newssearch._words(" ".join(f"{s.get('headline')} {s.get('summary')}" for s in item.get("sources") or [])))
     def said(t: str) -> bool:
-        return any(w.startswith(t) or (len(w) >= 4 and t.startswith(w)) for w in ws)
-    return [t for t in newssearch.terms(q.lstrip("$")) if t not in tickers and not said(t)]
+        if any(w.startswith(t) or (len(w) >= 4 and t.startswith(w)) for w in ws):
+            return True
+        alts = [a for k, v in _SAID_AS.items() if t.startswith(k) for a in v]
+        return any(w.startswith(a) for w in ws for a in alts)
+    ts = newssearch.terms(q.lstrip("$"))
+    covered = {w for (a, b), alts in _PHRASES.items() if a in ts and b in ts
+               and any(w.startswith(x) for w in ws for x in alts) for w in (a, b)}
+    return [t for t in ts if t not in tickers and t not in covered and not said(t)]
 
 
 def make(q: str, who: str, client: Any = None, sync_plays: bool = False) -> dict:

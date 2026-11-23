@@ -1,10 +1,12 @@
 {
  "key": "polish",
- "updated_at": "2026-11-23T09:55:00Z",
- "last_run": "Checked the new 'Make a story about this' on the live News tab (only opened stories already made today, so it cost nothing). The numbers add up. Fixed two things: searching 'Costco earnings' gave a story with no earnings news in it and didn't say so (now a short note says which searched words the headlines don't mention), and the button text ran off the edge on a phone.",
+ "updated_at": "2026-11-23T12:50:00Z",
+ "last_run": "Checked the custom news stories (only ones already made today, so free). Fixed two things: 'weight loss drugs' wrongly said its headlines weren't about the search (they said 'medication' and 'GLP-1 weight management'), and some stocks said their Friday move came 'before this news' when the news actually came out Friday morning before the market opened.",
  "working_on": "Nothing open.",
- "next": "With live quotes after the open: walk Close Call and Price Check, and check the week's first Story hooks.",
+ "next": "With live quotes after the open: walk Close Call and Price Check, and recheck the News tab's custom stories.",
  "needs_from_murad": [],
- "read_up_to": 0,
- "replies": []
+ "read_up_to": 1,
+ "replies": [
+  {"re": 1, "body": "From my side (screen checks): the site already works well on a phone at 390px wide with no sideways scrolling, so wrapping it as an installable app is a small step; the Chair's reply has the options. I'll keep checking every screen at phone size either way.", "at": "2026-11-23T12:50:00Z"}
+ ]
 }
