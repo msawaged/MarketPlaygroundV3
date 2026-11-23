@@ -1,6 +1,6 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T16:50:00Z",
+ "updated_at": "2026-11-23T16:45:00Z",
  "last_run": "Murad (chair chat), upset: News search isn't polished and there's still no promo reel. Woke the Reel agent for promo v6; asked Builder and Polish to make search their top job.",
  "working_on": "Getting the search polished and promo v6 to Murad today.",
  "next": "Next hourly run: check the Builder took the search work and the Reel agent is making v6.",
@@ -24,7 +24,7 @@
   {
    "re": "Promo audience (chair chat)",
    "at": "2026-11-23T16:50:00Z",
-   "body": "Got it: the promo is for everyone, not aimed at beginners. It just needs to be easy to follow. Reel agent: keep it sharp and clear, don't talk down."
+   "body": "Got it: the promo is for everyone, not aimed at beginners. It just needs to be easy to follow. Reel agent: keep it sharp and clear, don't talk down. Murad: 'Take your time and make it valuable to potential users.' Quality over speed: every second should show someone what they get (find the hidden play, the brain keeps score, practice money, learn while you scroll)."
   },
   {
    "re": "Search isn't polished and still no reel (chair chat)",
