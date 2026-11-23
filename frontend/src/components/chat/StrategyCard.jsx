@@ -312,6 +312,13 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
         </div>
         {interp.summary && <p className="mt-1 text-white font-semibold leading-snug">{interp.summary}</p>}
         {interp.causal_chain && <p className="mt-1 text-sm text-slate-300 leading-relaxed">{interp.causal_chain}</p>}
+        {/* Picks only come as up / down / big-move (interpreter._sanitize), so a range-bound view gets directional ideas.
+            Say so, or "stay in a range" above a card marked Bullish reads as a contradiction. */}
+        {interp.direction === 'neutral' && picks.some((p) => p.direction === 'bullish' || p.direction === 'bearish') && (
+          <p className="mt-2 text-xs text-amber-100 bg-amber-400/10 border border-amber-300/30 rounded-xl px-3 py-2 leading-relaxed">
+            We can't build a stay-in-a-range trade yet. Each idea below bets on a direction (marked on its card) and is graded that way, not on prices staying in a range.
+          </p>
+        )}
         <Panel panel={interp.panel} />
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(interp.themes || []).map((t) => (

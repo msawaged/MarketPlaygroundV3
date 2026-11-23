@@ -1688,3 +1688,32 @@ Changed:
   _negatable only treats ", and/but/..." as two claims. engine already drops same-direction misreads.
 
 Checks: vite build passes, backend tests 245 passed (fresh venv).
+
+## 2026-11-23 (first run, ~00:30 UTC = Sun 7:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey, /learning, /reel on
+the live site at 390x844: no page errors, no horizontal overflow; only the sandbox-proxy-blocked third-party request and
+/learning's owner-only 403 (by design). No HQ messages from Murad. Share cards (/c/<id>.json) for three user calls add
+up against the outcomes rows (e.g. "People are eating out less", bearish, graded on XLY: -(+1.27% - (-4.16%)) = -5.4
+pts). Locally (offline server, throwaway SQLite) at 375: a sideways call, $1,000, 3 months, Options, Earn income ->
+NVDA Bull Put Spread $177.50/$165, credit $5.72 - $2.27 = $345, max loss $1,250 - $345 = $905, breakeven $174.05,
+-20% = -$905 (-100%), flat +$345 (+38%): all add up.
+
+Found:
+- A range-bound belief ("will trade sideways") shows "... stocks stay in a range." at the top of the answer, then cards
+  marked Bullish with "Trending up, the same way as this call". Picks only come as up / down / big move (known build-chat
+  item, 2026-11-16), so the screen contradicts itself with no explanation. Live DB: 0 user neutral beliefs so far, 134
+  seeded ones.
+- Brain page live feed: a neutral belief someone shared read "Expecting a rise".
+- Brain page health line could read "Last learning round 1h ago" while the feed just below said "Learned ... 5m ago":
+  health is stamped at the end of a round, the news line mid-round, and /v4/brain was snapshotted between the two.
+
+Changed (frontend only):
+- StrategyCard: when the belief is neutral and the ideas take a side, a note under the summary: "We can't build a
+  stay-in-a-range trade yet. Each idea below bets on a direction (marked on its card) and is graded that way, not on
+  prices staying in a range." (grader grades by each pick's direction, so the last part is accurate).
+- BrainPage: neutral person events read "Expecting a range"; the health line uses the later of the health stamp and the
+  newest news round (only when the last round finished ok).
+- Still for the build chat: real range strategies (iron condor) for neutral beliefs, which needs a neutral grading rule.
+
+Checks: vite build passes, backend tests 246 passed (fresh venv).

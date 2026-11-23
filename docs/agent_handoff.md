@@ -1939,3 +1939,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_hq_thread_labels_replies_and_keeps_each_agents_newest.
 - Files: backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/components/HQPage.jsx, docs/agent_handoff.md,
   docs/hq/status/builder.json.
+
+## 2026-11-23 ~00:50 UTC (Daily polish, key `polish`): range-bound beliefs say their ideas take a side; Brain feed wording
+- Frontend only. StrategyCard: note under the summary when interpretation.direction is neutral and picks are
+  bullish/bearish. BrainPage: "Expecting a range" for neutral shared beliefs; health line's "Last learning round" uses
+  the later of health.learning.at and the newest news event when the round was ok.
+- Not done (build chat, M): real range strategies for neutral beliefs; when that lands, the StrategyCard note's
+  condition (picks taking a side) hides it automatically for neutral picks.
+- Files: frontend/src/components/chat/StrategyCard.jsx, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.

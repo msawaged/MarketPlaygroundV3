@@ -190,7 +190,7 @@ function groupActivity(list) {
 }
 
 function eventText(e) {
-  if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : 'Expecting a rise' };
+  if (e.kind === 'person') return { title: `Someone shared a belief${e.topic ? ` about ${themeLabel(e.topic)}` : ''}`, sub: e.direction === 'bearish' ? 'Expecting a fall' : e.direction === 'volatile' ? 'Expecting a big move' : e.direction === 'neutral' ? 'Expecting a range' : 'Expecting a rise' };
   // grouped rounds show the span they cover: the time on the right is only the newest one
   const hrs = Math.max(1, Math.round((Date.parse(e.at) - Date.parse(e.since)) / 3.6e6)) || 1;
   const rounds = e.rounds > 1 ? ` · ${e.rounds} rounds over ${hrs}h` : '';
@@ -274,7 +274,13 @@ export default function BrainPage({ viewOnly = false }) {
         </div>
 
         {d?.health && (() => {
-          const h = d.health.learning, g = d.health.grading;
+          const g = d.health.grading;
+          // health is stamped when a round ends; the feed's news line is written mid-round. A snapshot taken between the
+          // two read "Last learning round 1h ago" above "Learned 6 beliefs from the news · 5m ago", so use the later one.
+          const lastNews = (d.activity || []).filter((e) => e.kind === 'news' && e.at).map((e) => e.at)
+            .reduce((a, b) => (!a || Date.parse(b) > Date.parse(a) ? b : a), null);
+          const h0 = d.health.learning;
+          const h = h0 && h0.ok && lastNews && Date.parse(lastNews) > Date.parse(h0.at || '') ? { ...h0, at: lastNews } : h0;
           const age = h?.at ? (now - Date.parse(h.at)) / 3600000 : null;
           const good = h && h.ok && age < 2.5;
           // Picks are graded by the first hourly run after midnight ET; the evening grade-and-train job (g) retrains and
