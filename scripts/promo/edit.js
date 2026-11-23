@@ -77,6 +77,7 @@ const plans = {
       rings: /^story_(mover|indirect)/, cam: [[0, 1.0, 195, 422], [0.5, 1.12, 195, 420], [0.5001, 1.0, 195, 422], [1, 1.12, 195, 470]] },
     practice: plan.practice,
     trade: { shots: [] },
+    intro: { shots: [] },
     score: plan.score,
     end: { shots: [] },
   },

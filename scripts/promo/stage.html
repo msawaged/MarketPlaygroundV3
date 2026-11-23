@@ -46,6 +46,11 @@
   #gfx .hot .d { color: #dbeafe; }
   #gfx .chip { align-self: center; margin-top: 16px; padding: 22px 46px; border-radius: 999px; font-size: 42px; font-weight: 800;
     background: #facc15; color: #0b1220; box-shadow: 0 20px 70px rgba(250, 204, 21, .35); }
+  #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 70px; opacity: 0; }
+  #title .badge { padding: 16px 38px; border-radius: 999px; background: #facc15; color: #0b1220; font-size: 44px; font-weight: 900; letter-spacing: 4px; box-shadow: 0 20px 80px rgba(250, 204, 21, .4); }
+  #title .tbig { margin-top: 56px; font-family: 'Inter Display', Inter, sans-serif; font-weight: 900; font-size: 132px; line-height: 1; letter-spacing: -4px; }
+  #title .tbig b { background: linear-gradient(90deg, #60a5fa, #a5f3fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #title .tsmall { margin-top: 50px; font-size: 50px; font-weight: 600; color: #cbd5e1; line-height: 1.3; }
   #end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
   #end .icon { width: 230px; height: 230px; border-radius: 58px; box-shadow: 0 30px 120px rgba(37, 99, 235, .6); }
   #end .wm { margin-top: 54px; font-weight: 800; font-size: 84px; letter-spacing: -2px; }
@@ -66,6 +71,7 @@
   <div>Market<span class="p">Playground</span></div></div>
 <div id="cap"><div id="big"></div><div id="small"></div></div>
 <div id="clip"><div id="cam"><div id="phone"><div id="screen"><div id="inner"><img id="shot"><div id="marks"></div></div></div></div></div></div>
+<div id="title"><div class="badge" id="tbadge"></div><div class="tbig" id="tbig"></div><div class="tsmall" id="tsmall"></div></div>
 <div id="gfx">
   <div class="st"><div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
     <div><div class="t">Search any news</div><div class="d">AI turns the headlines into a story</div></div></div>
@@ -97,6 +103,8 @@
 
   window.setup = (s, capDir) => {
     scenes = s; window.capDir = capDir;
+    const ti = s.find((x) => x.title); // optional opening title card (also the cover frame)
+    if (ti) { $('tbadge').textContent = ti.badge || 'NEW'; $('tbig').innerHTML = ti.title; $('tsmall').innerHTML = ti.sub || ''; }
     const end = s.find((x) => x.end); // optional extra end-card line, **bold** = gradient
     if (end && end.points) $('pts').innerHTML = end.points.map((p) => `<div class="pt">${p}</div>`).join('');
     if (end && end.legal) document.querySelector('#end .legal').textContent = end.legal;
@@ -124,7 +132,7 @@
     // captions: words pop in, line fades out at the cut
     const out = clamp(1 - (0.2 - left) / 0.2);
     // the first frame is the cover (TikTok/Instagram thumbnail): the hook caption is already fully in
-    const Lc = f.scene === 0 ? L + 1 : L;
+    const Lc = f.scene === 0 && !sc.title ? L + 1 : L;
     [...$('big').children].forEach((w, i) => {
       const k = clamp((Lc - 0.06 - i * 0.075) / 0.32);
       w.style.opacity = k * out; w.style.transform = `translateY(${(1 - outCubic(k)) * 40 - (1 - out) * 24}px) scale(${0.82 + 0.18 * outBack(k)})`;
@@ -132,6 +140,10 @@
     const sk = clamp((Lc - 0.45) / 0.3);
     $('small').style.opacity = sk * out; $('small').style.transform = `translateY(${(1 - outCubic(sk)) * 20}px)`;
     // end card
+    // title card: fully in on its first frame (the cover), drifts in slowly, fades out at the cut
+    const isTitle = !!sc.title;
+    $('title').style.opacity = isTitle ? clamp(left / 0.25) : 0;
+    if (isTitle) $('title').style.transform = `scale(${1 + 0.015 * L})`;
     // graphic scene (no footage): the phone fades out and the three steps pop in one by one
     const isGfx = !!sc.graphic;
     const gk = isGfx ? clamp(L / 0.3) * clamp(left / 0.25) : 0;
@@ -144,7 +156,7 @@
     }
     const isEnd = !!sc.end;
     const ek = isEnd ? clamp(L / 0.35) : 0;
-    $('end').style.opacity = ek; $('cap').style.opacity = isEnd ? 1 - ek : 1; $('clip').style.opacity = isEnd ? 1 - ek : isGfx ? 1 - clamp(L / 0.3) : 1;
+    $('end').style.opacity = ek; $('cap').style.opacity = isEnd ? 1 - ek : isTitle ? 0 : 1; $('clip').style.opacity = isEnd ? 1 - ek : isGfx ? 1 - clamp(L / 0.3) : isTitle ? 0 : (f.scene === 1 && scenes[0].title ? clamp(L / 0.25) : 1);
     $('head').style.opacity = isEnd ? 1 - ek : 1;
     if (isEnd) {
       const items = [...$('end').children];

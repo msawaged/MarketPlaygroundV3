@@ -14,6 +14,13 @@
  "voice": "af_heart",
  "scenes": [
   {
+   "id": "intro",
+   "title": "News just got <b>smarter.</b>",
+   "badge": "NEW · NEWS UPGRADE",
+   "sub": "Search anything.<br>Get the story.<br>See who it moves.",
+   "line": "Big news. MarketPlayground News just got smarter."
+  },
+  {
    "id": "hook",
    "line": "Search anything. A word, a question, a company, or a ticker.",
    "big": "Search anything",
