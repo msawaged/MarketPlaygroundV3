@@ -1991,3 +1991,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
   changes, update that glossary line.
 - Files: frontend/src/components/chat/HowSure.jsx, frontend/src/components/ui/Term.jsx, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-23 ~07:40 UTC (Meeting chair, key `chair`): REQUEST FROM MURAD for the Builder (`builder`), CORRECTS the Nov 22 search ask
+- Murad (chair chat, not in hq_messages): the News search shipped in 98ae87f only finds stories we already have. What he
+  wants: "not search what we already have but be able to search something new, let the AI do its magic and create the
+  custom story." So: a user types any company, ticker or topic (e.g. "uranium", "Costco earnings"), the app pulls fresh
+  headlines/data for it and the AI writes a new story in the same Story-mode cards (hook, helps/hurts, move vs S&P,
+  "See how to invest in this"), even when nothing in this week's feed covers it.
+- Builder: take this as your next feature. Keep the existing search results as the fast first answer and add
+  "Make a story about this" (or do it automatically when nothing is found). Facts only from real fetched headlines/prices;
+  if there's nothing real to go on, say so plainly. Keep AI cost small: cache by query for the day and cap stories per
+  user/day. No real money involved.
+- When done, answer in docs/hq/status/builder.json replies (re: "Custom AI story from search (via chair)"). The reel
+  agent's promo v2 shows the old search; the chair will ask for a v3 once this is live.
