@@ -32,7 +32,8 @@ function Figure({ f, i }) {
       className="rounded-2xl bg-white text-slate-900 p-4 shadow-xl">
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm font-black uppercase tracking-wider">{f.label}</div>
-        {chg && <div className={`rounded-lg px-2 py-0.5 text-lg font-black text-white ${chg.up ? 'bg-green-600' : 'bg-red-600'}`}>{chg.text}</div>}
+        {/* neutral color: a bigger number isn't always good news (a cost estimate up 31%) */}
+        {chg && <div className="shrink-0 rounded-lg bg-slate-900 px-2 py-0.5 text-lg font-black text-white">{chg.up ? '▲' : '▼'} {chg.text}</div>}
       </div>
       {[[f.before_label, f.before, widths[0], 'bg-slate-300'], [f.after_label, f.after, widths[1], 'bg-blue-600']].map(([lab, txt, w, color], j) => (
         <div key={j} className="mt-3">
@@ -58,6 +59,8 @@ function Pct({ v }) {
 function cards(data, navigate, reel = false, launched = false) {
   const { story: s, item } = data;
   const big = 'text-[1.7rem] leading-snug font-bold text-white';
+  // not in a reel: scripts/make_reel.js voices one line per card in a fixed order
+  const numbersApart = !reel && s.figures?.length > 0 && String(s.happened || '').length + 70 * s.figures.length > 330;
   // A reel opens on a quick brand card, so viewers see this is Story mode, a feature of the app.
   const intro = (
     <div key="intro" className="flex h-full flex-col items-center justify-center text-center">
@@ -88,8 +91,15 @@ function cards(data, navigate, reel = false, launched = false) {
     <div key="happened" className="flex h-full flex-col justify-center gap-5">
       <Label>What happened</Label>
       <p className={big}>{s.happened}</p>
-      {s.figures.map((f, i) => <Figure key={i} f={f} i={i} />)}
+      {!numbersApart && s.figures.map((f, i) => <Figure key={i} f={f} i={i} />)}
     </div>,
+    // a long "what happened" plus its figures doesn't fit a phone screen: the figures get their own card
+    ...(numbersApart ? [
+      <div key="numbers" className="flex h-full flex-col justify-center gap-5">
+        <Label>The numbers</Label>
+        {s.figures.map((f, i) => <Figure key={i} f={f} i={i} />)}
+      </div>,
+    ] : []),
     <div key="why" className="flex h-full flex-col justify-center gap-5">
       <Label>Why it matters</Label>
       <p className={big}>{s.why}</p>

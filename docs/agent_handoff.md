@@ -2038,3 +2038,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   headlines rarely write the topic's word. Topics now fill up to 3+ sources with the newest headlines tagged with the
   topic's companies (after the ones that name it), and Claude is told some may not name the topic. No-news answers
   carry `diag` (tickers tried, tagged count). Figure labels on custom stories clip at 40 chars (prompt: <= 3 words).
+- ~09:05 UTC, live test (Playwright 390x844 on the live News tab, no login): "Costco earnings" -> story from 2 real
+  fiscal.ai headlines (Mizuho target $1,100 -> $1,150; stockpiling), COST + WMT priced; "lithium" -> 5 real
+  headlines on Lithium Americas' Thacker Pass cost estimate ($2.93B -> $3.83B) and downgrades, LAC/ALB; "uranium" ->
+  honest "nothing real" (the source's newest uranium-company headline is Nov 5, past the 14-day window). No page
+  errors, no sideways scroll. **custom story LIVE, tested.**
+- Story mode fixes from that test (StoryViewer, all stories, not reels): a long "what happened" with figures pushed
+  the second figure off a 390x844 screen, so when happened + 70/figure > 330 chars the figures get their own
+  "The numbers" card (never in reel mode: scripts/make_reel.js voices one line per card in a fixed order). Figure
+  change badges are neutral (dark, with an arrow) instead of green/red: a cost estimate up 31% showed a green +31%.

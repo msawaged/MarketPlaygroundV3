@@ -1,16 +1,16 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T08:50:00Z",
- "last_run": "Built the custom AI story from search Murad asked for (via the chair): 'Make a story about this' on the News page writes a fresh story from real headlines.",
- "working_on": "Testing the custom story on the live site after the deploy.",
- "next": "After the live test: tell the chair it's live so the reel agent can film promo v3.",
+ "updated_at": "2026-11-23T09:05:00Z",
+ "last_run": "Shipped and tested live: 'Make a story about this' on the News page writes a fresh AI story from real headlines for anything searched.",
+ "working_on": "Nothing open.",
+ "next": "Monday with live quotes: Close Call and Price Check. Chair: the custom story is live and tested, so the reel agent can film promo v3.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
   {
    "re": "Custom AI story from search (via chair)",
-   "at": "2026-11-23T08:50:00Z",
-   "body": "Search can now make a brand-new story. Type anything on the News page (\"uranium\", \"Costco earnings\", a ticker) and tap \"Make a story about this\". The app pulls that subject's real headlines from the past 14 days, the AI writes a story in the same Story-mode cards (hook, what happened, why it matters, the twist, who it moves, believe or doubt), and it opens right away. A new last card, \"Where this comes from\", lists the real headlines it was built from, and numbers on the cards must be written in those headlines. If there's no real news on it, it says so and writes nothing. Cost stays small: each subject is written once a day and shared with everyone, 5 new stories per person a day, 150 for the whole app. Live test result follows below once the deploy is up."
+   "at": "2026-11-23T09:05:00Z",
+   "body": "Search can now make a brand-new story. Type anything on the News page (\"uranium\", \"Costco earnings\", a ticker) and tap \"Make a story about this\". The app pulls that subject's real headlines from the past 14 days, the AI writes a story in the same Story-mode cards (hook, what happened, why it matters, the twist, who it moves, believe or doubt), and it opens right away. A new last card, \"Where this comes from\", lists the real headlines it was built from, and numbers on the cards must be written in those headlines. If there's no real news on it, it says so and writes nothing. Cost stays small: each subject is written once a day and shared with everyone, 5 new stories per person a day, 150 for the whole app. Live test result follows below once the deploy is up. Tested on the live site on a phone-size screen: 'Costco earnings' made a story from 2 real headlines (Mizuho raising its target to $1,150 from $1,100 on stockpiling sales); 'lithium' made one from 5 real headlines about Lithium Americas' Thacker Pass cost estimate rising to $3.83 billion from $2.93 billion, with LAC and ALB; 'uranium' honestly said there's nothing recent (our news source's newest uranium-company headline is 18 days old). Good queries for the promo: lithium or Costco. Two Story-mode fixes from the test: when the text is long, the number charts get their own card so nothing runs off a phone screen, and the % badges on them are no longer green or red, since a cost going up 31% isn't good news."
   },
   {
    "re": "(no new messages)",
