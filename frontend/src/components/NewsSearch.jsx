@@ -1,8 +1,8 @@
 // News search: find this week's stories about one company, ticker or topic, plus that company's latest headlines.
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, Sparkles, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { searchMovers } from '../lib/api';
+import { getCustomStory, searchMovers } from '../lib/api';
 import { MoverCard, Pct, ago } from './MoversFeed';
 
 // "NVIDIA Corporation Common Stock" -> "NVIDIA Corporation" (or "NVIDIA" for a sentence)
@@ -43,6 +43,49 @@ export function SearchBox({ q, setQ }) {
         </button>
       )}
     </form>
+  );
+}
+
+// "Make a story about this": the AI writes a fresh story about the search from its real recent headlines.
+export function MakeStory({ q, primary = false }) {
+  const [st, setSt] = useState({ phase: 'idle', data: null });
+  useEffect(() => { setSt({ phase: 'idle', data: null }); }, [q]);
+  const short = q.length > 22 ? q.slice(0, 22) + '…' : q;
+  const go = () => {
+    setSt({ phase: 'loading', data: null });
+    getCustomStory(q)
+      .then((data) => setSt({ phase: data?.story ? 'done' : 'none', data }))
+      .catch(() => setSt({ phase: 'none', data: { reason: "Couldn't write the story just now. Try again in a minute." } }));
+  };
+  if (st.phase === 'done') {
+    const d = st.data;
+    return (
+      <div className="mt-4">
+        <div className="mb-2 flex items-center gap-1.5 text-sm font-bold text-blue-200"><Sparkles className="h-4 w-4" /> Made for your search</div>
+        <MoverCard item={d.item} storyData={d} openNow />
+        <p className="mt-2 text-[11px] text-slate-500">
+          AI-written from real headlines; check the sources before you act. {d.cached ? 'Already made today, so this one was free.' : d.left != null ? `You can make ${d.left} more new ${d.left === 1 ? 'story' : 'stories'} today.` : ''}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className={`mt-4 rounded-2xl border p-4 ${primary ? 'border-blue-500/60 bg-blue-950/40' : 'border-slate-700 bg-slate-900/60'}`}>
+      {st.phase === 'loading' ? (
+        <div className="flex items-center gap-3 text-sm text-slate-300" role="status">
+          <div className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          Reading the latest headlines about “{short}” and writing your story…
+        </div>
+      ) : (
+        <>
+          <button onClick={go} className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold ${primary ? 'bg-blue-600 hover:bg-blue-500' : 'border border-blue-500/60 bg-blue-500/10 text-blue-100 hover:bg-blue-500/20'}`}>
+            <Sparkles className="h-4 w-4" /> Make a story about “{short}”
+          </button>
+          <p className="mt-2 text-center text-xs text-slate-400">The AI reads the latest real headlines about it and writes a 30-second story.</p>
+          {st.phase === 'none' && <p className="mt-3 text-sm text-amber-200" role="alert">{st.data?.reason || 'No story this time.'}</p>}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -117,6 +160,8 @@ export function SearchResults({ q, setQ }) {
         </div>
       )}
 
+      {!nothing && <MakeStory q={d.q} />}
+
       {d.stories?.length > 0 && (
         <>
           <h2 className="mt-6 text-sm font-bold text-slate-300">
@@ -135,8 +180,9 @@ export function SearchResults({ q, setQ }) {
         <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-900 p-4">
           <div className="font-semibold">No stories about “{d.q}” in the past {days} days</div>
           <p className="mt-1 text-sm text-slate-400">
-            Search covers the stories on this page this week. Try a company's name or its ticker (like NVDA), or a broader word like “oil” or “chips”.
+            None of the stories we picked this week cover it. The AI can write a fresh one from the latest headlines:
           </p>
+          <MakeStory q={d.q} primary />
           <div className="mt-3 flex flex-wrap gap-2">
             <button onClick={() => navigate(`/chat?b=${encodeURIComponent(d.q)}`)} className="rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm font-bold">
               Ask about “{d.q.length > 24 ? d.q.slice(0, 24) + '…' : d.q}” →

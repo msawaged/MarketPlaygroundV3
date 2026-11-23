@@ -185,6 +185,11 @@ export function searchMovers(q, signal) {
   return request(`/v4/movers/search?q=${encodeURIComponent(q)}`, { signal });
 }
 
+/** "Make a story about this": a fresh story about anything searched, from its real recent headlines. */
+export function getCustomStory(q) {
+  return request(`/v4/movers/custom?q=${encodeURIComponent(q)}`);
+}
+
 /** Story mode: one of today's news stories as full-screen cards. */
 export function getStory(headline) {
   return request(`/v4/movers/story?h=${encodeURIComponent(headline)}`);

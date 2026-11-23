@@ -97,20 +97,40 @@ export function MarketLine({ bench }) {
 }
 
 // Leads with the news and the companies it touches (a stock research card), not a statement to vote on.
-export function MoverCard({ item, i = 0 }) {
+// storyData: a story already in hand (a custom story made for a search), opened without fetching; openNow opens it.
+export function MoverCard({ item, i = 0, storyData = null, openNow = false }) {
   const navigate = useNavigate();
-  const [story, setStory] = useState(false);
+  const [story, setStory] = useState(openNow);
+  const [srcOpen, setSrcOpen] = useState(false);
   const ai = item.hunch && item.hunch !== item.headline;
   return (
     <>
-    {story && <Suspense fallback={null}><StoryViewer headline={item.headline} onClose={() => setStory(false)} /></Suspense>}
+    {story && <Suspense fallback={null}><StoryViewer headline={item.headline} preloaded={storyData} onClose={() => setStory(false)} /></Suspense>}
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-      className="rounded-2xl border border-slate-700 bg-slate-900/90 p-4">
-      <div className="text-[11px] text-slate-500">{[item.source, ago(item.created_at)].filter(Boolean).join(' · ')}</div>
+      className={`rounded-2xl border p-4 ${item.custom ? 'border-blue-500/50 bg-blue-950/30' : 'border-slate-700 bg-slate-900/90'}`}>
+      <div className="text-[11px] text-slate-500">{[item.source, item.custom ? (item.created_at && `newest ${ago(item.created_at)}`) : ago(item.created_at)].filter(Boolean).join(' · ')}</div>
       <div className="mt-1 text-base font-bold leading-snug">
         {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200">{item.headline}</a> : item.headline}
       </div>
       {ai && <p className="mt-1 text-sm text-slate-400"><span className="text-slate-500">What it could mean: </span>{String(item.hunch).trim().replace(/[.!?…\s]+$/, '')}.</p>}
+      {item.sources?.length > 0 && (
+        <div className="mt-2">
+          <button onClick={() => setSrcOpen((v) => !v)} aria-expanded={srcOpen} className="text-xs font-semibold text-blue-300 hover:text-blue-200">
+            {srcOpen ? 'Hide' : 'Show'} the {item.sources.length === 1 ? 'headline' : `${item.sources.length} headlines`} it's based on
+          </button>
+          {srcOpen && (
+            <ul className="mt-1.5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950/50">
+              {item.sources.map((h) => (
+                <li key={h.headline} className="px-3 py-2">
+                  {h.url ? <a href={h.url} target="_blank" rel="noopener noreferrer" className="text-sm leading-snug hover:text-blue-200">{h.headline}</a>
+                    : <span className="text-sm leading-snug">{h.headline}</span>}
+                  <div className="text-[11px] text-slate-500">{[h.source, ago(h.created_at)].filter(Boolean).join(' · ')}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="mt-3 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Companies it touches</div>
       <ul className="mt-1.5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950/50">

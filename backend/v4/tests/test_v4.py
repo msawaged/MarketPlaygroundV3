@@ -6419,3 +6419,66 @@ def test_movers_drops_a_story_link_that_is_a_quote_page_for_another_company():
     for u in ("https://www.fidelity.com/news/article/default/202611221400PR", "https://site.com/stocks/news/2026/abc",
               "https://www.moomoo.com/hans/news/post/1005426646"):
         assert story_url(u, ["X"]) == u
+
+
+def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
+    from backend.v4 import customstory, movers
+    now = datetime.now(timezone.utc)
+    iso = lambda h: (now - timedelta(hours=h)).isoformat()
+    tagged = {"CCJ": [{"headline": "Cameco signs uranium supply deal worth $2.1 billion", "symbols": ["CCJ"],
+                       "summary": "Uranium prices rose to $82 a pound from $64 a year ago.", "created_at": iso(5),
+                       "source": "benzinga", "url": "https://x/1"},
+                      {"headline": "Cameco names new CFO", "symbols": ["CCJ"], "summary": "", "created_at": iso(6)},
+                      {"headline": "Uranium miners rally on reactor plans", "symbols": ["UEC"], "summary": "",
+                       "created_at": iso(24 * 20)}]}  # too old
+    calls = []
+
+    class Fake:
+        def __init__(self):
+            self.messages = self
+
+        def create(self, **kw):
+            calls.append(kw)
+            if "tickers" in kw["extra_body"]["output_config"]["format"]["schema"]["properties"]:
+                out = {"tickers": ["CCJ", "FAKE", "ccj"]}
+            else:
+                out = {"used": [0], "title": "Uranium deals heat up", "hunch": "Uranium miners will keep winning deals",
+                       "why_short": "Utilities need fuel.", "hook_big": "$2.1 billion", "hook_line": "A big supply deal.",
+                       "happened": "Cameco signed a big supply deal.", "why": "Reactors need fuel for decades.",
+                       "twist": "Prices can fall fast.",
+                       "figures": [{"label": "Uranium price", "before_label": "A year ago", "before": "$64",
+                                    "after_label": "Now", "after": "$82"},
+                                   {"label": "Invented", "before_label": "Then", "before": "$1", "after_label": "Now", "after": "$9"}],
+                       "companies": [{"ticker": "CCJ", "direction": "up", "why": "sells the uranium"},
+                                     {"ticker": "FAKE", "direction": "up", "why": "made up"}]}
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))])
+
+    fake = Fake()
+    monkeypatch.setattr(customstory, "news_for", lambda syms: [customstory._clean(n) for s in syms for n in tagged.get(s, [])])
+    monkeypatch.setattr(market, "headlines", lambda limit=6: [])
+    monkeypatch.setattr(movers, "archived", lambda: [])
+    monkeypatch.setattr(market, "asset_info", lambda s: {"symbol": s, "name": "Cameco Corp"} if s == "CCJ" else None)
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 50.0, "change": 0.03, "change_day": "2026-11-20"} for s in syms})
+    monkeypatch.setattr(customstory, "PER_PERSON", 2)
+
+    out = customstory.make("Uranium news", "ip:1", client=fake)
+    st, item = out["story"], out["item"]
+    assert st["hook_big"] == "$2.1 billion" and [f["label"] for f in st["figures"]] == ["Uranium price"]  # no invented figure
+    assert [c["ticker"] for c in item["companies"]] == ["CCJ"] and item["companies"][0]["change"] == 0.03  # real tickers, priced
+    assert [s["headline"] for s in item["sources"]] == [tagged["CCJ"][0]["headline"]]  # only the headlines it used
+    assert item["custom"] and item["hunch"].startswith("Uranium miners") and out["left"] == 1
+    n = len(calls)
+    again = customstory.make("  uranium ", "ip:2", client=fake)  # same subject, someone else: cached, free
+    assert again["cached"] and len(calls) == n and again["left"] == 2
+    # nothing real to go on: says so, writes nothing
+    none = customstory.make("bananas", "ip:1", client=fake)
+    assert none["story"] is None and none["code"] == "no_news" and "nothing real" in none["reason"]
+    # the daily cap per person (a cached story still opens)
+    capped = customstory.make("lithium", "ip:1", client=fake)
+    assert capped["code"] == "limit" and capped["story"] is None
+    assert customstory.make("uranium", "ip:1", client=fake)["story"]
+    # a company search uses that company's own headlines and puts it first
+    monkeypatch.setattr(customstory.newssearch, "_KNOWN", {"cameco": "CCJ"})
+    co = customstory.make("Cameco CFO", "ip:3", client=fake)
+    assert co["item"]["companies"][0]["ticker"] == "CCJ"
+    assert "Cameco names new CFO" in calls[-1]["messages"][0]["content"].split("\n")[3]  # the CFO headline first

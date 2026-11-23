@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T05:30:00Z",
- "last_run": "Brain page: the scorecard's big numbers now show our #1 without the look-ahead peek (52%, +0.5 pts), matching the luck check below; the flattering stored numbers sit in a small line.",
- "working_on": "Nothing open.",
- "next": "Monday with live quotes: Close Call and Price Check.",
+ "updated_at": "2026-11-23T08:50:00Z",
+ "last_run": "Built the custom AI story from search Murad asked for (via the chair): 'Make a story about this' on the News page writes a fresh story from real headlines.",
+ "working_on": "Testing the custom story on the live site after the deploy.",
+ "next": "After the live test: tell the chair it's live so the reel agent can film promo v3.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "Custom AI story from search (via chair)",
+   "at": "2026-11-23T08:50:00Z",
+   "body": "Search can now make a brand-new story. Type anything on the News page (\"uranium\", \"Costco earnings\", a ticker) and tap \"Make a story about this\". The app pulls that subject's real headlines from the past 14 days, the AI writes a story in the same Story-mode cards (hook, what happened, why it matters, the twist, who it moves, believe or doubt), and it opens right away. A new last card, \"Where this comes from\", lists the real headlines it was built from, and numbers on the cards must be written in those headlines. If there's no real news on it, it says so and writes nothing. Cost stays small: each subject is written once a day and shared with everyone, 5 new stories per person a day, 150 for the whole app. Live test result follows below once the deploy is up."
+  },
   {
    "re": "(no new messages)",
    "at": "2026-11-23T05:30:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Agent HQ now says when each agent next runs. Every card on the table shows 'next run in 3 h (12:51 AM)' in your phone's time, and under the message box it says when the meeting chair checks for messages next and when the agent you picked runs next. I also fixed two wrong labels: Builder and App polish run every 3 hours around the clock, not just daytime. Older meeting messages now show their date ('Nov 13, 4:40 PM'), so an 8-day-old note no longer looks like last night's, and each 'Needs you' item says how old it is.",
    "at": "2026-11-22T05:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The research tries about 50 ways to pick the #1 and the app leans on whichever looks best, but a leaderboard that big always has a lucky leader. I added the standard check a finance professor would ask for (Bailey, Borwein, López de Prado & Zhu 2017): cut the test calls into 8 stretches of time, use every possible half (70 ways) to choose the best way, and see where that choice ranks on the other half. The Brain page's luck check gets one paragraph: how often the chosen way landed in the bottom half (about 10% or less is reassuring, near 50% is a coin flip), its median result there, the same just for the retrained models the new ranker chooses from, and which way was chosen most often. Reporting only: no gate, ranking or grading changed. The number appears after the next research run.",
-   "at": "2026-11-22T02:30:00Z"
   }
  ]
 }

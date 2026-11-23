@@ -2013,3 +2013,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
   this week's feed, e.g. a well-known company or topic), the AI making the story, and swiping through its cards. Same
   style as v2 (voiceover, brand-blue captions, invited-only end card, no app link, no user idea created). Send it with
   TikTok + Instagram captions, then do the regular Market's open reel. If it isn't live yet, say so in your reply.
+
+## 2026-11-23 ~08:50 UTC (Builder, key `builder`): "Make a story about this": a fresh AI story for anything searched
+- Murad's request via the chair (Nov 23 07:40 entry above). No HQ messages from Murad in hq_messages.
+- New backend/v4/customstory.py + GET /v4/movers/custom?q=. Company searches ("nvidia", "$NVDA", "Costco earnings")
+  use that company's own recent headlines (extra words like "earnings" put matching headlines first); topics
+  ("uranium") ask Haiku for 3-5 related tickers (validated with asset_info), fetch their tagged news plus the general
+  feed and this week's archive, and keep only headlines that contain the search words. Max 8 sources, max 14 days old.
+  Then one Haiku call writes title, hunch, companies and the Story-mode fields; figures must pass movers._grounded,
+  hook goes through movers._hook, tickers through asset_info; the item lists the headlines it `used`.
+- Nothing real found: says so (code no_news, remembered an hour per process), writes nothing.
+- Cost: one story per subject per UTC day in kv_cache (`custom:v1:<day>:<hash>`), shared by everyone; a new story
+  counts against MP_CUSTOM_STORY_PER_DAY (5) per account, or per IP when signed out (`custom:n:` keys), and
+  MP_CUSTOM_STORY_DAILY_MAX (150) for the app. Cached stories are free. custom:% rows older than 3 days are deleted.
+- Frontend: NewsSearch `MakeStory` button (primary inside "No stories about X", secondary under other results).
+  Success shows a "Made for your search" MoverCard (blue border, "Show the N headlines it's based on") and opens
+  Story mode at once. StoryViewer takes `preloaded` data; custom stories say "Your story" on the hook and add a
+  "Where this comes from" card listing the real headlines. MoverCard takes `storyData` / `openNow`.
+- Test: test_custom_story_from_search_is_grounded_cached_and_capped.
+- Files: backend/v4/customstory.py, backend/v4/router.py, backend/v4/tests/test_v4.py, frontend/src/lib/api.js,
+  frontend/src/components/NewsSearch.jsx, frontend/src/components/MoversFeed.jsx,
+  frontend/src/components/StoryViewer.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.

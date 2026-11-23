@@ -6,11 +6,11 @@ import re
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from . import auth, brokerage, db, engine, grader, interpreter, market, movers, newssearch, nn, notify, passkeys, brain, push
+from . import auth, brokerage, customstory, db, engine, grader, interpreter, market, movers, newssearch, nn, notify, passkeys, brain, push
 
 router = APIRouter()
 
@@ -592,6 +592,24 @@ async def get_movers():
 async def search_movers(q: str = ""):
     """News search: this week's stories about a company, ticker or topic, plus that company's latest headlines."""
     return await run_in_threadpool(newssearch.search, q[:60])
+
+
+@router.get("/movers/custom")
+async def custom_story(request: Request, q: str = "", authorization: Optional[str] = Header(None)):
+    """"Make a story about this": a fresh Story-mode story about anything searched, from its real recent headlines.
+    One per subject per day for everyone; a capped number of new ones per person per day (signed in: per account,
+    otherwise per network address)."""
+    who = None
+    tok = _token(authorization)
+    if tok:
+        try:
+            who = "acc:" + str((await run_in_threadpool(auth.require, tok))["id"])
+        except Exception:
+            who = None
+    if not who:
+        fwd = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+        who = "ip:" + (fwd or (request.client.host if request.client else "?"))
+    return await run_in_threadpool(customstory.make, q[:60], who)
 
 
 @router.get("/movers/story")

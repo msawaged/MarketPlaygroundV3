@@ -77,7 +77,7 @@ function cards(data, navigate, reel = false, launched = false) {
   const out = [
     ...(reel ? [intro] : []),
     <div key="hook" className="flex h-full flex-col justify-center">
-      <Label>Moving now</Label>
+      <Label>{item.custom ? 'Your story' : 'Moving now'}</Label>
       <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 160 }}
         className={`mt-4 ${hookSize(s.hook_big)} font-black leading-[0.95] tracking-tight break-words pb-[0.12em] bg-gradient-to-br from-white to-blue-400 bg-clip-text text-transparent`}>
         {s.hook_big}
@@ -126,6 +126,24 @@ function cards(data, navigate, reel = false, launched = false) {
       </div>,
     );
   }
+  if (item.sources?.length) {
+    out.push(
+      <div key="sources" className="flex h-full flex-col justify-center">
+        <Label>Where this comes from</Label>
+        <p className="mt-3 text-slate-300">Written by AI for your search from {item.sources.length === 1 ? 'this real headline' : `these ${item.sources.length} real headlines`}:</p>
+        <ul className="mt-4 space-y-2">
+          {item.sources.slice(0, 5).map((h) => (
+            <li key={h.headline} className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2">
+              {h.url ? <a href={h.url} target="_blank" rel="noopener noreferrer" className="text-sm leading-snug text-white hover:text-blue-200">{h.headline}</a>
+                : <span className="text-sm leading-snug text-white">{h.headline}</span>}
+              <div className="text-[11px] text-slate-500">{[h.source, ago(h.created_at)].filter(Boolean).join(' · ')}</div>
+            </li>
+          ))}
+        </ul>
+        {item.sources.length > 5 && <p className="mt-2 text-xs text-slate-500">and {item.sources.length - 5} more</p>}
+      </div>,
+    );
+  }
   if (reel) {
     out.push(
       <div key="cta" className="flex h-full flex-col justify-center">
@@ -163,9 +181,9 @@ function cards(data, navigate, reel = false, launched = false) {
   return out;
 }
 
-export default function StoryViewer({ headline, onClose, reel = false, cardMs: baseMs = CARD_MS, durations = null, launched = false }) {
+export default function StoryViewer({ headline, onClose, reel = false, cardMs: baseMs = CARD_MS, durations = null, launched = false, preloaded = null }) {
   const navigate = useNavigate();
-  const [data, setData] = useState(() => _stories.get(headline) || null);
+  const [data, setData] = useState(() => preloaded || _stories.get(headline) || null);
   const [err, setErr] = useState('');
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
