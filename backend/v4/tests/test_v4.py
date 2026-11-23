@@ -3393,6 +3393,47 @@ def test_ranker_v2_neural_net_competes_on_the_same_walk_forward(monkeypatch):
     assert s[0] > s[2] > s[1]
 
 
+def test_screened_neural_net_learns_only_inputs_its_training_calls_back(monkeypatch):
+    # 2026-11-23 brain upgrade: a ranker v2 candidate net that learns only from inputs whose within-group correlation
+    # with the training label clears SCREEN_T on that fold's own training calls. Same walk-forward test and gate.
+    import pickle
+    from backend.v4 import research
+    test_research_walk_forward_runs_and_stores(monkeypatch)  # planted momentum signal, vol60 is noise
+    data = research.load()
+    keys = [k for k in research.ZKEYS]
+    kept, t = research.screen_keys(data, keys, k_min=1)
+    assert "z_mom60" in kept and t["z_mom60"] > 5            # the planted signal clears the bar
+    assert abs(t["z_vol60"]) < research.SCREEN_T and "z_vol60" not in kept  # noise does not
+    assert "bearish" in kept and len(kept) < len(keys)
+    assert kept == [k for k in keys if k in kept]            # original order kept
+    # at least k_min inputs even when nothing clears the bar
+    few, _ = research.screen_keys(data, keys, min_t=99.0, k_min=3)
+    assert len([k for k in few if k != "bearish"]) == 3 and "z_mom60" in few
+    # the screen reads training calls only: changing a test-period label leaves an early fold's screen unchanged
+    early = [b for b in data if b["date"] < "2025-01-01"]
+    a, _ = research.screen_keys(early, keys)
+    for b in data:
+        if b["date"] >= "2025-01-01":
+            for c in b["cands"]:
+                c["rel"] = -c["rel"]
+    assert research.screen_keys(early, keys)[0] == a
+    out = research.run()
+    r = out["results"][research.SCREENED]
+    assert r["n"] > 100 and r["lift"] > 0.02
+    assert out["screen"]["folds"] >= 1 and out["screen"]["kept"].get("z_mom60") == out["screen"]["folds"]
+    assert research.SCREENED + research.MIX in out["results"] and research.SCREENED in research.LEARNED
+    # if it is the only candidate clearing the (unchanged) gate it goes live, scoring from the full key list
+    monkeypatch.setattr(research, "_passes", lambda m_, app, risk=False: m_ is out["results"][research.SCREENED])
+    monkeypatch.setattr(research, "SCREEN_MIN", 1)  # the fixture stores only two inputs; let the screen drop the noise
+    rv = research.fit_production(out)
+    assert rv["model"] == "mlp_scr" and rv["kind"] == "mlp" and rv["active"]
+    assert "z_mom60" in rv["screened_keys"] and len(rv["screened_keys"]) < len(rv["keys"])
+    m = research._gbm_model(rv["at"])
+    assert isinstance(m, research.ScreenedModel) and pickle.loads(pickle.dumps(m)).kept == m.kept
+    s = research.score_candidates([{"mom60": 0.2}, {"mom60": -0.2}, {"mom60": 0.0}], ["bullish"] * 3)
+    assert s[0] > s[2] > s[1]
+
+
 def test_brain_forward_test_counts_only_live_calls():
     from backend.v4 import brain
     def add(bid, src, ideas):

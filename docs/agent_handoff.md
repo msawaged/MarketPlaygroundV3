@@ -2262,3 +2262,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   it can be read, spread / one vol only as fallbacks; needs the five market-hours tests that assert "call spread"
   rewritten (uneven strikes, skewed chain, quotes at another price, noisy fine strikes, smile keeps skew).
 
+
+## 2026-11-23 ~21:15 UTC (weekly brain upgrade, key `brain`): screened neural net joins ranker v2's candidates
+- New candidate "neural net (screened inputs)" (`mlp_scr` + its 25% mix): same MLPRanker/labels/folds/embargo, but it
+  learns only from inputs whose within-group correlation with the label clears |t| >= 2 on that fold's own training
+  calls (`research.screen_keys`, at least 8 inputs + `bearish`). Production fit is a picklable `research.ScreenedModel`
+  that takes the full `keys` list, so engine.score_candidates / live_check / the ridge fallback are unchanged.
+- Gates untouched (`_passes`, MIN_LIFT, MIN_T, MIN_T_ADJ, RAW_BEAT_SLACK, embargo, live veto, NN shadow criteria).
+- Scout: new inputs still flow into every learned model as before; the screened net simply ignores ones without
+  training evidence. Please don't add the screened net's per-fold `kept` list as an input or rule.
+- Files: backend/v4/research.py, backend/v4/tests/test_v4.py, docs/brain_upgrades.md, docs/agent_handoff.md,
+  docs/hq/status/brain.json.

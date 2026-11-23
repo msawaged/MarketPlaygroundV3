@@ -580,7 +580,7 @@ def pbo(res: dict, s: int = PBO_BLOCKS, only: tuple | list | None = None, exclud
 
 
 LEARNED = ("ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)", "neural net (learned)",
-           "neural net (risk-adjusted)", "gbm (+ shifted)", "gbm (risk-adjusted, + shifted)")
+           "neural net (risk-adjusted)", "gbm (+ shifted)", "gbm (risk-adjusted, + shifted)", "neural net (screened inputs)")
 
 
 VS_APP_BASE = "app, no look-ahead"  # the app's #1 the head-to-head compares against (no look-ahead, see _pit_score)
@@ -819,6 +819,70 @@ def _xy(train: list[dict], keys: list[str], label: str):
 def _fit_mlp(train: list[dict], keys: list[str], label: str = "rel"):
     m = MLPRanker(*_xy(train, keys, label))
     return lambda f: float(m.predict(np.array([[f[k] for k in keys]]))[0])
+
+
+SCREEN_T = 2.0   # an input joins the screened net only if its training-fold evidence clears this (|t| of the mean IC)
+SCREEN_MIN = 8   # ...but the net always keeps at least this many inputs (strongest first)
+SCREEN_ALWAYS = ("bearish",)  # context, not a signal: constant inside a ranked group, so it has no IC of its own
+SCREENED = "neural net (screened inputs)"
+
+
+def screen_keys(train: list[dict], keys: list[str], label: str = "rel", min_t: float | None = None,
+                k_min: int | None = None) -> tuple[list[str], dict]:
+    """Which inputs the screened neural net may learn from, judged on TRAINING calls only (the fold's own, 90 days
+    before its test block, so no look-ahead). For each input: inside every ranked group (the ideas a #1 is chosen
+    among, as in load), the correlation between the input and the idea's training label; then the t-stat of that
+    correlation's mean across groups (one number per group, so a belief with many ideas doesn't count many times).
+    Inputs with |t| >= min_t are kept (at least k_min, strongest first), in their original order.
+    Why (2026-11-23): the scout adds about one input a day (49 now) and most have no edge on their own; each one the
+    net saw moved it: 2026-11-17 delay (net -0.34 pts, switched off), 2026-11-22 cvvol/hi_age/ldvol (+1.69% -> +1.19%,
+    switched off). Returns (kept keys, {key: t})."""
+    min_t = SCREEN_T if min_t is None else min_t
+    k_min = SCREEN_MIN if k_min is None else k_min
+    cols = [FeatRow.IDX[k] for k in keys]
+    s1, s2, n = np.zeros(len(keys)), np.zeros(len(keys)), np.zeros(len(keys))
+    for b in train:
+        groups: dict[bool, list[dict]] = {}
+        for c in b["cands"]:
+            if c.get("train", True):
+                groups.setdefault(bool(c.get("lead", True)), []).append(c)
+        for g in groups.values():
+            if len(g) < 2:
+                continue
+            y = np.array([max(-0.5, min(0.5, float(c[label]))) for c in g])
+            ys = y.std()
+            if ys <= 1e-12:
+                continue
+            x = np.vstack([c["f"].v[cols] for c in g])
+            xs = x.std(0)
+            ok = xs > 1e-9
+            ic = np.zeros(len(keys))
+            ic[ok] = ((x[:, ok] - x[:, ok].mean(0)) * (y - y.mean())[:, None]).mean(0) / (xs[ok] * ys)
+            s1 += ic
+            s2 += ic * ic
+            n += ok
+    t = {}
+    for j, k in enumerate(keys):
+        if n[j] >= 3:
+            m = s1[j] / n[j]
+            sd = math.sqrt(max(s2[j] / n[j] - m * m, 0.0) * n[j] / (n[j] - 1))
+            t[k] = round(float(m / (sd / math.sqrt(n[j]))) if sd > 0 else 0.0, 2)
+        else:
+            t[k] = 0.0
+    strong = sorted((k for k in keys if k not in SCREEN_ALWAYS), key=lambda k: -abs(t[k]))
+    keep = {k for k in strong if abs(t[k]) >= min_t} | set(strong[:k_min]) | {k for k in SCREEN_ALWAYS if k in keys}
+    return [k for k in keys if k in keep], t
+
+
+class ScreenedModel:
+    """A model trained on a subset of the ranker's inputs that still takes the full input matrix (columns in `keys`
+    order), so the engine, live_check and the ridge fallback keep one shared key list. Picklable."""
+
+    def __init__(self, model, idx: list[int], kept: list[str]):
+        self.model, self.idx, self.kept = model, list(idx), list(kept)
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        return self.model.predict(np.asarray(x, dtype=float)[:, self.idx])
 
 
 def _fit_gbm(train: list[dict], keys: list[str], label: str = "rel"):
@@ -1078,7 +1142,7 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     # only features filled in on (nearly) every test-period idea, the same coverage run() reports; see learn_keys
     zkeys = learn_keys(coverage([b for b in data if b["date"] >= dates[int(len(dates) * 0.4)]]))
     res = {k: [] for k in list(fixed) + ["ridge (learned)", "gbm (learned)", "gbm (risk-adjusted)",
-                                          "neural net (learned)", "neural net (risk-adjusted)"]
+                                          "neural net (learned)", "neural net (risk-adjusted)", SCREENED]
                + (["gbm (+ shifted)", "gbm (risk-adjusted, + shifted)"] if aug else [])}
     # "many weak signals, one vote" (reporting only): the fixed rules a fold's composite may choose from. Not the app's
     # rows (the stored one has look-ahead), not the learned models, not a rule whose input is still filling in.
@@ -1087,6 +1151,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
     res[COMPOSITE] = []
     comp_kept: dict[str, int] = {}
     comp_folds = comp_fallback = 0
+    screen_kept: dict[str, int] = {}
+    screen_folds = 0
     # test blocks: the last 60% of dates split into `folds`; train on everything 90+ days before each block
     start = int(len(dates) * 0.4)
     blocks = np.array_split(np.array(dates[start:]), folds)
@@ -1190,6 +1256,14 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
             learned("neural net (risk-adjusted)", mlpa, test)
         except Exception:
             pass
+        try:  # the same net on only the inputs this fold's training calls back up (screen_keys; no test data read)
+            sk, _ = screen_keys(train, zkeys)
+            screen_folds += 1
+            for k in sk:
+                screen_kept[k] = screen_kept.get(k, 0) + 1
+            learned(SCREENED, _fit_mlp(train, sk), test)
+        except Exception:
+            pass
     out = {"at": datetime.now(timezone.utc).isoformat(), "beliefs": len(data), "days": DAYS, "shifted_beliefs": len(aug),
            "confidence": {k: _by_confidence(res[k], v) for k, v in spreads.items() if len(v) == len(res[k]) >= 90},
            "test_from": dates[start], "results": {k: _metrics(v, cuts) for k, v in res.items()},
@@ -1207,6 +1281,8 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
                         "fallback_folds": comp_fallback, "min_t": COMP_MIN_T, "max": COMP_MAX, "overlap": COMP_OVERLAP}
     if (out["results"].get(COMPOSITE) or {}).get("n"):
         out["results"][COMPOSITE]["composite_members"] = out["composite"]["members"]
+    out["screen"] = {"min_t": SCREEN_T, "min_keys": SCREEN_MIN, "folds": screen_folds, "of": len(zkeys),
+                     "kept": dict(sorted(screen_kept.items(), key=lambda kv: (-kv[1], kv[0])))}
     out["luck"] = luck(out["results"], _tries([k for k, v in out["results"].items() if v.get("n")]))
     out["luck"]["composite"] = composite_summary(out["results"], out["composite"],
                                                  [k for k in fixed if fixed[k] is not None])
@@ -1350,11 +1426,13 @@ def fit_production(results: dict | None = None) -> dict:
     app = res.get("app (current #1)", {})
     cands = {"ridge": (res.get("ridge (learned)", {}), "rel"), "gbm": (res.get("gbm (learned)", {}), "rel"),
              "gbm_adj": (res.get("gbm (risk-adjusted)", {}), "rela"),
-             "mlp": (res.get("neural net (learned)", {}), "rel"), "mlp_adj": (res.get("neural net (risk-adjusted)", {}), "rela")}
+             "mlp": (res.get("neural net (learned)", {}), "rel"), "mlp_adj": (res.get("neural net (risk-adjusted)", {}), "rela"),
+             "mlp_scr": (res.get(SCREENED, {}), "rel")}
     if aug and "gbm (+ shifted)" in res:
         cands.update({"gbm_aug": (res["gbm (+ shifted)"], "rel"), "gbm_adj_aug": (res["gbm (risk-adjusted, + shifted)"], "rela")})
     names = {"ridge": "ridge (learned)", "gbm": "gbm (learned)", "gbm_adj": "gbm (risk-adjusted)",
-             "mlp": "neural net (learned)", "mlp_adj": "neural net (risk-adjusted)", "gbm_aug": "gbm (+ shifted)",
+             "mlp": "neural net (learned)", "mlp_adj": "neural net (risk-adjusted)", "mlp_scr": SCREENED,
+             "gbm_aug": "gbm (+ shifted)",
              "gbm_adj_aug": "gbm (risk-adjusted, + shifted)"}
     for k in list(cands):  # each model also as it would go live: mixed into the app's score
         if names[k] + MIX in res:
@@ -1379,6 +1457,10 @@ def fit_production(results: dict | None = None) -> dict:
         from sklearn.ensemble import HistGradientBoostingRegressor
         fit_on = data + aug if base.endswith("_aug") else data
         xx, yy = _xy(fit_on, keys, cands[key][1])
+        if base == "mlp_scr":  # screened on every graded call, as each fold screened on its own training calls
+            kept, _ = screen_keys(fit_on, keys, cands[key][1])
+            idx = [keys.index(k) for k in kept]
+            return kind_, ScreenedModel(MLPRanker(xx[:, idx], yy), idx, kept)
         return kind_, (MLPRanker(xx, yy) if kind_ == "mlp" else HistGradientBoostingRegressor(
             max_depth=3, learning_rate=0.05, max_iter=150, min_samples_leaf=40, l2_regularization=1.0,
             random_state=7).fit(xx, yy))
@@ -1434,6 +1516,8 @@ def fit_production(results: dict | None = None) -> dict:
            "weight": MIX_WEIGHT if best.endswith("_mix") else WEIGHT, "mix": best.endswith("_mix"), "live": live,
            "risk_check": risk, "beta_coverage": full.get("beta_coverage"),
            "candidates": {k: m for k, (m, _) in cands.items()}}
+    if isinstance(model, ScreenedModel):
+        out["screened_keys"] = model.kept
     db.execute("DELETE FROM kv_cache WHERE k = ?", (RANKER_KEY,))
     db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (RANKER_KEY, json.dumps(out), out["at"]))
     _cache["v"], _cache["at"] = out, datetime.now(timezone.utc).timestamp()

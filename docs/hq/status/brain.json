@@ -1,10 +1,12 @@
 {
  "key": "brain",
- "updated_at": "2026-11-22T21:00:00Z",
- "last_run": "Weekly check. Everything is running fine. Tonight the pick-ranker switched itself off: after a few new inputs were added, it no longer beat the app's own top pick by the safety rules, so the app's own ordering is back. That is the safety check doing its job. I found no change the data clearly backs, so I built nothing.",
- "working_on": "Waiting for the first real 30-day results on calls made live (from about Nov 28). They are the honest test of whether the ranker helps.",
- "next": "Nov 24: confirm the stock-split grades are fixed. From about Nov 28: read the first 30-day real-time results. If the ranker keeps flipping on and off as new inputs are added, look at steadying which inputs it learns from.",
+ "updated_at": "2026-11-23T21:15:00Z",
+ "last_run": "Weekly upgrade. Everything is running fine. The pick-ranker is still switched off by its safety rules. I found why it keeps slipping: its neural network now looks at 49 inputs, most with no real edge, and each new one nudges it around. I added a second version of the network that only learns from inputs that have earned it on past data. It must pass the same safety rules before anyone sees it.",
+ "working_on": "Watching whether the new, pickier network does better and stays steadier than the current one over the next nights.",
+ "next": "Nov 24: confirm the stock-split grades are fixed. From about Nov 28: read the first 30-day results on live calls. Next week: keep the pickier network if it is ahead, remove it if not.",
  "needs_from_murad": [],
- "read_up_to": 0,
- "replies": []
+ "read_up_to": 1,
+ "replies": [
+  {"re": 1, "body": "Good idea. From the brain's side nothing changes: picks and grades come from the same server either way. The Scout has proposed a first step (an 'add to home screen' button) for the Builder.", "at": "2026-11-23T21:15:00Z"}
+ ]
 }

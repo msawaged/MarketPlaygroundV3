@@ -790,3 +790,44 @@ the Render job and one night's swing is not evidence enough to change what users
 lone-ranker live veto decides at 300+, ~Dec 2) and the Nov 24 split repair (ITA/SOXX real-time grades over 40% → 0).
 If the ranker keeps flipping on/off as features join, next week's run should consider the in-fold input screen above,
 judged by the same gate.
+
+## 2026-11-23 ~21:00 UTC (weekly) — A second neural net that learns only from inputs its training calls back up
+
+**Checked.** Health OK (learning 20:26 UTC, grading Nov 20; next grading Nov 24 05:13 UTC, which also runs the split
+repair). HQ: one message from Murad to everyone (#1, mobile app) — not a brain task, answered in the status file. No
+brain-side "proposed" items in docs/feature_ideas.md (the only proposed item is the Builder's install button).
+
+**Problem (real numbers).** Ranker v2 is still off (20:28 UTC refit; shown model ridge, inactive). The learned
+models now see **49 inputs** (rmom held back while it fills) and the scout adds about one a day. Most of those inputs
+have no edge on their own: of the 35 fixed rules, 22 have walk-forward lift below +0.5% (19 of them negative), and
+ridge's weights are almost all under 0.005. Every time inputs joined, the neural net moved and the ranker flipped:
+Nov 17 `delay` (12.6% filled) knocked the risk-adjusted net from +0.96% to +0.62% and switched it off; Nov 22
+`cvvol`/`hi_age`/`ldvol` took the net from **+1.69% (t 5.23) to +1.19% (t 3.78)** and switched it off; tonight it is
+**+1.23% (t 3.76, t_nw 2.57)**, risk-matched beat **53.6%** vs the stored #1's **54.2%** (`_passes` fails on that), while
+single rules it can see do better on their own: `-z_rskew` **+1.45%, risk-matched beat 55.0%**; `z_amihud` +1.21%,
+54.5%. A net that does worse than one of its own inputs is learning noise from the others. The net is still the
+most-picked learned model across the 70 CSCV splits (24 of 70; PBO among learned 0.23), so it is worth steadying.
+
+**Change (one new candidate; no gate touched).** `research.screen_keys(train, keys)`: on a fold's TRAINING calls only,
+for each input, the correlation with the training label inside every ranked group (the ideas a #1 is chosen among),
+then the t-stat of the mean across groups (one number per group). Keep inputs with |t| >= `SCREEN_T` = 2.0 (fixed
+before any run, the composite's bar), at least `SCREEN_MIN` = 8, plus `bearish` (context). New walk-forward row and
+ranker v2 candidate **"neural net (screened inputs)"** (`mlp_scr`, and its 25% mix): the same `MLPRanker`, labels,
+folds, 90-day embargo and test calls as "neural net (learned)", on the screened inputs. In `fit_production` the
+production fit screens on every graded call and is stored as a `ScreenedModel` that takes the full key list (so the
+engine, `live_check` and the ridge fallback are unchanged); kv `ranker:v2` gets `screened_keys`, kv
+`research:ranker` gets `screen` (how many folds kept each input). It reaches users only by passing the unchanged
+`_passes` (MIN_LIFT, MIN_T, MIN_T_ADJ, RAW_BEAT_SLACK) and the lone-ranker live veto. The luck bar counts it as one
+more try. Memory/time: one more 5-seed net per fold (columns subset), no extra data loaded.
+
+**Checks.** Backend tests: 256 passed (fresh venv). New
+`test_screened_neural_net_learns_only_inputs_its_training_calls_back` (keeps the planted signal, drops noise, order
+kept, minimum count, training-only, walk-forward row + per-fold report, goes live through a forced gate as a
+picklable `ScreenedModel` that scores live ideas from the full key list).
+
+**What counts as a win.** In kv `research:ranker` after the next refits: "neural net (screened inputs)" lift and
+risk-matched beat at or above "neural net (learned)" (tonight +1.23%, 53.6%), and a smaller night-to-night swing as
+new scout inputs join (the unscreened net swung 0.5 points on Nov 22). Best case it clears the unchanged gate
+(risk-matched beat >= the stored #1's, ~54.2%) and then the live veto once 300+ real-time 30-day calls exist (~Dec 2).
+A loss: it trails the unscreened net for a week of refits; then the next weekly run removes it (it still counts as a
+try on the luck bar).
