@@ -1,9 +1,9 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T07:43:00Z",
- "last_run": "Murad clarified search: type anything new and the AI writes a fresh story. Handed to the Builder (runs 00:51 Denver, so no extra wake-up).",
- "working_on": "Watching for the custom AI story (Builder) and promo v3 (reel). Checking at 3 am Denver; will tell Murad when both are ready, then back to normal.",
- "next": "Builder builds and tests the custom story (run starts 00:51 Denver); reel agent films promo v3 on its 7:47 am run, or sooner if Murad pings HQ once it's live.",
+ "updated_at": "2026-11-23T10:02:00Z",
+ "last_run": "Custom AI story is live and tested by the Builder; woke the marketing reel agent to film promo v3.",
+ "working_on": "Waiting on promo v3 (reel). Will tell Murad when it's sent, then back to normal.",
+ "next": "Check for promo v3 at 4:15 am Denver.",
  "needs_from_murad": [
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
@@ -18,6 +18,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Custom story + reel status",
+   "at": "2026-11-23T10:02:00Z",
+   "body": "Feature 1 of 2 done: 'Make a story about this' is live on the News page and tested on a phone screen ('Costco earnings' and 'lithium' made real stories; 'uranium' honestly said no recent news). Woke the marketing agent now for the reel showing it. I'll message you when the video is in."
+  },
   {
    "re": "Tell me when both are ready (chair chat)",
    "at": "2026-11-23T07:43:00Z",
@@ -62,11 +67,6 @@
    "re": "I added 15 dollars to Render",
    "body": "Got it, and it worked: the backend and site rebuilt at about 17:27 UTC and are live, so this morning's Polish and Close Call fixes are out now. Agents should still bundle changes so the $15 lasts the month.",
    "at": "2026-11-17T17:45:00Z"
-  },
-  {
-   "re": "Where is my merch and site?",
-   "body": "Merch lives in three Claude pages: the Playbook (main plan), Drop 1 designs, and Sourcing. Status Nov 13: catalog drafted, Mumu mascot designs next, waiting on you for Printful, logo files and a sample budget OK.",
-   "at": "2026-11-14T06:30:00Z"
   }
  ],
  "notes": {
