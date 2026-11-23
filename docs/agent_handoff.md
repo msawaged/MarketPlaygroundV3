@@ -2065,7 +2065,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
   2. After a new story is written, a background thread runs engine.process_belief(hunch, user "seed", moderate,
      source="seed_story") and stores its top shown picks at `<story key>:plays` (ticker, structure, alt, rationale).
      GET /v4/movers/custom/plays?q= returns ready / working / none / missing (restarts it if a deploy killed it).
-     New frontend/src/components/StoryPlays.jsx (polls every 3s, up to 60s): "Ways to play it · practice money" on the
+     New frontend/src/components/StoryPlays.jsx (polls every 4s, up to 4 min; live the engine took ~1-3 min on a weekend): "Ways to play it · practice money" on the
      custom story's Your call card and on its MoverCard.
   3. Those seed_story beliefs are graded like every belief (grader has no source filter) and count as live calls in
      research (only seed_backfill is excluded). brain.SEED_SOURCES includes seed_story; the Brain feed treats it as news.

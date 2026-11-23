@@ -20,7 +20,7 @@ export function useStoryPlays(q) {
       getCustomPlays(q)
         .then((r) => {
           if (!alive) return;
-          if (r?.status === 'working' && tries++ < 20) { setD(r); t = setTimeout(poll, 3000); return; }
+          if (r?.status === 'working' && tries++ < 60) { setD(r); t = setTimeout(poll, 4000); return; }
           if (r?.status === 'ready') _plays.set(q, r);
           setD(r?.status === 'working' ? { status: 'none' } : r);
         })
@@ -38,7 +38,7 @@ export default function StoryPlays({ q, dark = false, compact = false }) {
     return (
       <div className="flex items-center gap-2 text-sm text-slate-400" role="status">
         <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-        Finding ways to play it…
+        Finding ways to play it (can take a minute or two)…
       </div>
     );
   }
