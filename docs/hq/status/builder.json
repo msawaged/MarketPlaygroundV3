@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-22T23:10:00Z",
- "last_run": "Agent HQ: a 'Write to the team' button at the top, 'Needs you' trimmed to the newest 4, replies labelled 'update' or quoting your message, and each agent's newest replies kept.",
+ "updated_at": "2026-11-23T02:30:00Z",
+ "last_run": "Brain page: 'At a glance' for the luck check, one honest line per test plus a verdict; full detail one tap away; no-peek extremes line added.",
  "working_on": "Nothing open.",
- "next": "Monday: Close Call and Price Check on live quotes.",
+ "next": "Monday with live quotes: Close Call and Price Check.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "The Brain page's luck check was seven dense paragraphs, a wall on a phone. It now opens with 'At a glance': one line per check with a tick, a cross or a '~', all about the same honest version of our #1 (rebuilt without the look-ahead peek), and a one-line verdict. Today it reads: ahead of our other ideas by +0.5 pts on 2,703 test calls, but not clear of luck (t 1.7, and 1.0 counting overlapping calls, against a bar of 3.3); partly carried by a few huge calls; ahead in 3 of 4 stretches but behind in the latest; the 7-day real-time results are too early. The full paragraphs are one tap away under 'How each check works'. One thing the paragraphs hid: 'the lead is broad, not a few lucky calls' was true of the stored #1 (its 10 best calls are 27% of its lead), but without the peek its 10 best calls are 73% of a smaller lead. The page now says both. No numbers, gates or grading changed.",
+   "at": "2026-11-23T02:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Agent HQ is easier to use from your phone. There's a 'Write to the team' button at the top that jumps to the message box (it was below 12 to-do items, 9 agent cards and the whole thread). 'Needs you' shows the newest 4 with 'Show all'. Replies no longer say 're #(no new messages)': a routine report says 'update', and an answer to one of your messages quotes the start of what you wrote. I also fixed the thread dropping an agent's newest replies once it had more than 10. Nothing you've sent through HQ has arrived yet (the table is empty); sending works when I test it, so a short hello there will reach everyone.",
@@ -51,11 +56,6 @@
    "re": "(chair's sprint: one shareable growth feature)",
    "body": "Share cards are built. On My beliefs, Share now sends a link to that call (it was only a picture before). In chats and on social sites the link shows a preview picture: the call in quotes, the stock, and a box for each check at 7, 30 and 90 days, green if it beat the S&P 500, red if it didn't, grey 'not graded yet'. Misses look exactly like wins, and nothing shows a result before it is graded. Where previews don't show, the text has Wordle-style squares (7d 🟩 30d 🟥 90d ⬜). Tapping the link opens the welcome page with that call on top and 'What's your call?' above sign-up. No names or emails on the card; only users' own calls can be shared. Practice money only; grading unchanged.",
    "at": "2026-11-21T23:10:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Every research number was one average over nearly two years of test calls, so an edge that lived in one rally and vanished looked the same as one that held throughout. Each result now also splits its test calls into four stretches of time (cut on call dates, never on outcomes) and records how many stretches it was ahead in and its latest stretch. The Brain page's luck check gets a 'Through time.' line: the #1 pick's lead in each stretch, the same without the peek, and how many of the ways that cleared the luck bar held in at least 3 of 4. Reporting only: no gate or grading changed. Numbers appear after the next research run.",
-   "at": "2026-11-21T21:00:00Z"
   }
  ]
 }

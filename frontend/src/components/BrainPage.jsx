@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { request, API_BASE } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { themeLabel } from '../lib/text';
+import { luckGlance } from '../lib/luck';
 import BottomNavigation from './BottomNavigation';
 import BrainLineages from './BrainLineages';
 
@@ -212,6 +213,7 @@ export default function BrainPage({ viewOnly = false }) {
   const [now, setNow] = useState(Date.now());
   const [firing, setFiring] = useState(0);
   const [allVersions, setAllVersions] = useState(false);
+  const [luckOpen, setLuckOpen] = useState(false);
   useEffect(() => {
     let alive = true;
     const load = () => request('/v4/brain').then((x) => alive && (setD(x), setErr(null))).catch((e) => alive && setErr(e.message));
@@ -423,6 +425,38 @@ export default function BrainPage({ viewOnly = false }) {
                     {sk.luck.app_clears && !sk.luck.app_clears_adj ? ' (not yet once each stock\'s risk is matched).' : '.'}
                   </div>
                   {(() => {
+                    // At a glance (lib/luck.js): one row per check, all on the same honest version of the #1 (the
+                    // no-peek rebuild when the stored one flatters). The full paragraphs sit behind "How each check works".
+                    const G = luckGlance(sk, d.forward);
+                    if (!G.rows.length) return null;
+                    const MARK = {
+                      pass: ['✓', 'text-green-400', 'passes'], mixed: ['~', 'text-amber-300', 'partly'],
+                      fail: ['✗', 'text-rose-400', 'not yet'], early: ['…', 'text-slate-400', 'too early'],
+                    };
+                    return (
+                      <div className="mt-2.5 rounded-lg bg-slate-900/60 p-2.5">
+                        <div className="text-[11px] font-semibold text-slate-300">At a glance: {G.who}</div>
+                        <ul className="mt-1.5 space-y-1.5">
+                          {G.rows.map((r) => {
+                            const [sym, col, word] = MARK[r.mark];
+                            return (
+                              <li key={r.key} className="flex gap-2 text-xs leading-snug">
+                                <span className={`w-3 shrink-0 text-center font-bold ${col}`} aria-label={word}>{sym}</span>
+                                <span className="min-w-0"><span className="text-slate-200">{r.label}</span><span className="text-slate-400"> · {r.value}</span></span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <div className="mt-2 text-xs font-semibold text-slate-200">{G.verdict}</div>
+                        <button type="button" onClick={() => setLuckOpen((o) => !o)} aria-expanded={luckOpen}
+                          className="mt-2 text-xs font-semibold text-sky-300 underline underline-offset-2">
+                          {luckOpen ? 'Hide how each check works' : 'How each check works ↓'}
+                        </button>
+                      </div>
+                    );
+                  })()}
+                  {(luckOpen || !luckGlance(sk, d.forward).rows.length) && (<>
+                  {(() => {
                     const pv = Object.entries(sk.luck.provisional || {})
                       .map(([name, low]) => [name, Math.min(...Object.values(low || {}).map(Number))])
                       .filter(([, c]) => Number.isFinite(c))
@@ -472,6 +506,7 @@ export default function BrainPage({ viewOnly = false }) {
                         {' '}With every result capped at the 1% extremes (below {pct(sk.luck.winsor.lo)} or above {pct(sk.luck.winsor.hi)}), {sk.luck.n ? `on the same ${Number(sk.luck.n).toLocaleString()} test calls ` : ''}{who} beats our other ideas by {pts(W)} pts instead of {pts(L)} pts (t {Number(sk.luck.app_lift_w_t || 0).toFixed(1)}, counting each call as independent)
                         {sh != null && L > 0 ? `; its 10 best calls make ${Math.round(sh * 100)}% of its lead` : ''}.
                         {verdict}
+                        {peek && peek.lift_w != null && Number(peek.lift || 0) > 0 && ` Rebuilt without the peek, capped it's ${pts(Number(peek.lift_w))} pts instead of ${pts(Number(peek.lift))} pts${peek.top10_share != null ? `, and its 10 best calls make ${Math.round(Number(peek.top10_share) * 100)}% of that lead` : ''}${Number(peek.top10_share) > 0.5 ? ', so without the peek a handful of calls carry most of it' : ''}.`}
                         {' '}Capped, and counting each call as independent, {nw} of {sk.luck.tries_ever} ways {nw === 1 ? 'clears' : 'clear'} the bar{sk.luck.app_t_nw != null ? '; the overlap count above is the stricter test' : ''}.
                       </div>
                     );
@@ -582,6 +617,7 @@ export default function BrainPage({ viewOnly = false }) {
                       </div>
                     );
                   })()}
+                  </>)}
                   <div className="mt-1 text-[11px] text-slate-500">One lucky backtest is easy to show off. We show how many we ran.</div>
                 </div>
               )}

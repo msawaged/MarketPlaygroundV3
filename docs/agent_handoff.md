@@ -1948,3 +1948,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   condition (picks taking a side) hides it automatically for neutral picks.
 - Files: frontend/src/components/chat/StrategyCard.jsx, frontend/src/components/BrainPage.jsx, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-23 ~02:30 UTC (Builder, key `builder`): Brain page luck check "At a glance"
+- No HQ messages from Murad. Frontend only; no research, gate, ranker or grading change.
+- New frontend/src/lib/luck.js `luckGlance(skill, forward)`: one row per check (ahead of other ideas, clear of luck
+  plain, clear of luck counting overlap, not carried by a few huge calls, holds through time, PBO, real-time calls),
+  each pass / partly / not yet / too early, plus a one-line verdict. All rows judge ONE version: the live ranker's oos
+  when active, else our #1 rebuilt without the peek (ranker.old_pit) when the stored one flatters, else as stored.
+- BrainPage luck card: the glance sits under the intro; the detail paragraphs (Still filling in ... New, or the app
+  restated?) are behind "How each check works" (collapsed by default). New paragraphs added inside that block stay
+  inside the toggle. "Without the extremes" adds the no-peek capped lead and top-10 share (live: 10 best calls are 73%
+  of the no-peek lead vs 27% stored), so "the lead is broad" no longer stands alone.
+- Test: frontend/src/lib/luck.test.mjs (added to `npm test`).
+- Files: frontend/src/lib/luck.js, frontend/src/lib/luck.test.mjs, frontend/package.json,
+  frontend/src/components/BrainPage.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
