@@ -625,3 +625,48 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
   touch `_passes`, `fit_production` or ranker v2's activation rules; whether a composite could ever compete for the
   live #1 is a separate, deliberate decision for Murad written up in docs/brain_upgrades.md. Near-copy rules
   (rskew/max5, amihud/ldvol) are why the overlap filter is there.
+
+## 2026-11-23 — "Put it on your home screen": a real install button, asked at the right moment, and counted
+- **Area:** app (getting the phone app into people's hands; answers Murad's HQ message #1, "mobile app vs online app").
+- **Status:** proposed.
+- **Problem:** the site is already an installable phone app (frontend/public/manifest.webmanifest, sw.js, icons, push
+  alerts in AlertsCard), and the chair's HQ reply recommends staying on that path ("home-screen app") while
+  invite-only, then an app-store wrapper later. But nothing ever *offers* the install: there is no install button
+  anywhere, the only mention is an iPhone hint inside AlertsCard (Account page and the tool picker), and we can't tell
+  how many people installed. Evidence from the database today: `push_subs` has **0** rows, and since Oct 1 there were
+  only 7 real users making 34 calls. On iPhone, alerts only work after Add to Home Screen, so 0 alert subscribers is
+  partly an install problem. Before paying for app-store accounts and a wrapper (path 2), we should know whether
+  people install at all when asked well.
+- **Evidence:** Google's PWA guidance (web.dev, "Patterns for promoting PWA installation",
+  https://web.dev/articles/promote-install; "Installation prompt", https://web.dev/learn/pwa/installation-prompt;
+  "How to define your install strategy", https://web.dev/articles/define-install-strategy): wait for the
+  `beforeinstallprompt` event, call `preventDefault()`, keep it and show your own button; offer it after the user has
+  shown interest or right after a "conversion" moment (sign-up, a completed action), never on first load and never
+  inside a task; always dismissible, remembered, and re-offered only after the relationship changes; iPhone/iPad
+  never fire the event (Chrome and Edge on iOS can't install either), so show Safari's Share -> Add to Home Screen
+  steps only when `display-mode` is `browser`; measure with the `userChoice` outcome and the `appinstalled` event.
+  Those pages are 2019-2022 and give no hard numbers of their own, so we should measure our own rate rather than
+  borrow case-study figures.
+- **Build sketch (S):**
+  - New `frontend/src/lib/install.js`: listen for `beforeinstallprompt` once at startup (main.jsx), store the event;
+    `canInstall()`, `isInstalled()` (`matchMedia('(display-mode: standalone)')` or `navigator.standalone`),
+    `isIOS()`, `promptInstall()` (calls `prompt()` once, returns 'accepted'/'dismissed'); `appinstalled` listener.
+  - New `frontend/src/components/InstallCard.jsx`: one card, two versions. Android/desktop: "Add MarketPlayground to
+    your home screen: it opens full screen and can tell you when the market opens" + one button. iPhone in Safari:
+    the same line with the two-step Share -> Add to Home Screen picture; iPhone in another browser: "open this page in
+    Safari to add it". Hidden when already installed. "Not now" remembers for 30 days (localStorage, in try/catch).
+  - Where: right after a user saves their first call (the conversion moment) and once in the Account page menu; not
+    on the Welcome page, not over chat. AlertsCard reuses the iPhone steps from InstallCard instead of its own text.
+  - Counting (tiny, no personal data): `POST /v4/install/event` with {kind: shown | accepted | dismissed |
+    installed | opened_standalone}, stored as a daily count per kind in kv_cache (or a small table); the Brain or HQ
+    page shows "installs this week". `opened_standalone` is sent once per day per device from main.jsx so we see
+    actual home-screen use, not just installs. Test: the endpoint only accepts the five kinds and rate-limits.
+  - No app-store work, no new accounts, no money; push and grading untouched.
+- **How we'd know it worked:** after 2-4 weeks, of users who saw the card, what share accepted (Android) or later
+  opened standalone (iPhone); `push_subs` above 0; and whether standalone users come back more often than browser
+  users over the following weeks (compare return visits, with the caveat that keen users are the ones who install, so
+  this is not proof the install causes it). If almost nobody installs even when asked at the right moment, that is
+  a reason to rethink an app-store wrapper too, since a store listing mainly removes the "how do I install" step.
+- **Risks:** nagging (one card, dismissible, remembered, never on first visit); Safari changes its Add to Home Screen
+  flow from time to time, so the iPhone picture needs a check per iOS release; counts are rough (private mode and
+  cleared storage double-count `opened_standalone`). No claims about results in the card copy.

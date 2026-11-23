@@ -1216,6 +1216,49 @@ def vov_features(symbol: str, as_of: Optional[date] = None) -> dict:
     return {"vov": vov(closes, i) if i >= 0 else 0.35}
 
 
+def rmom(closes: list[float], i: int, skip: int = 21, years: int = 3, min_weeks: int = 50) -> float:
+    """Risk-adjusted momentum, the MSCI Momentum Indexes score (MSCI Momentum Indexes Methodology, Sect. 2.2): price
+    momentum over 6 and 12 months that skips the latest month (closes at i-skip vs i-skip-126 and i-skip-252), each
+    divided by the annualized standard deviation of weekly (5-session) log returns over the past `years` years, then
+    averaged 50/50. MSCI z-scores each horizon across its universe before averaging and subtracts the risk-free rate;
+    within one belief the rate is the same for every candidate and research z-scores the blend, so this keeps the
+    raw ratios (a simplification, noted in docs/research_ideas.md). Only the 6-month part without 12+1 months of
+    history (as MSCI does when 12M is missing). Closes up to i only. Clipped to [-10, 10]; 0.0 (neutral) without
+    6+1 months of history or `min_weeks` weekly returns."""
+    if i < 0 or i >= len(closes) or i - skip - 126 < 0:
+        return 0.0
+    lo = max(0, i - 252 * years)
+    wk = []
+    k = i
+    while k - 5 >= lo:
+        a, b = closes[k - 5], closes[k]
+        if a > 0 and b > 0:
+            wk.append(math.log(b / a))
+        k -= 5
+    if len(wk) < min_weeks:
+        return 0.0
+    mu = sum(wk) / len(wk)
+    sd = math.sqrt(sum((r - mu) ** 2 for r in wk) / (len(wk) - 1)) * math.sqrt(52)
+    if sd <= 1e-9:
+        return 0.0
+    p1 = closes[i - skip]
+    parts = []
+    for look in (126, 252):
+        j = i - skip - look
+        if j >= 0 and closes[j] > 0 and p1 > 0:
+            parts.append((p1 / closes[j] - 1.0) / sd)
+    if not parts:
+        return 0.0
+    return max(-10.0, min(10.0, sum(parts) / len(parts)))
+
+
+def rmom_features(symbol: str, as_of: Optional[date] = None) -> dict:
+    """{"rmom": ...} using closes up to as_of only."""
+    dates, closes = daily_closes(symbol)
+    i = _index_on_or_before(dates, (as_of or today()).isoformat())
+    return {"rmom": rmom(closes, i) if i >= 0 else 0.0}
+
+
 def resid_mom(dates: list[str], closes: list[float], sdates: list[str], scloses: list[float], i: int) -> float:
     """Residual momentum (Blitz, Huij & Martens 2011), market-model version over the 12-1 window: take the stock's
     daily returns from ~12 months ago to ~1 month ago, remove the part explained by SPY (beta fitted on that same
@@ -1331,6 +1374,7 @@ def features(symbol: str, as_of: Optional[date] = None) -> dict:
         "hi_age": hi_age(closes, i),
         "ldvol": ldvol(closes, daily_volumes(symbol), i),
         "vov": vov(closes, i),
+        "rmom": rmom(closes, i),
         "vol20": realized_vol(closes, i, 20),
         "vol60": vol60,
         "rs60": _ret(closes, i, 60) - (_ret(scloses, j, 60) if j >= 60 else 0.0),

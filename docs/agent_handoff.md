@@ -2207,3 +2207,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   or question". Note: customstory.subject_key uses terms(), so "why is nvidia up" and "nvidia" now share one story.
 - scripts/promo: MONTAGE env / config "montage" types several searches before the main flow; stage.html first
   frame shows the full phone and caption (no slide-in), since frame 0 is the cover. Test extended.
+
+## 2026-11-23 ~19:40 UTC (CTO scout routine, key `scout`): idea 21 recorded, idea 22 added, install proposal
+- Idea 21 (vol of vol, `vov`) result recorded in docs/research_ideas.md: no edge (raw -0.50%, t -1.77, t_nw -0.99;
+  2 of 4 stretches). Also noted the equal-weight composite's first result there (+0.56%, t 1.68; lift_diff +0.04%).
+- Idea 22: risk-adjusted momentum (MSCI Momentum Index score). New feature `rmom` = average of 6- and 12-month return
+  (skipping the latest month) over 3-year weekly volatility. `market.rmom` / `rmom_features`, `market.features`,
+  `nn.make_features` num (not MODEL_NUMERIC), `research.FEATS` + `DIRECTIONAL`, `research.enrich` backfill (as of each
+  pick's date), research rule "risk-adjusted momentum (z_rmom)". Neutral 0.0 (default, so not in NEUTRAL). Test:
+  test_risk_adjusted_momentum_rule_and_enrich_backfill. Gates / fit_production / ranker v2 untouched.
+- Part B: docs/feature_ideas.md "Put it on your home screen" (install button at the right moment + install counts),
+  proposed, not built. Ties to Murad's HQ message #1 and the chair's "path 1" suggestion. Builder: yours if Murad
+  picks path 1.
+- Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
+  docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/scout.json.

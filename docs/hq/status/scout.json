@@ -1,10 +1,12 @@
 {
  "key": "scout",
- "updated_at": "2026-11-22T19:00:00Z",
- "last_run": "Results are in for ideas 18-20: none helps pick the #1 (steady trading -0.5 points, recent 52-week high -0.2, low trading volume +0.8 but not strong enough to trust; it mostly repeats the illiquidity idea that already works). Added idea 21: stocks whose risk stays steady month to month (a 2018 published finding that jumpy-risk stocks do worse). Proposed for the brain: test an even mix of the ideas that work, picked fairly, instead of betting on one.",
- "working_on": "Waiting for idea 21 to be filled in on the older calls so it can be tested on calls it never saw.",
- "next": "Next run: record idea 21 once its data is complete, one new idea and one feature proposal.",
+ "updated_at": "2026-11-23T19:40:00Z",
+ "last_run": "Idea 21 (stocks whose risk stays steady) is in: it doesn't help pick the #1 (-0.5 points, not reliable). The 'many ideas, one vote' mix also came in no better than the app. Added idea 22: momentum per unit of risk, the way the MSCI momentum index ranks stocks (a steady climber beats a wild one with the same gain). Proposed for the app: a proper 'Add to home screen' button, offered after someone saves their first call, and counting how many people install.",
+ "working_on": "Waiting for idea 22 to be filled in on the older calls so it can be tested on calls it never saw.",
+ "next": "Next run: record idea 22 once its data is complete, one new idea and one feature proposal.",
  "needs_from_murad": [],
- "read_up_to": 0,
- "replies": []
+ "read_up_to": 1,
+ "replies": [
+  {"re": 1, "body": "Agree with the chair: keep the home-screen app for now. Today's proposal is the missing piece for that path: an 'Add to home screen' button shown at the right moment, plus a count of installs, so we learn whether people install before paying for app stores. Right now 0 people have alerts turned on. It's in docs/feature_ideas.md for the Builder if you pick that path.", "at": "2026-11-23T19:40:00Z"}
+ ]
 }

@@ -69,13 +69,16 @@ FEATS = ("mom20", "mom60", "mom250", "rs60", "dist_high", "vol20", "vol60", "log
          # volatility of volatility (Baltussen, van Bekkum & van der Grient 2018): coefficient of variation of 12 monthly
          # realized vols over ~1 year (a realized stand-in for the paper's implied-vol measure)
          "vov",
+         # risk-adjusted momentum (MSCI Momentum Indexes): 6- and 12-month return skipping the latest month, each over
+         # 3-year weekly volatility, averaged
+         "rmom",
          # MuLine (MuLabs' trend line): which way it points, how far price is from it, how long since it turned, how choppy
          "mu_dist", "mu_slope", "mu_up", "mu_age", "mu_flips")
 # beta is directional: in a bearish call the low-alpha side is the high-beta stock (short it), so -z_beta reads
 # "low beta for longs, high beta for shorts", the betting-against-beta trade in either direction. max5 likewise:
 # lottery stocks tend to lag, so -z_max5 avoids them for longs and shorts them for bearish calls
 DIRECTIONAL = {"mom20", "mom60", "mom250", "rs60", "dist_high", "mom_12_1", "resid_mom", "beta", "max5", "mom_12_7", "mad",
-               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "cvvol", "hi_age", "ldvol", "vov", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
+               "amihud", "co", "seas", "dbeta", "ivol", "ltr", "delay", "rskew", "coskew", "cvvol", "hi_age", "ldvol", "vov", "rmom", "vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value",
                "mu_dist", "mu_slope", "mu_up"}
 VP_KEYS = ("vp_poc_dist", "vp_vah_dist", "vp_val_dist", "vp_above_value", "vp_below_value", "rvol")
 # market regime (same for every idea of a belief, so it only matters through interactions with the styles)
@@ -121,7 +124,8 @@ def enrich(limit: int = 300) -> dict:
                   OR p.features NOT LIKE '%"ltr"%' OR p.features NOT LIKE '%"delay"%'
                   OR p.features NOT LIKE '%"rskew"%' OR p.features NOT LIKE '%"coskew"%'
                   OR p.features NOT LIKE '%"cvvol"%' OR p.features NOT LIKE '%"hi_age"%'
-                  OR p.features NOT LIKE '%"ldvol"%' OR p.features NOT LIKE '%"vov"%')
+                  OR p.features NOT LIKE '%"ldvol"%' OR p.features NOT LIKE '%"vov"%'
+                  OR p.features NOT LIKE '%"rmom"%')
            LIMIT ?""", (DAYS, max(1, limit) * 2))
     def _need(r):
         num = (db.loads(r["features"], {}) or {}).get("num") or {}
@@ -130,7 +134,7 @@ def enrich(limit: int = 300) -> dict:
             or "mom_12_7" not in num or "mad" not in num or "amihud" not in num or "co" not in num \
             or "seas" not in num or "dbeta" not in num or "ivol" not in num or "ltr" not in num or "delay" not in num \
             or "rskew" not in num or "coskew" not in num or "cvvol" not in num \
-            or "hi_age" not in num or "ldvol" not in num or "vov" not in num
+            or "hi_age" not in num or "ldvol" not in num or "vov" not in num or "rmom" not in num
     missing = [r for r in rows if _need(r)]
     todo = missing[:limit]
     done = 0
@@ -180,6 +184,8 @@ def enrich(limit: int = 300) -> dict:
                 vp.update(market.ldvol_features(r["ticker"], d0))
             if "vov" not in have:
                 vp.update(market.vov_features(r["ticker"], d0))
+            if "rmom" not in have:
+                vp.update(market.rmom_features(r["ticker"], d0))
         except Exception:
             continue
         f.setdefault("num", {}).update(vp)
@@ -1054,6 +1060,9 @@ def run(folds: int = 5, data: list[dict] | None = None) -> dict:
         # idea log, added 2026-11-22: volatility of volatility (Baltussen, van Bekkum & van der Grient 2018) — the stock
         # whose own risk has been steadiest month to month for a long (the one whose volatility swings most, for a short)
         "steady volatility (-z_vov)": lambda f: -f["z_vov"],
+        # idea log, added 2026-11-23: risk-adjusted momentum (MSCI Momentum Indexes) — the stock with the best 6- and
+        # 12-month return (skipping the latest month) per unit of 3-year weekly volatility for a long (the worst, for a short)
+        "risk-adjusted momentum (z_rmom)": lambda f: f["z_rmom"],
         "near highs (z_dist_high)": lambda f: f["z_dist_high"],
         "high vol (z_vol60)": lambda f: f["z_vol60"],
         "low vol (-z_vol60)": lambda f: -f["z_vol60"],

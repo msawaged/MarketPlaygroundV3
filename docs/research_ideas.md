@@ -774,4 +774,40 @@ the app's (52.9%).
   wrong way or flat), so the paper's side may fail here too.
 - **Note:** until enrich finishes backfilling older picks they read the neutral 0.35; trust the result once `vov` is
   out of `provisional` (coverage share >= 99%).
+- **Result (run 2026-11-23 18:06 UTC, n=2,703, `vov` coverage 100%, nothing provisional):** no edge, slightly the
+  wrong way. Raw lift -0.50% (beat 50.5%, t -1.77, t_nw -0.99); risk-matched lift -0.42% (beat 51.8%, t -1.54,
+  t_nw -0.85). lift_w -0.30% (t -1.26). Ahead in 2 of 4 stretches, latest -0.44%. Same #1 as the app 23% of the time,
+  -1.34% behind it where they differ (n_diff 2,070, t -2.48, t_nw -1.17). Milder than "low vol (-z_vol60)" (raw
+  -0.87%, t -4.04), so part of it is the low-vol tilt this sample punishes. Not a candidate.
+  Also in this run: the equal-weight composite (docs/feature_ideas.md 2026-11-22) came in at raw +0.56% (t 1.68,
+  t_nw 0.97), risk-matched +0.38% (t 1.18), 3 of 4 stretches, lift_diff +0.04% (n_diff 1,799): no better than the app.
+
+### 22. Risk-adjusted momentum: the MSCI Momentum Index score (MSCI; momentum per unit of risk)
+- **Added:** 2026-11-23
+- **Source:** MSCI Momentum Indexes Methodology (July 2025), Sect. 2.2-2.2.2:
+  https://www.msci.com/indexes/documents/methodology/2_MSCI_Momentum_Indexes_Methodology_20250725.pdf. The idea of
+  scaling momentum by volatility is also studied in academic work, e.g. "Momentum and the cross-section of stock
+  volatility" (Queen's University Belfast): https://pure.qub.ac.uk/en/publications/momentum-and-the-cross-section-of-stock-volatility-2/
+- **Why:** the index behind the largest momentum ETFs (e.g. MTUM) does not rank on raw past return: it divides the
+  6- and 12-month return (both skipping the latest month) by each stock's 3-year volatility, so a steady climber
+  beats a wild one with the same gain. Our momentum rows (12-1, frog in the pan, residual, echo, MAD) are all raw
+  or path-shape measures, and the vol rows read risk alone; none tests return *per unit of* risk. Slow-moving
+  (quarterly rebalance in the index), so it suits our ~90-day hold.
+- **Computed as:** `rmom` = average of (P[t-21] / P[t-147] - 1) / sigma and (P[t-21] / P[t-273] - 1) / sigma, where
+  sigma = annualized (x sqrt 52) standard deviation of non-overlapping 5-session log returns over the last 756
+  sessions (~3 years) up to the pick's own date; only the 6-month part without 12+1 months of history (as MSCI does
+  when 12M is missing); clipped to [-10, 10]; 0.0 (neutral) without 6+1 months of history or 50 weekly returns.
+  Differences from MSCI, both data/scope choices: no risk-free rate subtracted (the same for every candidate of a
+  belief), and the two ratios are averaged raw instead of each being z-scored across a universe first (research
+  z-scores the blend within each belief). `market.rmom` / `market.rmom_features`; stored for new picks via
+  `market.features` and `nn.make_features` (not MODEL_NUMERIC); backfilled for older picks by `research.enrich`
+  using closes up to each pick's own date only (other features untouched). Directional (bearish calls flip it, so the
+  rule shorts the stock with the worst return per unit of risk). Research rule: `risk-adjusted momentum (z_rmom)`;
+  `z_rmom` is also available to the learned ridge/gbm/net once its coverage passes (learn_keys).
+- **What to look at:** raw and risk-matched lift, t, t_nw, lift_w, same_as_app / lift_diff, pos_blocks /
+  last_block_lift, and the luck bar (now 51 tries). Read it next to "12-1 momentum (z_mom_12_1)" (same window, raw)
+  and "high vol (z_vol60)": this sample has rewarded volatile names, so dividing by volatility may *hurt* here; if it
+  beats raw 12-1, scaling by risk carries information; if it tracks low vol, it is the low-vol tilt in disguise.
+- **Note:** until enrich finishes backfilling older picks they read the neutral 0.0; trust the result once `rmom` is
+  out of `provisional` in the research kv (coverage share >= 99%). Backfilled after `vov` in the same loop.
 - **Result:** pending.

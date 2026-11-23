@@ -5466,6 +5466,69 @@ def test_vol_of_vol_rule_and_enrich_backfill(monkeypatch):
     assert num["vov"] < 1e-9
     assert num["ldvol"] == 16.0 and num["hi_age"] == 0.4
 
+def test_risk_adjusted_momentum_rule_and_enrich_backfill(monkeypatch):
+    from backend.v4 import market, research
+    import datetime as _dt, random as _r
+    rng = _r.Random(83)
+    n = 800
+    dates = [(_dt.date(2021, 1, 4) + _dt.timedelta(days=k)).isoformat() for k in range(n)]
+    i = n - 1
+    # same trend, calm vs wild: the calm one scores higher per unit of risk
+    def path(drift, amp):
+        px = [100.0]
+        for k in range(1, n):
+            px.append(px[-1] * (1 + drift) * ((1 + amp) if (k // 5) % 2 else 1 / (1 + amp)))
+        return px
+    calm, wild = path(0.001, 0.004), path(0.001, 0.03)
+    assert market.rmom(calm, i) > market.rmom(wild, i) > 0
+    assert market.rmom(path(-0.001, 0.004), i) < 0
+    # skips the latest month: a jump inside the last 21 sessions doesn't change it
+    jump = calm[:i - 10] + [x * 1.5 for x in calm[i - 10:]]
+    assert abs(market.rmom(jump, i) - market.rmom(calm, i)) < 0.5 * abs(market.rmom(calm, i))
+    assert market.rmom(calm, 100) == 0.0                                   # under 6+1 months: neutral
+    later = calm[:500] + [x * (1 + 0.3 * rng.random()) for x in calm[500:]]
+    assert market.rmom(later, 499) == market.rmom(calm, 499)              # no look-ahead
+    assert "rmom" in research.FEATS and "rmom" in research.DIRECTIONAL
+    # planted: high risk-adjusted momentum pays for longs, low pays for shorts; z_rmom finds it
+    b0 = _dt.date(2024, 1, 1)
+    for k in range(400):
+        bid, asof, bear = f"b-rm-{k}", (b0 + _dt.timedelta(days=k * 2)).isoformat(), k % 2 == 1
+        db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+                   (bid, "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+        for q in range(4):
+            v = rng.uniform(-2, 2)
+            ex = -v * 0.02 if bear else v * 0.02
+            pid = f"p-rm-{k}-{q}"
+            db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features, final_rank) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, bid, f"T{q}", "bearish" if bear else "bullish", asof, 10.0, db.dumps({"num": {"rmom": v}}), q + 1))
+            db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (pid, 90, asof, 10.0, 0.0, 0.0, ex + rng.gauss(0, 0.005), asof))
+    r = research.run(data=research.load())["results"]["risk-adjusted momentum (z_rmom)"]
+    assert r["n"] > 100 and r["lift"] > 0.01 and r["lift_t"] > 3
+    # enrich backfills rmom as of each pick's own date only, leaving the other features alone
+    monkeypatch.setattr(market, "daily_closes", lambda s: (dates, later))
+    monkeypatch.setattr(market, "daily_volumes", lambda s: [1e5] * n)
+    for name in ("vp_features", "resid_features", "fip_features", "max_features", "echo_features", "mad_features",
+                 "amihud_features", "co_features", "seas_features", "dbeta_features", "ivol_features", "ltr_features",
+                 "delay_features", "rskew_features", "coskew_features", "cvvol_features", "hi_age_features",
+                 "ldvol_features", "vov_features"):
+        monkeypatch.setattr(market, name, lambda *a, **k: (_ for _ in ()).throw(AssertionError("not needed")))
+    have = {"mom60": 0.1, "vp_poc_dist": 0.2, "reg_trend": 1.0, "mu_dist": 0.0, "fip_id": -0.3, "resid_mom": 1.0,
+            "beta": 1.2, "max5": 0.03, "mom_12_7": 0.4, "mad": 0.05, "amihud": 2.5, "co": 0.3, "seas": 0.02,
+            "dbeta": 0.1, "ivol": 0.25, "ltr": 0.4, "delay": 0.3, "rskew": 0.7, "coskew": -0.2, "cvvol": 0.9,
+            "hi_age": 0.4, "ldvol": 16.0, "vov": 0.2}
+    asof = dates[499]
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, created_at, as_of_date, source) VALUES (?,?,?,?,?,?,?)",
+               ("b-rmx", "seed", "x", "x", asof + "T00:00:00", asof, "seed_backfill"))
+    db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price, features) VALUES (?,?,?,?,?,?,?)",
+               ("p-rmx", "b-rmx", "XYZ", "bullish", asof, 10.0, db.dumps({"num": have})))
+    db.execute("INSERT INTO outcomes (pick_id, checkpoint_days, eval_date, price, ret, spy_ret, dir_excess, graded_at) VALUES (?,?,?,?,?,?,?,?)",
+               ("p-rmx", 90, asof, 10.0, 0.0, 0.0, 0.01, asof))
+    research.enrich(10000)
+    num = db.loads(db.query_one("SELECT features FROM picks WHERE id = 'p-rmx'")["features"])["num"]
+    assert abs(num["rmom"] - market.rmom(calm, 499)) < 1e-9
+    assert num["vov"] == 0.2 and num["ldvol"] == 16.0
+
 def test_ticker_must_still_be_the_company_the_idea_names():
     # Live pairs (Nov 2026): a reused ticker or a misread pairs an idea with another company. Renames and
     # abbreviations still count as the same company.

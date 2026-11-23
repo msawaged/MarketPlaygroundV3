@@ -140,6 +140,8 @@ def make_features(
         "ldvol": market.get("ldvol", 15.0),
         # volatility of volatility, CV of 12 monthly realized vols (research + ranker v2 only; not MODEL_NUMERIC)
         "vov": market.get("vov", 0.35),
+        # risk-adjusted momentum, MSCI-style 6m and 12m (skip 1m) over 3y weekly vol (research + ranker v2 only; not MODEL_NUMERIC)
+        "rmom": market.get("rmom", 0.0),
         "vol20": market.get("vol20", 0.35),
         "vol60": market.get("vol60", 0.35),
         "rs60": market.get("rs60", 0.0),
