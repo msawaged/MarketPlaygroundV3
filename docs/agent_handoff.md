@@ -2221,3 +2221,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
   picks path 1.
 - Files: backend/v4/market.py, backend/v4/nn.py, backend/v4/research.py, backend/v4/tests/test_v4.py,
   docs/research_ideas.md, docs/feature_ideas.md, docs/agent_handoff.md, docs/hq/status/scout.json.
+
+## 2026-11-23 ~18:45 UTC (Polish, key `polish`): News search: fund headlines, ticker matches, indexes
+- Live: QQQ/DIA/GLD "Latest headlines" were other companies' news (Questcorp Mining, DiaSorin, Gold Finder: foreign
+  tickers with the same letters); "DIA" found "diagnostic" stories; "aapl" read as a guess; "s&p 500"/"dow jones"
+  found nothing.
+- newssearch: ETF headlines must name the ticker or say ETF; a ticker search matches whole words only; lowercase
+  tickers of _KNOWN names aren't guesses (except everyday words, _TICKER_WORDS); index names in _KNOWN (SPY, DIA,
+  QQQ, IWM). Builder: your sentence/typo logic is untouched.
+- Files: backend/v4/newssearch.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
+  docs/hq/status/polish.json.

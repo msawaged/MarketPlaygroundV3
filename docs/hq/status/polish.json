@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-23T15:55:00Z",
- "last_run": "First check with the market open. Every public page was clean on a phone. Close Call said wide option quotes were 'usual outside market hours' while the market was open; it now says that only when the market is closed and explains thin trading otherwise. The S&P +5.1% / NVDA +35% day on the News tab checked out as real.",
+ "updated_at": "2026-11-23T18:45:00Z",
+ "last_run": "Tested News search with about 30 searches. Fund searches (QQQ, DIA, GLD) were showing other companies' news, like a Canadian mining firm under QQQ; that's fixed. Searching DIA no longer pulls in 'diagnostic' stories, 'aapl' no longer reads as a guess, and 's&p 500' and 'dow jones' now find the index fund. Every public page was clean on a phone.",
  "working_on": "Nothing open.",
- "next": "After tonight's close: walk Close Call ladders (NVDA, TSLA, AMD) to confirm the Builder's saved-smile fix makes the odds fall line by line. Passed AMD's market-hours ladder unevenness to the Builder.",
+ "next": "After tonight's close: walk Close Call ladders (NVDA, TSLA, AMD) to confirm the saved-smile fix makes the odds fall line by line. Keep testing search with sentences and topics.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": []

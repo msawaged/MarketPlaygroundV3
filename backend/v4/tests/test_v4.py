@@ -6505,6 +6505,35 @@ def test_news_search_fixes_a_likely_typo_only_when_nothing_was_found(monkeypatch
     assert newssearch.search("why is AI hot")["company"] is None  # capitals that are a word, not C3.ai's ticker
 
 
+def test_news_search_tickers_indexes_and_fund_headlines(monkeypatch):
+    """Live 2026-11-23: "QQQ" listed Questcorp Mining headlines and "DIA" DiaSorin's (the news source tags foreign
+    listings that share the letters), "DIA" found "diagnostic" stories, "aapl" read "in case you meant the company",
+    and "s&p 500" / "dow jones" found nothing."""
+    from backend.v4 import movers, newssearch
+    now = datetime.now(timezone.utc).isoformat()
+    fda = {"headline": "FDA authorizes new diagnostic blood test", "hunch": "", "why": "", "summary": "",
+           "created_at": now, "companies": [{"ticker": "MRK", "direction": "up", "why": ""}]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: {"items": [fda], "benchmark": None})
+    monkeypatch.setattr(movers, "archived", lambda: [])
+    names = {"DIA": "SPDR Dow Jones Industrial Average ETF Trust", "SPY": "SPDR S&P 500 ETF Trust",
+             "AAPL": "Apple Inc.", "MRK": "Merck & Co., Inc.", "COST": "Costco Wholesale Corporation"}
+    monkeypatch.setattr(movers.market, "asset_info",
+                        lambda s: {"symbol": s, "name": names[s], "is_etf": "ETF" in names[s]} if s in names else None)
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 10.0, "change": 0.01} for s in syms})
+    monkeypatch.setattr(newssearch, "headlines_for", lambda sym: [])
+    dia = newssearch.search("DIA")
+    assert dia["company"]["ticker"] == "DIA" and dia["stories"] == []
+    assert newssearch.search("diagnostic")["stories"][0]["headline"] == fda["headline"]  # words still match starts
+    assert newssearch.search("s&p 500")["company"]["ticker"] == "SPY"
+    assert newssearch.search("dow jones")["company"]["ticker"] == "DIA"
+    assert not newssearch.search("aapl")["company"].get("guess")
+    assert newssearch.search("cost")["company"].get("guess") is True  # an everyday word: still "in case you meant"
+    assert newssearch._names_fund("QQQ", "Why QQQ outran the S&P this week")
+    assert newssearch._names_fund("DIA", "Dow ETF inflows hit a record")
+    assert not newssearch._names_fund("QQQ", "Questcorp Mining Completes Acquisition of North Island Copper")
+    assert not newssearch._names_fund("DIA", "Intesa Sanpaolo Adjusts Diasorin Rating and Target Price")
+
+
 def test_equal_weight_composite_beats_two_weak_signals_and_picks_rules_on_training_calls_only():
     """"Many weak signals, one vote" (DeMiguel, Garlappi & Uppal 2009): two weak, independent planted signals, each
     alone about t 2-3; an equal vote of the two beats both on unseen calls. Near copies don't double-vote, rules

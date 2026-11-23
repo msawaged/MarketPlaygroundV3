@@ -1844,3 +1844,31 @@ Changed:
   thinly right now (and the free quote feed we use can show quotes wider than a broker would)"; the out-of-step note
   drops "(common outside market hours ...)". Closed-market wording unchanged.
 - Test: test_yesno_quotes_too_wide_to_trade_read_the_smile_for_odds_and_price checks market_closed and the wording.
+
+## 2026-11-23 (seventh run, ~18:40 UTC = Mon 1:40 PM ET, market open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. Focus: News search (the chair's top job today). Ran ~30 searches against the live
+/v4/movers/search: companies, lowercase tickers, ETFs, indexes, sentences, topics.
+
+Found:
+- Fund searches showed other companies' news under "Latest headlines about ...": QQQ listed four Questcorp Mining
+  press releases (its Canadian ticker is QQQ), DIA six DiaSorin/Dialight items (Milan's DIA), GLD three Gold Finder
+  Resources items. The news source tags foreign listings that share the letters.
+- "DIA" also listed an FDA diagnostic blood test story and a Merck lab story: the typed ticker matched the start of
+  "diagnostic".
+- "aapl" (lowercase) read "No stories mention “aapl” ... AAPL is also a stock ticker (Apple), so here it is in case
+  you meant the company" (the Builder's note; same for "amzn", "tsla").
+- "s&p 500" and "dow jones" found nothing at all (offered to spend an AI story).
+
+Changed (backend only, newssearch.py):
+- headlines_for: for an ETF, a headline counts only if it names the ticker as a word or says ETF (headline only:
+  Questcorp's summary says "CSE: QQQ").
+- _matches: when the search is the found ticker itself, its letters must be a whole story word (exact), so "DIA" no
+  longer finds "diagnostic"; ordinary word searches still match word starts ("chip" -> chipmakers).
+- _company: a lowercase ticker of a _KNOWN well-known name isn't a guess, except tickers that are everyday words
+  (cost, spot, coin, hood, dis, pep, ko, ba, f, spy, dia), which keep "in case you meant the company".
+- _KNOWN: s&p 500 / s&p / sp500 -> SPY, dow jones -> DIA, nasdaq 100 -> QQQ, russell 2000 -> IWM ("nasdaq" alone
+  stays Nasdaq, Inc.; "dow" alone stays Dow Inc.).
+- Test: test_news_search_tickers_indexes_and_fund_headlines.

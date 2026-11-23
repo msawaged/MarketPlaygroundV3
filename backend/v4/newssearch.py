@@ -39,7 +39,13 @@ _KNOWN = {"apple": "AAPL", "tesla": "TSLA", "microsoft": "MSFT", "amazon": "AMZN
           "mcdonalds": "MCD", "mcdonald's": "MCD", "starbucks": "SBUX", "jpmorgan": "JPM", "exxon": "XOM",
           "chevron": "CVX", "pfizer": "PFE", "uber": "UBER", "airbnb": "ABNB", "spotify": "SPOT",
           "salesforce": "CRM", "oracle": "ORCL", "broadcom": "AVGO", "adobe": "ADBE", "paypal": "PYPL",
-          "ford": "F", "berkshire": "BRK.B", "coinbase": "COIN", "robinhood": "HOOD", "amd": "AMD"}
+          "ford": "F", "berkshire": "BRK.B", "coinbase": "COIN", "robinhood": "HOOD", "amd": "AMD",
+          # the big indexes, shown as the ETF that tracks them ("nasdaq" alone stays Nasdaq, Inc.; "dow" is Dow Inc.)
+          "s&p 500": "SPY", "s&p": "SPY", "s&p500": "SPY", "sp500": "SPY", "sp 500": "SPY",
+          "dow jones": "DIA", "nasdaq 100": "QQQ", "nasdaq-100": "QQQ", "russell 2000": "IWM"}
+# lowercase tickers of the well-known names above that are also everyday words: "cost" or "spot" typed alone may be
+# the word, so those still read "in case you meant the company"; "aapl" or "tsla" never mean anything else
+_TICKER_WORDS = {"cost", "spot", "coin", "hood", "dis", "pep", "ko", "ba", "f", "spy", "dia"}
 _lock = threading.Lock()
 _news_cache: dict[str, tuple[float, list[dict]]] = {}
 
@@ -61,9 +67,10 @@ def _story_text(it: dict) -> list[str]:
     return _words(" ".join(str(p or "") for p in parts))
 
 
-def _matches(it: dict, ts: list[str], ticker: Optional[str]) -> int:
+def _matches(it: dict, ts: list[str], ticker: Optional[str], exact: bool = False) -> int:
     """0 = no match. Otherwise a rank: 3 the story moves the searched company, 2 every word in the headline,
-    1 every word somewhere in the story. A word matches the start of a story word ("chip" finds "chipmaker")."""
+    1 every word somewhere in the story. A word matches the start of a story word ("chip" finds "chipmaker"), or
+    the whole word when exact (a ticker search: "DIA" mustn't find "diagnostic")."""
     tickers = {str(c.get("ticker") or "").upper() for c in it.get("companies") or []}
     if ticker and ticker in tickers:
         return 3
@@ -71,11 +78,12 @@ def _matches(it: dict, ts: list[str], ticker: Optional[str]) -> int:
         return 0
     if len(ts) == 1 and ts[0].upper() in tickers:
         return 3
+    hit = (lambda w, t: w == t) if exact else (lambda w, t: w.startswith(t))
     head = _words(it.get("headline"))
-    if all(any(w.startswith(t) for w in head) for t in ts):
+    if all(any(hit(w, t) for w in head) for t in ts):
         return 2
     body = _story_text(it)
-    return 1 if all(any(w.startswith(t) for w in body) for t in ts) else 0
+    return 1 if all(any(hit(w, t) for w in body) for t in ts) else 0
 
 
 def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[dict]:
@@ -104,7 +112,8 @@ def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[
         if info:
             out = {"ticker": info["symbol"], "name": info.get("name") or ""}
             # a lowercase word no story uses ("gold", "car") may be a topic that happens to be a ticker: say so
-            if not (raw.startswith("$") or raw.isupper() or raw.upper() in pool_syms):
+            if not (raw.startswith("$") or raw.isupper() or raw.upper() in pool_syms
+                    or (sym in _KNOWN.values() and raw.lower() not in _TICKER_WORDS)):
                 out["guess"] = True
             return out
     ts = terms(q)
@@ -180,6 +189,11 @@ def suggest(q: str, stories: list[dict]) -> Optional[str]:
     return " ".join(out) if changed else None
 
 
+def _names_fund(sym: str, text: str) -> bool:
+    """The headline names the fund: its ticker as a word, or ETF. (Not the summary: Questcorp's says "CSE: QQQ".)"""
+    return bool(re.search(rf"(?<![A-Za-z]){re.escape(sym)}(?![A-Za-z])", text) or re.search(r"\bETFs?\b", text))
+
+
 def headlines_for(sym: str) -> list[dict]:
     """The company's latest headlines from the news source, cached 20 minutes per ticker. [] when unavailable."""
     now = time.time()
@@ -194,10 +208,18 @@ def headlines_for(sym: str) -> list[dict]:
         raw = r.json().get("news", []) if r.status_code == 200 else []
     except Exception:
         return []
+    try:
+        fund = bool((market.asset_info(sym) or {}).get("is_etf"))
+    except Exception:
+        fund = False
     out, seen = [], set()
     for n in raw:
         h = (n.get("headline") or "").strip()
         if not h or h.lower()[:60] in seen or len(h) > 200:
+            continue
+        # the news source tags foreign listings that share a fund's letters (QQQ: Questcorp Mining, DIA: DiaSorin,
+        # GLD: Gold Finder), so a fund's headline counts only if it names the fund's ticker or says ETF
+        if fund and not _names_fund(sym, h):
             continue
         seen.add(h.lower()[:60])
         out.append({"headline": h, "source": n.get("source") or "", "url": movers.story_url(n.get("url"), [sym] + list(n.get("symbols") or [])),
@@ -237,7 +259,9 @@ def search(q: str, fix: bool = True) -> dict:
 def _search(q: str, pool: list[dict], cur: dict) -> dict:
     ts = terms(q)
     company = _company(q, pool, topic_hits=any(_matches(it, ts, None) for it in pool))
-    ranked = [(r, i, it) for i, it in enumerate(pool) if (r := _matches(it, ts, company and company["ticker"]))]
+    # the search is the ticker itself ("DIA", "$qqq"): its letters must be a whole word, not the start of one
+    exact = bool(company) and ts == [company["ticker"].lower()]
+    ranked = [(r, i, it) for i, it in enumerate(pool) if (r := _matches(it, ts, company and company["ticker"], exact))]
     ranked.sort(key=lambda x: (-x[0], -_ts(x[2]), x[1]))
     stories = [it for _, _, it in ranked[:MAX_STORIES]]
     # today's prices, the same way the feed shows them (feed items already carry them)
