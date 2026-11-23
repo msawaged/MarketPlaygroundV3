@@ -1,0 +1,148 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Promo step 3/4 (with render.js): the 1080x1920 branded stage. render.js calls window.setup(scenes) once and
+     window.show(frame) for every output frame, then screenshots it. Fonts are local (Inter), no network. -->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #040916; font-family: Inter, 'DM Sans', sans-serif; color: #fff; }
+  #bg { position: absolute; inset: 0; overflow: hidden;
+    background: radial-gradient(1200px 900px at 50% 0%, #0d1f4a 0%, #071330 45%, #040916 100%); }
+  .blob { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .55; }
+  #b1 { width: 760px; height: 760px; background: #1d4ed8; }
+  #b2 { width: 620px; height: 620px; background: #0ea5e9; opacity: .28; }
+  #grid { position: absolute; inset: -80px; opacity: .07;
+    background-image: linear-gradient(#93c5fd 1px, transparent 1px), linear-gradient(90deg, #93c5fd 1px, transparent 1px);
+    background-size: 80px 80px; }
+  #head { position: absolute; top: 58px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 16px;
+    font-weight: 800; font-size: 38px; letter-spacing: -.5px; }
+  #head svg { width: 50px; height: 50px; }
+  #head .p { color: #60a5fa; }
+  #cap { position: absolute; top: 168px; left: 50px; right: 50px; height: 330px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; }
+  #big { font-family: 'Inter Display', Inter, sans-serif; font-weight: 900; font-size: 92px; line-height: 1.02; letter-spacing: -2.5px; }
+  #big .w { display: inline-block; margin: 0 .12em; transform-origin: 50% 80%; }
+  #big .a { background: linear-gradient(90deg, #60a5fa, #a5f3fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #small { margin-top: 26px; font-size: 42px; font-weight: 600; color: #cbd5e1; letter-spacing: -.3px; }
+  #clip { position: absolute; left: 0; right: 0; top: 515px; bottom: 0; overflow: hidden; }
+  #cam { position: absolute; left: 0; top: -515px; width: 1080px; height: 1920px; transform-origin: 0 0; }
+  #phone { position: absolute; left: 222px; top: 556px; width: 636px; height: 1334px; border-radius: 86px; padding: 18px;
+    background: linear-gradient(160deg, #334155, #0f172a 40%, #020617); box-shadow: 0 0 0 2px #475569, 0 40px 140px rgba(37, 99, 235, .45), 0 0 60px rgba(96, 165, 250, .25); }
+  #screen { position: relative; width: 600px; height: 1298px; border-radius: 68px; overflow: hidden; background: #020617; }
+  #screen img { position: absolute; inset: 0; width: 600px; height: 1298px; }
+  .ring { position: absolute; border: 7px solid #facc15; border-radius: 26px; box-shadow: 0 0 34px rgba(250, 204, 21, .65), inset 0 0 22px rgba(250, 204, 21, .25); }
+  .tap { position: absolute; border-radius: 50%; }
+  #flash { position: absolute; inset: 0; background: #bfdbfe; opacity: 0; pointer-events: none; }
+  #end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+  #end .icon { width: 230px; height: 230px; border-radius: 58px; box-shadow: 0 30px 120px rgba(37, 99, 235, .6); }
+  #end .wm { margin-top: 54px; font-weight: 800; font-size: 84px; letter-spacing: -2px; }
+  #end .wm span { color: #60a5fa; }
+  #end .soon { margin-top: 28px; font-family: 'Inter Display', Inter, sans-serif; font-weight: 900; font-size: 140px; letter-spacing: -4px; line-height: 1; }
+  #end .follow { margin-top: 56px; padding: 30px 64px; border-radius: 999px; background: #2563eb; font-size: 52px; font-weight: 800;
+    box-shadow: 0 20px 80px rgba(37, 99, 235, .6); }
+  #end .pts { margin-top: 64px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; max-width: 960px; }
+  #end .pt { padding: 14px 26px; border-radius: 999px; border: 2px solid #334155; background: rgba(15, 23, 42, .8); font-size: 32px; font-weight: 600; color: #cbd5e1; }
+  #end .legal { position: absolute; bottom: 90px; font-size: 32px; color: #94a3b8; }
+</style></head>
+<body>
+<div id="bg"><div id="grid"></div><div class="blob" id="b1"></div><div class="blob" id="b2"></div></div>
+<div id="head"><svg viewBox="0 0 120 120"><rect width="120" height="120" rx="30" fill="#fff"/><path d="M26 92V30l46 42.5L94 30v62" fill="none" stroke="#2563eb" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="72.5" r="15" fill="#2563eb"/></svg>
+  <div>Market<span class="p">Playground</span></div></div>
+<div id="cap"><div id="big"></div><div id="small"></div></div>
+<div id="clip"><div id="cam"><div id="phone"><div id="screen"><img id="shot"><div id="marks"></div></div></div></div></div>
+<div id="end">
+  <svg class="icon" viewBox="0 0 120 120"><rect width="120" height="120" rx="30" fill="#fff"/><path d="M26 92V30l46 42.5L94 30v62" fill="none" stroke="#2563eb" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="72.5" r="15" fill="#2563eb"/></svg>
+  <div class="wm">Market<span>Playground</span></div>
+  <div class="soon">Coming soon</div>
+  <div class="follow">Follow for launch day</div>
+  <div class="pts"><div class="pt">Find the hidden play</div><div class="pt">Learn in 30 seconds</div><div class="pt">Practice money</div><div class="pt">The market keeps score</div></div>
+  <div class="legal">Practice money only. Not investment advice.</div>
+</div>
+<div id="flash"></div>
+<script>
+  const K = 600 / 390; // phone CSS px -> stage px
+  const SCREEN = { x: 222 + 18, y: 556 + 18 };
+  const T = { x: 540, y: 1225 };
+  const $ = (id) => document.getElementById(id);
+  let scenes = []; let curScene = -1; let curSrc = '';
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const outBack = (k) => { const c = 1.7; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+  const outCubic = (k) => 1 - Math.pow(1 - k, 3);
+
+  window.setup = (s, capDir) => { scenes = s; window.capDir = capDir; };
+
+  function caption(sc) {
+    const big = $('big'); big.innerHTML = '';
+    if (!sc.big) { $('small').textContent = ''; return; }
+    sc.big.split(' ').forEach((w) => {
+      const el = document.createElement('span'); el.className = 'w' + (sc.accent && w.replace(/\W/g, '') === sc.accent ? ' a' : '');
+      el.textContent = w; big.appendChild(el);
+    });
+    $('small').textContent = sc.small || '';
+  }
+
+  window.show = async (f) => {
+    const sc = scenes[f.scene];
+    if (f.scene !== curScene) { curScene = f.scene; caption(sc); }
+    const L = f.local; const left = sc.dur - L;
+    // background drift
+    $('b1').style.transform = `translate(${-120 + 140 * Math.sin(f.t * .35)}px, ${-200 + 120 * Math.cos(f.t * .27)}px)`;
+    $('b2').style.transform = `translate(${560 + 120 * Math.cos(f.t * .3)}px, ${1250 + 160 * Math.sin(f.t * .22)}px)`;
+    $('grid').style.transform = `translateY(${(f.t * 12) % 80}px)`;
+    // captions: words pop in, line fades out at the cut
+    const out = clamp(1 - (0.2 - left) / 0.2);
+    [...$('big').children].forEach((w, i) => {
+      const k = clamp((L - 0.06 - i * 0.075) / 0.32);
+      w.style.opacity = k * out; w.style.transform = `translateY(${(1 - outCubic(k)) * 40 - (1 - out) * 24}px) scale(${0.82 + 0.18 * outBack(k)})`;
+    });
+    const sk = clamp((L - 0.45) / 0.3);
+    $('small').style.opacity = sk * out; $('small').style.transform = `translateY(${(1 - outCubic(sk)) * 20}px)`;
+    // end card
+    const isEnd = !!sc.end;
+    const ek = isEnd ? clamp(L / 0.35) : 0;
+    $('end').style.opacity = ek; $('cap').style.opacity = isEnd ? 1 - ek : 1; $('clip').style.opacity = isEnd ? 1 - ek : 1;
+    $('head').style.opacity = isEnd ? 1 - ek : 1;
+    if (isEnd) {
+      const items = [...$('end').children];
+      items.forEach((el, i) => {
+        if (el.classList.contains('legal')) { el.style.opacity = clamp((L - 0.9) / 0.4); return; }
+        const k = clamp((L - 0.12 - i * 0.16) / 0.4);
+        el.style.opacity = k; el.style.transform = `translateY(${(1 - outCubic(k)) * 50}px) scale(${0.7 + 0.3 * outBack(k)})`;
+      });
+      const pulse = 1 + 0.025 * Math.sin(Math.max(0, L - 1.2) * 5);
+      document.querySelector('#end .follow').style.transform += ` scale(${pulse})`;
+    }
+    // flash on scene cuts
+    $('flash').style.opacity = f.scene > 0 ? 0.16 * clamp(1 - L / 0.12) : 0;
+    if (f.src) {
+      if (f.src !== curSrc) {
+        curSrc = f.src; const img = $('shot'); img.src = `file://${window.capDir}/frames/${f.src}`;
+        try { await img.decode(); } catch (e) { /* keep last */ }
+      }
+      // camera: zoom around the focus point and slide it toward the middle of the open area
+      const P = { x: SCREEN.x + f.cam.fx * K, y: SCREEN.y + f.cam.fy * K };
+      const s = clamp((f.cam.z - 1) / 0.4);
+      const punch = 1 + 0.035 * clamp(1 - (f.shotAge ?? 1) / 0.22) * (f.local > 0.01 || f.scene > 0 ? 1 : 0);
+      const z = f.cam.z * punch;
+      const D = { x: P.x + (T.x - P.x) * s, y: P.y + (T.y - P.y) * s };
+      $('cam').style.transform = `translate(${D.x - z * P.x}px, ${D.y - z * P.y}px) scale(${z})`;
+      // phone slides up at the very start
+      const intro = f.scene === 0 ? outCubic(clamp(L / 0.6)) : 1;
+      $('phone').style.transform = `translateY(${(1 - intro) * 500}px)`;
+      // rings and taps
+      let html = '';
+      for (const r of f.rings || []) {
+        const k = clamp(r.age / 0.3); const sc2 = 1.18 - 0.18 * outBack(k);
+        const glow = 0.7 + 0.3 * Math.sin(r.age * 6);
+        html += `<div class="ring" style="left:${r.x * K}px;top:${r.y * K}px;width:${r.w * K}px;height:${r.h * K}px;opacity:${clamp(r.age / 0.12) * glow};transform:scale(${sc2})"></div>`;
+      }
+      for (const t of f.taps || []) {
+        const k = clamp(t.age / 0.55); const R = 34 + 90 * outCubic(k);
+        html += `<div class="tap" style="left:${t.x * K - R}px;top:${t.y * K - R}px;width:${2 * R}px;height:${2 * R}px;border:5px solid rgba(255,255,255,${0.85 * (1 - k)})"></div>`;
+        const r2 = 30 * (1 - 0.3 * k);
+        html += `<div class="tap" style="left:${t.x * K - r2}px;top:${t.y * K - r2}px;width:${2 * r2}px;height:${2 * r2}px;background:rgba(255,255,255,${0.55 * (1 - k)})"></div>`;
+      }
+      $('marks').innerHTML = html;
+    }
+  };
+</script>
+</body></html>

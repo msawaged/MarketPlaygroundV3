@@ -1,0 +1,20 @@
+{
+ "title": "MarketPlayground promo v6",
+ "search": "black friday",
+ "voice": "af_heart",
+ "scenes": [
+  {"id": "hook", "line": "Big news hits, and everyone rushes the obvious stock.",
+   "big": "Big news hits.", "accent": "news", "small": "Everyone rushes the obvious stock."},
+  {"id": "search", "line": "MarketPlayground finds the hidden play. Search any news, and the A.I. writes the story for you.",
+   "big": "Find the hidden play", "accent": "hidden", "small": "Search any news. AI writes the story."},
+  {"id": "learn", "line": "What happened, why it matters, and the twist. Learn it in thirty seconds.",
+   "big": "Learn it in 30 seconds", "accent": "30", "small": "What happened · why it matters · the twist"},
+  {"id": "who", "line": "Then see who it really moves. Not just Best Buy and Target. Walmart, and a whole retail fund.",
+   "big": "See who it really moves", "accent": "really", "small": "Not just the obvious stock"},
+  {"id": "practice", "line": "Try any idea with practice money. Stocks, funds, even options. No real money at risk.",
+   "big": "Practice money. Zero risk.", "accent": "Zero", "small": "Stocks, funds, even options"},
+  {"id": "score", "line": "And the market keeps score. Every idea is graded against the S and P 500, right out in the open.",
+   "big": "The market keeps score", "accent": "score", "small": "Every idea graded vs the S&P 500, in the open"},
+  {"id": "end", "line": "MarketPlayground. Coming soon. Follow for launch day.", "end": true}
+ ]
+}

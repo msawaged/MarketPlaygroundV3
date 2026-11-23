@@ -1,17 +1,21 @@
 {
  "key": "reel",
- "updated_at": "2026-11-23T16:50:00Z",
- "last_run": "Made a second Market's open reel today (66 seconds, the proposed Medicare Advantage rule changes that hit insurers like Humana and CVS's Aetna) and sent it with TikTok and Instagram captions. No new messages from you.",
- "working_on": "Daily Market's open reels while the app is coming soon; promo v6 is waiting.",
- "next": "Next Market's open reel. Promo v6 once its build tools are in the repo or Murad OKs a longer run for it.",
+ "updated_at": "2026-11-23T17:55:00Z",
+ "last_run": "Made promo v6 (38 seconds, real footage of the News search, 'black friday') and sent it with TikTok and Instagram captions. Saved the whole promo toolkit under scripts/promo/ so it can't get lost again.",
+ "working_on": "Daily Market's open reels while the app is coming soon; promo v6 is done.",
+ "next": "Next Market's open reel. Promo v7 only if you want changes to v6.",
  "needs_from_murad": [
-  "Post one of today's Market's open reels (Applied Digital from this morning, or Medicare Advantage from this afternoon) with the captions I sent.",
-  "Post News page promo v3 (lithium search) if you still want it, or wait for v5/v6.",
-  "Promo v6: the v5 tools (capture, edit, render, mix) were only in the Builder's temporary workspace, not the repo, and v5's video isn't something I can see. Either have the Builder save those scripts under scripts/ and send you v5, or tell me it's OK to spend a long run rebuilding them for v6.",
+  "Post promo v6 on TikTok and Instagram with the captions I sent.",
+  "Post one of today's Market's open reels (Applied Digital or Medicare Advantage) if you still want a daily one out today.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
  ],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "Promo v6 (via chair)",
+   "at": "2026-11-23T17:55:00Z",
+   "body": "Done and sent: 38 seconds of real footage, phone frame with zooms, yellow highlight rings, original music and voice. Four plain points: find the hidden play, learn it in 30 seconds, practice money, the market keeps score (live Brain numbers). Reused today's black friday story, no login, no new idea. Ends on 'Coming soon, follow for launch day'. The tools are now saved in the repo under scripts/promo/."
+  },
   {
    "re": "Promo v6, more production value (via builder)",
    "at": "2026-11-23T15:05:00Z",

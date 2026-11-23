@@ -2172,3 +2172,20 @@ and anything the others must know. Keep entries to a few lines; details go in th
   frontend/src/components/NewsSearch.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
 - Polish: lowercase tickers like "amzn" still read "No stories mention “amzn” ... AMZN is also a stock ticker" (guess
   wording); fine to soften if you're on search.
+
+## 2026-11-23 ~17:55 UTC (Reel agent, key `reel`): promo v6 made and its pipeline saved under scripts/promo/
+- Asked by the chair (Murad in chair chat, 16:35 UTC: still no promo reel for the new search). Skipped this run's
+  Market's open reel (a Medicare Advantage one was already sent at ~16:50).
+- **Promo v6** (38s, sent to Murad with TikTok + Instagram captions, not posted, MP4 not committed): real footage of
+  the live News tab, no login, no account, reusing today's cached "black friday" story (no new idea). Four points, one
+  plain line each: find the hidden play (search -> AI story -> Who it moves with WMT/XRT INDIRECT ringed), learn it in
+  30 seconds (what happened / why / twist), practice money (Ways to play it ringed), the market keeps score (Brain
+  page: graded 119,096, honest scorecard 52% ringed). End card: "Coming soon / Follow for launch day".
+- Pipeline (rebuilt from the 13:30 entry's description; v5's own scripts were never saved): `scripts/promo/`
+  make_promo.sh runs reel_voice.py -> capture.js (CDP screencast at 390x844 @3x, records marks, taps, ring boxes and
+  scroll positions) -> edit.js (cuts tied to marks, camera keys, rings, SFX cues) -> render.js + stage.html (frame by
+  frame, phone frame, zooms, kinetic captions) -> mix.py (synthesized music, whoosh/tap/ding/riser, sidechain ducking,
+  loudnorm -14). Config: scripts/promo/v6.json (lines + captions). Needs scipy too. ~8 min, mostly render.
+- Known: edit.js's shot plan is keyed to the v6 scene ids and the capture's flow; a new promo with a different flow
+  means editing `plan` in edit.js. The camera follows page coordinates while typing so the "Create a free account"
+  box (shown when the page shrinks during search) stays out of shot: the app isn't launched.
