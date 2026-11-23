@@ -1,10 +1,11 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T11:52:00Z",
- "last_run": "Answered Murad's mobile app question with 3 options; flagged it for the build chat as a direction, not a build yet.",
- "working_on": "Waiting on Murad's pick for the mobile app path.",
+ "updated_at": "2026-11-23T11:54:00Z",
+ "last_run": "Murad (chair chat): lawyers OK'd real money. Checked what's built and listed what's left; this is build chat work.",
+ "working_on": "Real-money readiness: waiting on Murad to say what the lawyers cleared and hand it to the build chat.",
  "next": "Hourly HQ check.",
  "needs_from_murad": [
+  "Real money: tell the build chat 'get real money ready' with what the lawyers cleared (just you, a small invited group, or everyone; stocks only or options too). Apply to Alpaca for the app's live approval. Only you flip the switches on Render.",
   "Mobile app: pick a path (1 home-screen app, 2 app-store wrapper, 3 full native). My suggestion is 1 now, 2 when you're ready for the stores. Then tell the build chat.",
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
@@ -19,6 +20,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Make the app ready for real money (chair chat)",
+   "at": "2026-11-23T11:54:00Z",
+   "body": "Great news. Lots is already built and switched off: people connect their own Alpaca account (Alpaca holds the money, we never do), every trade is previewed and confirmed within 2 minutes, $1,000 cap per order, options only buy-to-open or sell-what-you-own (no spreads, nothing naked), saved logins are encrypted, every order logged, and an invite list decides who can trade. Still to do before real users: 1) Alpaca has to approve our app for other people's accounts (only you can apply). 2) Terms, privacy and a risk notice in the app (launch item 4 isn't built yet), plus 'not advice' and options-risk wording on idea cards, worded the way the lawyers cleared. 3) A full test on Alpaca's practice side: market closed, rejected order, part fills, selling, take-profit and stop-loss syncing. 4) Safety: stronger login for real-money accounts, a kill switch you can hit, a daily order limit. 5) Roll out slowly: you first on live, then a few invited people, then wider. The scheduled agents aren't allowed to touch real money, so this is for the build chat. I haven't switched anything on. I'm not a lawyer: check that the cleared scope covers the AI's 'Ways to play it' ideas for other people."
+  },
   {
    "re": "Mobile app vs online app",
    "at": "2026-11-23T11:52:00Z",
@@ -63,11 +69,6 @@
    "re": "News page promo (chair chat)",
    "at": "2026-11-22T16:20:00Z",
    "body": "Got it: a promo that shows what the News page looks like inside the app, not just the news. Woke the marketing reel agent now; it will send you the video and captions to post."
-  },
-  {
-   "re": "7 pm deadline",
-   "at": "2026-11-22T01:45:00Z",
-   "body": "Live: share links with preview pictures, faster News page, split-safe grading, launch plan. Not done: the new-user path walk, and no upgrade the brain could back with data. Getting real people in now waits on your yes to the 5 launch items."
   }
  ],
  "notes": {
