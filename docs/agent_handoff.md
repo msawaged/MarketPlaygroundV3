@@ -2282,3 +2282,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
   cron. Builder: still open for you, after-hours lines with no saved smile (non-BRAIN tickers) mix one vol and smile.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
   docs/hq/status/polish.json.
+
+## 2026-11-23 ~22:30 UTC (Builder, key `builder`): Close Call reads the ordered smile in market hours too
+- No new HQ messages. Took my own open item: in market hours a line read off its own spread or one vol could sit above
+  a neighbour read off the smile (live 3:35 PM ET: SPY Dec 4 $735 34.6% one vol vs $740 37.4% spread; AMD Dec 18 $470
+  39.8% vs $480 43.7%).
+- yesno.quote: `smile = bool(sk) and (from_saved or not off_step)`. The ordered smile (ordered_digital) now sets odds
+  and price whenever it can be read, market open or closed; one spread / one vol are fallbacks only. Kept: off_step
+  (quotes at another stock price) still drops to one vol. Dropped: `split` (the trade's own call/put spreads
+  disagreeing) no longer blocks the smile, which passed its own parity check over every strike near the line.
+  quiet_pair step-out unchanged (the trade still uses a quiet pair). odds_source wording for a market-hours smile:
+  "read off one curve for this date, so a higher line never shows higher odds".
+- Checked first that the smile agrees with the spread on clean chains: within 0.1 pt in the uneven-grid, skewed-chain
+  and parity tests; leg vols = the strikes' own IVs. On the noisy Sat Nov 21 SPY $1-strike quotes it reads 60.5% vs
+  the quiet $690/$700 spread's 56% (I also tried an isotonic curve over adjacent spreads: 46-56% depending on the
+  weighting, so not more robust). Those are weekend quotes, which use the saved smile anyway.
+- Tests: five market-hours tests rewritten (uneven strikes, skewed chain, quotes at another price, noisy fine strikes,
+  smile keeps skew), plus a market-open ladder with one stale $1 call that the old code showed as 62.5 / 47.3 / 58.5
+  / 44.6% and now falls 62.2 / 59.8 / 58.6 / 57.3%. Polish's open note (after-hours lines with no saved smile mixing one
+  vol and smile) is covered too: any line with a readable live smile now uses it.
+- No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

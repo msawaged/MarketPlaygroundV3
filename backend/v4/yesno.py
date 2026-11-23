@@ -1037,8 +1037,18 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # and a weekend reading of one spread drifts a few points with its quote noise (live Sat Nov 21, SPY Nov 27:
     # $690 read 69.7% from $687/$693 but $692 read 58.7% from $685/$699, the smile 65% and 63%).
     spread_ok = bool(dig) and not stale and not wide
+    # In market hours too, the smile sets the odds whenever it can be read, and one spread (or one vol) is only the
+    # fallback. Each line's spread or vol is its own reading, so beside a neighbour read off the smile it can sit a
+    # few points out of order: live Mon Nov 23, 3:35 PM ET, SPY Dec 4 at $723.70 showed 34.6% above $735 (one vol,
+    # "call and put quotes disagree") but 37.4% above $740 (the $738/$742 spread); AMD Dec 18 43.7% above $480 (a
+    # spread) but 39.8% above $470, while the smile's own column fell cleanly line by line. The smile is one ordered
+    # curve per expiration (ordered_digital), so every line it reads falls with the line, and its YES / NO are priced
+    # on that curve (smile_leg_vols), so YES still costs about the odds shown. Not when the quotes imply another stock
+    # price (off_step): the smile would describe that price too. The trade's own call and put spreads disagreeing
+    # (split) doesn't stop it: the smile already passed its own parity check over every strike near the line, and
+    # it reads puts below the price and calls above, never one pair.
     # The saved smile doesn't read tonight's quotes at all, so their being out of step doesn't matter to it.
-    smile = bool(sk) and (from_saved or (not off_step and not split and (closed or not spread_ok)))
+    smile = bool(sk) and (from_saved or not off_step)
     if spread_ok and not smile:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
     elif smile and from_saved:
@@ -1048,9 +1058,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
                                      f"quotes are too wide to read)")
     elif smile:
         why_not = ("the market is closed, and one spread's last quotes can blur its odds a few points" if closed
-                   else "the spread quotes looked out of step" if stale
-                   else "the trade's own quotes are too wide to read alone" if wide and dig
-                   else "no tight spread quoted on the trade's strikes")
+                   else "read off one curve for this date, so a higher line never shows higher odds")
         m_p, odds_source = sk["p"], (f"the option smile near the line: implied volatilities of {sk['n']} listed "
                                      f"{u} options near {_money(level)} (skew included; {why_not})")
     else:

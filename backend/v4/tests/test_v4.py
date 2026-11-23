@@ -4306,8 +4306,8 @@ def test_yesno_uneven_strikes_still_centre_the_spread_on_the_line(monkeypatch):
     assert abs(q["yes"]["breakeven"] - lvl) < 0.15 and abs(q["no"]["breakeven"] - lvl) < 0.15
     assert "$5.00 either side of the" in q["spread_note"]
 
-    # Real quotes with skew on that uneven grid: the odds are read off the trade's own centred spread, so YES's
-    # price is the odds shown (the finer $lvl-1/$lvl/$lvl+5 pairs read a different number on skewed quotes).
+    # Real quotes with skew on that uneven grid: the trade is still the centred $lvl-5/$lvl+5 pair, the odds come off
+    # the ordered smile (market hours too) and agree with that pair's own spread, and YES's price is the odds shown.
     from backend.v4.strategy import bs_price
     spot = market.latest_price("WINR")
     yrs = max(1, (date.fromisoformat(e) - yesno._today()).days) / 365.0
@@ -4323,7 +4323,10 @@ def test_yesno_uneven_strikes_still_centre_the_spread_on_the_line(monkeypatch):
         return out
     monkeypatch.setattr(market, "option_chain_near", skewed)
     q = yesno.quote("WINR", lvl, e)
-    assert q["strikes"] == [lvl - 5, lvl + 5] and "call spread" in q["odds_source"]
+    assert q["strikes"] == [lvl - 5, lvl + 5] and "option smile" in q["odds_source"]
+    calls = [r for r in skewed("WINR", lvl, date.fromisoformat(e)) if r["type"] == "call" and r["strike"] in (lvl - 5, lvl + 5)]
+    own = yesno.digital_from_spread(calls, lvl, yrs)[0]
+    assert abs(q["market_p"] - own) < 0.01                               # the smile agrees with the trade's spread
     assert abs(q["yes"]["cost"] / q["yes"]["payout"] - q["market_p"]) < 0.005
 
 
@@ -4551,8 +4554,10 @@ def test_yesno_skewed_chain_prices_each_strike_at_its_own_vol(monkeypatch):
     v = yesno.leg_vols(chain("WINR", k1, exp)[::2], k1, k1 + 1, spot, yrs, iv(k1))
     assert v == (pytest.approx(iv(k1), abs=2e-3), pytest.approx(iv(k1 + 1), abs=2e-3))
     q = yesno.quote("WINR", k1, exp.isoformat())
-    assert q["price_source"] == "strikes" and q["strikes"] == [k1 - 1, k1 + 1]
     listed = (round(mid(k1 - 1, "call"), 2) - round(mid(k1 + 1, "call"), 2)) * 100
+    # priced on the ordered smile (market hours too), whose vols at the two strikes are the strikes' own
+    assert q["price_source"] == "smile" and q["strikes"] == [k1 - 1, k1 + 1]
+    assert list(q["leg_vols"]) == [pytest.approx(iv(k1 - 1), abs=2e-3), pytest.approx(iv(k1 + 1), abs=2e-3)]
     assert q["yes"]["cost"] == pytest.approx(listed, abs=2.0)                       # the listed spread mid
     flat = (bs_price(spot, k1 - 1, yrs, q["vol"], "call") - bs_price(spot, k1 + 1, yrs, q["vol"], "call")) * 100
     assert q["yes"]["cost"] - flat > 2.0                                            # the old flat-vol price was cheap
@@ -5886,10 +5891,13 @@ def test_yesno_quotes_set_at_another_stock_price_fall_back_to_one_vol(monkeypatc
     assert q["market_p"] == q["market_p_flat_vol"] and q["leg_vols"] is None
     assert "set as if WINR were near" in q["odds_source"] and f"${spot:,.2f}" in q["odds_source"]
 
-    # The same quotes set at the last price: odds read off the call spread as before.
+    # The same quotes set at the last price: odds read off the quotes (the ordered smile, skew included), which agree
+    # with the call spread on the line.
     monkeypatch.setattr(market, "option_chain_near", chain_at(spot))
     q = yesno.quote("WINR", lvl, exp.isoformat())
-    assert "call spread" in q["odds_source"] and q["market_p"] != q["market_p_flat_vol"]
+    assert "option smile" in q["odds_source"] and q["market_p"] != q["market_p_flat_vol"]
+    calls = [r for r in market.option_chain_near("WINR", spot, exp) if r["type"] == "call"]
+    assert q["market_p"] == pytest.approx(yesno.digital_from_spread(calls, lvl, yrs)[0], abs=0.01)
 
 
 def test_yesno_calls_and_puts_set_at_different_prices_are_not_read_as_odds(monkeypatch):
@@ -5972,8 +5980,12 @@ def test_yesno_noisy_fine_strikes_step_out_to_a_quiet_centred_spread(monkeypatch
         return out
     monkeypatch.setattr(market, "option_chain_near", chain)
     q = yesno.quote("WINR", 695.0 + shift, exp.isoformat())
-    assert q["strikes"] == [690 + shift, 700 + shift] and "call spread" in q["odds_source"]
-    assert abs(q["market_p"] - (15.95 - 10.34) / 10) < 0.01                  # about 56%, from the market's quotes
+    # The trade still steps out to the quiet pair. Since Nov 23 the odds come off the ordered smile in market hours
+    # too (one curve per date, so a ladder can't rise with the line); on these noisy weekend quotes it reads ~60.5%
+    # beside the quiet spread's 56%: within the quotes' own blur, and YES costs the odds shown.
+    assert q["strikes"] == [690 + shift, 700 + shift] and "option smile" in q["odds_source"]
+    assert abs(q["market_p"] - (15.95 - 10.34) / 10) < 0.05
+    assert abs(q["yes"]["cost"] / q["yes"]["payout"] - q["market_p"]) < 0.01
 
 
 def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
@@ -6018,10 +6030,30 @@ def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
              for r in chain("WINR", lvl, exp)]
     assert yesno.skew_odds(stale, spot, lvl, yrs) is None                       # puts and calls disagree: no smile
 
-    # Market open: a clean spread reading 10+ points over one vol is skew, not stale quotes, and is kept.
+    # Market open: skew 10+ points over one vol is skew, not stale quotes, and is kept. The odds come off the smile in
+    # market hours too, and agree with the clean call spread on the line.
     q = yesno.quote("WINR", lvl, exp.isoformat())
-    assert "call spread" in q["odds_source"] and q["market_p"] - q["market_p_flat_vol"] > 0.10
+    assert "option smile" in q["odds_source"] and q["market_p"] - q["market_p_flat_vol"] > 0.10
     assert abs(q["market_p"] - true_p) < 0.02
+    calls = [r for r in chain("WINR", lvl, exp) if r["type"] == "call"]
+    assert abs(q["market_p"] - yesno.digital_from_spread(calls, lvl, yrs)[0]) < 0.01
+
+    # Market open, a ladder whose quotes are clean except one pair (a stale $1 call spread above one line): before
+    # Nov 23 that line read its own spread or one vol and could sit above its neighbour (live SPY Dec 4: 34.6% above
+    # $735, 37.4% above $740). Now every line reads the same ordered curve: the ladder falls, YES costs the odds.
+    k_bad = float(round(spot)) + 3
+    bumped = lambda *a, **k: [dict(r, bid=round(r["bid"] + 0.6, 2), ask=round(r["ask"] + 0.6, 2))
+                              if r["type"] == "call" and r["strike"] == k_bad else r for r in chain(*a, **k)]
+    monkeypatch.setattr(market, "option_chain_near", bumped)
+    df = math.exp(-RISK_FREE * yrs)
+    ps = []
+    for d in (-10, -6, -4, -1, 0, 2, 3, 4, 5, 9):
+        q = yesno.quote("WINR", float(round(spot)) + d, exp.isoformat())
+        assert "option smile" in q["odds_source"] and q["price_source"] == "smile"
+        assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.02
+        ps.append(q["market_p"])
+    assert all(a >= b for a, b in zip(ps, ps[1:])), ps
+    monkeypatch.setattr(market, "option_chain_near", chain)
 
     # Market closed: the smile sets odds and price on every line; odds fall as the line rises, YES costs the odds.
     monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
