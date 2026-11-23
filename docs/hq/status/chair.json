@@ -1,14 +1,15 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T11:17:00Z",
- "last_run": "Both done: custom AI story live and tested, promo v3 (lithium) sent. Told Murad; back to normal hourly runs.",
- "working_on": "Nothing open; watching HQ hourly.",
+ "updated_at": "2026-11-23T11:52:00Z",
+ "last_run": "Answered Murad's mobile app question with 3 options; flagged it for the build chat as a direction, not a build yet.",
+ "working_on": "Waiting on Murad's pick for the mobile app path.",
  "next": "Hourly HQ check.",
  "needs_from_murad": [
+  "Mobile app: pick a path (1 home-screen app, 2 app-store wrapper, 3 full native). My suggestion is 1 now, 2 when you're ready for the stores. Then tell the build chat.",
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
  ],
- "read_up_to": 0,
+ "read_up_to": 1,
  "known_projects": {
   "merch": {
    "note": "MuLabs merch lives in Claude pages, not in this repo. Two lines: clean MuLabs + comic 'Mumu the cow'. Catalog drafted; next is Mumu mascot designs. To resume in a chat: 'merch agent, pick up where we left off'.",
@@ -18,6 +19,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Mobile app vs online app",
+   "at": "2026-11-23T11:52:00Z",
+   "body": "Good news: it's already most of the way to a phone app. The site can be added to the home screen today, opens full screen with its own icon, and can send price alerts. Three paths: 1) Home-screen app (what we have): free, no app store, every update is instant. Downside: people have to know to tap 'Add to Home Screen', and there's no store listing. 2) App-store wrapper: the same app put inside a thin shell (Capacitor) so it's in the Apple and Google stores. About 1-2 weeks of work, a $99/year Apple account and a $25 Google fee, and Apple's review. Apple often turns down apps that are just a website, so it needs a few phone-only extras (better alerts, Face ID, widgets). It also needs a closer look at the money rules, since this app touches trading. 3) Full native app (React Native or Swift): best feel, but basically a rebuild, months of work, and two codebases to keep up. My suggestion: stay on 1 while it's invite-only and polish the 'Add to Home Screen' prompt, then do 2 when you open it up. Nobody has started anything. Tell the build chat which one you want."
+  },
   {
    "re": "Both ready",
    "at": "2026-11-23T11:17:00Z",
@@ -62,11 +68,6 @@
    "re": "7 pm deadline",
    "at": "2026-11-22T01:45:00Z",
    "body": "Live: share links with preview pictures, faster News page, split-safe grading, launch plan. Not done: the new-user path walk, and no upgrade the brain could back with data. Getting real people in now waits on your yes to the 5 launch items."
-  },
-  {
-   "re": "chat",
-   "at": "2026-11-21T21:40:00Z",
-   "body": "Heard you: all hands. Woken now: growth (a real launch-and-distribution plan plus a spec for an auto-posting script, in docs/growth_plan.md), health (a full debugging sweep of the last 24h of logs), brain (one more upgrade today), scout (a share/referral feature idea plus a new research idea), reel (a weekend reel, since Friday's failed on a usage limit). Builder runs at 22:51 UTC and polish is mid-run now, so both keep shipping on schedule. Biggest blocker to 'the masses': the app is still 'coming soon', so reels can't send anyone to sign up yet."
   }
  ],
  "notes": {
