@@ -1768,3 +1768,28 @@ Changed (frontend only):
   the ideas in that direction on average, vs the S&P in the direction called.
 
 Checks: vite build passes, npm test passes, backend tests 247 passed (fresh venv).
+
+## 2026-11-23 (fourth run, ~09:30 UTC = Mon 4:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No
+HQ messages from Murad. Focus: the Builder's new "Make a story about this" (live since ~09:00 UTC). Opened the two
+stories already made today (cached, so free; nothing new written): "lithium" and "Costco earnings". Lithium: every
+figure is in its sources ($2.93B -> $3.83B = +31%, DB target $2.80 -> $2.20 = -21%), bars, sources card and "Your
+call" fine. Costco: COST +0.9% / WMT +1.6% on Fri vs S&P -3.07% -> +4.0 / +4.7 pts, adds up.
+
+Found:
+- "Costco earnings" made a story about stockpiling and a Mizuho target; neither source headline mentions earnings,
+  and nothing on screen said so. Someone who searched earnings would read it as an earnings story.
+- The "Make a story about “Costco earnings”" button text ran past the button's right edge at 390 (no wrap, no
+  padding; only searches over 22 characters are shortened).
+
+Changed:
+- customstory.missing_words(q, item): search words that none of the story's source headlines/summaries mention
+  (story companies' tickers don't count; "sales" covers "sale"). make() returns it as `missing` for new and cached
+  stories. NewsSearch shows above the card: "None of the recent headlines it's built from mention “earnings”, so this
+  story covers the latest news instead." Also covers topic searches filled with the topic companies' headlines
+  (uranium). Test added.
+- MakeStory button: side padding, centered text that wraps, icon doesn't shrink.
+- Noticed, left alone: the AI's company reasons can add a cause the sources don't state (lithium: ALB "supply
+  concerns from delays"; no source mentions delays). Prompt-level; for the Builder if it recurs.

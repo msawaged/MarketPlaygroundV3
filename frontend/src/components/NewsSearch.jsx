@@ -62,6 +62,11 @@ export function MakeStory({ q, primary = false }) {
     return (
       <div className="mt-4">
         <div className="mb-2 flex items-center gap-1.5 text-sm font-bold text-blue-200"><Sparkles className="h-4 w-4" /> Made for your search</div>
+        {d.missing?.length > 0 && (
+          <p className="mb-2 text-xs text-slate-400">
+            None of the recent headlines it's built from mention {d.missing.map((w) => `“${w}”`).join(' or ')}, so this story covers the latest news instead.
+          </p>
+        )}
         <MoverCard item={d.item} storyData={d} openNow />
         <p className="mt-2 text-[11px] text-slate-500">
           AI-written from real headlines; check the sources before you act. {d.cached ? 'Already made today, so this one was free.' : d.left != null ? `You can make ${d.left} more new ${d.left === 1 ? 'story' : 'stories'} today.` : ''}
@@ -78,8 +83,8 @@ export function MakeStory({ q, primary = false }) {
         </div>
       ) : (
         <>
-          <button onClick={go} className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold ${primary ? 'bg-blue-600 hover:bg-blue-500' : 'border border-blue-500/60 bg-blue-500/10 text-blue-100 hover:bg-blue-500/20'}`}>
-            <Sparkles className="h-4 w-4" /> Make a story about “{short}”
+          <button onClick={go} className={`flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-center text-sm font-bold ${primary ? 'bg-blue-600 hover:bg-blue-500' : 'border border-blue-500/60 bg-blue-500/10 text-blue-100 hover:bg-blue-500/20'}`}>
+            <Sparkles className="h-4 w-4 shrink-0" /> <span className="min-w-0 break-words">Make a story about “{short}”</span>
           </button>
           <p className="mt-2 text-center text-xs text-slate-400">The AI reads the latest real headlines about it and writes a 30-second story.</p>
           {st.phase === 'none' && <p className="mt-3 text-sm text-amber-200" role="alert">{st.data?.reason || 'No story this time.'}</p>}

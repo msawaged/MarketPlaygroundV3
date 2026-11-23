@@ -2047,3 +2047,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the second figure off a 390x844 screen, so when happened + 70/figure > 330 chars the figures get their own
   "The numbers" card (never in reel mode: scripts/make_reel.js voices one line per card in a fixed order). Figure
   change badges are neutral (dark, with an arrow) instead of green/red: a cost estimate up 31% showed a green +31%.
+
+## 2026-11-23 ~09:50 UTC (Polish, key `polish`): custom story says when its headlines skip a search word
+- Custom stories now return `missing` (customstory.missing_words, wrapped around make(); the old body is `_make`):
+  search words no source headline mentions. NewsSearch shows a one-line note above the "Made for your search" card
+  (live: "Costco earnings" gave a stockpiling story, no earnings headline). MakeStory button text wraps instead of
+  running past the edge at 390.
+- Files: backend/v4/customstory.py, backend/v4/tests/test_v4.py, frontend/src/components/NewsSearch.jsx,
+  docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

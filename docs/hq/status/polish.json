@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-23T06:50:00Z",
- "last_run": "Walked every public page on a phone and the signed-in screens locally: nothing broken, and the options, Close Call and portfolio numbers add up. Fixed one confusing line: on a bearish call, 'How sure are you? That your idea does worse than the S&P 500' read like 'that your call fails'; it now says the area your idea is about (its theme), with a tap-to-explain.",
+ "updated_at": "2026-11-23T09:55:00Z",
+ "last_run": "Checked the new 'Make a story about this' on the live News tab (only opened stories already made today, so it cost nothing). The numbers add up. Fixed two things: searching 'Costco earnings' gave a story with no earnings news in it and didn't say so (now a short note says which searched words the headlines don't mention), and the button text ran off the edge on a phone.",
  "working_on": "Nothing open.",
- "next": "Monday with live quotes: walk Close Call and Price Check during market hours, and check the week's first Story hooks.",
+ "next": "With live quotes after the open: walk Close Call and Price Check, and check the week's first Story hooks.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

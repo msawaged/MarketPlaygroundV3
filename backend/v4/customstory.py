@@ -311,7 +311,27 @@ def _priced(out: dict) -> dict:
     return dict(out, item=item)
 
 
+def missing_words(q: str, item: Optional[dict]) -> list[str]:
+    """Search words that none of the story's source headlines mention ("Costco earnings" when no recent Costco
+    headline says earnings), so the page can say the story is about the latest news instead. Tickers of the
+    story's companies don't count ("$NVDA" headlines say Nvidia)."""
+    if not item:
+        return []
+    tickers = {str(c.get("ticker") or "").lower().replace(".", "") for c in item.get("companies") or []}
+    ws = set(newssearch._words(" ".join(f"{s.get('headline')} {s.get('summary')}" for s in item.get("sources") or [])))
+    def said(t: str) -> bool:
+        return any(w.startswith(t) or (len(w) >= 4 and t.startswith(w)) for w in ws)
+    return [t for t in newssearch.terms(q.lstrip("$")) if t not in tickers and not said(t)]
+
+
 def make(q: str, who: str, client: Any = None) -> dict:
+    out = _make(q, who, client)
+    if out.get("item"):
+        out["missing"] = missing_words(out.get("q") or q, out["item"])
+    return out
+
+
+def _make(q: str, who: str, client: Any = None) -> dict:
     """The day's story about q, writing it if nobody has today. Always returns a dict: with "story" and "item",
     or with story None and a plain-English "reason" (code: short, no_news, limit, busy, failed)."""
     q = re.sub(r"\s+", " ", str(q or "")).strip()[:60]

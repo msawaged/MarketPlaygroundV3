@@ -6485,3 +6485,15 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
     # a topic whose word the headlines never write (live: "uranium"): the topic's companies' newest headlines fill in
     customstory.make("reactor restarts", "ip:4", client=fake)
     assert "Cameco signs uranium supply deal" in calls[-1]["messages"][0]["content"]
+
+
+def test_custom_story_says_which_search_words_its_headlines_never_mention():
+    from backend.v4.customstory import missing_words
+    # live 2026-11-23: "Costco earnings" made a story from two Costco headlines, neither about earnings
+    item = {"companies": [{"ticker": "COST"}, {"ticker": "WMT"}],
+            "sources": [{"headline": "Mizuho Adjusts Price Target on Costco Wholesale", "summary": "Stockpiling lifts sales."}]}
+    assert missing_words("Costco earnings", item) == ["earnings"]
+    assert missing_words("costco", item) == [] and missing_words("$COST", item) == []  # tickers don't count
+    assert missing_words("Costco sale", item) == []  # "sales" covers "sale"
+    assert missing_words("uranium", {"companies": [], "sources": [{"headline": "Cameco names new CFO"}]}) == ["uranium"]
+    assert missing_words("x", None) == []
