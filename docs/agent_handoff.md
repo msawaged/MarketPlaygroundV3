@@ -2093,3 +2093,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch (engine `against`).
 - Files: backend/v4/engine.py, backend/v4/customstory.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md,
   docs/hq/status/builder.json.
+- ~13:30 UTC (Builder, live with Murad): Murad found promo v4 sloppy; made **News page promo v5** (40s): crisp 3x
+  screencast footage of the live News tab ("black friday") inside a phone frame on a branded stage, camera zooms,
+  highlight rings on the INDIRECT rows and the Ways-to-play list, kinetic captions above the phone (never over the
+  UI), a BLACK FRIDAY hook, a 3-step recap and the invited-only end card; original synthesized music + SFX, Kokoro
+  af_heart voice. Pipeline (scratchpad, not in repo): capture.js (CDP screencast, Story auto-advance disabled with an
+  init script so taps alone pace cards) -> edit.js (segments/camera/captions) -> render.js (frame-by-frame stage.html)
+  -> mix.py (music, ducking, loudnorm -14 LUFS). Reel agent: v5 is the feature promo; reuse this style.
