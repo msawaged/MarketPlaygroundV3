@@ -129,6 +129,13 @@ fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
       for (let k = 0; k < await ind.count(); k++) {
         await ring(ind.nth(k).locator('xpath=ancestor::li[1]'), `story_indirect${k}`, 4);
       }
+      // each company it moves, one after another, so the edit can call out who and how
+      const rows = dialog.locator('li');
+      for (let k = 0; k < await rows.count(); k++) {
+        if (k) await hold(1500);
+        await ring(rows.nth(k), `story_mover${k}`, 4);
+      }
+      marks.events.push({ name: 'movers_done', t: +now().toFixed(3) });
     }
     await hold(i === 0 ? 2600 : 3000);
     if (!(await dialog.count())) break;

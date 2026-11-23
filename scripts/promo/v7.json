@@ -43,10 +43,10 @@
   },
   {
    "id": "who",
-   "line": "See exactly who it moves, with every source.",
-   "big": "Who it moves",
-   "accent": "moves",
-   "small": "Every source shown. Check it yourself."
+   "line": "And it shows who else it moves, and how. Lithium Americas takes the hit from higher costs, while its rival Albemarle could gain.",
+   "big": "Who else it moves, and how",
+   "accent": "else",
+   "small": "LAC hurt by higher costs · rival ALB could gain"
   },
   {
    "id": "practice",
