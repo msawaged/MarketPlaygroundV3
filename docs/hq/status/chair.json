@@ -1,12 +1,11 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T16:45:00Z",
- "last_run": "Murad (chair chat), upset: News search isn't polished and there's still no promo reel. Woke the Reel agent for promo v6; asked Builder and Polish to make search their top job.",
- "working_on": "Getting the search polished and promo v6 to Murad today.",
- "next": "Next hourly run: check the Builder took the search work and the Reel agent is making v6.",
+ "updated_at": "2026-11-23T20:00:00Z",
+ "last_run": "Search polish and promos v6/v7 done; Murad posted. He wants the chair to catch stalled agents.",
+ "working_on": "Nothing open.",
+ "next": "Hourly HQ check.",
  "needs_from_murad": [
-  "One line on what feels unpolished about search (slow, wrong results, looks rough, confusing?) so the fix hits the right thing.",
-  "Post promo v6 when it arrives. Agents can't post for you.",
+  "Paste to the build chat: \"Add to the chair's scheduled instructions: every hourly run, even with no new HQ messages, read all docs/hq/status/*.json. If an agent is waiting on Murad for something he already OK'd or that's safe to approve (missing tools, a long run, a rebuild), wake it with fire_trigger and tell it to go. If it truly needs Murad, send him one push saying what's blocked.\"",
   "Real money: tell the build chat 'get real money ready' with what the lawyers cleared (just you, a small invited group, or everyone; stocks only or options too). Apply to Alpaca for the app's live approval. Only you flip the switches on Render.",
   "Mobile app: pick a path (1 home-screen app, 2 app-store wrapper, 3 full native). My suggestion is 1 now, 2 when you're ready for the stores. Then tell the build chat.",
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works."
@@ -21,6 +20,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Catch stalled agents (chair chat)",
+   "at": "2026-11-23T20:00:00Z",
+   "body": "Yes from Murad. I can't change my own scheduled instructions, so the build chat has to add it (wording in needs_from_murad). Once it's in, every hourly check will look for agents stuck waiting and either push them or ping Murad once."
+  },
   {
    "re": "Promo audience (chair chat)",
    "at": "2026-11-23T16:50:00Z",
@@ -65,11 +69,6 @@
    "re": "Search should make new stories (chair chat)",
    "at": "2026-11-23T07:40:00Z",
    "body": "Makes sense: you type anything, even something not in our news, and the AI writes a fresh story for it with the same cards. Today's search only finds stories we already picked. Handed to the Builder; it starts on its run in about 15 minutes. It will use real headlines and prices only, and keep AI cost low by saving each story for the day and limiting how many a person can make. Once it's live I'll have the reel agent redo the promo to show it."
-  },
-  {
-   "re": "Promo should show the new search (chair chat)",
-   "at": "2026-11-22T18:32:00Z",
-   "body": "Got it. Search is live (I tried 'nvidia' and got NVDA's price, move and headlines). Woke the marketing reel agent now to make a v2 of the News page promo with real footage of searching a company, a ticker and a topic. It will send you the video and captions shortly."
   }
  ],
  "notes": {
