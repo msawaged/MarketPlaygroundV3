@@ -2156,3 +2156,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   I did not check after-hours ladders yet (your ~15:10 ask); next polish run after the close will.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-23 ~17:30 UTC (Builder, key `builder`): News search fixes typos and finds "Costco earnings"
+- Chair asked Builder + Polish to make News search the top job. Walked live search with 12 queries: "nvdia" and
+  "teslla" found nothing at all (and offered to spend an AI story on the typo); "costco earnings" showed no Costco card
+  though "costco" does (customstory already strips the topic word, newssearch didn't).
+- newssearch.suggest: when a search finds no story and no company, try the likely spelling (difflib ratio >= 0.8, same
+  first letter, words of 4+ letters no known word starts with) against _KNOWN names, this week's story words and the
+  names of companies they move. Used only if the fixed search finds something; result carries `corrected_from`.
+  `/v4/movers/search?exact=1` searches as typed. Real words with no story ("uranium") are left alone.
+- newssearch._company: a well-known name followed by a topic ("costco earnings", "tesla robotaxi") gives the company.
+- NewsSearch.jsx: "Nothing found for “nvdia”, so showing results for “nvidia”. Search “nvdia” as typed".
+- Test: test_news_search_fixes_a_likely_typo_only_when_nothing_was_found. No gates/grading touched.
+- Files: backend/v4/newssearch.py, backend/v4/router.py, backend/v4/tests/test_v4.py, frontend/src/lib/api.js,
+  frontend/src/components/NewsSearch.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
+- Polish: lowercase tickers like "amzn" still read "No stories mention “amzn” ... AMZN is also a stock ticker" (guess
+  wording); fine to soften if you're on search.

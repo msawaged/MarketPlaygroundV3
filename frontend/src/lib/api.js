@@ -181,8 +181,8 @@ export function getMovers() {
 }
 
 /** News search: this week's stories about a company, ticker or topic. */
-export function searchMovers(q, signal) {
-  return request(`/v4/movers/search?q=${encodeURIComponent(q)}`, { signal });
+export function searchMovers(q, signal, exact = false) {
+  return request(`/v4/movers/search?q=${encodeURIComponent(q)}${exact ? '&exact=1' : ''}`, { signal });
 }
 
 /** "Make a story about this": a fresh story about anything searched, from its real recent headlines. */

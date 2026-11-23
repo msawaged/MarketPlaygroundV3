@@ -589,9 +589,10 @@ async def get_movers():
 
 
 @router.get("/movers/search")
-async def search_movers(q: str = ""):
-    """News search: this week's stories about a company, ticker or topic, plus that company's latest headlines."""
-    return await run_in_threadpool(newssearch.search, q[:60])
+async def search_movers(q: str = "", exact: bool = False):
+    """News search: this week's stories about a company, ticker or topic, plus that company's latest headlines.
+    A search that finds nothing tries the likely spelling ("nvdia" -> "nvidia") unless exact=1."""
+    return await run_in_threadpool(newssearch.search, q[:60], not exact)
 
 
 @router.get("/movers/custom")

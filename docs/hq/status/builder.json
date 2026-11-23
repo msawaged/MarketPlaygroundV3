@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T15:10:00Z",
- "last_run": "Close Call gave odds that went up as the line went up when the market was closed. Before Monday's open, TSLA at $366.66 said 63% to close above $350 but 68% above $360; AMD and META had the same problem. Overnight, the free feed's option quotes get very wide (one NVDA option was quoted at $14.34 to buy back and $24.36 to buy, against $13.24 / $13.66 once the market opened), and stocks move before the open while options don't update, so the app was reading odds out of noise. Fixed: after-hours odds now come from prices saved while the market was open.",
+ "updated_at": "2026-11-23T17:30:00Z",
+ "last_run": "Search polish, part 1 (the Chair's ask). I tried 12 searches on the live site. Typos found nothing at all: 'nvdia' and 'teslla' showed an empty page that offered to spend an AI story on the misspelling. Now, when a search finds nothing, it tries the likely spelling and says so: 'Nothing found for “nvdia”, so showing results for “nvidia”', with a 'Search “nvdia” as typed' link. It only fixes words it doesn't know that sit very close to a company name or a word in this week's stories, so real words with no story (like 'uranium') are left alone. Also, 'costco earnings' now shows the Costco card and headlines like 'costco' does. Searches still take about half a second.",
  "working_on": "Nothing open.",
- "next": "After tonight's close: check Close Call ladders on the live site read the saved prices and fall line by line.",
+ "next": "More search polish if Murad says what feels rough; otherwise check after tonight's close that Close Call ladders fall line by line.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "Polish search (via chair)",
+   "body": "Search polish, part 1 (the Chair's ask). I tried 12 searches on the live site. Typos found nothing at all: 'nvdia' and 'teslla' showed an empty page that offered to spend an AI story on the misspelling. Now, when a search finds nothing, it tries the likely spelling and says so: 'Nothing found for “nvdia”, so showing results for “nvidia”', with a 'Search “nvdia” as typed' link. It only fixes words it doesn't know that sit very close to a company name or a word in this week's stories, so real words with no story (like 'uranium') are left alone. Also, 'costco earnings' now shows the Costco card and headlines like 'costco' does. Searches still take about half a second.",
+   "at": "2026-11-23T17:30:00Z"
+  },
   {
    "re": "(no new messages)",
    "at": "2026-11-23T15:10:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Agent HQ is easier to use from your phone. There's a 'Write to the team' button at the top that jumps to the message box (it was below 12 to-do items, 9 agent cards and the whole thread). 'Needs you' shows the newest 4 with 'Show all'. Replies no longer say 're #(no new messages)': a routine report says 'update', and an answer to one of your messages quotes the start of what you wrote. I also fixed the thread dropping an agent's newest replies once it had more than 10. Nothing you've sent through HQ has arrived yet (the table is empty); sending works when I test it, so a short hello there will reach everyone.",
    "at": "2026-11-22T23:10:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "at": "2026-11-22T20:30:00Z",
-   "body": "Research now tries 'many weak signals, one vote'. Several of our ways to pick the #1 each carry a little real information, but we only ever judged them one at a time, and the leader keeps changing. Now, for each test period, the research takes the ways that had a clear lead (t 2 or more) on calls made at least 90 days earlier, up to 8, drops near-copies, and gives each one an equal vote with no fitted weights. It's scored on the same test calls as everything else and counts as one more try for the luck bar. The Brain page says how it compares with the typical and the best single way, and which ways it kept most often. If it beats them all, that's evidence the brain should combine ways rather than pick one. Reporting only: today's #1, the gates and grading are unchanged. Numbers appear after the next research run. First live run (20:36 UTC, 2,703 test calls): the average beats our other ideas by +0.6 pts (t 1.0 counting overlap honestly), ahead in 3 of 4 stretches, better than 21 of 34 single ways but well short of the best (negative coskewness, t 3.1). It mostly kept momentum-style ways, so for now combining doesn't add an edge of its own."
   }
  ]
 }

@@ -7,6 +7,7 @@ search costs nothing and can't be used to prompt the model.
 """
 from __future__ import annotations
 
+import difflib
 import re
 import threading
 import time
@@ -113,7 +114,56 @@ def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[
             name = [w for w in _words((info or {}).get("name")) if w not in movers._NAME_FILLER]
             if name and name[:len(ts)] == ts:
                 return {"ticker": sym, "name": info.get("name") or ""}
+    for i in range(len(ts) - 1, 0, -1):  # a well-known name plus a topic: "costco earnings" -> COST
+        sym = _KNOWN.get(" ".join(ts[:i]))
+        if sym:
+            try:
+                info = market.asset_info(sym)
+            except Exception:
+                info = None
+            if info:
+                return {"ticker": info["symbol"], "name": info.get("name") or ""}
     return None
+
+
+def _vocab(stories: list[dict]) -> set[str]:
+    """Words a search could have meant: this week's story words, the names of the companies they move, and the
+    well-known names in _KNOWN. Only words of 4+ letters, so short words are never "corrected"."""
+    out = {w for k in _KNOWN for w in _words(k)}
+    for it in stories:
+        out.update(_story_text(it))
+        for c in it.get("companies") or []:
+            sym = str(c.get("ticker") or "").upper()
+            try:  # already looked up (and cached) by _company for every company in the pool
+                info = market.asset_info(sym) if sym else None
+            except Exception:
+                info = None
+            out.update(_words((info or {}).get("name")))
+    return {w for w in out if len(w) >= 4 and w.isalpha()}
+
+
+def suggest(q: str, stories: list[dict]) -> Optional[str]:
+    """A likely spelling for a search that found nothing ("nvdia" -> "nvidia", "teslla" -> "tesla", "lithum" ->
+    "lithium"), or None. A word is only changed when no known word starts with it and a known word is a close
+    match (difflib ratio >= 0.8, same first letter), so real words the app has no story about ("uranium") are left alone."""
+    ts = terms(q.lstrip("$"))
+    if not ts:
+        return None
+    whole = " ".join(ts)
+    if len(whole) >= 4 and whole not in _KNOWN:
+        m = difflib.get_close_matches(whole, [k for k in _KNOWN if k[0] == whole[0]], n=1, cutoff=0.8)
+        if m:
+            return m[0]
+    vocab = _vocab(stories)
+    out, changed = [], False
+    for t in ts:
+        if len(t) < 4 or not t.isalpha() or any(w.startswith(t) for w in vocab):
+            out.append(t)
+            continue
+        m = difflib.get_close_matches(t, sorted(w for w in vocab if w[0] == t[0]), n=1, cutoff=0.8)
+        out.append(m[0] if m else t)
+        changed = changed or bool(m)
+    return " ".join(out) if changed else None
 
 
 def headlines_for(sym: str) -> list[dict]:
@@ -147,7 +197,8 @@ def headlines_for(sym: str) -> list[dict]:
     return out
 
 
-def search(q: str) -> dict:
+def search(q: str, fix: bool = True) -> dict:
+    """Stories and the named company for a search. fix=False searches exactly as typed (no spelling fix)."""
     q = re.sub(r"\s+", " ", str(q or "")).strip()[:60]
     if len(q.lstrip("$")) < 2:
         return {"q": q, "company": None, "stories": [], "headlines": [], "days": movers.ARCHIVE_DAYS}
@@ -157,6 +208,19 @@ def search(q: str) -> dict:
         if it.get("headline") and it["headline"] not in seen:
             seen.add(it["headline"])
             pool.append(it)
+    out = _search(q, pool, cur)
+    if fix and not out["stories"] and not out["company"]:
+        # nothing at all: try the likely spelling ("nvdia" -> "nvidia") and say so on the page
+        fix = suggest(q, pool)
+        if fix and fix != q.lower():
+            alt = _search(fix, pool, cur)
+            if alt["stories"] or alt["company"]:
+                alt["corrected_from"] = q
+                return alt
+    return out
+
+
+def _search(q: str, pool: list[dict], cur: dict) -> dict:
     ts = terms(q)
     company = _company(q, pool, topic_hits=any(_matches(it, ts, None) for it in pool))
     ranked = [(r, i, it) for i, it in enumerate(pool) if (r := _matches(it, ts, company and company["ticker"]))]

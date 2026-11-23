@@ -6406,6 +6406,34 @@ def test_news_search_finds_this_weeks_stories_by_company_ticker_or_topic(monkeyp
     assert movers.story("Something nobody picked") is None
 
 
+def test_news_search_fixes_a_likely_typo_only_when_nothing_was_found(monkeypatch):
+    """Live 2026-11-23: "nvdia" and "teslla" found nothing at all, and "costco earnings" showed no Costco card."""
+    from backend.v4 import movers, newssearch
+    now = datetime.now(timezone.utc).isoformat()
+    lith = {"headline": "Lithium Americas cost estimate jumps", "hunch": "", "why": "", "summary": "", "created_at": now,
+            "companies": [{"ticker": "LAC", "direction": "down", "why": "higher build cost"}]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: {"items": [lith], "benchmark": None})
+    monkeypatch.setattr(movers, "archived", lambda: [])
+    names = {"NVDA": "NVIDIA Corporation", "TSLA": "Tesla, Inc.", "COST": "Costco Wholesale Corporation",
+             "LAC": "Lithium Americas Corp."}
+    monkeypatch.setattr(movers.market, "asset_info", lambda s: {"symbol": s, "name": names[s]} if s in names else None)
+    monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 10.0, "change": 0.01} for s in syms})
+    monkeypatch.setattr(newssearch, "headlines_for", lambda sym: [])
+    nv = newssearch.search("nvdia")
+    assert nv["company"]["ticker"] == "NVDA" and nv["corrected_from"] == "nvdia" and nv["q"] == "nvidia"
+    assert newssearch.search("teslla")["company"]["ticker"] == "TSLA"
+    li = newssearch.search("lithum")  # a story word, not a company name
+    assert li["q"] == "lithium" and li["stories"][0]["headline"] == lith["headline"]
+    # as typed: no fix; a right spelling with results is never "fixed"; a real word with no story stays as typed
+    assert newssearch.search("nvdia", fix=False)["company"] is None
+    assert "corrected_from" not in newssearch.search("lithium")
+    ur = newssearch.search("uranium")
+    assert ur["q"] == "uranium" and "corrected_from" not in ur and ur["company"] is None
+    assert newssearch.suggest("xyzzy", [lith]) is None and newssearch.suggest("amd", [lith]) is None
+    # a well-known name plus a topic word still shows the company card
+    assert newssearch.search("costco earnings")["company"]["ticker"] == "COST"
+
+
 def test_equal_weight_composite_beats_two_weak_signals_and_picks_rules_on_training_calls_only():
     """"Many weak signals, one vote" (DeMiguel, Garlappi & Uppal 2009): two weak, independent planted signals, each
     alone about t 2-3; an equal vote of the two beats both on unseen calls. Near copies don't double-vote, rules

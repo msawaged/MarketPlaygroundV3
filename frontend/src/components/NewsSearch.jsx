@@ -97,6 +97,8 @@ export function MakeStory({ q, primary = false }) {
 export function SearchResults({ q, setQ }) {
   const navigate = useNavigate();
   const [state, setState] = useState({ loading: true, data: null, error: false });
+  const [exactQ, setExactQ] = useState(null); // "Search “nvdia” as typed" after a spelling fix
+  const exact = exactQ === q;
   const ctrl = useRef(null);
   useEffect(() => {
     if (q.replace(/^\$/, '').length < 2) { setState({ loading: false, data: null, error: false }); return undefined; }
@@ -104,11 +106,11 @@ export function SearchResults({ q, setQ }) {
     const c = new AbortController();
     ctrl.current = c;
     setState((s) => ({ ...s, loading: true, error: false }));
-    searchMovers(q, c.signal)
+    searchMovers(q, c.signal, exact)
       .then((data) => setState({ loading: false, data, error: false }))
       .catch((e) => { if (e?.name !== 'AbortError') setState({ loading: false, data: null, error: true }); });
     return () => c.abort();
-  }, [q]);
+  }, [q, exact]);
 
   if (q.replace(/^\$/, '').length < 2) return <p className="mt-4 text-sm text-slate-400">Type at least 2 letters.</p>;
   const d = state.data;
@@ -118,8 +120,18 @@ export function SearchResults({ q, setQ }) {
   const days = Math.round(d.days || 7);
   const co = d.company;
   const nothing = !d.stories?.length && !co;
+  const fixed = d.corrected_from;
+  const cut = (s) => (s.length > 24 ? s.slice(0, 24) + '…' : s);
   return (
     <div className={state.loading ? 'opacity-60' : ''}>
+      {fixed && (
+        <p className="mt-4 text-sm text-slate-300" role="status">
+          Nothing found for “{cut(fixed)}”, so showing results for <span className="font-semibold text-white">“{cut(d.q)}”</span>.{' '}
+          <button onClick={() => setExactQ(q)} className="font-semibold text-blue-300 underline underline-offset-2 hover:text-blue-200">
+            Search “{cut(fixed)}” as typed
+          </button>
+        </p>
+      )}
       {co?.guess && !d.stories?.length && (
         <p className="mt-4 text-sm text-slate-400">
           No stories mention “{d.q}” in the past {days} days. {co.ticker} is also a stock ticker ({shortName(co.name, true) || co.ticker}), so here it is in case you meant the company:
