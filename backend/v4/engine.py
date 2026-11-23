@@ -178,10 +178,14 @@ def process_belief(
     claude_client: Any = None,
     prefs: Optional[dict] = None,
     avoid: Optional[set] = None,
+    against: Optional[set] = None,
 ) -> dict:
     """avoid: (ticker, direction) pairs to leave out. The news seeder passes the picks of a hunch when it learns the
     hunch's opposite ("I don't think ..."): a stock bet the same way on both sides of one story is a misread, not a
-    view, and would teach the brain that both sides mean the same thing."""
+    view, and would teach the brain that both sides mean the same thing.
+    against: (ticker, direction) bets never to make, plainly dropped (none of avoid's opposite-view rules). A custom
+    story passes the other side of its own "who it moves" read: its story says ALB gains if the hunch is right, so a
+    bet that ALB falls would contradict the card right above it."""
     belief = (belief or "").strip()
     if not belief:
         raise BeliefError("Belief is required")
@@ -251,6 +255,11 @@ def process_belief(
         if not cands:
             return {**base, "strategy": None, "picks": [], "valid": False, "error": "same_side_as_original",
                     "reason": "Every idea for this opposite view bet the same way as the original view, so it was skipped."}
+    if against:
+        cands = [c for c in cands if (str(c.get("ticker", "")).upper(), c.get("direction")) not in against]
+        if not cands:
+            return {**base, "strategy": None, "picks": [], "valid": False, "error": "against_story",
+                    "reason": "Every idea bet the opposite way to the story's own read of these companies."}
     valid: list[dict] = []
     name_mismatch: list[dict] = []  # ticker isn't the company the idea names (reused ticker or a misread)
     for rank, c in enumerate(cands):

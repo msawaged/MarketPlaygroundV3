@@ -323,6 +323,17 @@ def _play(p: dict) -> dict:
             "expiration": t.get("expiration"), "alt": alt, "price": p.get("price")}
 
 
+def against(story: Optional[dict]) -> set:
+    """The bets that would contradict the story's own "who it moves": a name it says goes up if the hunch is right
+    is never played to fall, and the other way round. The searched company with no direction is left open."""
+    out = set()
+    for c in ((story or {}).get("item") or {}).get("companies") or []:
+        d = {"up": "bearish", "down": "bullish"}.get(c.get("direction") or "")
+        if d and c.get("ticker"):
+            out.add((str(c["ticker"]).upper(), d))
+    return out
+
+
 def _run_plays(key: str, hunch: str, client: Any = None) -> None:
     """The idea engine on the story's hunch: its top ways to play it (stocks, ETFs, options) for the Your call card.
     The call is stored as the brain's own (user 'seed', source seed_story), so it's graded against the S&P 500 at
@@ -330,8 +341,9 @@ def _run_plays(key: str, hunch: str, client: Any = None) -> None:
     from . import engine
     out: dict = {"status": "none"}
     try:
+        bad = against(_get(key))  # "who it moves" and the plays are separate AI reads: keep them on one side
         r = engine.process_belief(hunch, user_id="seed", risk_profile="moderate", source=PLAYS_SOURCE,
-                                  claude_client=client)
+                                  claude_client=client, **({"against": bad} if bad else {}))
         picks = [p for p in r.get("picks") or [] if p.get("shown")][:3]
         if r.get("valid") and picks:
             out = {"status": "ready", "belief_id": r.get("belief_id"), "plays": [_play(p) for p in picks],
@@ -364,9 +376,14 @@ def plays(q: str, client: Any = None, wait: bool = False) -> dict:
     subj = subject_key(re.sub(r"\s+", " ", str(q or "")).strip()[:60])
     key = f"{KEY}{_today()}:{_h(subj)}"
     got = _get(key + ":plays")
-    if got:
-        return got
     story = _get(key)
+    if got:
+        # plays stored before the story's read was passed to the engine: hide any that bet against it
+        bad = against(story)
+        if bad and got.get("plays"):
+            keep = [p for p in got["plays"] if (str(p.get("ticker") or "").upper(), p.get("direction")) not in bad]
+            got = dict(got, plays=keep) if keep else dict(got, status="none", plays=[])
+        return got
     if not story:
         return {"status": "missing"}
     _start_plays(key, story["item"]["hunch"], client, wait)

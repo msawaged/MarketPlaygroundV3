@@ -4991,6 +4991,12 @@ def test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch(monkeypatch)
     assert out["valid"] is False and out["error"] == "same_side_as_original"
     assert not db.query_one("SELECT id FROM beliefs WHERE text = ?", ("I don't think plumbing demand will rise",))
 
+    # against (a custom story's own read): those bets are plainly dropped, the rest stay
+    out = engine.process_belief("Plumbing demand will boom", "seed", source="seed_story", claude_client=FakeClaude(),
+                                against={("PIPE", "bullish")})
+    got = {(p["ticker"], p["direction"]) for p in out["picks"]}
+    assert out["valid"] and got and ("PIPE", "bullish") not in got
+
     # users who say they DON'T expect something get the opposite bet
     assert "WON'T happen" in interpreter.SYSTEM_PROMPT and "bet FOR it" in interpreter.SYSTEM_PROMPT
 
@@ -6454,10 +6460,11 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
             return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))])
 
     fake = Fake()
-    engine_calls = []
+    engine_calls, engine_against = [], []
 
     def fake_engine(text, user_id="anonymous", risk_profile="moderate", **kw):
         engine_calls.append((text, user_id, kw.get("source")))
+        engine_against.append(kw.get("against"))
         pick = lambda t, shown: {"ticker": t, "name": t, "direction": "bullish", "exposure": "etf", "rationale": "holds miners",
                                  "structure": "Buy Stock", "trade": {"type": "Buy Stock", "max_loss": None}, "shown": shown,
                                  "alt": {"structure": "Bull Call Spread"}, "price": 40.0}
@@ -6475,9 +6482,17 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
     out = customstory.make("Uranium news", "ip:1", client=fake, sync_plays=True)
     # the idea engine plays it as the brain's own practice call (graded like news hunches), top shown picks only
     assert engine_calls == [("Uranium miners will keep winning deals", "seed", "seed_story")]
+    assert engine_against == [{("CCJ", "bearish")}]  # the story says CCJ rises: never played to fall
     pl = customstory.plays("uranium")
     assert pl["status"] == "ready" and [p["ticker"] for p in pl["plays"]] == ["URA", "CCJ"]
     assert pl["plays"][0]["alt"] == "Bull Call Spread" and customstory.plays("never searched")["status"] == "missing"
+    # plays stored before this check: one betting against the story's read is hidden when read back
+    pkey = f"{customstory.KEY}{customstory._today()}:{customstory._h(customstory.subject_key('uranium'))}:plays"
+    stale = dict(pl, plays=[dict(pl["plays"][0]), dict(pl["plays"][1], direction="bearish")])
+    customstory._put(pkey, stale)
+    assert [p["ticker"] for p in customstory.plays("uranium")["plays"]] == ["URA"]
+    customstory._put(pkey, dict(stale, plays=[dict(pl["plays"][1], direction="bearish")]))
+    assert customstory.plays("uranium")["status"] == "none"
     st, item = out["story"], out["item"]
     assert st["hook_big"] == "$2.1 billion" and [f["label"] for f in st["figures"]] == ["Uranium price"]  # no invented figure
     assert [c["ticker"] for c in item["companies"]] == ["CCJ"] and item["companies"][0]["change"] == 0.03  # real tickers, priced

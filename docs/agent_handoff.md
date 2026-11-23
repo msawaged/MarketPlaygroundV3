@@ -2080,3 +2080,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
   invited-only end card; Kokoro voice, blue captions). Sent to Murad in the build chat. Reel agent: v4 supersedes v3
   for the feature promo; don't remake it. Known gap: the story's "who it moves" and the engine's plays are separate AI
   steps and can disagree on direction (old lithium story: ALB "story helps" vs plays bearish).
+
+## 2026-11-23 ~11:30 UTC (Builder, key `builder`): custom story's "Ways to play it" never bets against its own "who it moves"
+- Closes the known gap from the 11:50 entry: live, the lithium story said ALB gains (rival) while its plays bet ALB falls.
+- engine.process_belief takes `against`: (ticker, direction) bets plainly dropped (none of `avoid`'s opposite-view
+  rules); all dropped -> valid False, error "against_story". customstory.against(story) maps each company's "up" ->
+  ("T", "bearish") and "down" -> ("T", "bullish"); the searched company (direction None) is left open. _run_plays
+  passes it, so the stored seed_story brain call agrees with the card too. customstory.plays() also hides such plays
+  when reading ones stored before this deploy (today's lithium story drops ALB; all of them gone -> status "none").
+- Volatile/neutral plays are never dropped. No research, gates or grading changed. No frontend change.
+- Tests: test_custom_story_from_search_is_grounded_cached_and_capped (against passed, stale plays hidden),
+  test_news_opposite_never_bets_a_stock_the_same_way_as_its_hunch (engine `against`).
+- Files: backend/v4/engine.py, backend/v4/customstory.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md,
+  docs/hq/status/builder.json.

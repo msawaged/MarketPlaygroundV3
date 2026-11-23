@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T10:00:00Z",
- "last_run": "Custom stories now point past the obvious company (marked 'indirect'), show the engine's top ways to play it (shares, ETFs, options, practice money), and each story's idea becomes a graded brain call.",
+ "updated_at": "2026-11-23T11:30:00Z",
+ "last_run": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Fixed: the plays now always side with the story.",
  "working_on": "Nothing open.",
- "next": "Monday with live quotes: Close Call and Price Check.",
+ "next": "With live quotes: Close Call and Price Check.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "at": "2026-11-23T11:30:00Z",
+   "body": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Now the idea engine is told the story's own read and never bets a name the other way, so the brain's graded call agrees with the card too. Plays saved earlier today are checked when shown (the lithium one now shows LAC and LIT, not ALB). 'Big move' plays are left alone. No research, gates or grading changed."
+  },
   {
    "re": "Custom stories should find where the change goes and how to play it (live chat)",
    "at": "2026-11-23T10:00:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Price Check and Close Call overstated option volatility whenever the market was closed. This weekend SPY's options for Nov 27 read '42% yearly volatility, expensive, 2.45x realized'. Those prices are Friday's closing quotes, which still cover the risk from Friday's close to the expiration, but the data feed divided them by the 5 days left from Sunday. Measured from Friday's close, the same prices are about 36%. The app now works the volatility out from each option's own bid and ask, timed from when the quotes were set (now while the market is open, otherwise the last close, with holidays and early closes counted), and Price Check says when it's showing closing quotes. Close Call's 'how far it could move' range is unchanged, because that comes from the prices; only the yearly-volatility label beside it changes. Odds, trades and grading are unchanged.",
    "at": "2026-11-22T11:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The Close Call page said the brain had 15 questions graded and picked the right side 73% of the time, but the list under it only showed the 12 newest questions, and those were all still open (it asks about 11 a day, each closing 5+ days later). So you couldn't see a single right or wrong answer behind the 73%. Now the card has 'Latest graded': each question with the market's odds, the brain's, the close, and right or wrong, plus 'Its side was right on X of these N'. The open ones sit below under 'Waiting for the close'. Grading and odds unchanged.",
-   "at": "2026-11-22T08:45:00Z"
   }
  ]
 }
