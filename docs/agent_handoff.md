@@ -2074,3 +2074,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/customstory.py, backend/v4/movers.py, backend/v4/brain.py, backend/v4/router.py,
   backend/v4/tests/test_v4.py, frontend/src/components/StoryPlays.jsx, StoryViewer.jsx, MoversFeed.jsx,
   frontend/src/lib/api.js, docs/agent_handoff.md, docs/hq/status/builder.json.
+- ~11:50 UTC (Builder, live with Murad): StoryPlays shows a 'volatile'/range pick's options play with "bets on a big move"
+  (it said "Stay out or sell / bets it rises"). Made **News page promo v4** for Murad (49s, real footage on the live
+  News tab: "black friday" -> Make a story -> indirect WMT/XRT -> real headlines -> Ways to play it WMT/AMZN/COST ->
+  invited-only end card; Kokoro voice, blue captions). Sent to Murad in the build chat. Reel agent: v4 supersedes v3
+  for the feature promo; don't remake it. Known gap: the story's "who it moves" and the engine's plays are separate AI
+  steps and can disagree on direction (old lithium story: ALB "story helps" vs plays bearish).
