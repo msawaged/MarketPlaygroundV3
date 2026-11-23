@@ -4877,10 +4877,13 @@ def test_yesno_quotes_too_wide_to_trade_read_the_smile_for_odds_and_price(monkey
     gap["v"] = 0.40                                     # $0.80 bid/ask per leg: an after-hours chain
     q = yesno.quote("WINR", k1, exp.isoformat())
     assert q["listed"]["wide"] is True or q["strikes"] != tight["strikes"]   # open: steps out to a quieter pair
+    # market open: the screen must not blame the wide quotes on the closed market (live AMD Dec 18, Mon 10:40 AM ET)
+    assert q["market_closed"] is False and "outside market hours" not in q["odds_source"]
     monkeypatch.setattr(market, "clock", lambda: {"is_open": False})          # after hours: the smile, narrow pair
     q = yesno.quote("WINR", k1, exp.isoformat())
     assert q["listed"]["wide"] is True and q["strikes"] == tight["strikes"]
     assert "option smile" in q["odds_source"] and q["market_p"] == q["market_p_smile"]
+    assert q["market_closed"] is True
     assert abs(q["market_p"] - tight["market_p"]) < 0.02                      # skew kept: same odds as tight quotes
     assert q["market_p"] - q["market_p_flat_vol"] > 0.02                        # (one vol would drop it)
     assert q["price_source"] == "smile" and q["leg_vols"][0] > q["leg_vols"][1]

@@ -955,7 +955,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     elif smile:
         why_not = ("the market is closed, and one spread's last quotes can blur its odds a few points" if closed
                    else "the spread quotes looked out of step" if stale
-                   else "the trade's own quotes are too wide to read alone, usual outside market hours" if wide and dig
+                   else "the trade's own quotes are too wide to read alone" if wide and dig
                    else "no tight spread quoted on the trade's strikes")
         m_p, odds_source = sk["p"], (f"the option smile near the line: implied volatilities of {sk['n']} listed "
                                      f"{u} options near {_money(level)} (skew included; {why_not})")
@@ -970,7 +970,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
                                            "disagree with each other, so they were set at different moments)" if split
                                       else "one implied volatility (the spread quotes looked out of date)" if stale
                                       else "one implied volatility (the listed quotes are too wide to read skew "
-                                           "from, usual outside market hours)" if wide and dig
+                                           f"from{', usual outside market hours' if closed else ''})" if wide and dig
                                       else "one implied volatility (no tight spread quoted)")
     calls = [r for r in chain if r["type"] == "call"]
     # Price YES / NO at the listed mids of their own two strikes, each at its own IV (skew included), so the cost
@@ -1043,6 +1043,9 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "signals": sig, "features": feats, "brain_model": "learned" if model else "starting rules",
             "yes": sides["yes"], "no": sides["no"], "real_money": real_money_order(chain, k1, k2, exp),
             "listed": listed_costs(chain, k1, k2, exp, sides),
+            # so the screen blames wide quotes on the closed market only when it is closed (live Mon Nov 23, 10:40 AM
+            # ET, AMD Dec 18: "usual outside market hours" with the market open)
+            "market_closed": closed,
             "spread_note": spread_note(u, k1, k2, width, level),
             "move": dict(move, lines=move_text(u, move, exp, isinstance(info, dict) and bool(info.get("is_etf")))) if move else None}
 

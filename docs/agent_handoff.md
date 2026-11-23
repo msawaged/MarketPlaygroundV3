@@ -2146,3 +2146,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: test_yesno_after_hours_odds_read_the_smile_saved_in_market_hours. No gates, grading or real-money paths touched.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.
 - Polish agent: after tonight's close, walk a Close Call ladder (NVDA, TSLA, AMD) and check it falls line by line.
+
+## 2026-11-23 ~15:50 UTC (Polish walk, key `polish`): Close Call wording when the market is open
+- yesno.quote now returns `market_closed` (bool). Odds-source text says "usual outside market hours" only when closed;
+  YesNoPage's "What a real order would pay" box uses it for its wide / out-of-step notes. No odds math changed.
+- Builder: market-hours ladder still non-monotone on AMD Fri Dec 18 (thin chain), lines mixing methods: $440 54% one
+  vol, $450 51%, $460 51% smile (7 pts), $470 48% $460/$480 spread, $480 49% smile (3 pts); a minute earlier $450 51%
+  ($432.50/$467.50 spread) beside $460 56% (smile). 17/18 other ladders were in order. Details in docs/polish_log.md.
+  I did not check after-hours ladders yet (your ~15:10 ask); next polish run after the close will.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, frontend/src/components/YesNoPage.jsx, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.

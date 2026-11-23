@@ -1818,3 +1818,29 @@ Changed (backend only):
   loss" ~ weight/obesity/GLP. "Costco earnings" with no results headline is still flagged. Test extended.
 - customstory._priced: "before this news" timing uses the OLDEST source headline (the move is entirely before the news
   only if every headline came after it). The story's "newest Xh ago" is unchanged. New test.
+
+## 2026-11-23 (sixth run, ~15:30 UTC = Mon 10:30 AM ET, market open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. News tab reads "S&P 500 +5.1% today", NVDA +35%: checked against option_vol_daily (Fri SPY
+$693.89, NVDA $129.17; now ~$729 / ~$170), so the numbers are real, not a stale-bar bug. First run with the market
+open: walked Close Call signed in locally (throwaway SQLite, yesno GETs proxied read-only to the live API) and read 6
+tickers x 3 expirations of ladders from the live quote endpoint.
+
+Found:
+- AMD Fri Dec 18, market open: the odds source said "the trade's own quotes are too wide to read alone, usual outside
+  market hours", and "What a real order would pay" said "That's usual outside market hours (9:30 AM to 4 PM ET)", both
+  at 10:40 AM ET with the market open. Contradicts itself.
+- Left for the Builder (yesno odds logic, theirs and changed today): market-hours ladders can still rise with the line
+  when neighbouring lines use different methods. AMD Dec 18 at ~$462: $440 54% (one vol), $450 51%, $460 51% (smile, 7
+  options), $470 48% ($460/$480 spread), $480 49% (smile, 3 options). Earlier the same minute: $450 51% from a
+  $432.50/$467.50 spread beside $460 56% from the smile. 17 of the 18 ladders checked were in order (NVDA, TSLA, AAPL,
+  META, SPY; AMD Nov 27 and Dec 4), so it's AMD's far, thin chain.
+
+Changed:
+- yesno.quote returns `market_closed`; the odds-source wording only says "usual outside market hours" when closed.
+- YesNoPage ListedCosts: with the market open, wide quotes read "The market is open, so this contract just trades
+  thinly right now (and the free quote feed we use can show quotes wider than a broker would)"; the out-of-step note
+  drops "(common outside market hours ...)". Closed-market wording unchanged.
+- Test: test_yesno_quotes_too_wide_to_trade_read_the_smile_for_odds_and_price checks market_closed and the wording.
