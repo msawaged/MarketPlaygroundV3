@@ -1969,3 +1969,16 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the feed changes. frontend/src/lib/luck.js: PBO glance row states the 10% pass bar.
 - Files: backend/v4/movers.py, backend/v4/newssearch.py, backend/v4/tests/test_v4.py, frontend/src/lib/luck.js,
   docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-23 ~05:30 UTC (Builder, key `builder`): Brain page scorecard headline shows the no-peek numbers
+- No HQ messages from Murad. Frontend only; no research, gate, ranker or grading change.
+- The honest scorecard's two big tiles (53% beat the S&P, +1.2 pts vs other ideas) were the stored #1 on graded
+  practice calls, which carry the look-ahead peek, while the paragraph below said to read them as too generous and the
+  luck glance judged the no-peek rebuild. New `scoreHeadline(sk)` in frontend/src/lib/luck.js: when luckSubject picks
+  ranker.old_pit (stored flatters), the tiles show old_pit beat / avg / lift on research's test calls (live: 52%,
+  +1.5 avg, +0.5 pts on 2,703) with a small line giving the stored numbers "with the peek"; otherwise unchanged
+  tiles. The edge tile is green only when clear of luck (overlap-counted t >= bar), so a +0.5 that isn't clear of luck
+  is no longer green. If the ranker goes live or the peek gap closes, the tiles fall back to the stored graded picks.
+- Test: frontend/src/lib/luck.test.mjs (scoreHeadline cases).
+- Files: frontend/src/lib/luck.js, frontend/src/lib/luck.test.mjs, frontend/src/components/BrainPage.jsx,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

@@ -96,3 +96,29 @@ export function luckGlance(sk, forward) {
 }
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * The honest scorecard's two headline tiles. When the #1 as stored flatters (practice calls scored each stock with
+ * results that came later), the tiles show the no-peek rebuild on research's test calls and the stored numbers move
+ * to a smaller "with the peek" line, so the first big number on the page is the one we stand behind.
+ * Returns {basis: 'nopeek'|'stored', n, beat, avg, edge, edge_t, clears, stored} with beat/avg/edge as fractions.
+ */
+export function scoreHeadline(sk) {
+  const top = sk?.top;
+  if (!top) return null;
+  const rest = sk.rest || { beat_rate: 0, avg_excess: 0, n: 0 };
+  const L = sk.luck || {}, bar = num(L.bar_ever) ?? 3.3;
+  const stored = { n: top.n, beat: top.beat_rate, avg: top.avg_excess, edge: (top.avg_excess || 0) - (rest.avg_excess || 0) };
+  const S = luckSubject(sk);
+  const pit = sk.ranker?.old_pit;
+  if (S && S.m === pit && num(pit.beat) != null && num(pit.avg) != null) {
+    const t = num(pit.lift_t_nw) ?? num(pit.lift_t);
+    return {
+      basis: 'nopeek', n: pit.n, beat: pit.beat, avg: pit.avg, edge: num(pit.lift) ?? 0, edge_t: t,
+      clears: t != null && t >= bar, stored,
+    };
+  }
+  // As stored: clear of luck unless the luck check says overlapping calls, counted honestly, don't clear it.
+  const clears = !(L.app_t_nw != null && !L.app_clears_nw);
+  return { basis: 'stored', ...stored, edge_t: num(L.app_t_nw) ?? num(L.app_t), clears, stored };
+}

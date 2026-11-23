@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T02:30:00Z",
- "last_run": "Brain page: 'At a glance' for the luck check, one honest line per test plus a verdict; full detail one tap away; no-peek extremes line added.",
+ "updated_at": "2026-11-23T05:30:00Z",
+ "last_run": "Brain page: the scorecard's big numbers now show our #1 without the look-ahead peek (52%, +0.5 pts), matching the luck check below; the flattering stored numbers sit in a small line.",
  "working_on": "Nothing open.",
  "next": "Monday with live quotes: Close Call and Price Check.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "at": "2026-11-23T05:30:00Z",
+   "body": "The first big numbers on the Brain page were the flattering ones. The scorecard said 53% of our #1 picks beat the S&P 500 and the #1 led our other ideas by +1.2 pts (in green), and then the paragraph under it said to read that as too generous, because those practice calls scored each stock with results that came later. A finance professor would stop at the headline. The tiles now show the version we stand behind, our #1 rebuilt without that peek: 52% beat the S&P (+1.5 pts average) and +0.5 pts over our other ideas, on 2,703 test calls, the same version the luck check judges just below. A small line under them still gives the stored numbers with the peek. The +0.5 is no longer green, since it isn't clear of luck yet. No research, gates or grading changed."
+  },
   {
    "re": "(no new messages)",
    "body": "The Brain page's luck check was seven dense paragraphs, a wall on a phone. It now opens with 'At a glance': one line per check with a tick, a cross or a '~', all about the same honest version of our #1 (rebuilt without the look-ahead peek), and a one-line verdict. Today it reads: ahead of our other ideas by +0.5 pts on 2,703 test calls, but not clear of luck (t 1.7, and 1.0 counting overlapping calls, against a bar of 3.3); partly carried by a few huge calls; ahead in 3 of 4 stretches but behind in the latest; the 7-day real-time results are too early. The full paragraphs are one tap away under 'How each check works'. One thing the paragraphs hid: 'the lead is broad, not a few lucky calls' was true of the stored #1 (its 10 best calls are 27% of its lead), but without the peek its 10 best calls are 73% of a smaller lead. The page now says both. No numbers, gates or grading changed.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The research tries about 50 ways to pick the #1 and the app leans on whichever looks best, but a leaderboard that big always has a lucky leader. I added the standard check a finance professor would ask for (Bailey, Borwein, López de Prado & Zhu 2017): cut the test calls into 8 stretches of time, use every possible half (70 ways) to choose the best way, and see where that choice ranks on the other half. The Brain page's luck check gets one paragraph: how often the chosen way landed in the bottom half (about 10% or less is reassuring, near 50% is a coin flip), its median result there, the same just for the retrained models the new ranker chooses from, and which way was chosen most often. Reporting only: no gate, ranking or grading changed. The number appears after the next research run.",
    "at": "2026-11-22T02:30:00Z"
-  },
-  {
-   "re": "(chair's sprint: one shareable growth feature)",
-   "body": "Share cards are built. On My beliefs, Share now sends a link to that call (it was only a picture before). In chats and on social sites the link shows a preview picture: the call in quotes, the stock, and a box for each check at 7, 30 and 90 days, green if it beat the S&P 500, red if it didn't, grey 'not graded yet'. Misses look exactly like wins, and nothing shows a result before it is graded. Where previews don't show, the text has Wordle-style squares (7d 🟩 30d 🟥 90d ⬜). Tapping the link opens the welcome page with that call on top and 'What's your call?' above sign-up. No names or emails on the card; only users' own calls can be shared. Practice money only; grading unchanged.",
-   "at": "2026-11-21T23:10:00Z"
   }
  ]
 }

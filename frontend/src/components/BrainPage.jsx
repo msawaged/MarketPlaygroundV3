@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { request, API_BASE } from '../lib/api';
 import { useAccount } from '../lib/auth';
 import { themeLabel } from '../lib/text';
-import { luckGlance } from '../lib/luck';
+import { luckGlance, scoreHeadline } from '../lib/luck';
 import BottomNavigation from './BottomNavigation';
 import BrainLineages from './BrainLineages';
 
@@ -373,41 +373,52 @@ export default function BrainPage({ viewOnly = false }) {
         </div>
 
         {d?.skill?.top && (() => {
-          const sk = d.skill, top = sk.top, rest = sk.rest || { beat_rate: 0, avg_excess: 0, n: 0 };
-          const edge = (top.avg_excess - rest.avg_excess) * 100;
+          const sk = d.skill;
           const pts = (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}`;
           // The #1 as stored on practice calls carries look-ahead (d856c72); research rebuilds it point-in-time
-          // (ranker.old_pit). Say so whenever the stored version looks better, active ranker or not.
+          // (ranker.old_pit). When the stored version flatters, the headline tiles show the rebuild (lib/luck.js
+          // scoreHeadline) and the stored numbers become the "with the peek" aside.
           const pit = sk.ranker?.old_pit, stored = sk.ranker?.old;
           const peek = pit?.n > 0 && stored && (stored.lift || 0) > (pit.lift || 0) + 0.002 ? pit : null;
           const peekClears = peek && Number(peek.lift_t || 0) >= Number(sk.luck?.bar_ever || 99);
+          const H = scoreHeadline(sk);
+          const edge = H.edge * 100;
+          const noPeek = H.basis === 'nopeek';
           return (
             <div className="mt-2.5 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">The honest scorecard · {sk.days} days after each call</div>
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <div>
-                  <div className="text-2xl font-extrabold tabular-nums">{Math.round(top.beat_rate * 100)}%</div>
-                  <div className="text-xs text-slate-400">of our #1 picks beat the S&P 500 ({pts(top.avg_excess)} pts avg)</div>
+                  <div className="text-2xl font-extrabold tabular-nums">{Math.round(H.beat * 100)}%</div>
+                  <div className="text-xs text-slate-400">of our #1 picks beat the S&P 500 ({pts(H.avg)} pts avg)</div>
                 </div>
                 <div>
-                  <div className={`text-2xl font-extrabold tabular-nums ${edge > 0.5 ? 'text-green-400' : 'text-slate-200'}`}>{edge >= 0 ? '+' : ''}{edge.toFixed(1)} pts</div>
+                  <div className={`text-2xl font-extrabold tabular-nums ${edge > 0.5 && H.clears ? 'text-green-400' : 'text-slate-200'}`}>{edge >= 0 ? '+' : ''}{edge.toFixed(1)} pts</div>
                   <div className="text-xs text-slate-400">#1 pick vs. our other ideas for the same belief</div>
                 </div>
               </div>
+              {noPeek && (
+                <div className="mt-2 text-[11px] text-slate-500">
+                  On {Number(H.n).toLocaleString()} past test calls, each stock scored only on what was known that day.
+                  {' '}With the peek described below, the {Number(H.stored.n).toLocaleString()} graded #1 picks read {Math.round(H.stored.beat * 100)}% ({pts(H.stored.avg)} pts avg) and {pts(H.stored.edge)} pts.
+                </div>
+              )}
               <p className="mt-3 text-xs text-slate-400">
                 {edge > 0.5
-                  ? (sk.luck?.app_t_nw != null && !sk.luck.app_clears_nw
+                  ? (!H.clears
                     ? "The #1 pick is ahead of our other ideas so far, but the luck check below can't yet rule out luck once overlapping calls are counted honestly."
                     : 'The #1 pick is beating the other ideas: that gap is the skill the brain has learned so far.')
                   : "Not there yet: the #1 pick isn't reliably beating our other ideas. That gap is what the brain and the strategists below are working to open."}
-                {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number. Based on {top.n.toLocaleString()} graded #1 picks, mostly practice calls.
+                {' '}Most professional funds trail the S&P 500 over 10 years, so we show the real number.
+                {noPeek ? '' : ` Based on ${Number(H.n).toLocaleString()} graded #1 picks, mostly practice calls.`}
               </p>
               {peek && (
                 <p className="mt-2 text-xs text-slate-300">
                   <span className="font-semibold text-amber-300">A catch we found.</span>
                   {' '}Practice calls are made on past dates, and the #1's score there used each stock's track record including results that came later.
                   {' '}Rebuilt without that peek, on {Number(peek.n).toLocaleString()} test calls the #1 beat our other ideas by {pts(peek.lift || 0)} pts (t {Number(peek.lift_t || 0).toFixed(1)})
-                  {' '}instead of {pts(stored.lift || 0)} pts (t {Number(stored.lift_t || 0).toFixed(1)}) on those same calls with the peek, so read the gap above as too generous. The live forward test below has no peek.
+                  {' '}instead of {pts(stored.lift || 0)} pts (t {Number(stored.lift_t || 0).toFixed(1)}) on those same calls with the peek
+                  {noPeek ? ', so the numbers above are the rebuilt ones.' : ', so read the gap above as too generous.'} The live forward test below has no peek.
                 </p>
               )}
               {sk.luck?.tries_ever > 0 && (

@@ -53,4 +53,35 @@ const g5 = luckGlance(sk5);
 assert.equal(g5.rows.find((r) => r.key === 'extremes'), undefined);
 assert.match(g5.verdict, /isn't ahead/);
 assert.deepEqual(luckGlance({}).rows, []);
+
+// Scorecard headline: the no-peek rebuild leads when the stored #1 flatters; the stored numbers become the aside.
+{
+  const { scoreHeadline } = await import('./luck.js');
+  const s = JSON.parse(JSON.stringify(sk));
+  s.top = { n: 4398, beat_rate: 0.534, avg_excess: 0.0229 };
+  s.rest = { n: 18881, beat_rate: 0.513, avg_excess: 0.011 };
+  Object.assign(s.ranker.old_pit, { beat: 0.5224, avg: 0.0147 });
+  s.luck.app_t_nw = 1.91; s.luck.app_clears_nw = false;
+  const h = scoreHeadline(s);
+  assert.equal(h.basis, 'nopeek');
+  assert.equal(h.n, 2703);
+  assert.equal(h.beat, 0.5224);
+  assert.equal(h.edge, 0.0053);
+  assert.equal(h.clears, false);                  // t 0.99 counting overlap, bar 3.3
+  assert.equal(h.stored.n, 4398);
+  assert.ok(Math.abs(h.stored.edge - 0.0119) < 1e-9);
+  // No flattering peek: the stored graded picks stay the headline, and they aren't green while the luck check fails.
+  const s2 = JSON.parse(JSON.stringify(s));
+  s2.ranker.old_pit.lift = 0.0145;
+  const h2 = scoreHeadline(s2);
+  assert.equal(h2.basis, 'stored');
+  assert.equal(h2.n, 4398);
+  assert.equal(h2.clears, false);
+  s2.luck.app_clears_nw = true;
+  assert.equal(scoreHeadline(s2).clears, true);
+  // Older output without old_pit.beat falls back to the stored tiles.
+  const s3 = JSON.parse(JSON.stringify(s));
+  delete s3.ranker.old_pit.beat;
+  assert.equal(scoreHeadline(s3).basis, 'stored');
+}
 console.log('luck tests ok');
