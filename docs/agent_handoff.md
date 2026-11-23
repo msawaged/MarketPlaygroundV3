@@ -2034,3 +2034,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Files: backend/v4/customstory.py, backend/v4/router.py, backend/v4/tests/test_v4.py, frontend/src/lib/api.js,
   frontend/src/components/NewsSearch.jsx, frontend/src/components/MoversFeed.jsx,
   frontend/src/components/StoryViewer.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
+- ~09:30 UTC follow-up (same run): live, "uranium" came back "nothing real" although Cameco/UEC had news: their
+  headlines rarely write the topic's word. Topics now fill up to 3+ sources with the newest headlines tagged with the
+  topic's companies (after the ones that name it), and Claude is told some may not name the topic. No-news answers
+  carry `diag` (tickers tried, tagged count). Figure labels on custom stories clip at 40 chars (prompt: <= 3 words).

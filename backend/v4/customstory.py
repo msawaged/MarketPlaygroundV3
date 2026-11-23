@@ -74,6 +74,7 @@ in the story text, no hype words like "massive" or "insane".
 - why_short: one short sentence on why it matters for companies.
 - companies: 2 to 4 US-listed stocks or ETFs the story most directly moves (if the subject is one company, it comes
   first), with direction "up" or "down" if the hunch is right and a 6-10 word reason that agrees with the direction.
+- each figure's label is at most 3 words ("Price target", "Uranium price").
 """ + movers.STORY_PROMPT.split("\n", 2)[2]
 
 
@@ -208,6 +209,7 @@ def gather(q: str, client: Any = None) -> tuple[Optional[dict], list[dict], bool
     ts = newssearch.terms(q.lstrip("$"))
     company = _resolve_company(q)
     asked = False
+    gather.last = None
     if company:
         sym = company["ticker"]
         mine = [n for n in news_for([sym]) if sym in n["symbols"]]
@@ -233,9 +235,16 @@ def gather(q: str, client: Any = None) -> tuple[Optional[dict], list[dict], bool
                     syms.append(t)
                 if len(syms) == 5:
                     break
-        pool = news_for(syms) + [_clean(n) or {} for n in market.headlines(50)]
+        tagged = news_for(syms)
+        pool = tagged + [_clean(n) or {} for n in market.headlines(50)]
         pool += [dict(a, symbols=[c.get("ticker") for c in a.get("companies") or []]) for a in movers.archived()]
         found = [n for n in pool if n.get("headline") and _mentions(n, ts)]
+        # Many news-source headlines about the topic's companies never write the topic's word (live 2026-11-23:
+        # "uranium" matched nothing, though Cameco and Uranium Energy had news). With fewer than 3 that do, the
+        # newest headlines tagged with the topic's companies fill in, after the ones that name it.
+        if len(found) < 3:
+            found += [n for n in tagged if n not in found][: MAX_SOURCES - len(found)]
+        gather.last = {"tickers": syms, "tagged": len(tagged)}
     seen, out = set(), []
     for n in found:
         key = n["headline"].lower()[:60]
@@ -254,14 +263,15 @@ def gather(q: str, client: Any = None) -> tuple[Optional[dict], list[dict], bool
 def _write(q: str, company: Optional[dict], sources: list[dict], client: Any = None) -> Optional[dict]:
     """Claude's story from the sources, checked: figures grounded, hook whole, companies real. None on failure."""
     lines = [f"{i}. {n['headline']}" + (f"\n   {n['summary']}" if n.get("summary") else "") for i, n in enumerate(sources)]
-    subj = f"{q}" + (f" (the company {company['ticker']}, {company.get('name') or ''})" if company else "")
+    subj = f"{q}" + (f" (the company {company['ticker']}, {company.get('name') or ''})" if company else
+                     " (some headlines may be about companies tied to it without naming it; use only what they say)")
     d = _ask(client, CUSTOM_PROMPT, CUSTOM_SCHEMA, f"Subject: {subj}\n\nHeadlines:\n" + "\n".join(lines), 2500)
     if not d:
         return None
     used = sorted({int(i) for i in d.get("used") or [] if isinstance(i, int) and 0 <= i < len(sources)}) or list(range(len(sources)))
     based = [sources[i] for i in used]
     source = "\n".join(f"{n['headline']}\n{n.get('summary') or ''}" for n in sources)
-    figs = [{k: movers._clip(f.get(k), 28) for k in ("label", "before_label", "before", "after_label", "after")}
+    figs = [{k: movers._clip(f.get(k), 40 if k == "label" else 28) for k in ("label", "before_label", "before", "after_label", "after")}
             for f in d.get("figures") or [] if isinstance(f, dict) and movers._grounded(f, source)]
     companies = []
     for c in movers._clean_companies(d.get("companies"), []):
@@ -344,7 +354,7 @@ def make(q: str, who: str, client: Any = None) -> dict:
                 if len(_none_cache) > 500:
                     _none_cache.clear()
                 _none_cache[subj] = (time.time(), neg)
-            return dict(base, **neg, left=max(0, left - (1 if asked else 0)))
+            return dict(base, **neg, left=max(0, left - (1 if asked else 0)), diag=getattr(gather, "last", None))
         _count(who)
         out = _write(q, company, sources, client)
         if not out:

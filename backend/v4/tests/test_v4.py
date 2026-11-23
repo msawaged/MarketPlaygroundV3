@@ -6440,7 +6440,7 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
         def create(self, **kw):
             calls.append(kw)
             if "tickers" in kw["extra_body"]["output_config"]["format"]["schema"]["properties"]:
-                out = {"tickers": ["CCJ", "FAKE", "ccj"]}
+                out = {"tickers": [] if "bananas" in kw["messages"][0]["content"] else ["CCJ", "FAKE", "ccj"]}
             else:
                 out = {"used": [0], "title": "Uranium deals heat up", "hunch": "Uranium miners will keep winning deals",
                        "why_short": "Utilities need fuel.", "hook_big": "$2.1 billion", "hook_line": "A big supply deal.",
@@ -6482,3 +6482,6 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
     co = customstory.make("Cameco CFO", "ip:3", client=fake)
     assert co["item"]["companies"][0]["ticker"] == "CCJ"
     assert "Cameco names new CFO" in calls[-1]["messages"][0]["content"].split("\n")[3]  # the CFO headline first
+    # a topic whose word the headlines never write (live: "uranium"): the topic's companies' newest headlines fill in
+    customstory.make("reactor restarts", "ip:4", client=fake)
+    assert "Cameco signs uranium supply deal" in calls[-1]["messages"][0]["content"]
