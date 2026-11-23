@@ -166,7 +166,7 @@ export default function HowSure({ beliefId, direction, horizonDays, checkpointDa
     if (prob == null) return null;
     return (
       <div className="mt-3 text-xs text-slate-400">
-        You said <span className="font-semibold text-slate-200">{Math.round(prob * 100)}% sure</span> it {sureGoal(direction)} at the {cp}-day check.
+        You said <span className="font-semibold text-slate-200">{Math.round(prob * 100)}% sure</span> the area it's about {sureGoal(direction)} at the {cp}-day check.
         <BaseRateLine cell={base} direction={direction} cp={cp} prob={prob} />
       </div>
     );
@@ -175,7 +175,7 @@ export default function HowSure({ beliefId, direction, horizonDays, checkpointDa
   return (
     <div className={`mt-3 rounded-2xl border px-3 py-2.5 ${prob != null ? 'border-blue-400/30 bg-blue-500/10' : 'border-slate-700 bg-slate-900/60'}`}>
       <div className="text-sm font-semibold text-slate-100">How sure are you?</div>
-      <div className="text-xs text-slate-400">That your idea {sureGoal(direction)} at the {cp}-day check{checkNote(horizonDays, cp)}. Optional, one tap.</div>
+      <div className="text-xs text-slate-400">That the area your idea is about (<Term k="theme">its theme</Term>) {sureGoal(direction)} at the {cp}-day check{checkNote(horizonDays, cp)}. Optional, one tap.</div>
       <BaseRateLine cell={base} direction={direction} cp={cp} prob={prob} />
       <div className="mt-2 grid grid-cols-4 gap-1.5" role="group" aria-label="How sure are you">
         {SURE_CHOICES.map((p) => {

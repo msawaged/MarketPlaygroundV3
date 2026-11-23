@@ -1744,3 +1744,27 @@ Changed:
   can't verify the publish date from the feed.
 
 Checks: vite build passes, npm test (luck) passes, backend tests 247 passed (fresh venv).
+
+## 2026-11-23 (third run, ~06:30 UTC = Mon 1:30 AM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey, /reel on the live site
+at 390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request).
+No HQ messages from Murad. Live Close Call dates are real listed expirations (NVDA Dec 24 Thu, Thanksgiving skipped).
+Locally (offline server, throwaway SQLite) at 375-390: "AI chip stocks will drop over the next few months", $1,000,
+3 months, Options, Limit my risk -> NVDA Bear Put Spread $185/$165, $8.88 - $2.24 = $664 debit, max gain
+$2,000 - $664 = $1,336, breakeven $178.36, -20% = +$1,336 (+201%), delta -28 sh: all add up; paper trade -> Portfolio
+and My beliefs fine. Close Call SPY $670/$680 YES $544.32 / NO $454.48, breakevens, ask-implied 58% / 49%, round
+trips $81 / $58: all add up.
+
+Found:
+- "How sure are you?" on a bearish call read "That your idea does worse than the S&P 500 at the 90-day check." Read
+  plainly, "your idea does worse" means the call fails, the opposite of what is asked (that the theme falls behind the
+  S&P). Same "it does worse" in the locked line on My beliefs.
+
+Changed (frontend only):
+- HowSure: "That the area your idea is about (its theme) does worse than / beats / moves more than the S&P 500 ...";
+  locked line "You said 75% sure the area it's about ...". "its theme" is a tap-to-explain term.
+- Term glossary: new 'theme' entry stating what grader._group_scores grades: the fund(s) among the ideas if any, else
+  the ideas in that direction on average, vs the S&P in the direction called.
+
+Checks: vite build passes, npm test passes, backend tests 247 passed (fresh venv).

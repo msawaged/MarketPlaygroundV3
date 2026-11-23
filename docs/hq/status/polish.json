@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-23T03:45:00Z",
- "last_run": "Walked every public page on a phone: nothing broken and the numbers add up. Fixed a news story whose headline linked to the wrong company's stock page (Enphase -> O-I Glass), and made the Brain page's overfitting check say its pass bar so a 39% 'fail' no longer looks better than chance.",
+ "updated_at": "2026-11-23T06:50:00Z",
+ "last_run": "Walked every public page on a phone and the signed-in screens locally: nothing broken, and the options, Close Call and portfolio numbers add up. Fixed one confusing line: on a bearish call, 'How sure are you? That your idea does worse than the S&P 500' read like 'that your call fails'; it now says the area your idea is about (its theme), with a tap-to-explain.",
  "working_on": "Nothing open.",
- "next": "Monday with live quotes: walk Close Call and Price Check again, and check the week's first Story hooks.",
+ "next": "Monday with live quotes: walk Close Call and Price Check during market hours, and check the week's first Story hooks.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": []

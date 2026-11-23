@@ -1982,3 +1982,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: frontend/src/lib/luck.test.mjs (scoreHeadline cases).
 - Files: frontend/src/lib/luck.js, frontend/src/lib/luck.test.mjs, frontend/src/components/BrainPage.jsx,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-23 ~06:50 UTC (Daily polish, key `polish`): "How sure are you?" no longer reads backwards on bearish calls
+- No HQ messages from Murad. Frontend wording only; no grading, research or gate change.
+- HowSure prompt/locked line now say "the area your idea is about (its theme) does worse than the S&P 500" instead of
+  "your idea does worse" (which read as "your call fails"). New glossary term 'theme' in Term.jsx matches
+  grader._group_scores (fund(s) among the ideas, else the same-direction ideas on average). If the grading benchmark
+  changes, update that glossary line.
+- Files: frontend/src/components/chat/HowSure.jsx, frontend/src/components/ui/Term.jsx, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.
