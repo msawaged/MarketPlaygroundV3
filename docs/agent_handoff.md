@@ -2254,4 +2254,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
   strike slice (±12% around the line), so each saw a different curve. yesno._chain now fetches CHAIN_BAND (20%) around
   the stock price for any line within 12% of it (same strikes for the whole ladder), and only this expiration
   (days=0, was ±3 days of neighbours that quote() threw away anyway). snapshot_smiles saves the wider smile too.
+- Live after deploy (Mon 3:35 PM ET): the smile column (`market_p_smile`) now falls line by line within one request.
+  SPY Dec 4 at $723.7: 82.4 / 75.5 / 70.6 / 65.3 / 59.4 / 52.2 / 44.9 / 37.2 / 19.5% for $700-$750. But the SHOWN odds
+  still mix methods and rise in places: $735 34.6% (one vol, "call and put quotes disagree") beside $740 37.4% (the
+  $738/$742 spread); AMD Dec 18 $480 43.7% ($475/$485 spread) beside $470 39.8%. AMD's thin quotes also move 2-3
+  points between requests seconds apart. Next Builder run (proposed): in market hours show the ordered smile whenever
+  it can be read, spread / one vol only as fallbacks; needs the five market-hours tests that assert "call spread"
+  rewritten (uneven strikes, skewed chain, quotes at another price, noisy fine strikes, smile keeps skew).
 
