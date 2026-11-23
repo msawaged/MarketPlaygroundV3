@@ -136,7 +136,7 @@ def headlines_for(sym: str) -> list[dict]:
         if not h or h.lower()[:60] in seen or len(h) > 200:
             continue
         seen.add(h.lower()[:60])
-        out.append({"headline": h, "source": n.get("source") or "", "url": n.get("url") or "",
+        out.append({"headline": h, "source": n.get("source") or "", "url": movers.story_url(n.get("url"), [sym] + list(n.get("symbols") or [])),
                     "created_at": n.get("created_at") or ""})
         if len(out) == MAX_HEADLINES:
             break
@@ -170,6 +170,8 @@ def search(q: str) -> dict:
     stories = [it if all("change" in c for c in it["companies"]) else
                dict(it, companies=[movers._with_timing(movers._vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
                                                        it.get("created_at")) for c in it["companies"]])
+               for it in stories]
+    stories = [dict(it, url=movers.story_url(it.get("url"), [c["ticker"] for c in it["companies"]] + list(it.get("_tags") or [])))
                for it in stories]
     heads: list[dict] = []
     if company:

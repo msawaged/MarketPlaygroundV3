@@ -6407,3 +6407,15 @@ def test_composite_in_run_never_keeps_a_rule_that_only_works_in_its_own_test_per
     s = out["luck"]["composite"]
     assert s["name"] == research.COMPOSITE and s["best_single"]["name"] and s["singles"] >= 30
     assert out["luck"]["tests"] == len([k for k, v in r.items() if v.get("n")])
+
+
+def test_movers_drops_a_story_link_that_is_a_quote_page_for_another_company():
+    from backend.v4.movers import story_url
+    # 2026-11-23: an Enphase story (fiscal.ai) linked to moomoo's O-I Glass quote page
+    assert story_url("https://www.moomoo.com/stock/OI-US?chain_id=x", ["ENPH", "SEDG"]) == ""
+    assert story_url("https://finance.yahoo.com/quote/AAPL/", ["MSFT"]) == ""
+    assert story_url("https://www.moomoo.com/stock/ENPH-US?x", ["ENPH"]) == "https://www.moomoo.com/stock/ENPH-US?x"
+    assert story_url("https://www.nasdaq.com/market-activity/stocks/brk.b", ["BRK.B"]).endswith("brk.b")
+    for u in ("https://www.fidelity.com/news/article/default/202611221400PR", "https://site.com/stocks/news/2026/abc",
+              "https://www.moomoo.com/hans/news/post/1005426646"):
+        assert story_url(u, ["X"]) == u

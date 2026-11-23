@@ -1,7 +1,7 @@
 {
  "key": "polish",
- "updated_at": "2026-11-23T00:50:00Z",
- "last_run": "Walked every public page and a signed-in 'trade sideways' call on a phone: nothing broken, the option numbers add up. A sideways belief now says plainly that its ideas bet on a direction (we can't build range trades yet), the Brain feed no longer calls a sideways belief 'Expecting a rise', and its 'last learning round' time matches the feed.",
+ "updated_at": "2026-11-23T03:45:00Z",
+ "last_run": "Walked every public page on a phone: nothing broken and the numbers add up. Fixed a news story whose headline linked to the wrong company's stock page (Enphase -> O-I Glass), and made the Brain page's overfitting check say its pass bar so a 39% 'fail' no longer looks better than chance.",
  "working_on": "Nothing open.",
  "next": "Monday with live quotes: walk Close Call and Price Check again, and check the week's first Story hooks.",
  "needs_from_murad": [],

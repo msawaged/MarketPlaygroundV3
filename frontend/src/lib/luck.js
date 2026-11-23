@@ -73,7 +73,7 @@ export function luckGlance(sk, forward) {
   if (pbo != null) {
     rows.push({
       key: 'pbo', mark: pbo <= 0.1 ? 'pass' : pbo < 0.35 ? 'mixed' : 'fail', label: 'Best-looking way still good on unseen data',
-      value: `bottom half ${Math.round(pbo * 100)}% of the time (a coin flip is 50%)`,
+      value: `bottom half ${Math.round(pbo * 100)}% of the time (passes at 10% or less; pure luck would be 50%)`,
     });
   }
   const fd = forward?.by_days ? Object.keys(forward.by_days).map(Number).sort((a, b) => b - a)[0] : null;

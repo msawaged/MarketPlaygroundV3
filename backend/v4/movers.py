@@ -408,12 +408,33 @@ def feed(client: Any = None) -> dict:
     bench = snaps.get(BENCH) or {}
     cur["benchmark"] = ({"ticker": BENCH, "change": bench["change"], "change_day": bench.get("change_day")}
                         if bench.get("change") is not None else None)
-    cur["items"] = [dict(it, companies=[_with_timing(_vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
+    cur["items"] = [dict(it, url=story_url(it.get("url"), [c["ticker"] for c in it["companies"]] + list(it.get("_tags") or [])),
+                         companies=[_with_timing(_vs_market(dict(c, **snaps.get(c["ticker"], {})), bench),
                                                      it.get("created_at"))
                                         for c in it["companies"]])
                     for it in cur["items"]]
     cur["market"] = market.clock()
     return cur
+
+
+# Some feeds (fiscal.ai summaries) attach one of their citations as the story's link, and it can be a quote page for
+# an unrelated company: "Enphase Energy Reports Disappointing Revenue Guidance" linked to moomoo's O-I Glass (OI-US)
+# page on 2026-11-23. A quote page for a ticker the story doesn't touch is dropped (the headline shows as plain text).
+_QUOTE_PAGE = re.compile(r"/(?:stocks?|quotes?|symbols?)/([A-Za-z][A-Za-z.]{0,5})(?:-[A-Za-z]{2})?/?$", re.I)
+
+
+def story_url(url: Any, tickers: list) -> str:
+    """The story's link, or "" when it is a stock quote page for a company the story doesn't name."""
+    u = str(url or "").strip()
+    from urllib.parse import urlsplit
+    try:
+        path = urlsplit(u).path
+    except ValueError:
+        return ""
+    m = _QUOTE_PAGE.search(path)
+    if m and m.group(1).upper() not in {str(t).upper() for t in tickers or []}:
+        return ""
+    return u
 
 
 BENCH = "SPY"  # the S&P 500, the same yardstick every grade in the app uses

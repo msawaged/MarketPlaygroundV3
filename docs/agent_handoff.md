@@ -1962,3 +1962,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Test: frontend/src/lib/luck.test.mjs (added to `npm test`).
 - Files: frontend/src/lib/luck.js, frontend/src/lib/luck.test.mjs, frontend/package.json,
   frontend/src/components/BrainPage.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-23 ~03:40 UTC (Daily polish, key `polish`): wrong-company story links dropped; PBO glance wording
+- backend/v4/movers.py: new `story_url(url, tickers)`; /v4/movers items and News search drop a link that is a stock
+  quote page for a ticker the story doesn't touch (fiscal.ai linked an Enphase story to O-I Glass). Nothing else in
+  the feed changes. frontend/src/lib/luck.js: PBO glance row states the 10% pass bar.
+- Files: backend/v4/movers.py, backend/v4/newssearch.py, backend/v4/tests/test_v4.py, frontend/src/lib/luck.js,
+  docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

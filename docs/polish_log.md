@@ -1717,3 +1717,30 @@ Changed (frontend only):
 - Still for the build chat: real range strategies (iron condor) for neutral beliefs, which needs a neutral grading rule.
 
 Checks: vite build passes, backend tests 246 passed (fresh venv).
+
+## 2026-11-23 (second run, ~03:30 UTC = Sun 10:30 PM ET, market closed)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No HQ
+messages from Murad. Moving now adds up against S&P -3.07% on Fri (ENPH -10.8 -> -7.7 pts, ASH -2.5 -> +0.6). Brain
+page: regime "In between" matches its own rule (vol 26.2% < 28, 11.3% < 12% off the high); forward-test confidence
+split 0.0 (422) / -0.6 (215) / +0.9 (99) averages to 0.0 on 736, as stated. Signed-in screens not re-walked (walked
+3 h ago, no code change to them since).
+
+Found:
+- Moving now: "Enphase Energy Reports Disappointing Revenue Guidance" (fiscal.ai, /v4/movers) linked its headline to
+  moomoo's O-I Glass quote page (/stock/OI-US). fiscal.ai attaches one of its citations as the link; a quote page for a
+  ticker the story doesn't touch sends a reader to the wrong company.
+- Brain page "At a glance" (new tonight): "Best-looking way still good on unseen data · bottom half 39% of the time
+  (a coin flip is 50%)" marked ✗. 39% reads as better than a coin flip, so the ✗ looked contradictory; the pass bar
+  (10%) wasn't stated.
+
+Changed:
+- movers.story_url(url, tickers): drops the link (headline shows as plain text) when the URL path ends in a
+  /stock(s)|quote(s)|symbol(s)/<TICKER>[-XX] page for a ticker not among the story's companies/tags. Applied when the
+  feed is served (covers cached stories) and in News search (archive stories, company headlines). Test added.
+- luck.js PBO row: "(passes at 10% or less; pure luck would be 50%)".
+- Noticed, left alone: fiscal.ai weekend items can read like old news ("after-hours" decline posted Sun 9 PM ET);
+  can't verify the publish date from the feed.
+
+Checks: vite build passes, npm test (luck) passes, backend tests 247 passed (fresh venv).
