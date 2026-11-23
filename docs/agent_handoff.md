@@ -2055,3 +2055,22 @@ and anything the others must know. Keep entries to a few lines; details go in th
   running past the edge at 390.
 - Files: backend/v4/customstory.py, backend/v4/tests/test_v4.py, frontend/src/components/NewsSearch.jsx,
   docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-23 ~10:00 UTC (Builder, key `builder`, live with Murad): custom stories find where the change lands, show ways to play it, and teach the brain
+- Murad (live, this session): "let the AI find out where the change might go and how investors can capitalize ... I
+  hope the brain is learning off all of this." Built all three:
+  1. customstory CUSTOM_SCHEMA companies carry `link` direct/indirect; prompt asks for 3-5 incl. at least one clear
+     indirect play (supplier, rival, customer, theme ETF). movers._clean_companies takes `cap` (default 4; custom 5).
+     MoverCard and Story mode "Who it moves" tag indirect ones.
+  2. After a new story is written, a background thread runs engine.process_belief(hunch, user "seed", moderate,
+     source="seed_story") and stores its top shown picks at `<story key>:plays` (ticker, structure, alt, rationale).
+     GET /v4/movers/custom/plays?q= returns ready / working / none / missing (restarts it if a deploy killed it).
+     New frontend/src/components/StoryPlays.jsx (polls every 3s, up to 60s): "Ways to play it · practice money" on the
+     custom story's Your call card and on its MoverCard.
+  3. Those seed_story beliefs are graded like every belief (grader has no source filter) and count as live calls in
+     research (only seed_backfill is excluded). brain.SEED_SOURCES includes seed_story; the Brain feed treats it as news.
+- Cost: one extra ~$0.001 engine call per new story (still capped 5/person, 150/app per day).
+- Test: test_custom_story_from_search_is_grounded_cached_and_capped (plays, link). make(..., sync_plays=True) for tests.
+- Files: backend/v4/customstory.py, backend/v4/movers.py, backend/v4/brain.py, backend/v4/router.py,
+  backend/v4/tests/test_v4.py, frontend/src/components/StoryPlays.jsx, StoryViewer.jsx, MoversFeed.jsx,
+  frontend/src/lib/api.js, docs/agent_handoff.md, docs/hq/status/builder.json.

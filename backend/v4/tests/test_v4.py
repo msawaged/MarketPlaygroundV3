@@ -6449,11 +6449,22 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
                        "figures": [{"label": "Uranium price", "before_label": "A year ago", "before": "$64",
                                     "after_label": "Now", "after": "$82"},
                                    {"label": "Invented", "before_label": "Then", "before": "$1", "after_label": "Now", "after": "$9"}],
-                       "companies": [{"ticker": "CCJ", "direction": "up", "why": "sells the uranium"},
-                                     {"ticker": "FAKE", "direction": "up", "why": "made up"}]}
+                       "companies": [{"ticker": "CCJ", "direction": "up", "why": "sells the uranium", "link": "indirect"},
+                                     {"ticker": "FAKE", "direction": "up", "why": "made up", "link": "direct"}]}
             return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(out))])
 
     fake = Fake()
+    engine_calls = []
+
+    def fake_engine(text, user_id="anonymous", risk_profile="moderate", **kw):
+        engine_calls.append((text, user_id, kw.get("source")))
+        pick = lambda t, shown: {"ticker": t, "name": t, "direction": "bullish", "exposure": "etf", "rationale": "holds miners",
+                                 "structure": "Buy Stock", "trade": {"type": "Buy Stock", "max_loss": None}, "shown": shown,
+                                 "alt": {"structure": "Bull Call Spread"}, "price": 40.0}
+        return {"valid": True, "belief_id": "b-1", "picks": [pick("URA", True), pick("CCJ", True), pick("UEC", False)]}
+    monkeypatch.setattr(engine, "process_belief", fake_engine)
+    run_now = customstory._start_plays  # no stray background threads outliving the test's database
+    monkeypatch.setattr(customstory, "_start_plays", lambda k, h, c=None, wait=False: run_now(k, h, c, True))
     monkeypatch.setattr(customstory, "news_for", lambda syms: [customstory._clean(n) for s in syms for n in tagged.get(s, [])])
     monkeypatch.setattr(market, "headlines", lambda limit=6: [])
     monkeypatch.setattr(movers, "archived", lambda: [])
@@ -6461,10 +6472,16 @@ def test_custom_story_from_search_is_grounded_cached_and_capped(monkeypatch):
     monkeypatch.setattr(movers, "_snapshots", lambda syms: {s: {"price": 50.0, "change": 0.03, "change_day": "2026-11-20"} for s in syms})
     monkeypatch.setattr(customstory, "PER_PERSON", 2)
 
-    out = customstory.make("Uranium news", "ip:1", client=fake)
+    out = customstory.make("Uranium news", "ip:1", client=fake, sync_plays=True)
+    # the idea engine plays it as the brain's own practice call (graded like news hunches), top shown picks only
+    assert engine_calls == [("Uranium miners will keep winning deals", "seed", "seed_story")]
+    pl = customstory.plays("uranium")
+    assert pl["status"] == "ready" and [p["ticker"] for p in pl["plays"]] == ["URA", "CCJ"]
+    assert pl["plays"][0]["alt"] == "Bull Call Spread" and customstory.plays("never searched")["status"] == "missing"
     st, item = out["story"], out["item"]
     assert st["hook_big"] == "$2.1 billion" and [f["label"] for f in st["figures"]] == ["Uranium price"]  # no invented figure
     assert [c["ticker"] for c in item["companies"]] == ["CCJ"] and item["companies"][0]["change"] == 0.03  # real tickers, priced
+    assert item["companies"][0]["link"] == "indirect"
     assert [s["headline"] for s in item["sources"]] == [tagged["CCJ"][0]["headline"]]  # only the headlines it used
     assert item["custom"] and item["hunch"].startswith("Uranium miners") and out["left"] == 1
     n = len(calls)

@@ -204,7 +204,7 @@ def _align(raw: list[dict], news: list[dict]) -> dict[int, dict]:
     return out
 
 
-def _clean_companies(raw: Any, tagged: list[str]) -> list[dict]:
+def _clean_companies(raw: Any, tagged: list[str], cap: int = 4) -> list[dict]:
     out, seen = [], set()
     for c in raw if isinstance(raw, list) else []:
         if not isinstance(c, dict):
@@ -215,7 +215,7 @@ def _clean_companies(raw: Any, tagged: list[str]) -> list[dict]:
         d = "down" if str(c.get("direction")).lower() == "down" else "up"
         out.append({"ticker": t, "direction": d, "why": _clip(c.get("why"), 110)})  # whole words: [:90] cut "Sociedad Quimica's s"
         seen.add(t)
-        if len(out) == 4:
+        if len(out) == cap:
             break
     if not out:
         out = [{"ticker": t, "direction": None, "why": ""} for t in tagged[:3] if _TICKER.match(t)]

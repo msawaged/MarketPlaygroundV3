@@ -8,6 +8,7 @@ import { getStory } from '../lib/api';
 import { ago, believeUrl, doubtUrl, sessionLabel, Timing, VsMarket } from './MoversFeed';
 import { amount, change, barWidths, signedPct, pctTone, TONE } from '../lib/figures';
 import { LogoMark, Wordmark } from './ui/Logo';
+import StoryPlays from './StoryPlays';
 
 const CARD_MS = 7000;
 const INTRO_MS = 1600; // a reel's brand card, when no voiceover sets its length
@@ -120,7 +121,7 @@ function cards(data, navigate, reel = false, launched = false) {
             <motion.li key={c.ticker} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.12 }}
               className="flex items-center gap-4 rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <div className="text-2xl font-black text-white">{c.ticker}</div>
+                <div className="text-2xl font-black text-white">{c.ticker}{c.link === 'indirect' && <span className="ml-2 align-middle rounded-full border border-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-300">indirect</span>}</div>
                 {c.why && <div className="text-sm text-slate-400 line-clamp-2">{c.why}</div>}
               </div>
               <div className="text-right leading-tight">
@@ -179,10 +180,11 @@ function cards(data, navigate, reel = false, launched = false) {
   out.push(
     <div key="call" className="flex h-full flex-col justify-center">
       <Label>Your call</Label>
-      <p className="mt-5 text-3xl font-black leading-tight text-white">“{item.hunch.replace(/\.$/, '')}.”</p>
-      <p className="mt-3 text-slate-400">Believe it or doubt it. Either way, we'll show you the smartest way to play it.</p>
+      <p className={`mt-5 font-black leading-tight text-white ${item.custom ? 'text-2xl' : 'text-3xl'}`}>“{item.hunch.replace(/\.$/, '')}.”</p>
+      {item.custom ? <div className="mt-4"><StoryPlays q={item.q} dark compact /></div>
+        : <p className="mt-3 text-slate-400">Believe it or doubt it. Either way, we'll show you the smartest way to play it.</p>}
       <button onClick={(e) => { e.stopPropagation(); navigate(believeUrl(item.hunch)); }}
-        className="mt-8 w-full rounded-2xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-500">I believe it →</button>
+        className={`${item.custom ? 'mt-5' : 'mt-8'} w-full rounded-2xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-500`}>I believe it →</button>
       <button onClick={(e) => { e.stopPropagation(); navigate(doubtUrl(item.hunch)); }}
         className="mt-3 w-full rounded-2xl border border-slate-600 py-4 text-lg font-bold text-slate-200 hover:bg-slate-800">I doubt it</button>
       <p className="mt-4 text-center text-xs text-slate-500">Practice money only. Not investment advice.</p>

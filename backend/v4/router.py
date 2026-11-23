@@ -612,6 +612,12 @@ async def custom_story(request: Request, q: str = "", authorization: Optional[st
     return await run_in_threadpool(customstory.make, q[:60], who)
 
 
+@router.get("/movers/custom/plays")
+async def custom_story_plays(q: str = ""):
+    """Ways to play today's custom story about q (the idea engine's top picks), or "working" while they're found."""
+    return await run_in_threadpool(customstory.plays, q[:60])
+
+
 @router.get("/movers/story")
 async def get_movers_story(h: str = ""):
     """One news story from today's feed, told as full-screen cards (Story mode)."""

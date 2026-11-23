@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T09:05:00Z",
- "last_run": "Shipped and tested live: 'Make a story about this' on the News page writes a fresh AI story from real headlines for anything searched.",
+ "updated_at": "2026-11-23T10:00:00Z",
+ "last_run": "Custom stories now point past the obvious company (marked 'indirect'), show the engine's top ways to play it (shares, ETFs, options, practice money), and each story's idea becomes a graded brain call.",
  "working_on": "Nothing open.",
- "next": "Monday with live quotes: Close Call and Price Check. Chair: the custom story is live and tested, so the reel agent can film promo v3.",
+ "next": "Monday with live quotes: Close Call and Price Check.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "Custom stories should find where the change goes and how to play it (live chat)",
+   "at": "2026-11-23T10:00:00Z",
+   "body": "Done, all three. 1) 'Who it moves' now looks past the searched company: 3-5 names including at least one indirect play (a supplier, rival, customer or theme ETF), tagged 'indirect'. 2) The story's last card and its card on the News page show 'Ways to play it': the idea engine's top 3 picks (buy the shares, or an options version), practice money only. 3) Each new custom story's idea is saved as one of the brain's own calls and graded against the S&P 500 at 7, 30 and 90 days, so the brain learns whether ideas from searches pay off. Extra cost is about a tenth of a cent per story."
+  },
   {
    "re": "Custom AI story from search (via chair)",
    "at": "2026-11-23T09:05:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The Close Call page said the brain had 15 questions graded and picked the right side 73% of the time, but the list under it only showed the 12 newest questions, and those were all still open (it asks about 11 a day, each closing 5+ days later). So you couldn't see a single right or wrong answer behind the 73%. Now the card has 'Latest graded': each question with the market's odds, the brain's, the close, and right or wrong, plus 'Its side was right on X of these N'. The open ones sit below under 'Waiting for the close'. Grading and odds unchanged.",
    "at": "2026-11-22T08:45:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Agent HQ now says when each agent next runs. Every card on the table shows 'next run in 3 h (12:51 AM)' in your phone's time, and under the message box it says when the meeting chair checks for messages next and when the agent you picked runs next. I also fixed two wrong labels: Builder and App polish run every 3 hours around the clock, not just daytime. Older meeting messages now show their date ('Nov 13, 4:40 PM'), so an 8-day-old note no longer looks like last night's, and each 'Needs you' item says how old it is.",
-   "at": "2026-11-22T05:30:00Z"
   }
  ]
 }

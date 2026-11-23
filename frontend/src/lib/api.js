@@ -190,6 +190,11 @@ export function getCustomStory(q) {
   return request(`/v4/movers/custom?q=${encodeURIComponent(q)}`);
 }
 
+/** Ways to play today's custom story about q: { status: 'ready' | 'working' | 'none' | 'missing', plays }. */
+export function getCustomPlays(q) {
+  return request(`/v4/movers/custom/plays?q=${encodeURIComponent(q)}`);
+}
+
 /** Story mode: one of today's news stories as full-screen cards. */
 export function getStory(headline) {
   return request(`/v4/movers/story?h=${encodeURIComponent(headline)}`);

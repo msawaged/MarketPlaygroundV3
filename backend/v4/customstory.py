@@ -56,7 +56,10 @@ CUSTOM_SCHEMA: dict[str, Any] = {
         "title": {"type": "string"},
         "hunch": {"type": "string"},
         "why_short": {"type": "string"},
-        "companies": movers.SCHEMA["properties"]["items"]["items"]["properties"]["companies"],
+        "companies": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["ticker", "direction", "why", "link"],
+            "properties": {"ticker": {"type": "string"}, "direction": {"type": "string", "enum": ["up", "down"]},
+                           "why": {"type": "string"}, "link": {"type": "string", "enum": ["direct", "indirect"]}}}},
         **movers.STORY_SCHEMA["properties"],
     },
 }
@@ -72,8 +75,12 @@ in the story text, no hype words like "massive" or "insane".
 - hunch: what someone would believe if they took this news seriously, as a plain forward-looking sentence under
   14 words ("Uranium miners will keep benefiting from new reactor deals"). No tickers, no jargon.
 - why_short: one short sentence on why it matters for companies.
-- companies: 2 to 4 US-listed stocks or ETFs the story most directly moves (if the subject is one company, it comes
-  first), with direction "up" or "down" if the hunch is right and a 6-10 word reason that agrees with the direction.
+- companies: 3 to 5 US-listed stocks or ETFs that move if the hunch is right (if the subject is one company, it
+  comes first). Think about where the change actually lands, not only the obvious name: include at least one
+  indirect play when there is a clear one (a supplier, rival, customer, or an ETF for the theme). link: "direct" if
+  the headlines are about it, "indirect" if it's affected through a chain you can explain. direction "up" or "down"
+  if the hunch is right, and a 6-10 word reason that agrees with the direction (for an indirect one, name the link:
+  "Supplies the chips Costco's rivals are buying").
 - each figure's label is at most 3 words ("Price target", "Uranium price").
 """ + movers.STORY_PROMPT.split("\n", 2)[2]
 
@@ -273,8 +280,11 @@ def _write(q: str, company: Optional[dict], sources: list[dict], client: Any = N
     source = "\n".join(f"{n['headline']}\n{n.get('summary') or ''}" for n in sources)
     figs = [{k: movers._clip(f.get(k), 40 if k == "label" else 28) for k in ("label", "before_label", "before", "after_label", "after")}
             for f in d.get("figures") or [] if isinstance(f, dict) and movers._grounded(f, source)]
+    links = {str(c.get("ticker") or "").upper().strip().lstrip("$"): c.get("link") for c in d.get("companies") or []
+             if isinstance(c, dict)}
     companies = []
-    for c in movers._clean_companies(d.get("companies"), []):
+    for c in movers._clean_companies(d.get("companies"), [], cap=5):
+        c["link"] = "indirect" if links.get(c["ticker"]) == "indirect" else "direct"
         try:
             ok = market.asset_info(c["ticker"])
         except Exception:
@@ -282,7 +292,7 @@ def _write(q: str, company: Optional[dict], sources: list[dict], client: Any = N
         if ok:
             companies.append(c)
     if company and company["ticker"] not in {c["ticker"] for c in companies}:
-        companies = [{"ticker": company["ticker"], "direction": None, "why": "The company you searched"}] + companies[:3]
+        companies = [{"ticker": company["ticker"], "direction": None, "why": "The company you searched", "link": "direct"}] + companies[:4]
     title = movers._clip(d.get("title"), 110) or based[0]["headline"]
     hunch = re.sub(r"\s+", " ", str(d.get("hunch") or "")).strip()[:140] or title
     newest = max((n["created_at"] for n in based), default="")
@@ -298,6 +308,69 @@ def _write(q: str, company: Optional[dict], sources: list[dict], client: Any = N
             "why": movers._clip(d.get("why_short"), 200), "companies": companies, "custom": True, "q": q,
             "sources": based}
     return {"story": st, "item": item, "made_at": datetime.now(timezone.utc).isoformat()}
+
+
+PLAYS_SOURCE = "seed_story"  # the brain's own practice call on a custom story's hunch (graded like seed_news)
+_plays_running: set[str] = set()
+
+
+def _play(p: dict) -> dict:
+    t = p.get("trade") or {}
+    alt = (p.get("alt") or {}).get("structure")
+    return {"ticker": p["ticker"], "name": p.get("name") or "", "direction": p.get("direction"),
+            "exposure": p.get("exposure"), "rationale": movers._clip(p.get("rationale"), 140),
+            "structure": p.get("structure") or t.get("type"), "max_loss": t.get("max_loss"),
+            "expiration": t.get("expiration"), "alt": alt, "price": p.get("price")}
+
+
+def _run_plays(key: str, hunch: str, client: Any = None) -> None:
+    """The idea engine on the story's hunch: its top ways to play it (stocks, ETFs, options) for the Your call card.
+    The call is stored as the brain's own (user 'seed', source seed_story), so it's graded against the S&P 500 at
+    7, 30 and 90 days like every news hunch, and research learns whether search-made ideas work. Never a user's."""
+    from . import engine
+    out: dict = {"status": "none"}
+    try:
+        r = engine.process_belief(hunch, user_id="seed", risk_profile="moderate", source=PLAYS_SOURCE,
+                                  claude_client=client)
+        picks = [p for p in r.get("picks") or [] if p.get("shown")][:3]
+        if r.get("valid") and picks:
+            out = {"status": "ready", "belief_id": r.get("belief_id"), "plays": [_play(p) for p in picks],
+                   "horizon_days": r.get("horizon_days") or (r.get("interpretation") or {}).get("horizon_days")}
+    except Exception as e:  # the story still works without its plays
+        log.warning("customstory: plays failed: %s", e)
+    try:
+        _put(key + ":plays", out)
+    except Exception as e:
+        log.warning("customstory: storing plays failed: %s", e)
+    finally:
+        with _lock:
+            _plays_running.discard(key)
+
+
+def _start_plays(key: str, hunch: str, client: Any = None, wait: bool = False) -> None:
+    with _lock:
+        if key in _plays_running:
+            return
+        _plays_running.add(key)
+    if wait:
+        _run_plays(key, hunch, client)
+    else:
+        threading.Thread(target=_run_plays, args=(key, hunch, client), daemon=True).start()
+
+
+def plays(q: str, client: Any = None, wait: bool = False) -> dict:
+    """Ways to play today's custom story about q: {"status": "ready", "plays": [...]}, "working", "none" (the engine
+    found nothing to trade), or "missing" (no story about q today). Free: started once per story."""
+    subj = subject_key(re.sub(r"\s+", " ", str(q or "")).strip()[:60])
+    key = f"{KEY}{_today()}:{_h(subj)}"
+    got = _get(key + ":plays")
+    if got:
+        return got
+    story = _get(key)
+    if not story:
+        return {"status": "missing"}
+    _start_plays(key, story["item"]["hunch"], client, wait)
+    return _get(key + ":plays") or {"status": "working"}
 
 
 def _priced(out: dict) -> dict:
@@ -324,14 +397,14 @@ def missing_words(q: str, item: Optional[dict]) -> list[str]:
     return [t for t in newssearch.terms(q.lstrip("$")) if t not in tickers and not said(t)]
 
 
-def make(q: str, who: str, client: Any = None) -> dict:
-    out = _make(q, who, client)
+def make(q: str, who: str, client: Any = None, sync_plays: bool = False) -> dict:
+    out = _make(q, who, client, sync_plays)
     if out.get("item"):
         out["missing"] = missing_words(out.get("q") or q, out["item"])
     return out
 
 
-def _make(q: str, who: str, client: Any = None) -> dict:
+def _make(q: str, who: str, client: Any = None, sync_plays: bool = False) -> dict:
     """The day's story about q, writing it if nobody has today. Always returns a dict: with "story" and "item",
     or with story None and a plain-English "reason" (code: short, no_news, limit, busy, failed)."""
     q = re.sub(r"\s+", " ", str(q or "")).strip()[:60]
@@ -380,6 +453,7 @@ def _make(q: str, who: str, client: Any = None) -> dict:
         if not out:
             return dict(base, code="failed", left=left - 1, reason="The story couldn't be written just now. Try again in a minute.")
         _put(key, out)
+        _start_plays(key, out["item"]["hunch"], client, wait=sync_plays)
         try:  # old days' stories and counts
             old = datetime.fromtimestamp(time.time() - 3 * 86400, timezone.utc).isoformat()
             db.execute("DELETE FROM kv_cache WHERE k LIKE ? AND created_at < ?", ("custom:%", old))

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { getMovers } from '../lib/api';
 import { signedPct, pctTone, TONE } from '../lib/figures';
 import { oppositeOf } from '../lib/text';
+import StoryPlays from './StoryPlays';
 
 const StoryViewer = lazy(() => import('./StoryViewer'));
 
@@ -136,7 +137,7 @@ export function MoverCard({ item, i = 0, storyData = null, openNow = false }) {
       <ul className="mt-1.5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950/50">
         {item.companies.map((c) => (
           <li key={c.ticker} className="flex items-center gap-3 px-3 py-2">
-            <span className="font-bold w-14 shrink-0">{c.ticker}</span>
+            <span className="w-14 shrink-0 leading-tight"><span className="block font-bold">{c.ticker}</span>{c.link === 'indirect' && <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">indirect</span>}</span>
             <span className="min-w-0 flex-1 text-xs text-slate-400 line-clamp-2">{c.why}</span>
             <span className="shrink-0 text-right leading-tight">
               {c.direction && (
@@ -150,6 +151,7 @@ export function MoverCard({ item, i = 0, storyData = null, openNow = false }) {
         ))}
       </ul>
 
+      {item.custom && <div className="mt-3"><StoryPlays q={item.q} /></div>}
       <button onClick={() => setStory(true)} className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-blue-500/60 bg-blue-500/10 hover:bg-blue-500/20 py-2.5 text-sm font-bold text-blue-100">
         <Play className="h-4 w-4 fill-current" /> Watch the story in 30 seconds
       </button>

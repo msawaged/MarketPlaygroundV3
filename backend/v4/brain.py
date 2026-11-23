@@ -15,7 +15,7 @@ from . import db, learning, lineages, market, nn
 
 _cache = {"at": 0.0, "v": None}
 _lock = threading.Lock()
-SEED_SOURCES = ("seed_news", "seed_live", "seed_backfill")
+SEED_SOURCES = ("seed_news", "seed_live", "seed_backfill", "seed_story")  # seed_story: custom-story hunches
 
 
 def _versions(limit: int = 24) -> list[dict]:
@@ -75,7 +75,7 @@ def _recent_learned(limit: int = 14) -> list[dict]:
         if len(picks[p["belief_id"]]) < 3:
             picks[p["belief_id"]].append({"ticker": p["ticker"], "direction": p["direction"]})
     return [{"text": (r["text"] or "")[:120], "direction": r["direction"], "at": r["created_at"],
-             "from_news": r["source"] == "seed_news", "picks": picks.get(r["id"], [])} for r in rows]
+             "from_news": r["source"] in ("seed_news", "seed_story"), "picks": picks.get(r["id"], [])} for r in rows]
 
 
 def _recent_graded(limit: int = 14) -> list[dict]:
@@ -124,7 +124,7 @@ def _activity(limit: int = 20) -> list[dict]:
     ph = ",".join("?" for _ in SEED_SOURCES)
     for r in db.query(f"""SELECT substr(created_at, 1, 13) AS h, source, COUNT(*) AS n, MAX(created_at) AS at FROM beliefs
                           WHERE source IN ({ph}) GROUP BY substr(created_at, 1, 13), source ORDER BY h DESC LIMIT 10""", SEED_SOURCES):
-        ev.append({"kind": "news" if r["source"] == "seed_news" else "practice", "at": r["at"], "n": int(r["n"])})
+        ev.append({"kind": "news" if r["source"] in ("seed_news", "seed_story") else "practice", "at": r["at"], "n": int(r["n"])})
     for r in db.query("""SELECT substr(graded_at, 1, 13) AS h, COUNT(*) AS n, SUM(CASE WHEN dir_excess > 0 THEN 1 ELSE 0 END) AS right_n,
                          MAX(graded_at) AS at FROM outcomes GROUP BY substr(graded_at, 1, 13) ORDER BY h DESC LIMIT 6"""):
         ev.append({"kind": "graded", "at": r["at"], "n": int(r["n"]), "right": int(r["right_n"] or 0)})
