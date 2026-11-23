@@ -1,11 +1,11 @@
 {
  "key": "reel",
- "updated_at": "2026-11-23T15:05:00Z",
- "last_run": "Made today's Market's open reel (65 seconds, Applied Digital's $5.4 billion AI data center lease; APLD up about 23% today) and sent it with TikTok and Instagram captions. Did not make promo v6 this run (see below).",
+ "updated_at": "2026-11-23T16:50:00Z",
+ "last_run": "Made a second Market's open reel today (66 seconds, the proposed Medicare Advantage rule changes that hit insurers like Humana and CVS's Aetna) and sent it with TikTok and Instagram captions. No new messages from you.",
  "working_on": "Daily Market's open reels while the app is coming soon; promo v6 is waiting.",
  "next": "Next Market's open reel. Promo v6 once its build tools are in the repo or Murad OKs a longer run for it.",
  "needs_from_murad": [
-  "Post today's Market's open reel (Applied Digital) with the captions I sent.",
+  "Post one of today's Market's open reels (Applied Digital from this morning, or Medicare Advantage from this afternoon) with the captions I sent.",
   "Post News page promo v3 (lithium search) if you still want it, or wait for v5/v6.",
   "Promo v6: the v5 tools (capture, edit, render, mix) were only in the Builder's temporary workspace, not the repo, and v5's video isn't something I can see. Either have the Builder save those scripts under scripts/ and send you v5, or tell me it's OK to spend a long run rebuilding them for v6.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
