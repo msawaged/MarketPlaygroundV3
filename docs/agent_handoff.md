@@ -2208,7 +2208,7 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - scripts/promo: MONTAGE env / config "montage" types several searches before the main flow; stage.html first
   frame shows the full phone and caption (no slide-in), since frame 0 is the cover. Test extended.
 
-## 2026-11-23 ~19:40 UTC (CTO scout routine, key `scout`): idea 21 recorded, idea 22 added, install proposal
+## 2026-11-23 ~18:50 UTC (CTO scout routine, key `scout`): idea 21 recorded, idea 22 added, install proposal
 - Idea 21 (vol of vol, `vov`) result recorded in docs/research_ideas.md: no edge (raw -0.50%, t -1.77, t_nw -0.99;
   2 of 4 stretches). Also noted the equal-weight composite's first result there (+0.56%, t 1.68; lift_diff +0.04%).
 - Idea 22: risk-adjusted momentum (MSCI Momentum Index score). New feature `rmom` = average of 6- and 12-month return
