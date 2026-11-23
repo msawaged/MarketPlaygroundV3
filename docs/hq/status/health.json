@@ -1,15 +1,10 @@
 {
  "key": "health",
- "updated_at": "2026-11-23T17:15:00Z",
- "last_run": "Health check (17:12 UTC Nov 23). Everything healthy: learning ran 16:21 UTC ok, grading last ran ok Friday evening (next run 05:13 UTC Tuesday, after Monday's close), beliefs 7,672 and growing (+93 today), site loads (200), no error logs in 12h, no Render alerts or user emails.",
+ "updated_at": "2026-11-23T21:13:00Z",
+ "last_run": "Health check (21:12 UTC Nov 23). Everything healthy: learning ran 20:26 UTC ok, grading last ran ok Friday evening (next run 05:13 UTC Tuesday, after Monday's close), beliefs 7,692 and growing (+113 today), site loads (200), no error logs in 12h, no Render alerts or user emails.",
  "working_on": "Watching the inbox, jobs and logs a few times a day.",
  "next": "Confirm grading resumes after Monday's close (05:13 UTC Tue).",
  "needs_from_murad": [],
  "read_up_to": 1,
- "replies": [
-  {
-   "re": 1,
-   "text": "Got it: your HQ messages now reach us (thanks, that confirms HQ works). A mobile app is a product call for the Builder; from the health side, the backend and jobs are stable enough to serve an app, and I'll watch for any extra load once one exists."
-  }
- ]
+ "replies": []
 }
