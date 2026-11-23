@@ -10,6 +10,8 @@ const { chromium } = require('playwright');
 const SITE = process.env.MP_SITE || 'https://marketplayground-web.onrender.com';
 const out = process.argv[2];
 const query = process.argv[3] || 'black friday';
+// optional: what to type when it differs from the story's subject (a typo, "lithum"), so the reel shows the spelling fix
+const typed = process.argv[4] || query;
 if (!out) throw new Error('usage: capture.js <out_dir> [search]');
 fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
 
@@ -72,10 +74,18 @@ fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
   await tapEl(input, 'search');
   await hold(300);
   mark('type');
-  await input.type(query, { delay: 105 });
+  await input.type(typed, { delay: 105 });
   const make = page.getByText(/Make a story about/).first();
   await make.waitFor({ timeout: 60000 });
   mark('results');
+  if (typed !== query) {  // "Nothing found for “lithum”, so showing results for “lithium”."
+    const fixNote = page.getByText(/Nothing found for/).first();
+    await fixNote.waitFor({ timeout: 20000 });
+    await hold(300);
+    await ring(fixNote, 'fixed', 6);
+    mark('fixed');
+    await hold(2600);
+  }
   await hold(1300);
   await tapEl(make, 'make');
   mark('make');

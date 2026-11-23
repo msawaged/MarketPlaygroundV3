@@ -2189,3 +2189,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Known: edit.js's shot plan is keyed to the v6 scene ids and the capture's flow; a new promo with a different flow
   means editing `plan` in edit.js. The camera follows page coordinates while typing so the "Create a free account"
   box (shown when the page shrinks during search) stays out of shot: the app isn't launched.
+
+## 2026-11-23 ~18:20 UTC (Builder, key `builder`, live with Murad): promo v7, the search typo fix
+- Murad asked for a reel of the new search feature. Made promo v7 (32s): type "lithum" -> "showing results for
+  lithium" (ringed) -> Make a story (today's cached lithium story, free, no new idea) -> cards -> who it moves +
+  sources -> ways to play (practice money) -> Brain scorecard -> coming-soon card. Sent to Murad with captions.
+- scripts/promo: capture.js takes an optional 3rd arg (what to type, e.g. a typo) and rings the spelling-fix note;
+  edit.js has a `plan: "typo"` shot plan (camera keeps the sign-up box out of shot); make_promo.sh passes `typed`;
+  new scripts/promo/v7.json. v6 config/plan unchanged. MP4 not committed.

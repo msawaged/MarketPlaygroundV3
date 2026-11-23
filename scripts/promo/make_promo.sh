@@ -15,8 +15,9 @@ mkdir -p "$work/vo"
 python3 -c "import json,sys; c=json.load(open(sys.argv[1])); json.dump([s['line'] for s in c['scenes']], open(sys.argv[2],'w'))" "$cfg" "$work/vo/lines.json"
 voice=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('voice','af_heart'))" "$cfg")
 search=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['search'])" "$cfg")
+typed=$(python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c.get('typed') or c['search'])" "$cfg")
 python3 "$here/../reel_voice.py" "$work/vo/lines.json" "$work/vo" "$voice" > "$work/vo/lens.json"
-rm -rf "$work/cap"; node "$here/capture.js" "$work/cap" "$search"
+rm -rf "$work/cap"; node "$here/capture.js" "$work/cap" "$search" "$typed"
 node "$here/edit.js" "$cfg" "$work/cap" "$work/vo" "$work/ed"
 node "$here/render.js" "$work/ed" "$work/silent.mp4"
 python3 "$here/mix.py" "$work/ed/cues.json" "$work/vo" "$work/silent.mp4" "$out"

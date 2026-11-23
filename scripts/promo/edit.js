@@ -47,6 +47,35 @@ const plan = {
   end: { shots: [] },
 };
 
+// v7 (cfg.plan = "typo"): types a misspelling ("lithum"), the search fixes it, then the same story flow.
+// Story cards there: 0 cover, 1 what happened, 2 the numbers, 3 why, 4 twist, 5 who it moves, 6 sources.
+const plans = {
+  typo: {
+    hook: { shots: [[ev('news'), tapT('search') + 0.1]], cam: [[0, 1.3, 195, 330], [1, 1.45, 195, 300]] },
+    typo: {
+      shots: [[tapT('search') + 0.05, (marks.events.find((x) => x.name === 'fixed') || { t: ev('results') }).t + 2.4]],
+      rings: /^fixed$/,
+      cam: [[0, 1.6, 195, 455, true], [0.45, 1.64, 195, 458, true], [1, 1.68, 195, 470, true]],
+    },
+    make: {
+      shots: [[tapT('make') - 0.7, card(0) + 1.6]],
+      cam: (dur, shot) => {
+        const story = (card(0) - 0.3 - shot[0]) / (shot[1] - shot[0]);
+        return [[0, 1.5, 195, 478, true], [story - 0.04, 1.55, 195, 478, true], [story + 0.06, 1.0, 195, 422], [1, 1.05, 195, 400]];
+      },
+    },
+    learn: {
+      shots: [[card(1) + 0.2, card(1) + 1.6], [card(2) + 0.15, card(2) + 1.6], [card(4) + 0.4, card(4) + 2.0]],
+      cam: [[0, 1.2, 195, 400], [1, 1.3, 195, 400]],
+    },
+    who: { shots: [[card(5) + 0.1, card(5) + 2.6], [card(6) + 0.1, card(6) + 2.4]], cam: [[0, 1.0, 195, 422], [0.5, 1.12, 195, 420], [0.5001, 1.0, 195, 422], [1, 1.12, 195, 470]] },
+    practice: plan.practice,
+    score: plan.score,
+    end: { shots: [] },
+  },
+};
+const PLAN = cfg.plan ? plans[cfg.plan] : plan;
+
 const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 function camAt(keys, f, srcT) {
   let a = keys[0]; let b = keys[keys.length - 1];
@@ -60,7 +89,7 @@ const frameAt = (t) => { let lo = 0; let hi = frames.length - 1; while (lo < hi)
 const scenes = []; const out = []; const cues = { voice: [], sfx: [] };
 let t = 0;
 cfg.scenes.forEach((sc, i) => {
-  const p = plan[sc.id];
+  const p = PLAN[sc.id];
   const dur = sc.end ? lens[i] + 1.6 : lens[i] + LEAD + TAIL;
   scenes.push({ ...sc, start: +t.toFixed(3), dur: +dur.toFixed(3) });
   cues.voice.push({ i, t: +(t + LEAD + (sc.end ? 0.5 : 0)).toFixed(3) });
