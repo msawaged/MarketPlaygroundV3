@@ -2250,3 +2250,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the spread slopes themselves (isotonic over adjacent call/put spreads); size M, left for a later run.
 - Test: test_yesno_smile_ladder_falls_on_a_thin_chain. No gates, grading or real-money paths touched.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.
+- Follow-up (same run): after deploy AMD Dec 18 still read $410 64.8% vs $420 64.9%, because each line fetched its own
+  strike slice (±12% around the line), so each saw a different curve. yesno._chain now fetches CHAIN_BAND (20%) around
+  the stock price for any line within 12% of it (same strikes for the whole ladder), and only this expiration
+  (days=0, was ±3 days of neighbours that quote() threw away anyway). snapshot_smiles saves the wider smile too.
+

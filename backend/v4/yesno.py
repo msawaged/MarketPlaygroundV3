@@ -532,7 +532,7 @@ def snapshot_smiles(tickers=None, max_exps: int = 6) -> dict:
             spot = e["spot"]
             for x in e["expirations"][:max_exps]:
                 exp = date.fromisoformat(x)
-                chain = [r for r in _chain(u, spot, exp) if r["expiration"] == exp]
+                chain = [r for r in _chain(u, spot, exp, spot) if r["expiration"] == exp]
                 years = max(1, (exp - _today()).days) / 365.0
                 if save_smile(u, exp, chain, spot, years):
                     saved += 1
@@ -831,8 +831,16 @@ def _today() -> date:
     return market.today()
 
 
-def _chain(u: str, level: float, exp: date) -> list[dict]:
-    return market.option_chain_near(u, level, exp, days=3, band=0.12)
+CHAIN_BAND = 0.20          # strikes fetched around the stock price, the same set for every line near it
+
+
+def _chain(u: str, level: float, exp: date, spot: Optional[float] = None) -> list[dict]:
+    """This expiration's listed options. Lines within 12% of the price all read the same strikes (CHAIN_BAND around
+    the price), so the ordered smile curve is built from the same quotes for every line of the ladder: fetched
+    around each line, $410 and $420 saw different strike sets and read 64.8% and 64.9% (live AMD Dec 18, Nov 23)."""
+    if spot and abs(level / spot - 1) <= CHAIN_BAND - SKEW_REACH:
+        return market.option_chain_near(u, spot, exp, days=0, band=CHAIN_BAND)
+    return market.option_chain_near(u, level, exp, days=0, band=0.12)
 
 
 def expirations(ticker: str) -> dict:
@@ -924,7 +932,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     spot = float(market.latest_price(u))
     if not (0.5 * spot <= level <= 1.5 * spot):
         raise YesNoError(f"Pick a price within 50% of where {u} is now (${spot:,.2f}).")
-    chain = [r for r in _chain(u, level, exp) if r["expiration"] == exp]
+    chain = [r for r in _chain(u, level, exp, spot) if r["expiration"] == exp]
     if not chain:
         raise YesNoError(f"No listed {u} options expire on that date. Pick one of the dates shown.")
     pair = strikes_around([r["strike"] for r in chain if r["type"] == "call"], level)
