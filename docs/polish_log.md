@@ -1872,3 +1872,26 @@ Changed (backend only, newssearch.py):
 - _KNOWN: s&p 500 / s&p / sp500 -> SPY, dow jones -> DIA, nasdaq 100 -> QQQ, russell 2000 -> IWM ("nasdaq" alone
   stays Nasdaq, Inc.; "dow" alone stays Dow Inc.).
 - Test: test_news_search_tickers_indexes_and_fund_headlines.
+
+## 2026-11-23 (eighth run, ~21:25 UTC = Mon 4:25 PM ET, just after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. News "vs S&P" figures add up (ON +9.7% vs S&P +4.6% = +5.0 pts after rounding, ALB, V, S).
+Focus: my open item, Close Call ladders after the close with the Builder's ordered smile. Read 9 lines x 4
+expirations for NVDA, TSLA, AMD, SPY from the live /v4/yesno/quote.
+
+Found:
+- Every ladder read off a saved smile now falls line by line (NVDA, TSLA, AMD all dates; SPY Nov 27 / Dec 4). YES
+  costs and breakevens add up (NVDA Dec 4 $165: $261.89 for $500 = 52.4%, breakeven $162.50 + $2.62 = $165.12).
+- SPY Dec 11 and Dec 18 rose with the line: Dec 11 "above $725" 48.7% (one vol) beside "above $730" 56.4% (smile);
+  Dec 18 $730 43.5% beside $735 52.6%. Those two are the 7th and 8th dates the page offers, but the last-hour cron
+  (snapshot_smiles) saved only the first 6, so after the close they read the session's raw quotes; lines whose fit
+  failed fell back to one vol. NVDA/TSLA Dec 11 also read raw quotes (in order today by luck).
+
+Changed (backend only):
+- yesno.EXPIRATIONS_SHOWN = 8, used by expirations() and as snapshot_smiles' default, so every date on the page gets
+  a saved closing smile. Takes effect at tomorrow's 3-4 PM ET snapshot; tonight's SPY Dec 11/18 stay as they are.
+- Test: test_yesno_snapshot_saves_every_expiration_the_page_offers.
+- Left for the Builder: a ticker outside BRAIN_TICKERS (or a date nobody quoted in market hours) still has no saved
+  smile after the close, so the same one-vol / smile mix can show there.

@@ -6850,3 +6850,19 @@ def test_yesno_smile_ladder_falls_on_a_thin_chain(monkeypatch):
         ps.append(q["market_p"])
     assert all(a >= b for a, b in zip(ps, ps[1:])), ps
     assert ps[0] - ps[-1] > 0.4
+
+
+def test_yesno_snapshot_saves_every_expiration_the_page_offers(monkeypatch):
+    """Live Mon Nov 23 after the close: the cron saved only the first 6 expirations, so SPY Dec 11 / Dec 18 (the 7th
+    and 8th dates on the page) read the last session's raw quotes and the ladder rose: above $725 48.7%, above $730
+    56.4%. The snapshot now covers every date the page offers."""
+    from backend.v4 import yesno
+    exps = [(TODAY + timedelta(days=d)).isoformat() for d in range(2, 40, 3)]
+    monkeypatch.setattr(yesno, "expirations", lambda u: {"spot": 100.0, "expirations": exps[:yesno.EXPIRATIONS_SHOWN]})
+    monkeypatch.setattr(yesno, "_chain", lambda u, lvl, exp, spot=None: [{"expiration": exp}])
+    seen = []
+    monkeypatch.setattr(yesno, "save_smile", lambda u, exp, chain, spot, years: seen.append((u, exp)) or True)
+    out = yesno.snapshot_smiles(["SPY"])
+    assert yesno.EXPIRATIONS_SHOWN == 8
+    assert out["saved"] == 8 and len(seen) == 8
+    assert seen[-1][1].isoformat() == exps[7]

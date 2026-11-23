@@ -522,9 +522,13 @@ def smile_from_saved(saved: dict, spot: float, level: float, years: float) -> Op
     return sk
 
 
-def snapshot_smiles(tickers=None, max_exps: int = 6) -> dict:
-    """Save the smile of each big stock's nearest expirations (hourly cron, last hour of the session), so the odds
-    after the close read the closing smile even if nobody asked about that stock today."""
+def snapshot_smiles(tickers=None, max_exps: Optional[int] = None) -> dict:
+    """Save the smile of each big stock's expirations (hourly cron, last hour of the session), so the odds after the
+    close read the closing smile even if nobody asked about that stock today. Every expiration the page offers
+    (EXPIRATIONS_SHOWN): with only the first 6 saved, live Mon Nov 23 after the close, SPY Dec 11 / Dec 18 (the 7th
+    and 8th dates) read the last session's raw quotes instead, and lines whose fit failed fell back to one vol:
+    "above $725" 48.7% beside "above $730" 56.4%."""
+    max_exps = max_exps or EXPIRATIONS_SHOWN
     saved, skipped = 0, 0
     for u in (tickers or BRAIN_TICKERS):
         try:
@@ -843,6 +847,9 @@ def _chain(u: str, level: float, exp: date, spot: Optional[float] = None) -> lis
     return market.option_chain_near(u, level, exp, days=0, band=0.12)
 
 
+EXPIRATIONS_SHOWN = 8      # dates offered on the page (and saved by snapshot_smiles)
+
+
 def expirations(ticker: str) -> dict:
     """Listed expirations in the next ~10 weeks, the live price and a few suggested lines."""
     u = (ticker or "").upper().strip()
@@ -858,7 +865,7 @@ def expirations(ticker: str) -> dict:
     step = _nice_step(spot)
     base = round(spot / step) * step
     lines = sorted({round(base + i * step, 2) for i in (-2, -1, 0, 1, 2)})
-    return {"ticker": u, "spot": spot, "expirations": [e.isoformat() for e in exps[:8]], "lines": lines}
+    return {"ticker": u, "spot": spot, "expirations": [e.isoformat() for e in exps[:EXPIRATIONS_SHOWN]], "lines": lines}
 
 
 def _nice_step(spot: float) -> float:
