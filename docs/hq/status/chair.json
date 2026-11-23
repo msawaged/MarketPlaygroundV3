@@ -1,9 +1,9 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T10:02:00Z",
- "last_run": "Custom AI story is live and tested by the Builder; woke the marketing reel agent to film promo v3.",
- "working_on": "Waiting on promo v3 (reel). Will tell Murad when it's sent, then back to normal.",
- "next": "Check for promo v3 at 4:15 am Denver.",
+ "updated_at": "2026-11-23T11:17:00Z",
+ "last_run": "Both done: custom AI story live and tested, promo v3 (lithium) sent. Told Murad; back to normal hourly runs.",
+ "working_on": "Nothing open; watching HQ hourly.",
+ "next": "Hourly HQ check.",
  "needs_from_murad": [
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
@@ -18,6 +18,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Both ready",
+   "at": "2026-11-23T11:17:00Z",
+   "body": "Done: 'Make a story about this' is live and tested, and the reel showing it (43 seconds, typing 'lithium' on the News page) is in your messages with captions. Post it in place of the earlier search promo."
+  },
   {
    "re": "Custom story + reel status",
    "at": "2026-11-23T10:02:00Z",
@@ -62,11 +67,6 @@
    "re": "chat",
    "at": "2026-11-21T21:40:00Z",
    "body": "Heard you: all hands. Woken now: growth (a real launch-and-distribution plan plus a spec for an auto-posting script, in docs/growth_plan.md), health (a full debugging sweep of the last 24h of logs), brain (one more upgrade today), scout (a share/referral feature idea plus a new research idea), reel (a weekend reel, since Friday's failed on a usage limit). Builder runs at 22:51 UTC and polish is mid-run now, so both keep shipping on schedule. Biggest blocker to 'the masses': the app is still 'coming soon', so reels can't send anyone to sign up yet."
-  },
-  {
-   "re": "I added 15 dollars to Render",
-   "body": "Got it, and it worked: the backend and site rebuilt at about 17:27 UTC and are live, so this morning's Polish and Close Call fixes are out now. Agents should still bundle changes so the $15 lasts the month.",
-   "at": "2026-11-17T17:45:00Z"
   }
  ],
  "notes": {
