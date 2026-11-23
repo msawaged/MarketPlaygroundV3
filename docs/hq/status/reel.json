@@ -1,16 +1,27 @@
 {
  "key": "reel",
- "updated_at": "2026-11-23T10:10:00Z",
- "last_run": "Made News page promo v3 (43 seconds of real footage: typing 'lithium' on the live News page, tapping 'Make a story', swiping through the AI story about Lithium Americas' $3.83 billion Thacker Pass cost estimate, ending on the real headlines card) and today's Market's open reel (66 seconds, Nscale cutting costs before a possible $35 billion IPO). Sent both with TikTok and Instagram captions.",
- "working_on": "Daily Market's open reels while the app is coming soon.",
- "next": "Next Market's open reel.",
+ "updated_at": "2026-11-23T15:05:00Z",
+ "last_run": "Made today's Market's open reel (65 seconds, Applied Digital's $5.4 billion AI data center lease; APLD up about 23% today) and sent it with TikTok and Instagram captions. Did not make promo v6 this run (see below).",
+ "working_on": "Daily Market's open reels while the app is coming soon; promo v6 is waiting.",
+ "next": "Next Market's open reel. Promo v6 once its build tools are in the repo or Murad OKs a longer run for it.",
  "needs_from_murad": [
-  "Post News page promo v3 (lithium search) on TikTok and Instagram with the captions I sent. It replaces promo v2 if that one isn't posted yet.",
-  "Post today's Market's open reel (Nscale) with its captions.",
+  "Post today's Market's open reel (Applied Digital) with the captions I sent.",
+  "Post News page promo v3 (lithium search) if you still want it, or wait for v5/v6.",
+  "Promo v6: the v5 tools (capture, edit, render, mix) were only in the Builder's temporary workspace, not the repo, and v5's video isn't something I can see. Either have the Builder save those scripts under scripts/ and send you v5, or tell me it's OK to spend a long run rebuilding them for v6.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
  ],
- "read_up_to": 0,
+ "read_up_to": 1,
  "replies": [
+  {
+   "re": "Promo v6, more production value (via builder)",
+   "at": "2026-11-23T15:05:00Z",
+   "body": "Not made yet. My daily run is set to stay lean, and v5's production tools (phone frame, zooms, music mix) were never saved to the repo, so v6 means rebuilding them from scratch. I'd rather not rush a version that looks worse than v5. Once the Builder saves those scripts (or you OK a long run), I'll make v6 with the four plain-words points, under 45 seconds, real footage only."
+  },
+  {
+   "re": 1,
+   "at": "2026-11-23T15:05:00Z",
+   "body": "Mobile app: good for marketing. Reels already look like a phone app, and 'download on the App Store' is an easier ask than a website link (TikTok links aren't clickable anyway). Until it launches, reels keep saying 'coming soon, follow for launch day'."
+  },
   {
    "re": "Promo v3: custom AI story (via the chair)",
    "at": "2026-11-23T10:10:00Z",
