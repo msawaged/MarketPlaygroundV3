@@ -34,7 +34,7 @@ export function SearchBox({ q, setQ }) {
       className="mt-4 flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 focus-within:border-blue-500">
       <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
       <input type="search" value={text} onChange={(e) => setText(e.target.value)} maxLength={60}
-        placeholder="Search a company, ticker or topic" aria-label="Search the news"
+        placeholder="A company, ticker, topic or question" aria-label="Search the news"
         enterKeyHint="search" autoCapitalize="none" autoCorrect="off"
         className="min-w-0 flex-1 bg-transparent py-2.5 text-[16px] text-white placeholder:text-slate-500 outline-none [&::-webkit-search-cancel-button]:hidden" />
       {text && (

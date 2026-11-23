@@ -5,20 +5,65 @@
  "plan": "typo",
  "voice": "af_heart",
  "scenes": [
-  {"id": "hook", "line": "Search any news. Even if you can't spell it.",
-   "big": "Search any news", "accent": "any", "small": "Even if you can't spell it"},
-  {"id": "typo", "line": "Type lithum, and it knows you meant lithium.",
-   "big": "Typos? Handled.", "accent": "Handled", "small": "“lithum” → lithium"},
-  {"id": "make", "line": "One tap, and the A.I. writes you a thirty second story, built from real headlines.",
-   "big": "One tap. Your story.", "accent": "One", "small": "AI-written from real headlines"},
-  {"id": "learn", "line": "What happened, the numbers, and the twist.",
-   "big": "Get it in 30 seconds", "accent": "30", "small": "What happened · the numbers · the twist"},
-  {"id": "who", "line": "Who it moves, and every source, so you can check it yourself.",
-   "big": "Who it moves", "accent": "moves", "small": "Every source shown. Check it yourself."},
-  {"id": "practice", "line": "Then ways to play it, with practice money. No real money at risk.",
-   "big": "Practice money. Zero risk.", "accent": "Zero", "small": "Stocks, funds, even options"},
-  {"id": "score", "line": "And every idea is graded against the S and P 500, right out in the open.",
-   "big": "The market keeps score", "accent": "score", "small": "Every idea graded vs the S&P 500, in the open"},
-  {"id": "end", "line": "MarketPlayground. Coming soon. Follow for launch day.", "end": true}
+  {
+   "id": "hook",
+   "line": "Search anything. A word, a question, a company, or a ticker.",
+   "big": "Search anything",
+   "accent": "anything",
+   "small": "A word · a question · a company · a ticker"
+  },
+  {
+   "id": "typo",
+   "line": "Even with a typo. Type lithum, and it knows you meant lithium.",
+   "big": "Typos? Handled.",
+   "accent": "Handled",
+   "small": "“lithum” → lithium"
+  },
+  {
+   "id": "make",
+   "line": "One tap, and the A.I. writes you a thirty second story, built from real headlines.",
+   "big": "One tap. Your story.",
+   "accent": "One",
+   "small": "AI-written from real headlines"
+  },
+  {
+   "id": "learn",
+   "line": "What happened, the numbers, and the twist.",
+   "big": "Get it in 30 seconds",
+   "accent": "30",
+   "small": "What happened · the numbers · the twist"
+  },
+  {
+   "id": "who",
+   "line": "Who it moves, and every source, so you can check it yourself.",
+   "big": "Who it moves",
+   "accent": "moves",
+   "small": "Every source shown. Check it yourself."
+  },
+  {
+   "id": "practice",
+   "line": "Then ways to play it, with practice money. No real money at risk.",
+   "big": "Practice money. Zero risk.",
+   "accent": "Zero",
+   "small": "Stocks, funds, even options"
+  },
+  {
+   "id": "score",
+   "line": "And every idea is graded against the S and P 500, right out in the open.",
+   "big": "The market keeps score",
+   "accent": "score",
+   "small": "Every idea graded vs the S&P 500, in the open"
+  },
+  {
+   "id": "end",
+   "line": "MarketPlayground. Coming soon. Follow for launch day.",
+   "end": true
+  }
+ ],
+ "montage": [
+  "lithium",
+  "why is nvidia up?",
+  "Costco",
+  "TSLA"
  ]
 }

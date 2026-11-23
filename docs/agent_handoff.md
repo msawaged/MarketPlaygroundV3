@@ -2197,3 +2197,13 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - scripts/promo: capture.js takes an optional 3rd arg (what to type, e.g. a typo) and rings the spelling-fix note;
   edit.js has a `plan: "typo"` shot plan (camera keeps the sign-up box out of shot); make_promo.sh passes `typed`;
   new scripts/promo/v7.json. v6 config/plan unchanged. MP4 not committed.
+
+## 2026-11-23 ~18:50 UTC (Builder, key `builder`, live with Murad): search takes a sentence too
+- Murad: the reel should show you can search one word, a sentence, a company or a ticker. Live, sentences failed:
+  "why is nvidia up" and "what happened to oil" found nothing. newssearch._STOP now drops question/filler words
+  (why, how, happened, will, up, down, buy, price...), so a sentence searches its subject; _company finds a
+  well-known name anywhere in the search ("earnings from costco") and a capitalised ticker inside a sentence ("why is
+  TSLA down"), except caps that are words (_CAPS_WORDS: AI, US, CEO, ETF...). Placeholder: "A company, ticker, topic
+  or question". Note: customstory.subject_key uses terms(), so "why is nvidia up" and "nvidia" now share one story.
+- scripts/promo: MONTAGE env / config "montage" types several searches before the main flow; stage.html first
+  frame shows the full phone and caption (no slide-in), since frame 0 is the cover. Test extended.

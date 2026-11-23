@@ -51,7 +51,12 @@ const plan = {
 // Story cards there: 0 cover, 1 what happened, 2 the numbers, 3 why, 4 twist, 5 who it moves, 6 sources.
 const plans = {
   typo: {
-    hook: { shots: [[ev('news'), tapT('search') + 0.1]], cam: [[0, 1.3, 195, 330], [1, 1.45, 195, 300]] },
+    hook: marks.events.some((x) => x.name === 'm0')
+      ? { // montage: each search from its last letters to a beat after its results land
+        shots: marks.events.filter((x) => /^m\d+$/.test(x.name)).map((x) => [x.t - 0.55, x.t + 1.1]),
+        cam: [[0, 1.32, 195, 500, true], [1, 1.36, 195, 500, true]],
+      }
+      : { shots: [[ev('news'), tapT('search') + 0.1]], cam: [[0, 1.3, 195, 330], [1, 1.45, 195, 300]] },
     typo: {
       shots: [[tapT('search') + 0.05, (marks.events.find((x) => x.name === 'fixed') || { t: ev('results') }).t + 2.4]],
       rings: /^fixed$/,

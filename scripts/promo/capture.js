@@ -73,6 +73,24 @@ fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
   await hold(1400);
   await tapEl(input, 'search');
   await hold(300);
+  // optional montage (MONTAGE='["lithium","why is nvidia up?","Costco","TSLA"]'): quick searches showing it takes a
+  // word, a question, a company or a ticker; marks m0_type, m0 (results in) for each
+  const montage = JSON.parse(process.env.MONTAGE || '[]');
+  for (let i = 0; i < montage.length; i++) {
+    await input.fill('');
+    await hold(150);
+    mark(`m${i}_type`);
+    const want = montage[i].trim();
+    const got = page.waitForResponse((r) => r.url().includes('/v4/movers/search')
+      && new URL(r.url()).searchParams.get('q') === want, { timeout: 30000 });
+    await input.type(montage[i], { delay: 55 });
+    await got;
+    await page.waitForFunction(() => !document.querySelector('.opacity-60'), null, { timeout: 15000 }).catch(() => {});
+    await hold(250);
+    mark(`m${i}`);
+    await hold(1300);
+  }
+  if (montage.length) { await input.fill(''); await hold(600); }
   mark('type');
   await input.type(typed, { delay: 105 });
   const make = page.getByText(/Make a story about/).first();

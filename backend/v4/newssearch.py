@@ -19,7 +19,17 @@ MAX_STORIES = 10
 MAX_HEADLINES = 6
 _TICKERISH = re.compile(r"^\$?[A-Za-z][A-Za-z.]{0,5}$")
 _STOP = {"the", "a", "an", "of", "and", "or", "in", "on", "for", "to", "about", "news", "stock", "stocks", "shares",
-         "inc", "corp", "company", "is", "are", "what", "whats", "with"}
+         "inc", "corp", "company", "is", "are", "what", "whats", "with",
+         # question and filler words, so a sentence searches its subject: "why is nvidia up?" -> nvidia,
+         # "what happened to oil" -> oil, "is tesla a buy" -> tesla
+         "what's", "why", "how", "who", "when", "where", "which", "happened", "happening", "happen", "going",
+         "does", "did", "do", "doing", "will", "would", "should", "could", "can", "up", "down", "today", "today's",
+         "this", "that", "week", "it", "its", "it's", "i", "me", "my", "we", "our", "you", "buy", "sell", "worth",
+         "good", "bad", "there", "was", "were", "be", "been", "has", "have", "had", "so", "much", "right", "now",
+         "price", "prices", "moving", "move", "moved", "rise", "rising", "fall", "falling", "latest", "tell"}
+# All-caps words in a sentence that are words, not the tickers they happen to be ("why is AI hot" isn't C3.ai)
+_CAPS_WORDS = {"AI", "US", "USA", "CEO", "CFO", "IPO", "ETF", "EV", "EVS", "GDP", "FED", "OK", "UK", "EU", "IT", "I",
+               "A", "IS", "ON", "TV", "AM", "PM", "Q1", "Q2", "Q3", "Q4", "CPI", "SEC", "FDA", "WHY", "HOW", "WHAT"}
 # Well-known companies people search by name even when no story this week moves them ("apple" -> AAPL). Only
 # names that aren't everyday topic words, so "gold" or "oil" still search the stories as topics.
 _KNOWN = {"apple": "AAPL", "tesla": "TSLA", "microsoft": "MSFT", "amazon": "AMZN", "google": "GOOGL",
@@ -114,15 +124,19 @@ def _company(q: str, stories: list[dict], topic_hits: bool = False) -> Optional[
             name = [w for w in _words((info or {}).get("name")) if w not in movers._NAME_FILLER]
             if name and name[:len(ts)] == ts:
                 return {"ticker": sym, "name": info.get("name") or ""}
-    for i in range(len(ts) - 1, 0, -1):  # a well-known name plus a topic: "costco earnings" -> COST
-        sym = _KNOWN.get(" ".join(ts[:i]))
-        if sym:
-            try:
-                info = market.asset_info(sym)
-            except Exception:
-                info = None
-            if info:
-                return {"ticker": info["symbol"], "name": info.get("name") or ""}
+    # a well-known name anywhere in a longer search: "costco earnings", "earnings from costco" -> COST
+    grams = [" ".join(ts[i:i + n]) for n in (2, 1) for i in range(len(ts) - n + 1)]
+    # or a ticker typed in capitals inside a sentence: "why is TSLA up?", "$nvda after earnings"
+    raw_ws = raw.replace("?", " ").replace(",", " ").split()
+    caps = [w.lstrip("$").upper() for w in raw_ws if len(raw_ws) > 1 and re.fullmatch(r"\$[A-Za-z]{1,5}|[A-Z]{2,5}", w)
+            and (w.startswith("$") or w not in _CAPS_WORDS)]
+    for sym in [_KNOWN[g] for g in grams if g in _KNOWN] + caps:
+        try:
+            info = market.asset_info(sym)
+        except Exception:
+            info = None
+        if info:
+            return {"ticker": info["symbol"], "name": info.get("name") or ""}
     return None
 
 

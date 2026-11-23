@@ -6432,6 +6432,14 @@ def test_news_search_fixes_a_likely_typo_only_when_nothing_was_found(monkeypatch
     assert newssearch.suggest("xyzzy", [lith]) is None and newssearch.suggest("amd", [lith]) is None
     # a well-known name plus a topic word still shows the company card
     assert newssearch.search("costco earnings")["company"]["ticker"] == "COST"
+    assert newssearch.search("earnings from costco")["company"]["ticker"] == "COST"
+    # a sentence searches its subject (live: "why is nvidia up" and "what happened to oil" found nothing)
+    assert newssearch.search("why is nvidia up?")["company"]["ticker"] == "NVDA"
+    assert newssearch.search("is tesla a buy")["company"]["ticker"] == "TSLA"
+    assert newssearch.search("what happened to lithium?")["stories"][0]["headline"] == lith["headline"]
+    assert newssearch.search("why is TSLA down")["company"]["ticker"] == "TSLA"
+    names["AI"] = "C3.ai, Inc."
+    assert newssearch.search("why is AI hot")["company"] is None  # capitals that are a word, not C3.ai's ticker
 
 
 def test_equal_weight_composite_beats_two_weak_signals_and_picks_rules_on_training_calls_only():

@@ -90,11 +90,13 @@
     $('grid').style.transform = `translateY(${(f.t * 12) % 80}px)`;
     // captions: words pop in, line fades out at the cut
     const out = clamp(1 - (0.2 - left) / 0.2);
+    // the first frame is the cover (TikTok/Instagram thumbnail): the hook caption is already fully in
+    const Lc = f.scene === 0 ? L + 1 : L;
     [...$('big').children].forEach((w, i) => {
-      const k = clamp((L - 0.06 - i * 0.075) / 0.32);
+      const k = clamp((Lc - 0.06 - i * 0.075) / 0.32);
       w.style.opacity = k * out; w.style.transform = `translateY(${(1 - outCubic(k)) * 40 - (1 - out) * 24}px) scale(${0.82 + 0.18 * outBack(k)})`;
     });
-    const sk = clamp((L - 0.45) / 0.3);
+    const sk = clamp((Lc - 0.45) / 0.3);
     $('small').style.opacity = sk * out; $('small').style.transform = `translateY(${(1 - outCubic(sk)) * 20}px)`;
     // end card
     const isEnd = !!sc.end;
@@ -125,9 +127,8 @@
       const z = f.cam.z * punch;
       const D = { x: P.x + (T.x - P.x) * s, y: P.y + (T.y - P.y) * s };
       $('cam').style.transform = `translate(${D.x - z * P.x}px, ${D.y - z * P.y}px) scale(${z})`;
-      // phone slides up at the very start
-      const intro = f.scene === 0 ? outCubic(clamp(L / 0.6)) : 1;
-      $('phone').style.transform = `translateY(${(1 - intro) * 500}px)`;
+      // no slide-in: the phone is fully in shot from the first frame (the cover)
+      $('phone').style.transform = 'none';
       // rings and taps
       let html = '';
       for (const r of f.rings || []) {

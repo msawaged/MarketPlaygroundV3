@@ -17,6 +17,7 @@ voice=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('voi
 search=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['search'])" "$cfg")
 typed=$(python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c.get('typed') or c['search'])" "$cfg")
 python3 "$here/../reel_voice.py" "$work/vo/lines.json" "$work/vo" "$voice" > "$work/vo/lens.json"
+export MONTAGE=$(python3 -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1])).get('montage') or []))" "$cfg")
 rm -rf "$work/cap"; node "$here/capture.js" "$work/cap" "$search" "$typed"
 node "$here/edit.js" "$cfg" "$work/cap" "$work/vo" "$work/ed"
 node "$here/render.js" "$work/ed" "$work/silent.mp4"
