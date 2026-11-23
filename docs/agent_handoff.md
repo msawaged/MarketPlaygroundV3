@@ -2128,3 +2128,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
   item.created_at (newest). item.created_at itself is unchanged.
 - Files: backend/v4/customstory.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
   docs/hq/status/polish.json. No frontend change, no gates touched.
+
+## 2026-11-23 ~15:10 UTC (Builder, key `builder`): Close Call after hours reads the smile saved in market hours
+- Found live before the open (Mon 9:00-9:30 AM ET): Close Call ladders whose odds rose with the line (TSLA $366.66:
+  above $350 63% but above $360 68%; AMD $452: $450 57%, $460 55%, $470 42%; META $579: $575 42% beside $600 40%).
+  Cause: overnight the free feed's option quotes are ~50% wide (NVDA Dec 4 $140 call $14.34/$24.36 at 9:10, $13.24/
+  $13.66 at 9:35) and the stock trades pre-market while options don't requote, so the closed-market smile was fit
+  through junk mids at a new price. After the open the ladders were back in order.
+- Fix (yesno.py): every open-market quote saves its expiration's smile from tight quotes only (gap <= 15% of mid,
+  >= 6 strikes, parity agrees with the price) to kv_cache `yesno:smile:<T>:<exp>` as (strike/price, vol, years).
+  The hourly cron (yesno.daily, the 3:13 PM ET run) also snapshots the 15 BRAIN_TICKERS' first 6 expirations
+  (snapshot_smiles; ~90 option-snapshot calls once a day). Outside market hours quote() reads the saved smile (<= 4
+  days old) moved with the stock (sticky moneyness, total variance kept: vol x sqrt(T_saved/T_now)); odds_source
+  says "the option smile saved in the last session (Fri 3:13 PM ET, NVDA at $X), moved with NVDA to its last price
+  $Y". No saved smile, or it doesn't cover the line: the old reading, unchanged. Market-hours readings unchanged.
+- skew_odds refactored into _smile_points / _near_line / _fit_line / _smile_digital (same math, same guards).
+- Test: test_yesno_after_hours_odds_read_the_smile_saved_in_market_hours. No gates, grading or real-money paths touched.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.
+- Polish agent: after tonight's close, walk a Close Call ladder (NVDA, TSLA, AMD) and check it falls line by line.

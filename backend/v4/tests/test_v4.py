@@ -5928,6 +5928,73 @@ def test_yesno_smile_odds_keep_skew_and_fall_as_the_line_rises(monkeypatch):
     assert all(a > b for a, b in zip(ps, ps[1:]))
 
 
+def test_yesno_after_hours_odds_read_the_smile_saved_in_market_hours(monkeypatch):
+    """Live Mon Nov 23, before the open: the free feed's overnight option quotes were ~50% wide (NVDA Dec 4 $140 call
+    $14.34 / $24.36; $13.24 / $13.66 at 9:35) and the stocks traded pre-market, so the smile read off those mids gave
+    ladders whose odds rose with the line (TSLA $366.66: above $350 63%, above $360 68%). Every open-market quote now
+    saves the expiration's smile from tight quotes; outside market hours the odds read that saved smile moved with
+    the stock (sticky moneyness, total variance kept), so every line comes off the same points and the ladder falls
+    as the line rises. Junk quotes are never saved, and without a saved smile nothing changes."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    s0 = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=9)
+    yrs = 9 / 365
+    iv = lambda k, s: 0.40 - 0.6 * (k / s - 1)                   # equity skew, in strike / price terms
+    state = {"s": s0, "gap": 0.02, "junk": False}
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out, rnd = [], random.Random(7)
+        for k in range(int(s0 * 0.88), int(s0 * 1.12) + 1):
+            for t in ("call", "put"):
+                m = bs_price(s0, float(k), yrs, iv(k, s0), t)            # quotes always set at the old price
+                if state["junk"]:
+                    m *= 1 + rnd.uniform(-0.3, 0.3)                      # overnight mids: noise
+                g = state["gap"] * (m if state["junk"] else 1)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": float(k), "expiration": exp,
+                            "bid": round(max(0.01, m - g), 2), "ask": round(m + g, 2), "iv": 0.4})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    monkeypatch.setattr(market, "latest_price", lambda s: state["s"])
+
+    # Market open, tight quotes: the quote saves the smile.
+    lvl = float(round(s0))
+    q_open = yesno.quote("WINR", lvl, exp.isoformat())
+    sv = yesno.saved_smile("WINR", exp)
+    assert sv and len(sv["pts"]) >= yesno.SMILE_MIN_POINTS and sv["spot"] == s0
+
+    # After hours: quotes widen to junk, the stock moves up 3% pre-market.
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
+    state.update(junk=True, gap=0.25, s=s0 * 1.03)
+    assert not yesno.save_smile("WINR", exp, chain("WINR", lvl, exp), s0, yrs)      # junk is never saved
+    s1 = state["s"]
+    ps = []
+    for d in (-0.06, -0.04, -0.02, 0.0, 0.02, 0.04):
+        line = float(round(s1 * (1 + d)))
+        q = yesno.quote("WINR", line, exp.isoformat())
+        assert "saved in the last session" in q["odds_source"] and q["price_source"] == "smile"
+        assert f"${s1:,.2f}" in q["odds_source"]
+        # Sticky moneyness: the same odds as the open-market smile at the same line / price ratio.
+        true_p = -(bs_price(s1, line + 0.05, yrs, iv(line + 0.05, s1), "call")
+                   - bs_price(s1, line - 0.05, yrs, iv(line - 0.05, s1), "call")) / 0.1 * math.exp(RISK_FREE * yrs)
+        assert abs(q["market_p"] - true_p) < 0.02
+        df = math.exp(-RISK_FREE * yrs)
+        assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.03   # YES costs the odds shown
+        ps.append(q["market_p"])
+    assert all(a > b for a, b in zip(ps, ps[1:]))                                     # the ladder falls
+
+    # Total variance kept: priced for 9 days, read with 7 left, the vols scale by sqrt(9/7).
+    sk = yesno.smile_from_saved(sv, s0, lvl, 7 / 365)
+    assert abs(sk["vol"] / yesno.smile_from_saved(sv, s0, lvl, yrs)["vol"] - math.sqrt(9 / 7)) < 1e-6
+
+    # No saved smile (a stock nobody asked about in market hours): the old reading, not the saved one.
+    db.execute("DELETE FROM kv_cache WHERE k LIKE 'yesno:smile:%'")
+    q = yesno.quote("WINR", lvl, exp.isoformat())
+    assert "saved in the last session" not in q["odds_source"]
+    assert q_open["market_p"] > 0
+
+
 def test_research_time_blocks_flag_a_rule_carried_by_one_stretch():
     """"Does it hold every year?" (McLean & Pontiff 2016): each result is split into 4 chronological stretches cut on
     call dates. A rule whose whole lift sits in the first quarter of dates is ahead in 1 of 4 and stays out of

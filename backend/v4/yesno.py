@@ -270,24 +270,68 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     from .strategy import RISK_FREE
     if spot <= 0 or level <= 0 or years <= 0:
         return None
+    pts = _near_line(_smile_points(chain, spot, years), level)
+    if not pts:
+        return None
+    # Puts and calls only describe one smile when they agree on the stock price (put-call parity). Live Sat Nov 21,
+    # NVDA $129.17: the quotes implied ~$126.15, so put IVs read ~140% beside ~90% for calls and the "smile" was a
+    # step. No dividend allowance here (unlike quotes_out_of_step): a gap that size breaks the fit either way.
+    # The allowance is measured at the vol the quotes price at their own stock price (quotes_own_price), not at this
+    # fit's: live Sun Nov 22, NVDA Dec 4, the fit ran through puts alone, each inflated by the gap, which widened its
+    # own allowance enough to pass and read 46% above $125 with the stock at $129.17.
     fwd = spot * math.exp(RISK_FREE * years)
+    pf = parity_forward(chain, [k for k, _ in pts], years)
+    own = quotes_own_price(chain, spot, level, years, [k for k, _ in pts]) if pf else None
+    fit = _fit_line(pts, level)
+    if not fit:
+        return None
+    band_vol = own["vol"] if own and own["vol"] else fit[0]
+    if pf and band_vol > 0 and abs(pf[0] - fwd) > 0.1 * band_vol * math.sqrt(years) * spot + pf[1]:
+        return None
+    return _smile_digital(pts, spot, level, years)
+
+
+def _smile_points(chain: list[dict], spot: float, years: float, max_gap: Optional[float] = None) -> list[tuple]:
+    """(strike, implied vol) backed out of each out-of-the-money mid (puts below the forward, calls above: the liquid
+    side, the way a desk reads the smile), sorted by strike. max_gap: keep only quotes whose bid/ask gap is at most
+    that share of the mid (the saved smile keeps tight ones only)."""
+    from .strategy import RISK_FREE
+    fwd = spot * math.exp(RISK_FREE * years)
+    rows = {(r["type"], float(r["strike"])): r for r in chain}
     mids = {"call": _mids([r for r in chain if r["type"] == "call"]),
             "put": _mids([r for r in chain if r["type"] == "put"])}
-    allv = []
+    out = []
     for k in sorted(set(mids["call"]) | set(mids["put"])):
-        if abs(k - level) > SKEW_REACH * level:
-            continue
         kind = "put" if k < fwd else "call"
         m = mids[kind].get(k)
-        v = strike_vol(m, spot, k, years, kind) if m else None
+        if not m:
+            continue
+        if max_gap is not None:
+            r = rows.get((kind, k)) or {}
+            if float(r.get("ask") or 0) - float(r.get("bid") or 0) > max(0.05, max_gap * m):
+                continue
+        v = strike_vol(m, spot, k, years, kind)
         if v:
-            allv.append((k, v))
-    # Every strike within SKEW_BAND, and on a coarse grid (NVDA $5 strikes around $120) at least the two nearest on
-    # each side, out to SKEW_REACH.
+            out.append((k, v))
+    return out
+
+
+def _near_line(allv: list[tuple], level: float) -> list[tuple]:
+    """The smile points that feed the fit at one line: every strike within SKEW_BAND of it, and on a coarse grid
+    (NVDA $5 strikes around $120) at least the two nearest on each side, out to SKEW_REACH. [] with fewer than two
+    on either side."""
+    allv = [kv for kv in allv if abs(kv[0] - level) <= SKEW_REACH * level]
     lo = [kv for kv in allv if kv[0] <= level][-2:]
     hi = [kv for kv in allv if kv[0] >= level][:2]
     pts = sorted(set(kv for kv in allv if abs(kv[0] - level) <= SKEW_BAND * level) | set(lo) | set(hi))
     if sum(1 for k, _ in pts if k <= level) < 2 or sum(1 for k, _ in pts if k >= level) < 2:
+        return []
+    return pts
+
+
+def _fit_line(pts: list[tuple], level: float) -> Optional[tuple[float, float, float]]:
+    """Least-squares straight line sigma(K) through the points: (sigma at the line, slope per $1 of strike, RMS miss)."""
+    if len(pts) < 2:
         return None
     mk = sum(k for k, _ in pts) / len(pts)
     mv = sum(v for _, v in pts) / len(pts)
@@ -295,19 +339,19 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     if sxx <= 0:
         return None
     slope = sum((k - mk) * (v - mv) for k, v in pts) / sxx
-    sig = mv + slope * (level - mk)
-    # Puts and calls only describe one smile when they agree on the stock price (put-call parity). Live Sat Nov 21,
-    # NVDA $129.17: the quotes implied ~$126.15, so put IVs read ~140% beside ~90% for calls and the "smile" was a
-    # step. No dividend allowance here (unlike quotes_out_of_step): a gap that size breaks the fit either way.
-    # The allowance is measured at the vol the quotes price at their own stock price (quotes_own_price), not at this
-    # fit's: live Sun Nov 22, NVDA Dec 4, the fit ran through puts alone, each inflated by the gap, which widened its
-    # own allowance enough to pass and read 46% above $125 with the stock at $129.17.
-    pf = parity_forward(chain, [k for k, _ in pts], years)
-    own = quotes_own_price(chain, spot, level, years, [k for k, _ in pts]) if pf else None
-    band_vol = own["vol"] if own and own["vol"] else sig
-    if pf and band_vol > 0 and abs(pf[0] - fwd) > 0.1 * band_vol * math.sqrt(years) * spot + pf[1]:
-        return None
     rms = math.sqrt(sum((v - mv - slope * (k - mk)) ** 2 for k, v in pts) / len(pts))
+    return mv + slope * (level - mk), slope, rms
+
+
+def _smile_digital(pts: list[tuple], spot: float, level: float, years: float) -> Optional[dict]:
+    """P(close > L) = N(d2(sigma_L)) - exp(r T) * vega(L) * dsigma/dK from a straight line through the points. None
+    when the vols don't sit near one line (RMS miss over MAX_SMILE_MISS of the vol) or the skew term tops
+    MAX_SKEW_TERM."""
+    from .strategy import RISK_FREE
+    fit = _fit_line(pts, level)
+    if not fit:
+        return None
+    sig, slope, rms = fit
     if sig <= 0 or rms > MAX_SMILE_MISS * sig:
         return None
     sq = sig * math.sqrt(years)
@@ -319,6 +363,110 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
         return None
     return {"p": min(0.99, max(0.01, flat + term)), "flat": flat, "vol": sig, "slope": slope, "n": len(pts),
             "miss": rms}
+
+
+# ----------------------------------------------------------------------------- the smile saved in market hours
+#
+# Outside market hours the free feed's option quotes widen to junk (live Mon Nov 23, 9:10 AM ET: NVDA's Dec 4 $140
+# call quoted $14.34 / $24.36, a 52% gap; the same contract at 9:35 was $13.24 / $13.66), and the stock trades
+# pre-market while the options don't requote. A smile read off those mids at the new price gave ladders whose odds
+# rose with the line: TSLA $366.66, "above $350" 63% but "above $360" 68%; AMD $452, $460 55% and $450 57%; META
+# $579, $575 42% beside $600 40%. A desk marks overnight off the last session's smile instead, moved with the stock
+# (sticky moneyness: the vol at 2% above the price stays the vol at 2% above the price). So every open-market quote,
+# and an hourly-cron snapshot in the last hour of the session, saves the smile from tight quotes only, in strike /
+# price terms with the time it was priced for; outside market hours the odds read that saved smile at the stock's
+# last price, every line of the ladder off the same points.
+
+SMILE_TIGHT = 0.15         # quotes saved into the smile: bid/ask gap at most 15% of the mid (or 5 cents)
+SMILE_MIN_POINTS = 6
+SMILE_MAX_AGE_DAYS = 4     # Friday's smile covers the weekend (and a Monday holiday)
+
+
+def _smile_key(u: str, exp: date) -> str:
+    return f"yesno:smile:{u}:{exp.isoformat()}"
+
+
+def save_smile(u: str, exp: date, chain: list[dict], spot: float, years: float) -> bool:
+    """Keep this expiration's smile from tight quotes, as (strike / price, vol) with the years it was priced for.
+    Only when the quotes agree with the stock price (put-call parity near the money) and at least SMILE_MIN_POINTS
+    strikes are tight. True if saved."""
+    import json
+    if spot <= 0 or years <= 0:
+        return False
+    rows = [r for r in chain if r.get("expiration") in (None, exp)]
+    pts = _smile_points(rows, spot, years, max_gap=SMILE_TIGHT)
+    if len(pts) < SMILE_MIN_POINTS:
+        return False
+    own = quotes_own_price(rows, spot, spot, years)
+    if not own or own["out"] or not own["vol"]:
+        return False
+    v = {"at": datetime.now(timezone.utc).isoformat(), "spot": spot, "years": years,
+         "pts": [[round(k / spot, 6), round(iv, 5)] for k, iv in pts]}
+    try:
+        db.execute("DELETE FROM kv_cache WHERE k = ?", (_smile_key(u, exp),))
+        db.execute("INSERT INTO kv_cache (k, v, created_at) VALUES (?,?,?)", (_smile_key(u, exp), json.dumps(v), v["at"]))
+        return True
+    except Exception:
+        return False
+
+
+def saved_smile(u: str, exp: date) -> Optional[dict]:
+    """The smile save_smile kept for this expiration, if saved in the last SMILE_MAX_AGE_DAYS days."""
+    import json
+    try:
+        row = db.query_one("SELECT v FROM kv_cache WHERE k = ?", (_smile_key(u, exp),))
+        v = json.loads(row["v"]) if row else None
+        at = datetime.fromisoformat(v["at"]) if v else None
+    except Exception:
+        return None
+    if not v or not at or datetime.now(timezone.utc) - at > timedelta(days=SMILE_MAX_AGE_DAYS):
+        return None
+    return v
+
+
+def smile_from_saved(saved: dict, spot: float, level: float, years: float) -> Optional[dict]:
+    """The odds at the line off a saved smile, moved with the stock (each point keeps its strike / price ratio) and
+    keeping each strike's total variance (vol^2 x years) between the save and now, since closed-market hours carry
+    no trading risk: Friday's 13-day option at 50% is Monday's 11-day option at 54%. Same fit and guards as the
+    live smile."""
+    try:
+        ts = float(saved["years"])
+        if spot <= 0 or years <= 0 or ts <= 0:
+            return None
+        scale = math.sqrt(ts / years)
+        allv = sorted((float(m) * spot, float(v) * scale) for m, v in saved["pts"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    sk = _smile_digital(_near_line(allv, level), spot, level, years) if allv else None
+    if sk:
+        sk.update(saved_at=saved.get("at"), saved_spot=saved.get("spot"))
+    return sk
+
+
+def snapshot_smiles(tickers=None, max_exps: int = 6) -> dict:
+    """Save the smile of each big stock's nearest expirations (hourly cron, last hour of the session), so the odds
+    after the close read the closing smile even if nobody asked about that stock today."""
+    saved, skipped = 0, 0
+    for u in (tickers or BRAIN_TICKERS):
+        try:
+            e = expirations(u)
+            spot = e["spot"]
+            for x in e["expirations"][:max_exps]:
+                exp = date.fromisoformat(x)
+                chain = [r for r in _chain(u, spot, exp) if r["expiration"] == exp]
+                years = max(1, (exp - _today()).days) / 365.0
+                if save_smile(u, exp, chain, spot, years):
+                    saved += 1
+                else:
+                    skipped += 1
+        except Exception:
+            skipped += 1
+    try:
+        cut = (datetime.now(timezone.utc) - timedelta(days=SMILE_MAX_AGE_DAYS + 3)).isoformat()
+        db.execute("DELETE FROM kv_cache WHERE k LIKE 'yesno:smile:%' AND created_at < ?", (cut,))
+    except Exception:
+        pass
+    return {"saved": saved, "skipped": skipped}
 
 
 def digital_from_spread(calls: list[dict], level: float, years: float = 0.0,
@@ -725,7 +873,20 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     m_p_flat = prob_above(spot, level, years, vol)
     # The yardstick a spread's reading is checked against: the smile's own odds near the line (skew included) when
     # the quotes give a usable fit, else the one-vol answer.
-    sk = skew_odds(chain, spot, level, years)
+    try:
+        closed = not market.is_open()
+    except Exception:
+        closed = False
+    # Outside market hours: the smile saved in the last session, moved with the stock (see save_smile). In market
+    # hours: the live smile, and this expiration's smile is saved for after the close.
+    sk = None
+    if closed:
+        sv = saved_smile(u, exp)
+        sk = smile_from_saved(sv, spot, level, years) if sv else None
+    elif vol_source == "market":
+        save_smile(u, exp, chain, spot, years)
+    from_saved = bool(sk)
+    sk = sk or skew_odds(chain, spot, level, years)
     ref = sk["p"] if sk else m_p_flat
     why: list = []
     dig = digital_from_spread([r for r in chain if r["type"] == "call"], level, years, why=why)
@@ -734,10 +895,6 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # pair, and read the odds off it. (With skew in the yardstick, a noisy $694/$696 reading of 64% sat within 10
     # points of the smile's 60%, so "far off" alone no longer caught it.)
     # Outside market hours the smile sets the odds anyway (below), so the trade keeps its narrow pair.
-    try:
-        closed = not market.is_open()
-    except Exception:
-        closed = False
     noise = spread_noise([r for r in chain if r["type"] == "call"], k1, k2)
     if not (closed and sk) and ("inverted" in why or (dig and (abs(dig[0] - ref) > 0.10
                                                              or (noise is not None and noise > MAX_NOISE)))):
@@ -786,9 +943,15 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # and a weekend reading of one spread drifts a few points with its quote noise (live Sat Nov 21, SPY Nov 27:
     # $690 read 69.7% from $687/$693 but $692 read 58.7% from $685/$699, the smile 65% and 63%).
     spread_ok = bool(dig) and not stale and not wide
-    smile = bool(sk) and not off_step and not split and (closed or not spread_ok)
+    # The saved smile doesn't read tonight's quotes at all, so their being out of step doesn't matter to it.
+    smile = bool(sk) and (from_saved or (not off_step and not split and (closed or not spread_ok)))
     if spread_ok and not smile:
         m_p, odds_source = dig[0], odds_label(dig[3], level)
+    elif smile and from_saved:
+        m_p, odds_source = sk["p"], (f"the option smile saved in the last session ({_when(sk.get('saved_at'))}, "
+                                     f"{u} at ${float(sk.get('saved_spot') or spot):,.2f}), moved with {u} to its last "
+                                     f"price ${spot:,.2f} (skew included; the market is closed and overnight option "
+                                     f"quotes are too wide to read)")
     elif smile:
         why_not = ("the market is closed, and one spread's last quotes can blur its odds a few points" if closed
                    else "the spread quotes looked out of step" if stale
@@ -882,6 +1045,16 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
             "listed": listed_costs(chain, k1, k2, exp, sides),
             "spread_note": spread_note(u, k1, k2, width, level),
             "move": dict(move, lines=move_text(u, move, exp, isinstance(info, dict) and bool(info.get("is_etf")))) if move else None}
+
+
+def _when(at: Optional[str]) -> str:
+    """'Fri 3:13 PM ET' for a saved timestamp (New York time)."""
+    try:
+        d = datetime.fromisoformat(str(at))
+        d = d.astimezone(market.NY) if market.NY else d - timedelta(hours=5)
+        return f"{d.strftime('%a')} {d.strftime('%I:%M %p').lstrip('0')} ET"
+    except Exception:
+        return "earlier"
 
 
 def listed_costs(chain: list[dict], k1: float, k2: float, exp: date, sides: dict) -> Optional[dict]:
@@ -1265,6 +1438,13 @@ def daily() -> dict:
         out["learn"] = f"failed: {e}"
     now = market.now_ny()
     day = now.date().isoformat()
+    # Last hour of the session: save the big stocks' smiles, so after-hours odds read the closing smile.
+    if now.weekday() < 5 and (15, 0) <= (now.hour, now.minute) < (16, 0):
+        try:
+            if market.is_open():
+                out["smiles"] = snapshot_smiles()
+        except Exception as e:
+            out["smiles"] = f"failed: {e}"
     if now.weekday() >= 5 or not ((10, 0) <= (now.hour, now.minute) < (15, 30)):
         out["seed"] = "outside market hours"
         return out

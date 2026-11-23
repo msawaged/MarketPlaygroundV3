@@ -1,12 +1,22 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T12:00:00Z",
- "last_run": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Fixed: the plays now always side with the story.",
- "working_on": "Handed promo v6 to the Reel agent.",
- "next": "With live quotes: Close Call and Price Check.",
+ "updated_at": "2026-11-23T15:10:00Z",
+ "last_run": "Close Call gave odds that went up as the line went up when the market was closed. Before Monday's open, TSLA at $366.66 said 63% to close above $350 but 68% above $360; AMD and META had the same problem. Overnight, the free feed's option quotes get very wide (one NVDA option was quoted at $14.34 to buy back and $24.36 to buy, against $13.24 / $13.66 once the market opened), and stocks move before the open while options don't update, so the app was reading odds out of noise. Fixed: after-hours odds now come from prices saved while the market was open.",
+ "working_on": "Nothing open.",
+ "next": "After tonight's close: check Close Call ladders on the live site read the saved prices and fall line by line.",
  "needs_from_murad": [],
- "read_up_to": 0,
+ "read_up_to": 1,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "at": "2026-11-23T15:10:00Z",
+   "body": "Close Call gave odds that went up as the line went up when the market was closed. Before Monday's open, TSLA at $366.66 said 63% to close above $350 but 68% above $360; AMD and META had the same problem. Overnight, the free feed's option quotes get very wide (one NVDA option was quoted at $14.34 to buy back and $24.36 to buy, against $13.24 / $13.66 once the market opened), and stocks move before the open while options don't update, so the app was reading odds out of noise. Now, during market hours, the app saves each date's option prices from tight quotes only, plus a snapshot of the 15 big stocks in the last hour of trading. When the market is closed, the odds come from that saved set, moved with the stock's latest price, and the screen says so (e.g. 'saved in the last session, Fri 3:13 PM ET'). Every line now comes from the same numbers, so the odds fall as the line rises. Market-hours odds are unchanged. Practice money only; grading unchanged."
+  },
+  {
+   "re": "Let's start thinking of making this a mobile app vs online app",
+   "at": "2026-11-23T15:10:00Z",
+   "body": "The Chair has answered this with the options. From the build side: the site already works at phone size, so an installable home-screen app (PWA) is the smallest first step whenever you want it. Just say the word and I'll build it."
+  },
   {
    "re": "Better reel: more production value and value add (live chat)",
    "at": "2026-11-23T12:00:00Z",
@@ -46,16 +56,6 @@
    "re": "(no new messages)",
    "at": "2026-11-22T20:30:00Z",
    "body": "Research now tries 'many weak signals, one vote'. Several of our ways to pick the #1 each carry a little real information, but we only ever judged them one at a time, and the leader keeps changing. Now, for each test period, the research takes the ways that had a clear lead (t 2 or more) on calls made at least 90 days earlier, up to 8, drops near-copies, and gives each one an equal vote with no fitted weights. It's scored on the same test calls as everything else and counts as one more try for the luck bar. The Brain page says how it compares with the typical and the best single way, and which ways it kept most often. If it beats them all, that's evidence the brain should combine ways rather than pick one. Reporting only: today's #1, the gates and grading are unchanged. Numbers appear after the next research run. First live run (20:36 UTC, 2,703 test calls): the average beats our other ideas by +0.6 pts (t 1.0 counting overlap honestly), ahead in 3 of 4 stretches, better than 21 of 34 single ways but well short of the best (negative coskewness, t 3.1). It mostly kept momentum-style ways, so for now combining doesn't add an edge of its own."
-  },
-  {
-   "re": "Search feature (via chair)",
-   "at": "2026-11-22T17:10:00Z",
-   "body": "Search is on the News page. Type a company (\"nvidia\"), a ticker (NVDA or $nvda) or a topic (\"oil\", \"chips\"). A company shows its price and today's move, its latest headlines, and buttons for Close Call and making a call on it; below that, every story we picked in the past 7 days that moves it or mentions it. A topic shows the matching stories. Nothing found says so and offers to ask about it in chat. The app starts keeping a week of stories from this deploy, so for the first few days search covers fewer stories. No AI cost per search."
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Close Call fix: 'Will NVDA close above $125 on Dec 4?' read 46% with NVDA at $129.17, $4 above the line, and the nearby lines jumped around (56% at $124, 42% at $126). The weekend option quotes were set while NVDA traded near $125.80, so measured against $129.17 every put looked expensive and every call cheap, and the safety check that should have caught that measured its allowance with the puts' inflated volatility, so it let the quotes through. Now the app reads the volatility at the price the quotes were set at (where calls and puts agree, about 103% instead of the feed's 122%), uses it for the odds at today's price, and says the quotes were set as if NVDA were near $125.78. On this weekend's quotes: $124 55%, $125 54%, $126 52%, $128 49%, $130 45%. SPY, whose quotes fit its price, is unchanged. Practice money only; grading unchanged.",
-   "at": "2026-11-22T14:30:00Z"
   }
  ]
 }
