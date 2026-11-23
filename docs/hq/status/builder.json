@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T17:30:00Z",
- "last_run": "Search polish, part 1 (the Chair's ask). I tried 12 searches on the live site. Typos found nothing at all: 'nvdia' and 'teslla' showed an empty page that offered to spend an AI story on the misspelling. Now, when a search finds nothing, it tries the likely spelling and says so: 'Nothing found for “nvdia”, so showing results for “nvidia”', with a 'Search “nvdia” as typed' link. It only fixes words it doesn't know that sit very close to a company name or a word in this week's stories, so real words with no story (like 'uranium') are left alone. Also, 'costco earnings' now shows the Costco card and headlines like 'costco' does. Searches still take about half a second.",
+ "updated_at": "2026-11-23T19:20:00Z",
+ "last_run": "Promo v7 made and sent to you (34s). It opens on four real searches: a word (lithium), a question (why is nvidia up?), a company (Costco), a ticker (TSLA). Then a typo gets fixed, the AI story, who it moves, practice money, and the scorecard. While making it I found questions didn't work in search ('why is nvidia up' found nothing). Fixed: a question now searches its subject, and a company name or capitalised ticker anywhere in a sentence brings up that company.",
  "working_on": "Nothing open.",
- "next": "More search polish if Murad says what feels rough; otherwise check after tonight's close that Close Call ladders fall line by line.",
+ "next": "Promo v7 tweaks if you want any.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "Make a reel of the new search feature (live chat)",
+   "body": "Promo v7 made and sent to you (34s). It opens on four real searches: a word (lithium), a question (why is nvidia up?), a company (Costco), a ticker (TSLA). Then a typo gets fixed, the AI story, who it moves, practice money, and the scorecard. While making it I found questions didn't work in search ('why is nvidia up' found nothing). Fixed: a question now searches its subject, and a company name or capitalised ticker anywhere in a sentence brings up that company.",
+   "at": "2026-11-23T19:20:00Z"
+  },
   {
    "re": "Polish search (via chair)",
    "body": "Search polish, part 1 (the Chair's ask). I tried 12 searches on the live site. Typos found nothing at all: 'nvdia' and 'teslla' showed an empty page that offered to spend an AI story on the misspelling. Now, when a search finds nothing, it tries the likely spelling and says so: 'Nothing found for “nvdia”, so showing results for “nvidia”', with a 'Search “nvdia” as typed' link. It only fixes words it doesn't know that sit very close to a company name or a word in this week's stories, so real words with no story (like 'uranium') are left alone. Also, 'costco earnings' now shows the Costco card and headlines like 'costco' does. Searches still take about half a second.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "The Brain page's luck check was seven dense paragraphs, a wall on a phone. It now opens with 'At a glance': one line per check with a tick, a cross or a '~', all about the same honest version of our #1 (rebuilt without the look-ahead peek), and a one-line verdict. Today it reads: ahead of our other ideas by +0.5 pts on 2,703 test calls, but not clear of luck (t 1.7, and 1.0 counting overlapping calls, against a bar of 3.3); partly carried by a few huge calls; ahead in 3 of 4 stretches but behind in the latest; the 7-day real-time results are too early. The full paragraphs are one tap away under 'How each check works'. One thing the paragraphs hid: 'the lead is broad, not a few lucky calls' was true of the stored #1 (its 10 best calls are 27% of its lead), but without the peek its 10 best calls are 73% of a smaller lead. The page now says both. No numbers, gates or grading changed.",
    "at": "2026-11-23T02:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Agent HQ is easier to use from your phone. There's a 'Write to the team' button at the top that jumps to the message box (it was below 12 to-do items, 9 agent cards and the whole thread). 'Needs you' shows the newest 4 with 'Show all'. Replies no longer say 're #(no new messages)': a routine report says 'update', and an answer to one of your messages quotes the start of what you wrote. I also fixed the thread dropping an agent's newest replies once it had more than 10. Nothing you've sent through HQ has arrived yet (the table is empty); sending works when I test it, so a short hello there will reach everyone.",
-   "at": "2026-11-22T23:10:00Z"
   }
  ]
 }
