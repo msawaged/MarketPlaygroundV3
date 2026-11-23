@@ -33,6 +33,19 @@
   .ring { position: absolute; border: 7px solid #facc15; border-radius: 26px; box-shadow: 0 0 34px rgba(250, 204, 21, .65), inset 0 0 22px rgba(250, 204, 21, .25); }
   .tap { position: absolute; border-radius: 50%; }
   #flash { position: absolute; inset: 0; background: #bfdbfe; opacity: 0; pointer-events: none; }
+  #gfx { position: absolute; left: 80px; right: 80px; top: 540px; bottom: 140px; display: flex; flex-direction: column; justify-content: center; gap: 44px; opacity: 0; }
+  #gfx .st { display: flex; align-items: center; gap: 38px; padding: 50px 44px; border-radius: 40px; background: rgba(15, 23, 42, .85);
+    border: 2px solid #334155; box-shadow: 0 30px 90px rgba(2, 6, 23, .6); }
+  #gfx .st.hot { border: 4px solid #60a5fa; background: linear-gradient(160deg, rgba(37, 99, 235, .35), rgba(15, 23, 42, .9));
+    box-shadow: 0 0 0 1px #93c5fd55, 0 30px 120px rgba(37, 99, 235, .55); }
+  #gfx .n { flex: none; width: 112px; height: 112px; border-radius: 32px; display: grid; place-items: center; background: #1e293b; }
+  #gfx .hot .n { background: #2563eb; }
+  #gfx .n svg { width: 60px; height: 60px; }
+  #gfx .t { font-size: 56px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+  #gfx .d { margin-top: 12px; font-size: 38px; font-weight: 500; color: #94a3b8; line-height: 1.25; }
+  #gfx .hot .d { color: #dbeafe; }
+  #gfx .chip { align-self: center; margin-top: 16px; padding: 22px 46px; border-radius: 999px; font-size: 42px; font-weight: 800;
+    background: #facc15; color: #0b1220; box-shadow: 0 20px 70px rgba(250, 204, 21, .35); }
   #end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
   #end .icon { width: 230px; height: 230px; border-radius: 58px; box-shadow: 0 30px 120px rgba(37, 99, 235, .6); }
   #end .wm { margin-top: 54px; font-weight: 800; font-size: 84px; letter-spacing: -2px; }
@@ -53,13 +66,22 @@
   <div>Market<span class="p">Playground</span></div></div>
 <div id="cap"><div id="big"></div><div id="small"></div></div>
 <div id="clip"><div id="cam"><div id="phone"><div id="screen"><div id="inner"><img id="shot"><div id="marks"></div></div></div></div></div></div>
+<div id="gfx">
+  <div class="st"><div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    <div><div class="t">Search any news</div><div class="d">AI turns the headlines into a story</div></div></div>
+  <div class="st"><div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 4 7-8"/><path d="M15 8h5v5"/></svg></div>
+    <div><div class="t">Decide with the brain</div><div class="d">Ideas graded vs the S&amp;P 500</div></div></div>
+  <div class="st hot"><div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M17 7.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2 2.6 5 3.3 5 1.5 5 3.4-2.2 3.3-5 3.3-5-1.3-5-3.3"/></svg></div>
+    <div><div class="t">Trade it right here</div><div class="d">Open your account in the app and invest real money</div></div></div>
+  <div class="chip">Real-money trading · coming soon</div>
+</div>
 <div id="end">
   <svg class="icon" viewBox="0 0 120 120"><rect width="120" height="120" rx="30" fill="#fff"/><path d="M26 92V30l46 42.5L94 30v62" fill="none" stroke="#2563eb" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="72.5" r="15" fill="#2563eb"/></svg>
   <div class="wm">Market<span>Playground</span></div>
   <div class="soon">Coming soon</div>
   <div class="real" id="real"></div>
   <div class="follow">Follow for launch day</div>
-  <div class="pts"><div class="pt">Find the hidden play</div><div class="pt">Learn in 30 seconds</div><div class="pt">Practice money</div><div class="pt">The market keeps score</div></div>
+  <div class="pts" id="pts"><div class="pt">Find the hidden play</div><div class="pt">Learn in 30 seconds</div><div class="pt">Practice money</div><div class="pt">The market keeps score</div></div>
   <div class="legal">Practice money only. Not investment advice.</div>
 </div>
 <div id="flash"></div>
@@ -76,6 +98,7 @@
   window.setup = (s, capDir) => {
     scenes = s; window.capDir = capDir;
     const end = s.find((x) => x.end); // optional extra end-card line, **bold** = gradient
+    if (end && end.points) $('pts').innerHTML = end.points.map((p) => `<div class="pt">${p}</div>`).join('');
     if (end && end.legal) document.querySelector('#end .legal').textContent = end.legal;
     $('real').innerHTML = (end && end.real ? end.real : '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   };
@@ -109,9 +132,19 @@
     const sk = clamp((Lc - 0.45) / 0.3);
     $('small').style.opacity = sk * out; $('small').style.transform = `translateY(${(1 - outCubic(sk)) * 20}px)`;
     // end card
+    // graphic scene (no footage): the phone fades out and the three steps pop in one by one
+    const isGfx = !!sc.graphic;
+    const gk = isGfx ? clamp(L / 0.3) * clamp(left / 0.25) : 0;
+    $('gfx').style.opacity = gk;
+    if (isGfx) {
+      [...$('gfx').children].forEach((el, i) => {
+        const k = clamp((L - 0.15 - i * 0.45) / 0.4);
+        el.style.opacity = k; el.style.transform = `translateY(${(1 - outCubic(k)) * 60}px) scale(${0.85 + 0.15 * outBack(k)})`;
+      });
+    }
     const isEnd = !!sc.end;
     const ek = isEnd ? clamp(L / 0.35) : 0;
-    $('end').style.opacity = ek; $('cap').style.opacity = isEnd ? 1 - ek : 1; $('clip').style.opacity = isEnd ? 1 - ek : 1;
+    $('end').style.opacity = ek; $('cap').style.opacity = isEnd ? 1 - ek : 1; $('clip').style.opacity = isEnd ? 1 - ek : isGfx ? 1 - clamp(L / 0.3) : 1;
     $('head').style.opacity = isEnd ? 1 - ek : 1;
     if (isEnd) {
       const items = [...$('end').children];
@@ -133,8 +166,9 @@
       // camera: the whole phone grows (zoom) but its top edge always stays below the caption, so the caption never
       // covers it; to reach a spot lower on the page, the page inside the screen moves up instead (like a scroll)
       const punch = 1 + 0.035 * clamp(1 - (f.shotAge ?? 1) / 0.22) * (f.local > 0.01 || f.scene > 0 ? 1 : 0);
-      const z = Math.min(1.66, f.cam.z) * punch;
-      const top = 556 - (z - 1) * 40;
+      // full: the whole phone, bottom tab bar included, in shot in every frame (no zoom, no punch)
+      const z = f.cam.full ? 0.97 : Math.min(1.66, f.cam.z) * punch;
+      const top = f.cam.full ? 545 : 556 - (z - 1) * 40;
       $('cam').style.transform = `translate(${540 - z * 540}px, ${top - z * 556}px) scale(${z})`;
       const vis = Math.min(844, (1920 - (top + 18 * z)) / (K * z)); // phone px of the page in view
       const sy = clamp(f.cam.fy - vis * 0.5, 0, 844 - vis);

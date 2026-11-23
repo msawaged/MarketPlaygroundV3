@@ -75,6 +75,7 @@ const plans = {
     },
     who: { shots: [[card(5) + 0.1, card(5) + 2.6], [card(6) + 0.1, card(6) + 2.4]], cam: [[0, 1.0, 195, 422], [0.5, 1.12, 195, 420], [0.5001, 1.0, 195, 422], [1, 1.12, 195, 470]] },
     practice: plan.practice,
+    trade: { shots: [] },
     score: plan.score,
     end: { shots: [] },
   },
@@ -126,6 +127,7 @@ cfg.scenes.forEach((sc, i) => {
       }
       fr.taps = marks.taps.filter((tp) => src >= tp.t && src - tp.t < 0.55 && tp.t >= a).map((tp) => ({ x: tp.x, y: tp.y, age: +(src - tp.t).toFixed(3) }));
     }
+    if (cfg.fullPhone && fr.cam) fr.cam = { z: 1, fx: 195, fy: 0, full: true };
     out.push(fr);
   }
   for (const tp of marks.taps) for (const [si, [a, b]] of p.shots.entries()) {

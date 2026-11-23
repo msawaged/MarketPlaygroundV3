@@ -1,8 +1,16 @@
 {
- "title": "MarketPlayground promo v7: search that gets you",
+ "title": "MarketPlayground promo v7: search, decide, trade",
  "search": "lithium",
  "typed": "lithum",
  "plan": "typo",
+ "fullPhone": true,
+ "signedIn": true,
+ "montage": [
+  "lithium",
+  "why is nvidia up?",
+  "Costco",
+  "TSLA"
+ ],
  "voice": "af_heart",
  "scenes": [
   {
@@ -14,14 +22,14 @@
   },
   {
    "id": "typo",
-   "line": "Even with a typo. Type lithum, and it knows you meant lithium.",
+   "line": "Even with a typo, it knows what you meant.",
    "big": "Typos? Handled.",
    "accent": "Handled",
    "small": "“lithum” → lithium"
   },
   {
    "id": "make",
-   "line": "One tap, and the A.I. writes you a thirty second story, built from real headlines.",
+   "line": "One tap, and the A.I. turns real headlines into a thirty second story.",
    "big": "One tap. Your story.",
    "accent": "One",
    "small": "AI-written from real headlines"
@@ -35,37 +43,45 @@
   },
   {
    "id": "who",
-   "line": "Who it moves, and every source, so you can check it yourself.",
+   "line": "See exactly who it moves, with every source.",
    "big": "Who it moves",
    "accent": "moves",
    "small": "Every source shown. Check it yourself."
   },
   {
    "id": "practice",
-   "line": "Then ways to play it, with practice money. No real money at risk.",
-   "big": "Practice money. Zero risk.",
-   "accent": "Zero",
+   "line": "Then MarketPlayground shows you ways to play it.",
+   "big": "Ways to play it",
+   "accent": "play",
    "small": "Stocks, funds, even options"
   },
   {
    "id": "score",
-   "line": "And every idea is graded against the S and P 500, right out in the open.",
+   "line": "And every idea is graded against the S and P 500, in the open, so you know what to trust.",
    "big": "The market keeps score",
    "accent": "score",
    "small": "Every idea graded vs the S&P 500, in the open"
   },
   {
+   "id": "trade",
+   "graphic": true,
+   "line": "Soon, you'll trade it for real, right here. Open your account in the app, and invest real money in a few taps.",
+   "big": "Then trade it here",
+   "accent": "here",
+   "small": "Search, decide and invest in one app"
+  },
+  {
    "id": "end",
-   "line": "MarketPlayground. Practice now. Soon, connect your own brokerage and use every tool in the app with real money. Follow for launch day.",
+   "line": "MarketPlayground. Research it, decide, and trade it, all in one app. Follow for launch day.",
    "end": true,
-   "real": "Practice now. Soon: **connect your brokerage** and trade for real with every tool in the app.",
-   "legal": "Not investment advice. Real-money trading isn't live yet."
+   "real": "Research it. Decide. <b>Trade it right here.</b>",
+   "legal": "Not investment advice. Real-money trading isn't live yet.",
+   "points": [
+    "Search anything",
+    "AI stories in 30 seconds",
+    "Ideas graded vs the S&amp;P 500",
+    "Trade right in the app"
+   ]
   }
- ],
- "montage": [
-  "lithium",
-  "why is nvidia up?",
-  "Costco",
-  "TSLA"
  ]
 }

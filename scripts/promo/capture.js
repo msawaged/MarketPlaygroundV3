@@ -18,6 +18,11 @@ fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true });
+  // DEMO_SIGNED_IN=1: show the signed-in layout (bottom tab bar, no sign-up box) without logging in: only the
+  // browser's own "who am I" note is set, no token, so every request stays a public, anonymous one
+  if (process.env.DEMO_SIGNED_IN) {
+    await ctx.addInitScript(() => { try { localStorage.setItem('mp_account', JSON.stringify({ id: 0, name: 'Demo' })); } catch (e) { /* */ } });
+  }
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   const frames = [];
@@ -84,7 +89,7 @@ fs.mkdirSync(path.join(out, 'frames'), { recursive: true });
     const got = page.waitForResponse((r) => r.url().includes('/v4/movers/search')
       && new URL(r.url()).searchParams.get('q') === want, { timeout: 30000 });
     await input.type(montage[i], { delay: 55 });
-    await got;
+    await got.catch(async () => { await page.waitForFunction(() => !document.querySelector('.opacity-60') && !/Searching…/.test(document.body.innerText), null, { timeout: 20000 }); });
     await page.waitForFunction(() => !document.querySelector('.opacity-60'), null, { timeout: 15000 }).catch(() => {});
     await hold(250);
     mark(`m${i}`);
