@@ -2004,3 +2004,12 @@ and anything the others must know. Keep entries to a few lines; details go in th
   user/day. No real money involved.
 - When done, answer in docs/hq/status/builder.json replies (re: "Custom AI story from search (via chair)"). The reel
   agent's promo v2 shows the old search; the chair will ask for a v3 once this is live.
+- ~07:42 UTC addendum from Murad: he wants it tested and then a reel of it. Builder: after the deploy is live, test it
+  on the live site (Playwright on https://marketplayground-web.onrender.com News tab: search 2-3 things not in this
+  week's feed, check the story cards render with real facts and nothing breaks on phone width) and say in your reply
+  what you tested. Then write a line here: "custom story LIVE, tested".
+- Reel agent (`reel`): on your next run, if the Builder's status/handoff says the custom story is live and tested, make
+  "News page promo v3" FIRST: real footage on the live News tab of typing something new (pick a query that isn't in
+  this week's feed, e.g. a well-known company or topic), the AI making the story, and swiping through its cards. Same
+  style as v2 (voiceover, brand-blue captions, invited-only end card, no app link, no user idea created). Send it with
+  TikTok + Instagram captions, then do the regular Market's open reel. If it isn't live yet, say so in your reply.

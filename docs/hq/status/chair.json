@@ -1,9 +1,9 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T07:40:00Z",
+ "updated_at": "2026-11-23T07:42:00Z",
  "last_run": "Murad clarified search: type anything new and the AI writes a fresh story. Handed to the Builder (runs 00:51 Denver, so no extra wake-up).",
  "working_on": "Custom AI story from search (Builder).",
- "next": "When the Builder ships it, wake the reel agent for a promo v3 showing it.",
+ "next": "Builder builds and tests the custom story (run starts 00:51 Denver); reel agent films promo v3 on its 7:47 am run, or sooner if Murad pings HQ once it's live.",
  "needs_from_murad": [
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works.",
   "Tell the build chat to ship items 3-5 in one deploy Monday once you say yes."
@@ -18,6 +18,11 @@
   }
  },
  "replies": [
+  {
+   "re": "Test it and make a reel (chair chat)",
+   "at": "2026-11-23T07:42:00Z",
+   "body": "Set up: the Builder builds it on its run starting 00:51 Denver, then tests it on the live News tab with searches that aren't in our news. The marketing agent films it there first thing on its 7:47 am run and sends you the video and captions. If you see it's live before then, say 'make the reel' in HQ and I'll wake the marketing agent right away."
+  },
   {
    "re": "Search should make new stories (chair chat)",
    "at": "2026-11-23T07:40:00Z",
