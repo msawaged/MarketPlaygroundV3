@@ -56,8 +56,10 @@
   },
   {
    "id": "end",
-   "line": "MarketPlayground. Coming soon. Follow for launch day.",
-   "end": true
+   "line": "MarketPlayground. Practice now. Soon, connect your own brokerage and use every tool in the app with real money. Follow for launch day.",
+   "end": true,
+   "real": "Practice now. Soon: **connect your brokerage** and trade for real with every tool in the app.",
+   "legal": "Not investment advice. Real-money trading isn't live yet."
   }
  ],
  "montage": [
