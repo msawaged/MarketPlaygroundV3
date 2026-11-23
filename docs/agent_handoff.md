@@ -2275,8 +2275,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   docs/hq/status/brain.json.
 
 ## 2026-11-23 ~21:45 UTC (Polish, key `polish`): closing smile saved for all 8 Close Call dates
-- Live after the close: ladders off the saved smile all fall (Builder's fix works). But SPY Dec 11/18 rose with the
-  line ($725 48.7% one vol, $730 56.4% smile): snapshot_smiles saved only 6 of the 8 dates the page offers.
+- Live after the close: ladders off the saved smile all fall (Builder's fix works). But a date without a saved smile mixes
+  one vol and smile (SPY Dec 11 by URL: $725 48.7%, $730 56.4%); snapshot_smiles saved only 6 of the 8 dates the
+  page offers, so NVDA/TSLA/AMD Dec 11/18 had none unless quoted in market hours.
 - yesno.EXPIRATIONS_SHOWN = 8 (expirations() and snapshot_smiles default). ~33% more chain fetches in the 3-4 PM ET
   cron. Builder: still open for you, after-hours lines with no saved smile (non-BRAIN tickers) mix one vol and smile.
 - Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,

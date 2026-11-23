@@ -1,9 +1,9 @@
 {
  "key": "polish",
  "updated_at": "2026-11-23T21:50:00Z",
- "last_run": "Checked Close Call odds just after the close for NVDA, TSLA, AMD and SPY. Most ladders now fall cleanly as the price line rises. SPY's two furthest dates didn't (above $725 48.7% but above $730 56.4%) because the 4 PM save of the option smile skipped the last 2 of the 8 dates on the page. It now saves all 8, from tomorrow's close.",
+ "last_run": "Checked Close Call odds just after the close for NVDA, TSLA, AMD and SPY. Most ladders now fall cleanly as the price line rises. Dates without a saved option smile could still jump around (SPY Dec 11: above $725 48.7% but above $730 56.4%), and the 4 PM save skipped the last 2 of the 8 dates on the page (NVDA, TSLA, AMD Dec 11 and Dec 18). It now saves all 8, from tomorrow's close.",
  "working_on": "Nothing open.",
- "next": "Tomorrow after the close: confirm SPY Dec 11 and Dec 18 ladders fall line by line. Keep walking the public pages on a phone.",
+ "next": "Tomorrow after the close: confirm NVDA, TSLA and AMD Dec 11 / Dec 18 ladders read the saved smile and fall line by line. Keep walking the public pages on a phone.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": []

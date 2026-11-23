@@ -1885,9 +1885,11 @@ Found:
 - Every ladder read off a saved smile now falls line by line (NVDA, TSLA, AMD all dates; SPY Nov 27 / Dec 4). YES
   costs and breakevens add up (NVDA Dec 4 $165: $261.89 for $500 = 52.4%, breakeven $162.50 + $2.62 = $165.12).
 - SPY Dec 11 and Dec 18 rose with the line: Dec 11 "above $725" 48.7% (one vol) beside "above $730" 56.4% (smile);
-  Dec 18 $730 43.5% beside $735 52.6%. Those two are the 7th and 8th dates the page offers, but the last-hour cron
-  (snapshot_smiles) saved only the first 6, so after the close they read the session's raw quotes; lines whose fit
-  failed fell back to one vol. NVDA/TSLA Dec 11 also read raw quotes (in order today by luck).
+  Dec 18 $730 43.5% beside $735 52.6%: no saved smile, so the session's raw quotes, and lines whose fit failed fell
+  back to one vol. (Correction after pushing: SPY lists daily dates, so its 8 on the page end Dec 4; Dec 11/18 are
+  only reachable by URL.) The real gap: for NVDA, TSLA, AMD, Dec 11 and Dec 18 ARE the 7th and 8th dates on the page,
+  and the last-hour cron (snapshot_smiles) saved only the first 6, so NVDA/TSLA Dec 11 read raw quotes after the
+  close (NVDA off 3 options), in order today by luck; the same mix as SPY's can show there.
 
 Changed (backend only):
 - yesno.EXPIRATIONS_SHOWN = 8, used by expirations() and as snapshot_smiles' default, so every date on the page gets
