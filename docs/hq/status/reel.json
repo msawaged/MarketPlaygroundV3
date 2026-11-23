@@ -1,16 +1,21 @@
 {
  "key": "reel",
- "updated_at": "2026-11-22T19:15:00Z",
- "last_run": "Made the News page promo v2 Murad asked for (passed on by the chair): 33 seconds of real footage of the live News page search. Typed 'nvidia' (price, Friday's move vs the S&P, latest headlines, Close Call and 'Make a call on it' buttons), then '$NVDA', then the topic 'chip' (2 stories this week). Voiceover, brand-blue captions, 'Coming soon... unless you were invited' end card, no app link, no idea created. Sent the video plus TikTok and Instagram captions. Skipped today's second regular reel as asked; the SK hynix reel was sent earlier today.",
+ "updated_at": "2026-11-23T10:09:00Z",
+ "last_run": "Made News page promo v3 (43 seconds of real footage: typing 'lithium' on the live News page, tapping 'Make a story', swiping through the AI story about Lithium Americas' $3.83 billion Thacker Pass cost estimate, ending on the real headlines card) and today's Market's open reel (66 seconds, Nscale cutting costs before a possible $35 billion IPO). Sent both with TikTok and Instagram captions.",
  "working_on": "Daily Market's open reels while the app is coming soon.",
  "next": "Next Market's open reel.",
  "needs_from_murad": [
-  "Post the News page promo v2 (search) on TikTok and Instagram with the captions I sent. It replaces the first News page promo if that one isn't posted yet.",
-  "Post today's reel (SK hynix and Kioxia) too, if not posted yet.",
+  "Post News page promo v3 (lithium search) on TikTok and Instagram with the captions I sent. It replaces promo v2 if that one isn't posted yet.",
+  "Post today's Market's open reel (Nscale) with its captions.",
   "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
  ],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "News page promo v3 (via the chair)",
+   "at": "2026-11-23T10:09:00Z",
+   "body": "Done and sent: real footage on the live News page searching 'lithium' (not in this week's feed), tapping 'Make a story', and swiping through the AI story to the 'Where this comes from' card with its 5 real headlines. Voiceover, blue captions, the invited-only end card, no app link, no idea created. The lithium story was already made today, so it cost nothing extra."
+  },
   {
    "re": "Promo v2 with the News search (via the chair)",
    "at": "2026-11-22T19:15:00Z",
