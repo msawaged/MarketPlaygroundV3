@@ -6753,3 +6753,59 @@ def test_custom_story_times_the_move_from_its_oldest_headline(monkeypatch):
     assert customstory._priced({"item": item})["item"]["companies"][0]["move_timing"] == "before"
     item["sources"] = []  # no sources: the story's own time, as before
     assert customstory._priced({"item": item})["item"]["companies"][0]["move_timing"] == "before"
+
+
+def test_yesno_smile_ladder_falls_on_a_thin_chain(monkeypatch):
+    """Live Mon Nov 23, AMD at ~$447 (far, thin chains on $5-$10 strikes): each line's straight-line smile fit is good
+    locally, but a fit through 3 points beside one through 5 read 63.7% above $410 and 63.8% above $420 (Dec 18), and
+    31.1% above $480 but 35.5% above $490 (Dec 11). Now the smile is read off one curve per expiration that never
+    rises with the strike (ordered_digital), and YES still costs about the odds shown."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    # The ordered curve never rises with the strike, and pools by weight.
+    assert yesno._decreasing([[1, 0.6, 1], [2, 0.62, 3], [3, 0.4, 1]]) == [(1, pytest.approx(0.615)),
+                                                                          (2, pytest.approx(0.615)), (3, 0.4)]
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=25)
+    yrs = 25 / 365
+    bump = [0.0, 0.03, -0.025, 0.02, 0.035, -0.03, 0.015, -0.02, 0.03, 0.0, -0.025, 0.02]   # thin quotes: lumpy vols
+    grid = sorted({round(spot * (0.8 + 0.025 * i), 1) for i in range(17)})
+    iv = {k: 0.55 - 0.4 * (k / spot - 1) + bump[i % len(bump)] for i, k in enumerate(grid)}
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in grid:
+            for t in ("call", "put"):
+                m = bs_price(spot, k, yrs, iv[k], t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": k, "expiration": exp,
+                            "bid": round(max(0.0, m * 0.97), 2), "ask": round(m * 1.03, 2), "iv": iv[k]})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    allv = yesno._smile_points(chain("WINR", spot, exp), spot, yrs)
+    lines = sorted(grid[3:14] + [(grid[i] + grid[i + 1]) / 2 for i in (5, 8, 11)])   # on strikes and between them
+    lines = [k for k in lines if yesno._smile_digital(yesno._near_line(allv, k), spot, k, yrs)]
+    assert len(lines) >= 10
+    local = [yesno._smile_digital(yesno._near_line(allv, k), spot, k, yrs)["p"] for k in lines]
+    assert any(a < b for a, b in zip(local, local[1:]))            # line-by-line fits alone rise somewhere
+    ordered = [yesno.ordered_digital(allv, spot, k, yrs)["p"] for k in lines]
+    assert all(a >= b for a, b in zip(ordered, ordered[1:]))
+    # A smoothing, not a new answer: about as close to the un-bumped smile's true odds (-dC/dK) as the fits alone.
+    smooth = lambda k: 0.55 - 0.4 * (k / spot - 1)
+    h = 0.05
+    true = [-(bs_price(spot, k + h, yrs, smooth(k + h), "call") - bs_price(spot, k - h, yrs, smooth(k - h), "call"))
+            / (2 * h) * math.exp(RISK_FREE * yrs) for k in lines]
+    miss = lambda ps: sum(abs(a - b) for a, b in zip(ps, true)) / len(true)
+    assert miss(ordered) < miss(local) + 0.01 and miss(ordered) < 0.04
+
+    # Market closed (no saved smile yet): every line reads the ordered live smile, odds fall, YES costs the odds.
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
+    df = math.exp(-RISK_FREE * yrs)
+    ps = []
+    for lvl in lines:
+        q = yesno.quote("WINR", lvl, exp.isoformat())
+        assert "option smile" in q["odds_source"] and q["price_source"] == "smile"
+        assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.015
+        ps.append(q["market_p"])
+    assert all(a >= b for a, b in zip(ps, ps[1:])), ps
+    assert ps[0] - ps[-1] > 0.4

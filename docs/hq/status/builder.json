@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T19:20:00Z",
- "last_run": "Promo v7 made and sent to you (34s). It opens on four real searches: a word (lithium), a question (why is nvidia up?), a company (Costco), a ticker (TSLA). Then a typo gets fixed, the AI story, who it moves, practice money, and the scorecard. While making it I found questions didn't work in search ('why is nvidia up' found nothing). Fixed: a question now searches its subject, and a company name or capitalised ticker anywhere in a sentence brings up that company.",
+ "updated_at": "2026-11-23T20:30:00Z",
+ "last_run": "Close Call's odds could go up as the line went up on thin option chains. Live this afternoon, AMD at $447: Dec 18 said 63.7% to close above $410 but 63.8% above $420; Dec 11 said 31.1% above $480 but 35.5% above $490. Each line was reading its own small slice of the option prices. Now the app reads one curve for each date, kept in order, so a higher line never gets higher odds from the option prices, and YES still costs about the odds shown. After market hours every line reads that curve. Still open: in market hours, a line priced off one listed spread can sit a point or two above its neighbour (AMD Dec 18: $450 53.3% beside $440 51.9%). I'll fix that next, with one curve built from the spreads themselves. Practice money only; grading unchanged.",
  "working_on": "Nothing open.",
- "next": "Promo v7 tweaks if you want any.",
+ "next": "Close Call in market hours: build one ordered curve from the listed spreads themselves, so lines read off a spread and lines read off the smile can't sit out of order.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call's odds could go up as the line went up on thin option chains. Live this afternoon, AMD at $447: Dec 18 said 63.7% to close above $410 but 63.8% above $420; Dec 11 said 31.1% above $480 but 35.5% above $490. Each line was reading its own small slice of the option prices. Now the app reads one curve for each date, kept in order, so a higher line never gets higher odds from the option prices, and YES still costs about the odds shown. After market hours every line reads that curve. Still open: in market hours, a line priced off one listed spread can sit a point or two above its neighbour (AMD Dec 18: $450 53.3% beside $440 51.9%). I'll fix that next, with one curve built from the spreads themselves. Practice money only; grading unchanged.",
+   "at": "2026-11-23T20:30:00Z"
+  },
   {
    "re": "Make a reel of the new search feature (live chat)",
    "body": "Promo v7 made and sent to you (34s). It opens on four real searches: a word (lithium), a question (why is nvidia up?), a company (Costco), a ticker (TSLA). Then a typo gets fixed, the AI story, who it moves, practice money, and the scorecard. While making it I found questions didn't work in search ('why is nvidia up' found nothing). Fixed: a question now searches its subject, and a company name or capitalised ticker anywhere in a sentence brings up that company.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "at": "2026-11-23T05:30:00Z",
    "body": "The first big numbers on the Brain page were the flattering ones. The scorecard said 53% of our #1 picks beat the S&P 500 and the #1 led our other ideas by +1.2 pts (in green), and then the paragraph under it said to read that as too generous, because those practice calls scored each stock with results that came later. A finance professor would stop at the headline. The tiles now show the version we stand behind, our #1 rebuilt without that peek: 52% beat the S&P (+1.5 pts average) and +0.5 pts over our other ideas, on 2,703 test calls, the same version the luck check judges just below. A small line under them still gives the stored numbers with the peek. The +0.5 is no longer green, since it isn't clear of luck yet. No research, gates or grading changed."
-  },
-  {
-   "re": "(no new messages)",
-   "body": "The Brain page's luck check was seven dense paragraphs, a wall on a phone. It now opens with 'At a glance': one line per check with a tick, a cross or a '~', all about the same honest version of our #1 (rebuilt without the look-ahead peek), and a one-line verdict. Today it reads: ahead of our other ideas by +0.5 pts on 2,703 test calls, but not clear of luck (t 1.7, and 1.0 counting overlapping calls, against a bar of 3.3); partly carried by a few huge calls; ahead in 3 of 4 stretches but behind in the latest; the 7-day real-time results are too early. The full paragraphs are one tap away under 'How each check works'. One thing the paragraphs hid: 'the lead is broad, not a few lucky calls' was true of the stored #1 (its 10 best calls are 27% of its lead), but without the peek its 10 best calls are 73% of a smaller lead. The page now says both. No numbers, gates or grading changed.",
-   "at": "2026-11-23T02:30:00Z"
   }
  ]
 }

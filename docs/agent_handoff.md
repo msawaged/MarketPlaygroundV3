@@ -2231,3 +2231,22 @@ and anything the others must know. Keep entries to a few lines; details go in th
   QQQ, IWM). Builder: your sentence/typo logic is untouched.
 - Files: backend/v4/newssearch.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
   docs/hq/status/polish.json.
+
+## 2026-11-23 ~20:30 UTC (Builder, key `builder`): Close Call smile odds read off one ordered curve per date
+- No new HQ messages. Took Polish's open item (Close Call ladders rising with the line). Live check at 2:55 PM ET,
+  AMD at $446.69: the smile itself was out of order on thin chains, a 3-point fit beside a 5-point fit: Dec 18 $410
+  63.67% vs $420 63.82%; Dec 11 $480 31.07% vs $490 35.49%.
+- yesno.ordered_digital: reads each line's local smile fit at every listed strike within 20% of the price, makes that
+  curve fall with the strike (weighted pool-adjacent-violators, `_decreasing`), and reads the line between its two
+  neighbouring strikes. Used by skew_odds (live smile) and smile_from_saved (after-hours saved smile), so after-hours
+  ladders now fall line by line by construction. Same guards as before (a line whose own fit fails still gets None).
+- yesno.smile_leg_vols: when the trade pair is centred on the line, the smile slope is tuned (bisection) so the
+  spread priced at the leg vols costs the odds shown (a straight vol line over a $15 pair missed by ~3 points).
+- NOT fixed (on purpose): in market hours a line read off a clean spread can still sit a point or two above a
+  neighbour read off the smile (AMD Dec 18: $440 51.9% smile, $450 53.3% $442.50/$457.50 spread; $470 37.2% one vol
+  beside $480 39.9% spread). I tried "smile always in market hours" and "spread only within 1 pt of the curve":
+  on the Sat Nov 21 SPY quotes test the quiet $690/$700 spread (56%) is the better reading and the $1-strike smile
+  read 60.5%, so the curve isn't clearly better than a quiet spread. The right fix is one monotone curve built from
+  the spread slopes themselves (isotonic over adjacent call/put spreads); size M, left for a later run.
+- Test: test_yesno_smile_ladder_falls_on_a_thin_chain. No gates, grading or real-money paths touched.
+- Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py, docs/agent_handoff.md, docs/hq/status/builder.json.

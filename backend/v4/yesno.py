@@ -270,7 +270,8 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     from .strategy import RISK_FREE
     if spot <= 0 or level <= 0 or years <= 0:
         return None
-    pts = _near_line(_smile_points(chain, spot, years), level)
+    allv = _smile_points(chain, spot, years)
+    pts = _near_line(allv, level)
     if not pts:
         return None
     # Puts and calls only describe one smile when they agree on the stock price (put-call parity). Live Sat Nov 21,
@@ -288,7 +289,7 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     band_vol = own["vol"] if own and own["vol"] else fit[0]
     if pf and band_vol > 0 and abs(pf[0] - fwd) > 0.1 * band_vol * math.sqrt(years) * spot + pf[1]:
         return None
-    return _smile_digital(pts, spot, level, years)
+    return ordered_digital(allv, spot, level, years)
 
 
 def _smile_points(chain: list[dict], spot: float, years: float, max_gap: Optional[float] = None) -> list[tuple]:
@@ -365,6 +366,84 @@ def _smile_digital(pts: list[tuple], spot: float, level: float, years: float) ->
             "miss": rms}
 
 
+ORDER_WINDOW = 0.20        # strikes within 20% of the stock price make the ordered curve (one per expiration)
+
+
+def _decreasing(nodes: list[list]) -> list[tuple[float, float]]:
+    """Weighted pool-adjacent-violators: the closest curve (strike, odds) that never rises with the strike. nodes are
+    [strike, odds, weight] sorted by strike."""
+    blocks: list[list] = []                              # [odds, weight, strikes]
+    for k, p, w in nodes:
+        blocks.append([p, w, [k]])
+        while len(blocks) > 1 and blocks[-2][0] < blocks[-1][0]:
+            p2, w2, k2 = blocks.pop()
+            p1, w1, k1 = blocks.pop()
+            blocks.append([(p1 * w1 + p2 * w2) / (w1 + w2), w1 + w2, k1 + k2])
+    return [(k, b[0]) for b in blocks for k in b[2]]
+
+
+def ordered_digital(allv: list[tuple], spot: float, level: float, years: float) -> Optional[dict]:
+    """The smile's odds at the line, read off one curve for the whole expiration so a higher line never gets higher
+    odds. Each straight-line fit near one line is good locally, but a fit through 3 points beside one through 5 can
+    disagree by more than the gap between two lines: live Mon Nov 23, AMD Dec 18 at $447, the smile read 63.7% above
+    $410 and 63.8% above $420; Dec 11 read 31.1% above $480 and 35.5% above $490. So read the local fit at every listed
+    strike within ORDER_WINDOW of the stock price, make that curve fall with the strike (pool adjacent violators,
+    weighted by each fit's points), and read the line between its two neighbouring strikes. The line's own fit keeps
+    its vol; its slope is set so that a spread priced at the line's vols costs the curve's odds (YES costs about the
+    odds shown). None when the line's own fit fails (same guards as before); the line's own fit unchanged when the
+    curve has no strike on one side of it within SKEW_REACH."""
+    from .strategy import RISK_FREE
+    own = _smile_digital(_near_line(allv, level), spot, level, years)
+    if not own:
+        return None
+    nodes = []
+    for k, _ in allv:
+        if abs(k / spot - 1) > ORDER_WINDOW:
+            continue
+        d = _smile_digital(_near_line(allv, k), spot, k, years)
+        if d:
+            nodes.append([k, d["p"], d["n"]])
+    curve = _decreasing(nodes)
+    lo = [(k, p) for k, p in curve if k <= level + 1e-9 and level - k <= SKEW_REACH * level]
+    hi = [(k, p) for k, p in curve if k >= level - 1e-9 and k - level <= SKEW_REACH * level]
+    if not lo or not hi:
+        return own
+    (ka, pa), (kb, pb) = lo[-1], hi[0]
+    p = pa if kb - ka <= 1e-9 else pa + (pb - pa) * (level - ka) / (kb - ka)
+    p = min(0.99, max(0.01, p))
+    sig = own["vol"]
+    sq = sig * math.sqrt(years)
+    d1 = (math.log(spot / level) + (RISK_FREE + 0.5 * sig * sig) * years) / sq
+    vega = spot * math.sqrt(years) * math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+    out = dict(own, p=p, local_p=own["p"], ordered=abs(p - own["p"]) > 1e-6)
+    if vega > 1e-9:
+        out["slope"] = -(p - own["flat"]) / (math.exp(RISK_FREE * years) * vega)
+    return out
+
+
+def smile_leg_vols(sk: dict, level: float, k1: float, k2: float, spot: float, years: float) -> tuple[float, float]:
+    """The trade's two strikes priced on the smile's line through the line's vol. When the pair is centred on the line,
+    the line's slope is tuned so the spread costs the odds shown (a straight vol line over a $15 pair misses the
+    digital by a few points: the curve bends between the strikes); otherwise the smile's own slope."""
+    from .strategy import bs_price, RISK_FREE
+    sig, slope = sk["vol"], sk["slope"]
+    legs = lambda s: tuple(max(0.02, sig + s * (k - level)) for k in (k1, k2))
+    if k2 > k1 and abs((k1 + k2) / 2 - level) <= 1e-6 and years > 0:
+        grow = math.exp(RISK_FREE * years)
+
+        def miss(s):
+            v1, v2 = legs(s)
+            return (bs_price(spot, k1, years, v1, "call") - bs_price(spot, k2, years, v2, "call")) / (k2 - k1) * grow - sk["p"]
+        reach = 0.5 / (k2 - k1)                           # up to 50 vol points across the pair
+        lo, hi = slope - reach, slope + reach             # a lower slope (steeper skew) costs more
+        if miss(lo) >= 0 >= miss(hi):
+            for _ in range(40):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if miss(mid) > 0 else (lo, mid)
+            slope = (lo + hi) / 2
+    return tuple(round(v, 4) for v in legs(slope))
+
+
 # ----------------------------------------------------------------------------- the smile saved in market hours
 #
 # Outside market hours the free feed's option quotes widen to junk (live Mon Nov 23, 9:10 AM ET: NVDA's Dec 4 $140
@@ -437,7 +516,7 @@ def smile_from_saved(saved: dict, spot: float, level: float, years: float) -> Op
         allv = sorted((float(m) * spot, float(v) * scale) for m, v in saved["pts"])
     except (KeyError, TypeError, ValueError):
         return None
-    sk = _smile_digital(_near_line(allv, level), spot, level, years) if allv else None
+    sk = ordered_digital(allv, spot, level, years) if allv else None
     if sk:
         sk.update(saved_at=saved.get("at"), saved_spot=saved.get("spot"))
     return sk
@@ -977,7 +1056,7 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     # agrees with the market's odds above it. Not when the odds already look stale (same snapshot of quotes).
     lv = leg_vols(calls, k1, k2, spot, years, vol) if vol_source == "market" and not stale and not wide else None
     if smile:
-        lv = tuple(round(max(0.02, sk["vol"] + sk["slope"] * (k - level)), 4) for k in (k1, k2))
+        lv = smile_leg_vols(sk, level, k1, k2, spot, years)
     sv = None
     if not lv and not wide and not stale:
         sv = spread_vol(calls, k1, k2, spot, years, vol)
