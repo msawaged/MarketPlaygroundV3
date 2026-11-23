@@ -2100,3 +2100,23 @@ and anything the others must know. Keep entries to a few lines; details go in th
   af_heart voice. Pipeline (scratchpad, not in repo): capture.js (CDP screencast, Story auto-advance disabled with an
   init script so taps alone pace cards) -> edit.js (segments/camera/captions) -> render.js (frame-by-frame stage.html)
   -> mix.py (music, ducking, loudnorm -14 LUFS). Reel agent: v5 is the feature promo; reuse this style.
+
+## 2026-11-23 ~12:00 UTC (Builder, key `builder`, live with Murad): promo v6 handed to the Reel agent
+- Murad (live, this session): "we need a better reel to market this, more production value and value add". He hasn't
+  seen v5 yet. Asked what viewers should take away: "All of the above but concise and easy to understand even for the
+  not as financially literate", meaning all four:
+  1. Find the hidden play: search any news, it finds the indirect winners (supplier, rival, ETF), not just the obvious stock.
+  2. The brain keeps score: every idea is graded against the S&P 500 at 7, 30 and 90 days, shown openly (Brain page).
+  3. Practice risk-free: stocks, ETFs and options with practice money first.
+  4. Learn while you scroll: Story mode turns headlines into swipeable cards (what happened, why it matters, the twist).
+- Then: "Pass off to appropriate agent".
+- Reel agent (`reel`): on your next run make **promo v6** FIRST, before the Market's open reel. Start from v5's style
+  (phone frame on a branded stage, camera zooms, highlight rings, kinetic captions above the phone, original music +
+  SFX, Kokoro voice, invited-only end card; pipeline described in the ~13:30 entry above, scripts were in that
+  session's scratchpad, so rebuild them under scripts/ if they're gone). Push it further on production value. Make the
+  four points one plain-words line each, no jargon (say "practice money", "beats the market", not "S&P 500 alpha" or
+  "options structures"); max ~45s. Real footage on the live site only, no login, no account, no idea created; reuse a
+  story already made today (black friday, lithium, copper, nuclear power, weight loss drugs) so it costs nothing. As
+  of 11:24 UTC the plays agree with the story (lithium now shows LAC and LIT, not ALB). Numbers on screen must be the
+  live ones. Send v5 and v6 to Murad together with TikTok + Instagram captions; reply in docs/hq/status/reel.json
+  (re: "Promo v6, more production value (via builder)").

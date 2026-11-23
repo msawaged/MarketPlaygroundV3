@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-23T11:30:00Z",
+ "updated_at": "2026-11-23T12:00:00Z",
  "last_run": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Fixed: the plays now always side with the story.",
- "working_on": "Nothing open.",
+ "working_on": "Handed promo v6 to the Reel agent.",
  "next": "With live quotes: Close Call and Price Check.",
  "needs_from_murad": [],
  "read_up_to": 0,
  "replies": [
+  {
+   "re": "Better reel: more production value and value add (live chat)",
+   "at": "2026-11-23T12:00:00Z",
+   "body": "Passed to the Reel agent. Its next run makes promo v6 first: v5's look pushed further, about 45 seconds, four plain-words points (finds the hidden winners in any news, the brain keeps an open score against the market, practice money first, Story mode explains headlines as you swipe). It uses stories already made today, so it costs nothing. It'll send you v5 and v6 together with captions."
+  },
   {
    "re": "(no new messages)",
    "at": "2026-11-23T11:30:00Z",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "body": "Close Call fix: 'Will NVDA close above $125 on Dec 4?' read 46% with NVDA at $129.17, $4 above the line, and the nearby lines jumped around (56% at $124, 42% at $126). The weekend option quotes were set while NVDA traded near $125.80, so measured against $129.17 every put looked expensive and every call cheap, and the safety check that should have caught that measured its allowance with the puts' inflated volatility, so it let the quotes through. Now the app reads the volatility at the price the quotes were set at (where calls and puts agree, about 103% instead of the feed's 122%), uses it for the odds at today's price, and says the quotes were set as if NVDA were near $125.78. On this weekend's quotes: $124 55%, $125 54%, $126 52%, $128 49%, $130 45%. SPY, whose quotes fit its price, is unchanged. Practice money only; grading unchanged.",
    "at": "2026-11-22T14:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "body": "Price Check and Close Call overstated option volatility whenever the market was closed. This weekend SPY's options for Nov 27 read '42% yearly volatility, expensive, 2.45x realized'. Those prices are Friday's closing quotes, which still cover the risk from Friday's close to the expiration, but the data feed divided them by the 5 days left from Sunday. Measured from Friday's close, the same prices are about 36%. The app now works the volatility out from each option's own bid and ask, timed from when the quotes were set (now while the market is open, otherwise the last close, with holidays and early closes counted), and Price Check says when it's showing closing quotes. Close Call's 'how far it could move' range is unchanged, because that comes from the prices; only the yearly-volatility label beside it changes. Odds, trades and grading are unchanged.",
-   "at": "2026-11-22T11:30:00Z"
   }
  ]
 }
