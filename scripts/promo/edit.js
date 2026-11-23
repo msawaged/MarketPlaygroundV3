@@ -53,12 +53,12 @@ const plans = {
   typo: {
     hook: marks.events.some((x) => x.name === 'm0')
       ? { // montage: each search from its last letters to a beat after its results land
-        shots: marks.events.filter((x) => /^m\d+$/.test(x.name)).map((x) => [x.t - 0.55, x.t + 1.1]),
-        cam: [[0, 1.32, 195, 500, true], [1, 1.36, 195, 500, true]],
+        shots: marks.events.filter((x) => /^m\d+$/.test(x.name)).map((x, i) => [x.t - (i ? 0.55 : 0.05), x.t + 1.1]), // first: results already in (cover)
+        cam: [[0, 1.5, 195, 545, true], [1, 1.54, 195, 545, true]],
       }
       : { shots: [[ev('news'), tapT('search') + 0.1]], cam: [[0, 1.3, 195, 330], [1, 1.45, 195, 300]] },
     typo: {
-      shots: [[tapT('search') + 0.05, (marks.events.find((x) => x.name === 'fixed') || { t: ev('results') }).t + 2.4]],
+      shots: [[(marks.events.find((x) => x.name === 'm0') ? ev('type') - 0.2 : tapT('search') + 0.05), (marks.events.find((x) => x.name === 'fixed') || { t: ev('results') }).t + 2.4]],
       rings: /^fixed$/,
       cam: [[0, 1.6, 195, 455, true], [0.45, 1.64, 195, 458, true], [1, 1.68, 195, 470, true]],
     },
