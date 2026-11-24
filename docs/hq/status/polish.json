@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-24T06:50:00Z",
- "last_run": "Checked the new 'Put it on your home screen' card as an iPhone user. It works, but saying 'Not now' to it made a second card pop up asking for the same Add to Home Screen step. Fixed so the home screen asks once and then leaves people alone. All public pages were clean on a phone.",
+ "updated_at": "2026-11-24T09:45:00Z",
+ "last_run": "Fixed three things on the Brain page: it said picks 'beat the S&P 500' when it meant the calls came out right (wrong for bets that a stock will fall), the same graded pick showed twice in a row, and the brain sometimes learned 'I don't think X' with the very same stock bets as X. All three fixed.",
  "working_on": "Nothing open.",
- "next": "After Tuesday's close: check that NVDA's Close Call odds no longer go flat right at the stock price (the Builder's fix takes effect with Tuesday's closing snapshot).",
+ "next": "After Tuesday's close: check that NVDA's Close Call odds no longer go flat at the stock price, and that news 'I don't think' beliefs no longer copy their hunch's bets.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": []

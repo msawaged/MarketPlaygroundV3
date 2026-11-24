@@ -175,6 +175,19 @@ function until(iso, now) {
   return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Two beliefs can pick the same stock the same way on the same day: one grade, shown once ("SGU bearish · 2 beliefs")
+// rather than as two identical rows that read like a glitch.
+function mergeGraded(list) {
+  const out = []; const seen = new Map();
+  for (const x of list || []) {
+    const key = [x.ticker, x.direction, x.days, x.called_on, x.live, x.vs_market].join('|');
+    const hit = seen.get(key);
+    if (hit) { hit.n += 1; continue; }
+    const row = { ...x, n: 1 }; seen.set(key, row); out.push(row);
+  }
+  return out;
+}
+
 // Back-to-back rounds of the same kind read as one line ("Learned 46 beliefs from the news · 8 rounds over 8h").
 function groupActivity(list) {
   const out = [];
@@ -198,8 +211,9 @@ function eventText(e) {
   if (e.kind === 'news') return { title: `Learned ${e.n} belief${e.n === 1 ? '' : 's'} from the news`, sub: `Both sides of most stories${rounds}` };
   if (e.kind === 'practice') return { title: `Practiced on ${e.n} belief${e.n === 1 ? '' : 's'}`, sub: `Past dates, graded right away${rounds}` };
   if (e.kind === 'graded') {
-    if (e.n === 1) return { title: 'The market graded 1 pick', sub: e.right ? 'It beat the S&P 500' : 'It didn’t beat the S&P 500' };
-    return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} beat the S&P 500` };
+    // "right" is the call vs the S&P 500 (a bearish call is right when its stock trails it), so don't say the stocks "beat" it
+    if (e.n === 1) return { title: 'The market graded 1 pick', sub: e.right ? 'Called right vs the S&P 500' : 'Called wrong vs the S&P 500' };
+    return { title: `The market graded ${e.n.toLocaleString()} picks`, sub: `${e.right.toLocaleString()} called right vs the S&P 500` };
   }
   if (e.kind === 'trained') return { title: 'Retrained the brain', sub: (STATUS[e.status] || STATUS.retired).label };
   return { title: '', sub: '' };
@@ -821,14 +835,14 @@ export default function BrainPage({ viewOnly = false }) {
 
         <h2 className="mt-8 text-xl font-extrabold">Just graded by the market</h2>
         <div className="mt-2">
-          <Feed every={2100} items={d?.graded || []} render={(x) => {
+          <Feed every={2100} items={mergeGraded(d?.graded)} render={(x) => {
             // Show the stock's own move vs the S&P (a bearish call wins when it's negative), not the signed call result.
             const stock = (x.direction === 'bullish' || x.direction === 'bearish') && x.stock_vs_market != null;
             const v = stock ? x.stock_vs_market : x.vs_market;
             return (
             <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-bold">{x.ticker} <span className="text-xs font-semibold text-slate-400">{x.direction} · after {x.days} days</span></div>
+                <div className="text-sm font-bold">{x.ticker} <span className="text-xs font-semibold text-slate-400">{x.direction} · after {x.days} days{x.n > 1 ? ` · ${x.n} beliefs` : ''}</span></div>
                 <div className="text-[11px] text-slate-500">
                   {x.live != null && (
                     <span className={x.live ? 'text-sky-300' : 'text-slate-400'}>

@@ -37,7 +37,7 @@ import random
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from . import db, engine, grader, interpreter, market
@@ -180,10 +180,26 @@ def news_beliefs(limit: int) -> list[str]:
         context = " ".join([it.get("summary") or "", it.get("why") or ""] + [c.get("why") or "" for c in it.get("companies", [])])
         sides = [h] + ([_opposite(h, context)] if _negatable(h) else [])
         legacy = f"{OPPOSITE}{_lower_first(h, context)}".lower()  # opposites learned before the may -> will wording
-        for b in sides:
-            if b.lower() not in used and b not in out and not (b is not h and legacy in used):
-                out.append(b)
+        new = [b for b in sides if b.lower() not in used and b not in out and not (b is not h and legacy in used)]
+        if out and len(out) + len(new) > limit:
+            continue  # keep a hunch and its opposite in the same round (run() hands the opposite the hunch's picks)
+        out += new
     return out[:limit]
+
+
+def _seeded_picks(text: str) -> Optional[set]:
+    """(ticker, direction) picks of the newest seeded belief with this text (case and may/might/could -> will
+    ignored), or None. An opposite whose hunch was learned in an earlier round still has to avoid the hunch's picks:
+    live Nov 24, "Glass chip substrates will spread, boosting makers of chip manufacturing equipment" (AMAT, LRCX, KLAC
+    up) ran at 3:20 AM ET and its "I don't think ..." an hour later, alone, came back with the same three bets up."""
+    want = _MODAL.sub("will", text.strip().lower())
+    rows = db.query("SELECT id, text FROM beliefs WHERE source LIKE 'seed%' AND created_at >= ? ORDER BY created_at DESC",
+                    ((datetime.now(timezone.utc) - timedelta(days=14)).isoformat(),))
+    for r in rows:
+        if _MODAL.sub("will", (r["text"] or "").strip().lower()) == want:
+            picks = db.query("SELECT ticker, direction FROM picks WHERE belief_id = ?", (r["id"],))
+            return {(str(x["ticker"]).upper(), x["direction"]) for x in picks}
+    return None
 
 
 def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: int = 4,
@@ -241,6 +257,8 @@ def run(mode: str, n: int, generate: int = 0, years: float = 3.0, concurrency: i
                     if spent >= max_usd:
                         break
                 avoid = taken.get(pair_of[text]) if text in pair_of else None
+                if avoid is None and text.startswith(OPPOSITE) and text not in pair_of:
+                    avoid = _seeded_picks(text[len(OPPOSITE):])  # its hunch ran in an earlier round
                 futures[ex.submit(one, text, avoid)] = text
             for f in as_completed(futures):
                 try:

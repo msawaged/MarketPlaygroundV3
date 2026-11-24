@@ -1534,6 +1534,33 @@ def test_news_opposite_reads_as_english_and_still_pairs_with_its_hunch(monkeypat
     assert seen[got[1]] == {("IBIT", "bearish")}
 
 
+def test_news_opposite_learned_a_round_later_still_avoids_its_hunchs_picks(monkeypatch):
+    """Live Nov 24: "Glass chip substrates will spread, boosting makers of chip manufacturing equipment" (AMAT, LRCX,
+    KLAC up) was learned at 3:20 AM ET; its "I don't think ..." was cut off by the round's limit, ran alone an hour
+    later with nothing to avoid, and came back with the same three bets up. A round now keeps a pair together, and an
+    opposite whose hunch ran earlier gets the hunch's stored picks to avoid."""
+    from backend.v4 import movers, seeder
+    feed = {"items": [{"headline": "h1", "hunch": "Solar demand will cool"},
+                      {"headline": "h2", "hunch": "Glass chip substrates may spread"}]}
+    monkeypatch.setattr(movers, "feed", lambda client=None: feed)
+    assert seeder.news_beliefs(3) == ["Solar demand will cool", "I don't think solar demand will cool"]
+
+    now = datetime.now(timezone.utc).isoformat()
+    db.execute("INSERT INTO beliefs (id, user_id, text, norm_text, source, created_at, as_of_date) VALUES (?,?,?,?,?,?,?)",
+               ("b-glass", "seed", "Glass chip substrates may spread", "x", "seed_news", now, now[:10]))
+    for i, t in enumerate(("AMAT", "LRCX")):
+        db.execute("INSERT INTO picks (id, belief_id, ticker, direction, entry_date, entry_price) VALUES (?,?,?,?,?,?)",
+                   (f"p{i}", "b-glass", t, "bullish", now[:10], 100.0))
+    seen = {}
+    monkeypatch.setattr(seeder.engine, "process_belief",
+                        lambda text, **kw: seen.setdefault(text, kw.get("avoid")) or {"valid": True, "picks": []})
+    opp = "I don't think glass chip substrates will spread"
+    seeder.run("live", n=2, beliefs=[opp, "I don't think nothing was learned before"], source="seed_news",
+               concurrency=1, max_usd=1)
+    assert seen[opp] == {("AMAT", "bullish"), ("LRCX", "bullish")}
+    assert seen["I don't think nothing was learned before"] is None
+
+
 def test_price_target_below_today_means_bearish():
     interp = {"direction": "bullish", "target_price": 5.0}
     valid = [{"ticker": "SLS", "price": 9.0, "direction": "bullish"}, {"ticker": "XBI", "price": 90.0, "direction": "bullish"}]

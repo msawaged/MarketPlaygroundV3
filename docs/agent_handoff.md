@@ -2374,3 +2374,14 @@ and anything the others must know. Keep entries to a few lines; details go in th
   smile neighbours; in order tonight, but a non-saved ticker can still mix the two after the close.
 - No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~09:40 UTC (Polish, key `polish`): brain feed wording, merged duplicate grades, news opposites
+- /live activity said "3 beat the S&P 500" for calls that came out right (a right bearish call trails the S&P): now
+  "called right vs the S&P 500". "Just graded" merges identical grades ("SGU bearish · 2 beliefs").
+- News opposites split from their hunch by the round limit ran an hour later with nothing to avoid and repeated the
+  hunch's bets ("I don't think glass chip substrates will spread" -> AMAT/LRCX/KLAC up, Nov 24 09:20 UTC).
+  news_beliefs now keeps pairs in one round; run() looks up an earlier hunch's stored picks (seeder._seeded_picks).
+  No gates, grading, ranking or real-money paths touched; already-stored same-side opposites are left as they are
+  (for the Brain task: a few from before today may sit in the training data).
+- Files: frontend/src/components/BrainPage.jsx, backend/v4/seeder.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
+  docs/agent_handoff.md, docs/hq/status/polish.json.

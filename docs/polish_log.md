@@ -1956,3 +1956,30 @@ Changed (frontend only):
   screen) while the install ask is snoozed (30 days). Android/desktop alerts are unchanged (they turn on in one tap).
 - AlertsCard: iPhone hint adds "(on newer iPhones it's under •••)", matching the install card.
 - Verified locally: after "Not now", home shows neither card; after a reload, still none; Account still offers both.
+
+## 2026-11-24 (fourth run, ~09:30 UTC = Tue 4:30 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. Moving now ("S&P 500 +4.7% on Mon", stories after the close say "before this news") and the
+forward-test confidence split ((536 x -0.1 + 326 x -0.2 + 236 x 0.6) / 1,098 = 0.0 pts) hold. Found on /live (Brain):
+- "The market graded 7 picks · 3 beat the S&P 500" (and "2,071 picks · 1,052 beat the S&P 500"): the count is calls
+  that came out right (dir_excess > 0), and a right bearish call is a stock that TRAILED the S&P. The list just below
+  showed 5 of those 7 stocks ahead of the S&P (EGLE, HVAC x2, SGU x2), so the two lines contradicted each other.
+- "Just graded by the market" showed "SGU bearish · after 7 days · Real-time call from Nov 16 · ✗ +4.9 pts" twice in a
+  row (HVAC too): two beliefs picked the same stock the same day, one grade, read like a glitch.
+- "Just learned" showed "I don't think glass chip substrates will spread, boosting makers of chip manufacturing
+  equipment -> AMAT ▲ · LRCX ▲ · KLAC ▲", the same bets as the hunch itself (DB: hunch 08:20 UTC AMAT/LRCX/KLAC/ASML/SOXX
+  up; opposite 09:20 UTC AMAT/LRCX/KLAC/ASML/SMH up; "Israeli military spending" pair the same, 07:20 / 08:19). Cause:
+  news_beliefs cut the list at MP_NEWS_SEED_N between a hunch and its opposite, so the opposite ran alone next round and
+  run() had no hunch picks to avoid (the guard only paired texts within one round).
+
+Changed:
+- BrainPage: activity reads "3 called right vs the S&P 500" ("Called right / wrong vs the S&P 500" for one); identical
+  grades (ticker, direction, days, call date, result) merge into one row with "· 2 beliefs".
+- seeder.news_beliefs keeps a hunch and its opposite in the same round; seeder._seeded_picks gives an opposite whose
+  hunch ran in an earlier round (last 14 days, case and may/might/could -> will ignored) the hunch's stored picks to
+  avoid. Test: test_news_opposite_learned_a_round_later_still_avoids_its_hunchs_picks.
+- Verified locally against the live API at 390: "3 called right vs the S&P 500", "HVAC bullish · after 7 days · 2
+  beliefs", "SGU bearish · after 7 days · 2 beliefs", no page errors.
+- Not changed: the already-stored same-side opposites (DB writes); next check after Tuesday's close is NVDA's Close Call.
