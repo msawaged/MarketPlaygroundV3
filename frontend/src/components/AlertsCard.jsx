@@ -29,7 +29,7 @@ export default function AlertsCard({ compact = false, onDone, stepsAbove = false
           {needsHomeScreen() && !on && (
             <p className="mt-2 text-xs text-amber-200">{stepsAbove
               ? <>On iPhone, alerts work from the home screen: add MarketPlayground with the steps above, open it from there and turn alerts on.</>
-              : <>On iPhone: tap the Share button, then <b>Add to Home Screen</b>. Open MarketPlayground from your home screen and turn alerts on there.</>}</p>
+              : <>On iPhone: tap the Share button (on newer iPhones it’s under •••), then <b>Add to Home Screen</b>. Open MarketPlayground from your home screen and turn alerts on there.</>}</p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             {!on && !needsHomeScreen() && (

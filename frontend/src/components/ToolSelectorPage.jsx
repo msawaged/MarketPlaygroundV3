@@ -14,6 +14,8 @@ import { FaceIdCard } from './AccountPage';
 import { useAccount, initials } from '../lib/auth';
 import AlertsCard from './AlertsCard';
 import InstallCard, { useInstallOffer } from './InstallCard';
+import { snoozed as installSnoozed } from '../lib/install';
+import { needsHomeScreen } from '../lib/push';
 
 const ROTATE = [
   'plumbing demand is about to boom',
@@ -130,7 +132,9 @@ export default function ToolSelectorPage() {
           <div className="mt-6"><InstallCard ask onDone={() => setInstallAsk(false)} /></div>
         )}
 
-        {alertAsk && !(acc && faceAsk) && !showInstall && (
+        {/* On iPhone the alerts card's only step is Add to Home Screen, so it waits while that ask is snoozed, and never
+            follows straight after the install card in the same visit. */}
+        {alertAsk && !(acc && faceAsk) && !showInstall && !installSeen && !(needsHomeScreen() && installSnoozed()) && (
           <div className="mt-6 relative">
             <AlertsCard compact onDone={alertDone} />
             <button onClick={alertDone} aria-label="Not now" className="absolute top-2 right-3 text-xs text-slate-400 hover:text-slate-200">Not now</button>

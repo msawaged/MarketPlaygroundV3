@@ -1937,3 +1937,22 @@ request). No new HQ messages from Murad. Checked like an expert:
   3.8%); breakevens $675.43 / $675.45; ask-side 58% / 49%; round trips $81 / $58; +/-6.1% band = 35% x sqrt(11/365).
 Nothing broken or misleading, so no code change. The only "proposed" S idea (install button) still waits on Murad's
 mobile-app choice.
+
+## 2026-11-24 (third run, ~06:30 UTC = Tue 1:30 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. Focus: the Builder's new "Put it on your home screen" card (deployed: the live bundle carries
+mp_install_snooze_until). Signed in locally (offline server, throwaway SQLite) as an iPhone 13 (Safari UA):
+- Account: install card with the Share / ••• and Add to Home Screen steps, alerts card says "with the steps above". Good.
+- Home after a first call ($1,000, 1 year, AI mix -> DAL shares 17.24 sh = $1,000 / $58.00, +/-20% -> +/-$200): install
+  card shows; Face ID was asked first. Good.
+- Found: tapping "Not now" on the install card made the alerts card appear in its place at once, and its only step on
+  iPhone is "tap Share, then Add to Home Screen": the same ask the person had just declined, and on every visit after.
+  Its wording also lacked the "(on newer iPhones it's under •••)" note the install card gives.
+
+Changed (frontend only):
+- ToolSelectorPage: the home alerts ask waits if the install card showed this visit, and on iPhone (not yet on the home
+  screen) while the install ask is snoozed (30 days). Android/desktop alerts are unchanged (they turn on in one tap).
+- AlertsCard: iPhone hint adds "(on newer iPhones it's under •••)", matching the install card.
+- Verified locally: after "Not now", home shows neither card; after a reload, still none; Account still offers both.

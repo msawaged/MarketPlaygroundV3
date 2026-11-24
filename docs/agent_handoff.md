@@ -2351,3 +2351,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/index.jsx, frontend/src/lib/install.js,
   frontend/src/components/{InstallCard,ToolSelectorPage,AccountPage,AlertsCard,HQPage}.jsx, docs/feature_ideas.md,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~06:45 UTC (Polish, key `polish`): home alerts ask no longer repeats a declined "Add to Home Screen"
+- On iPhone, "Not now" on the new install card swapped in the alerts card, whose only step there is Share -> Add to
+  Home Screen. ToolSelectorPage now holds the alerts ask while the install card showed this visit, and while the
+  install ask is snoozed on an iPhone not yet on the home screen. AlertsCard's iPhone hint gets the ••• note.
+- Install counting, InstallCard and the Account page are untouched. Files: frontend/src/components/ToolSelectorPage.jsx,
+  frontend/src/components/AlertsCard.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
