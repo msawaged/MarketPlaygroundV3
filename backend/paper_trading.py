@@ -59,6 +59,13 @@ class Order:
 SHARE_STEP = Decimal('0.0001')  # practice shares are fractional to 4 decimals
 
 
+def _shares_txt(q) -> str:
+    """2.5 shares, 1 share: for sale messages."""
+    n = float(q)
+    t = f"{n:,.4f}".rstrip("0").rstrip(".")
+    return f"{t} share{'' if n == 1 else 's'}"
+
+
 def _clock() -> dict:
     """Market open/closed from the shared v4 market clock (Alpaca, holiday-aware)."""
     try:
@@ -558,7 +565,7 @@ class PaperTradingEngine:
                     pos = conn.execute("SELECT * FROM positions WHERE position_id = ? AND user_id = ?",
                                        (o['strategy_id'], user_id)).fetchone()
                     if pos:
-                        self._close_at(conn, pos, px, executed_at=when)
+                        self._close_at(conn, pos, px, executed_at=when, qty=o['quantity'])
                     conn.execute("UPDATE orders SET status = ?, filled_at = ?, filled_price = ?, filled_quantity = ? WHERE order_id = ?",
                                  ('filled' if pos else 'cancelled', when, float(px), o['quantity'] if pos else 0, o['order_id']))
                     filled += 1
@@ -753,8 +760,39 @@ class PaperTradingEngine:
             
             return {"leaderboard": leaderboard[:25]}  # Top 25
     
-    def close_position(self, user_id: str, position_id: str, qty: Optional[int] = None):
-        """Close a position and realize P&L"""
+    def _sell_qty(self, position, qty=None, fraction=None, amount_usd=None, price=None):
+        """How many shares a sale covers: all of them, a share count, a fraction (0.25 = a quarter) or a dollar amount
+        at `price`. Returns (Decimal shares, None) or (None, error). A sale leaving under $1 or one share step sells it all."""
+        held = Decimal(str(position['quantity']))
+        px = Decimal(str(price if price is not None else (position['current_price'] or position['avg_price'])))
+        try:
+            if fraction is not None:
+                f = Decimal(str(fraction))
+                if not (0 < f <= 1):
+                    return None, "Pick a share of the position between 1% and 100%."
+                want = held if f == 1 else (held * f).quantize(SHARE_STEP, rounding=ROUND_DOWN)
+            elif amount_usd is not None:
+                a = Decimal(str(amount_usd))
+                if a <= 0:
+                    return None, "Type an amount above $0."
+                want = (a / px).quantize(SHARE_STEP, rounding=ROUND_DOWN) if px > 0 else held
+            elif qty not in (None, ""):
+                want = Decimal(str(qty))
+                if want <= 0:
+                    return None, "Pick at least some shares to sell."
+            else:
+                want = held
+        except Exception:
+            return None, "That amount isn't a number."
+        if want <= 0:
+            return None, f"That amount is too small to sell any {position['ticker']}."
+        if want >= held or (held - want) * px < 1 or held - want < SHARE_STEP:
+            want = held
+        return want, None
+
+    def close_position(self, user_id: str, position_id: str, qty: Optional[int] = None,
+                       fraction: Optional[float] = None, amount_usd: Optional[float] = None):
+        """Sell a position, all of it or part (shares, a fraction, or dollars), and realize P&L."""
         with self._lock:
             try:
                 with self._get_db_connection() as conn:
@@ -768,32 +806,46 @@ class PaperTradingEngine:
 
                     clk = _clock()
                     if not clk.get("is_open"):
+                        est = position['current_price'] or position['avg_price']
+                        want, err = self._sell_qty(position, qty, fraction, amount_usd, est)
+                        if err:
+                            return {"status": "error", "message": err}
                         dup = conn.execute("SELECT order_id FROM orders WHERE user_id = ? AND status = 'pending' AND order_type = 'close' AND strategy_id = ?",
                                            (user_id, position_id)).fetchone()
-                        if not dup:
-                            conn.execute("""
-                                INSERT INTO orders (order_id, user_id, ticker, order_type, position_type, quantity,
-                                                    price, status, strategy_id, belief, created_at, commission)
-                                VALUES (?, ?, ?, 'close', ?, ?, ?, 'pending', ?, ?, ?, 0)
-                            """, (str(uuid.uuid4()), user_id, position['ticker'], position['position_type'],
-                                  position['quantity'], float(position['current_price'] or position['avg_price']),
-                                  position_id, position['belief'], datetime.now(timezone.utc).isoformat()))
+                        if dup:  # one queued sale per position (tapping twice doesn't queue two)
+                            return {"status": "queued", "already": True,
+                                    "message": f"A sale of {position['ticker']} is already queued for the opening price "
+                                               f"({_when(clk.get('next_open'))}). Cancel it first to change it.",
+                                    "next_open": clk.get("next_open")}
+                        conn.execute("""
+                            INSERT INTO orders (order_id, user_id, ticker, order_type, position_type, quantity,
+                                                price, status, strategy_id, belief, created_at, commission)
+                            VALUES (?, ?, ?, 'close', ?, ?, ?, 'pending', ?, ?, ?, 0)
+                        """, (str(uuid.uuid4()), user_id, position['ticker'], position['position_type'],
+                              float(want), float(est), position_id, position['belief'], datetime.now(timezone.utc).isoformat()))
+                        part = "" if want >= Decimal(str(position['quantity'])) else f"{_shares_txt(want)} of "
                         return {"status": "queued",
-                                "message": f"The market is closed, so selling {position['ticker']} is queued for the opening price "
+                                "message": f"The market is closed, so selling {part}{position['ticker']} is queued for the opening price "
                                            f"({_when(clk.get('next_open'))}).",
-                                "next_open": clk.get("next_open")}
-                    return self._close_at(conn, position, self._get_real_market_price(position['ticker']))
+                                "next_open": clk.get("next_open"), "quantity": float(want)}
+                    px = self._get_real_market_price(position['ticker'])
+                    want, err = self._sell_qty(position, qty, fraction, amount_usd, px)
+                    if err:
+                        return {"status": "error", "message": err}
+                    return self._close_at(conn, position, px, qty=want)
             except Exception as e:
                 logger.error(f"Failed to close position: {e}")
                 return {"status": "error", "message": f"Failed to close position: {str(e)}"}
 
-    def _close_at(self, conn, position, current_price, executed_at=None):
-        """Realize a position at a given price (now, or a queued sale at the open)."""
+    def _close_at(self, conn, position, current_price, executed_at=None, qty=None):
+        """Realize a position, or `qty` shares of it, at a given price (now, or a queued sale at the open)."""
         
         # Calculate realized P&L (sqlite returns floats; keep money math in Decimal)
         current_price = Decimal(str(current_price))
         avg = Decimal(str(position['avg_price']))
-        qty_d = Decimal(str(position['quantity']))
+        held = Decimal(str(position['quantity']))
+        qty_d = held if qty is None else min(held, Decimal(str(qty)))
+        partial = qty_d < held
         if position['position_type'] == 'long':
             realized_pnl = (current_price - avg) * qty_d
             proceeds = qty_d * current_price
@@ -801,7 +853,7 @@ class PaperTradingEngine:
             realized_pnl = (avg - current_price) * qty_d
             proceeds = qty_d * current_price
         
-        commission = Decimal(str(self._calculate_commission(position['quantity'], current_price)))
+        commission = Decimal(str(self._calculate_commission(qty_d, current_price)))
         net_proceeds = proceeds - commission
         
         # Create closing order
@@ -818,7 +870,7 @@ class PaperTradingEngine:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             str(uuid.uuid4()), user_id, order_id, position['ticker'],
-            transaction_type, position['quantity'], float(current_price),
+            transaction_type, float(qty_d), float(current_price),
             float(proceeds), float(commission), float(net_proceeds),
             executed_at
         ))
@@ -841,14 +893,23 @@ class PaperTradingEngine:
             WHERE user_id = ?
         """, (float(net_proceeds), float(net_proceeds), float(realized_pnl), user_id))
         
-        # Remove position
-        conn.execute("""
-            DELETE FROM positions WHERE position_id = ?
-        """, (position['position_id'],))
+        # Remove the position, or keep what's left of it (same cost per share)
+        if partial:
+            left = held - qty_d
+            conn.execute("UPDATE positions SET quantity = ?, market_value = ?, unrealized_pnl = ? WHERE position_id = ?",
+                         (float(left), float(left * current_price),
+                          float((current_price - avg) * left if position['position_type'] == 'long' else (avg - current_price) * left),
+                          position['position_id']))
+        else:
+            conn.execute("""
+                DELETE FROM positions WHERE position_id = ?
+            """, (position['position_id'],))
         
         return {
             "status": "success",
-            "message": f"Position closed successfully",
+            "message": (f"Sold {_shares_txt(qty_d)} of {position['ticker']}; {_shares_txt(held - qty_d)} left" if partial
+                        else "Position closed successfully"),
+            "quantity": float(qty_d), "remaining": float(held - qty_d) if partial else 0.0,
             "realized_pnl": float(realized_pnl),
             "proceeds": float(net_proceeds),
             "commission": float(commission)

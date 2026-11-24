@@ -2405,3 +2405,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
   is Alphabet. It now also accepts names.ALIASES (whole word). No gates, grading, ranking or real-money paths touched.
 - Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
   docs/hq/status/polish.json.
+
+## 2026-11-24 ~14:45 UTC (Builder, key `builder`): trades sized by dollars or percent, buying and selling
+- Murad's HQ message #2: "an option when putting in a trade whether it be a dollar amount or percentage to buy or sell".
+- Selling (Practice page): "Sell" opens a small sheet: "% of it" (25 / 50 / 75 / All) or "Dollars" (sell about $X),
+  with what it comes to before the button ("3.4265 shares, worth $624.99 now. You keep 10.2796 shares."). After hours
+  a part sale queues for the open for just that part.
+- Backend: PaperTradingEngine.close_position(..., fraction=None, amount_usd=None) via _sell_qty (fraction in (0,1],
+  dollars / price, rounded down to SHARE_STEP; sells it all when under $1 or one share step would be left).
+  _close_at(qty=) sells part: same avg_price on what's left, closed_trades/transactions record the part. Queued close
+  orders store the part's shares and the fill sells min(that, held). A second queued sale of one position still returns
+  "queued" (now with already=True and a "Cancel it first" message). /close_position payload takes fraction, amount_usd.
+- Buying (StrategyCard, shares only): "Dollars | % of my cash" toggle; % mode loads the practice buying power and
+  offers 5 / 10 / 25 / 50% (starts at 10%), "10% of your $97,500 spare practice cash is $9,750." The trade still sends
+  investment_amount in dollars, so the server path is unchanged. Options stay sized by contract count.
+- Test: test_sell_part_of_a_position_by_percent_or_dollars. No gates, grading, auth, broker or real-money paths touched
+  (RealMoneySheet untouched). Files: backend/paper_trading.py, backend/routes/paper_trading_router.py,
+  backend/v4/tests/test_paper.py, frontend/src/lib/api.js, frontend/src/components/PracticePage.jsx,
+  frontend/src/components/chat/StrategyCard.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.

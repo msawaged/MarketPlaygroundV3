@@ -516,3 +516,57 @@ def test_practice_trade_from_a_card_opens_at_the_cards_per_strike_price(tmp_path
     monkeypatch.setattr(market, "option_iv_row", lambda u, kind, k, e: None if k == hi else (e, k, smile[k]))
     q2 = po.quote("AAPL", [dict(l, vol=0.9) for l in card["trade_legs"]])
     assert q2["vol_source"] == "market" and not any(l.get("vol") for l in q2["legs"])
+
+
+def test_sell_part_of_a_position_by_percent_or_dollars(tmp_path, monkeypatch):
+    """Sell 25% or $300 of a position (Murad, Nov 24): the rest stays at the same cost per share; after hours the
+    part sale queues and fills at the open for just that part; 100% or nearly everything sells it all."""
+    monkeypatch.setenv("MP_DATA_DIR", str(tmp_path))
+    import backend.paper_trading as pt
+    eng = pt.PaperTradingEngine(db_path=str(tmp_path / "part.db"))
+    prices = {"WSO": Decimal("100")}
+    monkeypatch.setattr(eng, "_get_real_market_price", lambda t: prices[t])
+    state = {"open": True, "fill": None}
+    monkeypatch.setattr(pt, "_clock", lambda: {"is_open": state["open"], "next_open": "2026-11-25T09:30:00-05:00"})
+    monkeypatch.setattr(pt, "_open_after", lambda t, after: state["fill"])
+    cash0 = eng.get_portfolio("u7")["account"]["cash_balance"]
+    eng.execute_paper_trade("u7", {"ticker": "WSO", "type": "Buy Stock", "asset_class": "equity",
+                                   "trade_legs": [{"action": "Buy", "ticker": "WSO"}], "investment_amount": 2000}, "x")
+    pid = eng.get_portfolio("u7")["positions"][0]["position_id"]   # 20 shares at $100
+
+    prices["WSO"] = Decimal("110")
+    c = eng.close_position("u7", pid, fraction=0.25)               # 5 shares
+    assert c["status"] == "success" and c["quantity"] == 5 and c["remaining"] == 15
+    assert abs(c["realized_pnl"] - 50.0) < 1e-6 and "5 shares of WSO; 15 shares left" in c["message"]
+    p = eng.get_portfolio("u7")
+    assert p["positions"][0]["position_id"] == pid and p["positions"][0]["quantity"] == 15
+    assert abs(p["positions"][0]["avg_price"] - 100.0) < 1e-9
+
+    c = eng.close_position("u7", pid, amount_usd=330)              # $330 at $110 = 3 shares
+    assert c["status"] == "success" and c["quantity"] == 3 and abs(c["proceeds"] - 330.0) < 1e-6
+    assert eng.get_portfolio("u7")["positions"][0]["quantity"] == 12
+
+    for bad in ({"fraction": 0}, {"fraction": 1.5}, {"amount_usd": -5}, {"amount_usd": 0.001}):
+        r = eng.close_position("u7", pid, **bad)
+        assert r["status"] == "error", bad
+    assert eng.get_portfolio("u7")["positions"][0]["quantity"] == 12
+
+    # after hours: half queues, fills at the open for 6 shares only
+    state["open"] = False
+    q = eng.close_position("u7", pid, fraction=0.5)
+    assert q["status"] == "queued" and "6 shares of WSO" in q["message"]
+    again = eng.close_position("u7", pid, fraction=0.25)
+    assert again.get("already") and "already queued" in again["message"]   # one queued sale per position
+    assert eng.get_portfolio("u7")["queued_orders"][0]["quantity"] == 6
+    state.update(open=True, fill=("2026-11-25", 120.0))
+    p = eng.get_portfolio("u7")
+    assert p["queued_orders"] == [] and p["positions"][0]["quantity"] == 6
+
+    # $659.50 of a $660 holding would leave $0.50, so it sells everything
+    prices["WSO"] = Decimal("110")
+    c = eng.close_position("u7", pid, amount_usd=659.5)
+    assert c["status"] == "success" and c["remaining"] == 0 and eng.get_portfolio("u7")["positions"] == []
+    trades = eng.closed_trades("u7")
+    assert sorted(t["quantity"] for t in trades) == [3, 5, 6, 6]
+    # every share bought was sold once: cash = start + gains (5x10 + 3x10 + 6x20 + 6x10)
+    assert abs(eng.get_portfolio("u7")["account"]["cash_balance"] - (cash0 + 260)) < 1e-6

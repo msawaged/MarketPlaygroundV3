@@ -1,12 +1,20 @@
 {
  "key": "builder",
- "updated_at": "2026-11-24T11:20:00Z",
- "last_run": "Close Call could still mix two ways of reading odds in one ladder. After Monday's close HOOD Dec 11 (stock $67.36) read 46.6% above $69 and 36.4% above $71 from the option smile, but 38.8% above $70 from a single volatility, labelled 'the spread quotes looked out of date'. The option quotes right at $70 didn't fit the smile, while the ones either side did. Now a line like that reads the same smoothed curve between its two neighbours, and the label says so ('read between $69 and $71, since the quotes right at $70 didn't fit the smile'). So every line on a date comes from one curve and the odds keep falling as the line rises. Lines that already read the smile are unchanged. Practice money only; grading unchanged.",
+ "updated_at": "2026-11-24T14:50:00Z",
+ "last_run": "Built your ask: trades can now be sized by dollars or by percent, buying and selling. Selling on the Practice page: tap Sell, then pick 25%, 50%, 75% or All, or type a dollar amount; it shows the shares and what you keep before you confirm (before, Sell always sold everything). After hours a part sale waits for the open. Buying a stock idea: a 'Dollars | % of my cash' switch, with 5 / 10 / 25 / 50% of your spare practice cash ('10% of your $97,500 spare practice cash is $9,750'). Options stay sized by number of contracts. Practice money only. Two questions for you are under 'needs from Murad'.",
  "working_on": "Nothing open.",
- "next": "After today's 3-4 PM ET save: check Close Call ladders (NVDA, SPY, AMD, HOOD, PLTR) read one curve on every line and fall evenly. Watch the home-screen counts on HQ.",
- "needs_from_murad": [],
- "read_up_to": 1,
+ "next": "Check on the live site that partial sells and '% of my cash' work after the deploy. Then whatever you answer below, or Close Call ladder checks after today's 3-4 PM ET save.",
+ "needs_from_murad": [
+  "Percent on buys is a share of your spare practice cash. Would you rather it be a share of the whole account (cash plus what you own)?",
+  "Options and Close Call are sized by number of contracts. Want a 'spend about $X' choice there too (it picks the most whole contracts that fit)?"
+ ],
+ "read_up_to": 2,
  "replies": [
+  {
+   "re": "We need to create an option when putting in a trade whether it be a dollar amount or percentage to buy or sell",
+   "body": "Built your ask: trades can now be sized by dollars or by percent, buying and selling. Selling on the Practice page: tap Sell, then pick 25%, 50%, 75% or All, or type a dollar amount; it shows the shares and what you keep before you confirm (before, Sell always sold everything). After hours a part sale waits for the open. Buying a stock idea: a 'Dollars | % of my cash' switch, with 5 / 10 / 25 / 50% of your spare practice cash ('10% of your $97,500 spare practice cash is $9,750'). Options stay sized by number of contracts. Practice money only. Two questions for you are under 'needs from Murad'.",
+   "at": "2026-11-24T14:50:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call could still mix two ways of reading odds in one ladder. After Monday's close HOOD Dec 11 (stock $67.36) read 46.6% above $69 and 36.4% above $71 from the option smile, but 38.8% above $70 from a single volatility, labelled 'the spread quotes looked out of date'. The option quotes right at $70 didn't fit the smile, while the ones either side did. Now a line like that reads the same smoothed curve between its two neighbours, and the label says so ('read between $69 and $71, since the quotes right at $70 didn't fit the smile'). So every line on a date comes from one curve and the odds keep falling as the line rises. Lines that already read the smile are unchanged. Practice money only; grading unchanged.",
@@ -51,11 +59,6 @@
    "re": "(no new messages)",
    "at": "2026-11-23T15:10:00Z",
    "body": "Close Call gave odds that went up as the line went up when the market was closed. Before Monday's open, TSLA at $366.66 said 63% to close above $350 but 68% above $360; AMD and META had the same problem. Overnight, the free feed's option quotes get very wide (one NVDA option was quoted at $14.34 to buy back and $24.36 to buy, against $13.24 / $13.66 once the market opened), and stocks move before the open while options don't update, so the app was reading odds out of noise. Now, during market hours, the app saves each date's option prices from tight quotes only, plus a snapshot of the 15 big stocks in the last hour of trading. When the market is closed, the odds come from that saved set, moved with the stock's latest price, and the screen says so (e.g. 'saved in the last session, Fri 3:13 PM ET'). Every line now comes from the same numbers, so the odds fall as the line rises. Market-hours odds are unchanged. Practice money only; grading unchanged."
-  },
-  {
-   "re": "Let's start thinking of making this a mobile app vs online app",
-   "at": "2026-11-23T15:10:00Z",
-   "body": "The Chair has answered this with the options. From the build side: the site already works at phone size, so an installable home-screen app (PWA) is the smallest first step whenever you want it. Just say the word and I'll build it."
   }
  ]
 }

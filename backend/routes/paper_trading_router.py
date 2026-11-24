@@ -58,6 +58,8 @@ class ClosePositionPayload(BaseModel):
     user_id: str
     position_id: str
     qty: Optional[str] = Field(default=None, description="If omitted → full close")
+    fraction: Optional[float] = Field(default=None, description="Sell this share of the position (0.25 = a quarter)")
+    amount_usd: Optional[float] = Field(default=None, description="Sell about this many dollars of it")
 
 class TradeRequest(BaseModel):
     user_id: str = Field(..., description="App user placing the trade")
@@ -331,7 +333,7 @@ def close_position(payload: ClosePositionPayload):
         qty = payload.qty
 
         # 1) Fire the close request
-        result = paper_engine.close_position(user_id, position_id, qty)
+        result = paper_engine.close_position(user_id, position_id, qty, payload.fraction, payload.amount_usd)
 
         # Engine contract:
         # { status: 'closed'|'partially_closed'|'syncing'|'error', closed: {...}, portfolio: {...} }

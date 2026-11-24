@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PayoffChart from './PayoffChart';
 import { useNavigate } from 'react-router-dom';
 import { buildModel, sizePosition, scenarios, summarize, money, plainEnglish, niceDate } from '../../lib/payoff';
-import { sendFeedback, paperTrade, paperTradeOptions } from '../../lib/api';
+import { sendFeedback, paperTrade, paperTradeOptions, getPortfolio } from '../../lib/api';
 import Term from '../ui/Term';
 import ReplayPanel from './ReplayPanel';
 import { shareCard } from '../../lib/shareCard';
@@ -29,6 +29,7 @@ const PLAIN = {
 
 const AMOUNTS = [500, 1000, 2500, 5000];
 const MAX_AMOUNT = 100000; // the practice account starts with $100,000
+const PCTS = [5, 10, 25, 50]; // "% of my cash": a share of the practice account's spare cash (buying power)
 const TERM_FOR = { 'Per contract': 'contract', 'Max gain': 'max gain', Breakeven: 'breakeven' };
 
 function DirectionBadge({ direction }) {
@@ -188,6 +189,20 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const budget = Number(data.prefs?.budget_usd || prefs?.budget_usd || 0);
   const [amount, setAmount] = useState(budget || 1000);
   const [custom, setCustom] = useState(budget && !AMOUNTS.includes(budget) ? String(budget) : '');
+  // Size by dollars, or by a share of the spare cash in the practice account (fetched when first asked for).
+  const [sizeBy, setSizeBy] = useState('usd');
+  const [pct, setPct] = useState(null);
+  const [cash, setCash] = useState(null); // null loading, -1 couldn't load
+  const byPct = () => {
+    setSizeBy('pct');
+    const start = (c) => { if (c >= 1) { setPct(10); setCustom(''); setAmount(Math.max(1, Math.floor(c * 0.1))); } };
+    if (cash == null || cash < 0) {
+      setCash(null);
+      getPortfolio().then((d) => { const c = Math.max(0, Number(d?.account?.buying_power) || 0); setCash(c); start(c); })
+        .catch(() => setCash(-1));
+    } else if (!pct) start(cash);
+  };
+  const pickPct = (x) => { setPct(x); setCustom(''); setAmount(Math.max(1, Math.floor((cash * x) / 100))); };
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
   const [useAlt, setUseAlt] = useState({}); // pick_id -> true when showing the other version
@@ -545,7 +560,32 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               </>) : (<>
               {/* Investment */}
               <div>
-                <div className="text-xs text-slate-400 mb-1.5">If you put in</div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="text-xs text-slate-400">If you put in</span>
+                  <div className="flex w-44 rounded-lg bg-slate-800 p-0.5" role="tablist" aria-label="Size the trade by">
+                    <button role="tab" aria-selected={sizeBy === 'usd'} onClick={() => { if (sizeBy === 'pct' && pct && !AMOUNTS.includes(amount)) setCustom(String(amount)); setSizeBy('usd'); setPct(null); }}
+                      className={`flex-1 rounded-md py-1 text-[11px] font-bold ${sizeBy === 'usd' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}>Dollars</button>
+                    <button role="tab" aria-selected={sizeBy === 'pct'} onClick={byPct}
+                      className={`flex-1 rounded-md py-1 text-[11px] font-bold ${sizeBy === 'pct' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}>% of my cash</button>
+                  </div>
+                </div>
+                {sizeBy === 'pct' ? (<>
+                <div className="grid grid-cols-4 gap-2">
+                  {PCTS.map((x) => (
+                    <button key={x} onClick={() => pickPct(x)} disabled={!(cash >= 1)}
+                      className={`rounded-lg py-2 text-sm font-bold border disabled:opacity-50 ${pct === x ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}>
+                      {x}%
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5" aria-live="polite">
+                  {cash == null ? 'Checking your practice cash…'
+                    : cash < 0 ? 'Couldn\u2019t load your practice cash. Use Dollars instead.'
+                    : cash < 1 ? 'No spare practice cash right now. Sell something on the Practice page first.'
+                    : pct ? `${pct}% of your ${money(cash)} spare practice cash is ${money(amount)}.`
+                    : `You have ${money(cash)} of practice cash to spend. Pick a share of it.`}
+                </p>
+                </>) : (<>
                 <div className="grid grid-cols-4 gap-2">
                   {AMOUNTS.map((a) => (
                     <button
@@ -574,6 +614,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   />
                 </label>
                 {Number(custom) > MAX_AMOUNT && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_AMOUNT.toLocaleString()}, so this uses ${MAX_AMOUNT.toLocaleString()}.</p>}
+                </>)}
                 {sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
               </div>
 

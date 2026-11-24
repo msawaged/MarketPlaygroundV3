@@ -157,8 +157,11 @@ export function getPortfolio() {
   return request(`/api/paper-trading/portfolio/${encodeURIComponent(userId())}?ts=${Date.now()}`);
 }
 
-export function closePosition(positionId) {
-  return request("/api/paper-trading/close_position", { method: "POST", body: { user_id: userId(), position_id: positionId } });
+/** Sell a practice position: all of it, or part ({ fraction: 0.25 } or { amount_usd: 500 }). */
+export function closePosition(positionId, { fraction = null, amount_usd = null } = {}) {
+  return request("/api/paper-trading/close_position", {
+    method: "POST", body: { user_id: userId(), position_id: positionId, fraction, amount_usd },
+  });
 }
 
 export function cancelQueued(orderId) {
