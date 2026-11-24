@@ -6958,3 +6958,35 @@ def test_install_counts_once_per_device_refuses_unknown_kinds_and_sums_the_week(
     monkeypatch.setattr(install, "DAILY_CAP", 2)
     d2 = d0 + timedelta(days=2)
     assert [install.record("dismissed", None, now=d2)["counted"] for _ in range(3)] == [True, True, False]
+
+
+def test_yesno_ordered_smile_has_no_flat_step_where_it_pools():
+    """Live Tue Nov 24, 2:50 AM ET, HOOD Dec 11 at $67.36 (no smile saved, so the last session's raw quotes): "above
+    $66", "above $67" and "above $68" all read 52.1%, because pool-adjacent-violators gave the three strikes one
+    pooled value. Now a pooled run is read on the line through the blocks' weighted middles: still never rising with
+    the strike, but no three lines in a row at the same odds."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price
+    # The curve through the blocks' middles: the pooled block (2, 3, 4) sits at its middle 3, ends keep their odds.
+    c = yesno._through_blocks([[1, 0.7, 1], [2, 0.5, 1], [3, 0.52, 1], [4, 0.54, 1], [5, 0.3, 1]])
+    assert [k for k, _ in c] == [1, 2, 3, 4, 5]
+    assert c[2][1] == pytest.approx(0.52) and c[0][1] == 0.7 and c[4][1] == 0.3
+    assert c[1][1] == pytest.approx(0.61) and c[3][1] == pytest.approx(0.41)
+    assert yesno._through_blocks([[1, 0.6, 2]]) == [(1, 0.6)]
+    # A HOOD-like chain: $1 strikes, a lumpy vol at $66-$68 makes the local fits rise there.
+    spot, yrs = 67.36, 17 / 365
+    grid = [float(k) for k in range(54, 82)]
+    bump = {66: -0.01, 67: 0.03, 68: -0.02}
+    chain = []
+    for k in grid:
+        v = 0.75 - 0.5 * (k / spot - 1) + bump.get(int(k), 0.0)
+        for t in ("call", "put"):
+            m = bs_price(spot, k, yrs, v, t)
+            chain.append({"type": t, "strike": k, "bid": round(m * 0.97, 2), "ask": round(m * 1.03, 2), "iv": v})
+    allv = yesno._smile_points(chain, spot, yrs)
+    lines = [63, 64, 65, 66, 67, 68, 69, 70, 71]
+    ladder = [yesno.ordered_digital(allv, spot, L, yrs)["p"] for L in lines]
+    assert all(a > b for a, b in zip(ladder, ladder[1:]))           # falls at every line, no flat step
+    pooled = yesno._decreasing                                        # the old reading had the flat step
+    nodes = [[k, yesno._smile_digital(yesno._near_line(allv, k), spot, k, yrs)["p"], 1] for k in (66.0, 67.0, 68.0)]
+    assert len({round(p, 6) for _, p in pooled(nodes)}) < 3

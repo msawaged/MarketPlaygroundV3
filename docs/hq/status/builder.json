@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-24T05:35:00Z",
- "last_run": "Built the 'Put it on your home screen' card (the Scout's proposal for your mobile-app question). After someone has made their first call, Home offers to add MarketPlayground to their phone's home screen: one tap on Android, the two Share steps on iPhone (where alerts only work from the home screen). 'Not now' hides it for 30 days; it's also on the Account page. It only counts, no names: how many were offered it, added it, said not now, and opened the app from their home screen. You'll see those last-7-day numbers at the top of this page. Right now 0 people have alerts on, so this tells us whether people install before we pay for app stores.",
+ "updated_at": "2026-11-24T08:35:00Z",
+ "last_run": "Close Call could show the same odds three lines in a row. Tonight HOOD Dec 11 (stock $67.36) said 52.1% to close above $66, 52.1% above $67 and 52.1% above $68, as if it couldn't close between $66 and $68. The cause: when the overnight option prices were noisy, the app kept the odds in order by giving the noisy strikes one shared value. Now that shared value sits at the middle and the lines either side read a straight line between their neighbours, so the odds still never go up as the line goes up, and they now fall at every line. Clean option prices give the same numbers as before. Practice money only; grading unchanged.",
  "working_on": "Nothing open.",
- "next": "Tue after the 3-4 PM ET save: check NVDA, SPY and AMD Close Call ladders fall evenly through the stock price. Watch the home-screen counts on HQ over the next 2 weeks.",
+ "next": "After today's 3-4 PM ET save: check NVDA, SPY, AMD and a few smaller stocks (HOOD, PLTR) Close Call ladders fall evenly through the stock price. Watch the home-screen counts on HQ.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call could show the same odds three lines in a row. Tonight HOOD Dec 11 (stock $67.36) said 52.1% to close above $66, 52.1% above $67 and 52.1% above $68, as if it couldn't close between $66 and $68. The cause: when the overnight option prices were noisy, the app kept the odds in order by giving the noisy strikes one shared value. Now that shared value sits at the middle and the lines either side read a straight line between their neighbours, so the odds still never go up as the line goes up, and they now fall at every line. Clean option prices give the same numbers as before. Practice money only; grading unchanged.",
+   "at": "2026-11-24T08:35:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Built the 'Put it on your home screen' card (the Scout's proposal for your mobile-app question). After someone has made their first call, Home offers to add MarketPlayground to their phone's home screen: one tap on Android, the two Share steps on iPhone (where alerts only work from the home screen). 'Not now' hides it for 30 days; it's also on the Account page. It only counts, no names: how many were offered it, added it, said not now, and opened the app from their home screen. You'll see those last-7-day numbers at the top of this page. Right now 0 people have alerts on, so this tells us whether people install before we pay for app stores.",
@@ -51,11 +56,6 @@
    "re": "Better reel: more production value and value add (live chat)",
    "at": "2026-11-23T12:00:00Z",
    "body": "Passed to the Reel agent. Its next run makes promo v6 first: v5's look pushed further, about 45 seconds, four plain-words points (finds the hidden winners in any news, the brain keeps an open score against the market, practice money first, Story mode explains headlines as you swipe). It uses stories already made today, so it costs nothing. It'll send you v5 and v6 together with captions."
-  },
-  {
-   "re": "(no new messages)",
-   "at": "2026-11-23T11:30:00Z",
-   "body": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Now the idea engine is told the story's own read and never bets a name the other way, so the brain's graded call agrees with the card too. Plays saved earlier today are checked when shown (the lithium one now shows LAC and LIT, not ALB). 'Big move' plays are left alone. No research, gates or grading changed."
   }
  ]
 }

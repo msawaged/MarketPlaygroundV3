@@ -2358,3 +2358,19 @@ and anything the others must know. Keep entries to a few lines; details go in th
   install ask is snoozed on an iPhone not yet on the home screen. AlertsCard's iPhone hint gets the ••• note.
 - Install counting, InstallCard and the Account page are untouched. Files: frontend/src/components/ToolSelectorPage.jsx,
   frontend/src/components/AlertsCard.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-24 ~08:30 UTC (Builder, key `builder`): Close Call smile has no flat step where the curve pools
+- No new HQ messages; no "proposed" app ideas left. Checked after-hours ladders for tickers outside BRAIN_TICKERS
+  (Polish's open note: no saved smile). Live 2:50 AM ET, HOOD Dec 11 at $67.36: "above $66 / $67 / $68" all 52.1%
+  (YES $104.03 / $104.05 / $104.03), then $69 46.6%: pool-adjacent-violators gave three noisy strikes one value.
+  PLTR Nov 27 / Dec 4 / Dec 18 and HOOD Nov 27 were in order.
+- yesno._through_blocks (new): the same pooling, but each block's odds sit at its weighted middle strike and strikes
+  between middles read the straight line joining them; ends keep their block's odds. ordered_digital uses it instead
+  of _decreasing (kept, still tested). Never rises with the strike; applies to live and saved smiles. Where nothing
+  pools (clean chains) the curve is unchanged.
+- Synthetic HOOD-like $1 chain: old 63.0-71.0 ladder 62.9 / 53.7 / 53.7 / 53.7 / 40.9 / 40.9%, now 62.9 / 58.3 / 53.7 /
+  48.6 / 43.5 / 40.2%. Test: test_yesno_ordered_smile_has_no_flat_step_where_it_pools.
+- Still open (not changed): HOOD Dec 11 $70 fell back to one vol after hours ("spread quotes looked out of date") beside
+  smile neighbours; in order tonight, but a non-saved ticker can still mix the two after the close.
+- No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

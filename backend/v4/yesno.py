@@ -399,13 +399,42 @@ def _decreasing(nodes: list[list]) -> list[tuple[float, float]]:
     return [(k, b[0]) for b in blocks for k in b[2]]
 
 
+def _through_blocks(nodes: list[list]) -> list[tuple[float, float]]:
+    """The pooled curve of _decreasing, but with each pooled block's odds placed at its weighted middle strike and the
+    strikes between two middles read on the straight line joining them, so a pooled run of strikes doesn't show the
+    same odds three lines in a row. Live Tue Nov 24, 2:50 AM ET, HOOD Dec 11 at $67.36 (no smile saved, so the last
+    session's raw quotes): "above $66", "above $67" and "above $68" all read 52.1%, a flat step a desk would read
+    as no chance of closing between $66 and $68. Still never rises with the strike (each block's odds sit at or
+    below the one before it); strikes outside the first or last middle keep their block's odds."""
+    blocks: list[list] = []                              # [odds, weight, sum of weight x strike]
+    for k, p, w in nodes:
+        blocks.append([p, w, w * k])
+        while len(blocks) > 1 and blocks[-2][0] < blocks[-1][0]:
+            p2, w2, s2 = blocks.pop()
+            p1, w1, s1 = blocks.pop()
+            blocks.append([(p1 * w1 + p2 * w2) / (w1 + w2), w1 + w2, s1 + s2])
+    mids = [(s / w, p) for p, w, s in blocks]
+    out = []
+    for k, _, _ in nodes:
+        if k <= mids[0][0]:
+            out.append((k, mids[0][1]))
+        elif k >= mids[-1][0]:
+            out.append((k, mids[-1][1]))
+        else:
+            i = next(j for j in range(1, len(mids)) if mids[j][0] >= k)
+            (ka, pa), (kb, pb) = mids[i - 1], mids[i]
+            out.append((k, pa + (pb - pa) * (k - ka) / (kb - ka)))
+    return out
+
+
 def ordered_digital(allv: list[tuple], spot: float, level: float, years: float) -> Optional[dict]:
     """The smile's odds at the line, read off one curve for the whole expiration so a higher line never gets higher
     odds. Each straight-line fit near one line is good locally, but a fit through 3 points beside one through 5 can
     disagree by more than the gap between two lines: live Mon Nov 23, AMD Dec 18 at $447, the smile read 63.7% above
     $410 and 63.8% above $420; Dec 11 read 31.1% above $480 and 35.5% above $490. So read the local fit at every listed
     strike within ORDER_WINDOW of the stock price, make that curve fall with the strike (pool adjacent violators,
-    weighted by each fit's points), and read the line between its two neighbouring strikes. The line's own fit keeps
+    weighted by each fit's points; a pooled run is read on the line through the blocks' middles, _through_blocks,
+    so it has no flat step), and read the line between its two neighbouring strikes. The line's own fit keeps
     its vol; its slope is set so that a spread priced at the line's vols costs the curve's odds (YES costs about the
     odds shown). None when the line's own fit fails (same guards as before); the line's own fit unchanged when the
     curve has no strike on one side of it within SKEW_REACH."""
@@ -420,7 +449,7 @@ def ordered_digital(allv: list[tuple], spot: float, level: float, years: float) 
         d = _smile_digital(_near_line(allv, k), spot, k, years)
         if d:
             nodes.append([k, d["p"], d["n"]])
-    curve = _decreasing(nodes)
+    curve = _through_blocks(nodes) if nodes else []
     lo = [(k, p) for k, p in curve if k <= level + 1e-9 and level - k <= SKEW_REACH * level]
     hi = [(k, p) for k, p in curve if k >= level - 1e-9 and k - level <= SKEW_REACH * level]
     if not lo or not hi:
