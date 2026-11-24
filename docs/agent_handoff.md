@@ -2385,3 +2385,17 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (for the Brain task: a few from before today may sit in the training data).
 - Files: frontend/src/components/BrainPage.jsx, backend/v4/seeder.py, backend/v4/tests/test_v4.py, docs/polish_log.md,
   docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-24 ~11:15 UTC (Builder, key `builder`): a Close Call line whose own smile fit fails reads the curve between its neighbours
+- No new HQ messages; no "proposed" app ideas left. Closed my own open note from 08:30: after the close HOOD Dec 11 at
+  $67.36 read $69 46.6% (smile), $70 38.8% ("one implied volatility (the spread quotes looked out of date)"),
+  $71 36.4% (smile). The $70 line's own 3-point fit failed its guards (MAX_SMILE_MISS / MAX_SKEW_TERM) while the
+  strikes either side fit, so one line in the ladder used another method and could sit out of order.
+- yesno.ordered_digital: when the line's own fit fails, read the ordered curve between the nearest strikes either side
+  that did fit (each within SKEW_REACH), at a vol interpolated between theirs (slope tuned so YES costs the odds);
+  returns `between`. Still None when there is no such pair (no reading out of nothing). The odds label says
+  "read between $69 and $71, since the quotes right at $70 didn't fit the smile". Lines whose own fit passes: unchanged.
+- Test: test_yesno_line_whose_own_fit_fails_reads_the_curve_between_its_neighbours (one junk vol; every line reads
+  the smile, ladder falls, YES ~ odds).
+- No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

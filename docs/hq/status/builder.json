@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-24T08:35:00Z",
- "last_run": "Close Call could show the same odds three lines in a row. Tonight HOOD Dec 11 (stock $67.36) said 52.1% to close above $66, 52.1% above $67 and 52.1% above $68, as if it couldn't close between $66 and $68. The cause: when the overnight option prices were noisy, the app kept the odds in order by giving the noisy strikes one shared value. Now that shared value sits at the middle and the lines either side read a straight line between their neighbours, so the odds still never go up as the line goes up, and they now fall at every line. Clean option prices give the same numbers as before. Practice money only; grading unchanged.",
+ "updated_at": "2026-11-24T11:20:00Z",
+ "last_run": "Close Call could still mix two ways of reading odds in one ladder. After Monday's close HOOD Dec 11 (stock $67.36) read 46.6% above $69 and 36.4% above $71 from the option smile, but 38.8% above $70 from a single volatility, labelled 'the spread quotes looked out of date'. The option quotes right at $70 didn't fit the smile, while the ones either side did. Now a line like that reads the same smoothed curve between its two neighbours, and the label says so ('read between $69 and $71, since the quotes right at $70 didn't fit the smile'). So every line on a date comes from one curve and the odds keep falling as the line rises. Lines that already read the smile are unchanged. Practice money only; grading unchanged.",
  "working_on": "Nothing open.",
- "next": "After today's 3-4 PM ET save: check NVDA, SPY, AMD and a few smaller stocks (HOOD, PLTR) Close Call ladders fall evenly through the stock price. Watch the home-screen counts on HQ.",
+ "next": "After today's 3-4 PM ET save: check Close Call ladders (NVDA, SPY, AMD, HOOD, PLTR) read one curve on every line and fall evenly. Watch the home-screen counts on HQ.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Close Call could still mix two ways of reading odds in one ladder. After Monday's close HOOD Dec 11 (stock $67.36) read 46.6% above $69 and 36.4% above $71 from the option smile, but 38.8% above $70 from a single volatility, labelled 'the spread quotes looked out of date'. The option quotes right at $70 didn't fit the smile, while the ones either side did. Now a line like that reads the same smoothed curve between its two neighbours, and the label says so ('read between $69 and $71, since the quotes right at $70 didn't fit the smile'). So every line on a date comes from one curve and the odds keep falling as the line rises. Lines that already read the smile are unchanged. Practice money only; grading unchanged.",
+   "at": "2026-11-24T11:20:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call could show the same odds three lines in a row. Tonight HOOD Dec 11 (stock $67.36) said 52.1% to close above $66, 52.1% above $67 and 52.1% above $68, as if it couldn't close between $66 and $68. The cause: when the overnight option prices were noisy, the app kept the odds in order by giving the noisy strikes one shared value. Now that shared value sits at the middle and the lines either side read a straight line between their neighbours, so the odds still never go up as the line goes up, and they now fall at every line. Clean option prices give the same numbers as before. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "Let's start thinking of making this a mobile app vs online app",
    "at": "2026-11-23T15:10:00Z",
    "body": "The Chair has answered this with the options. From the build side: the site already works at phone size, so an installable home-screen app (PWA) is the smallest first step whenever you want it. Just say the word and I'll build it."
-  },
-  {
-   "re": "Better reel: more production value and value add (live chat)",
-   "at": "2026-11-23T12:00:00Z",
-   "body": "Passed to the Reel agent. Its next run makes promo v6 first: v5's look pushed further, about 45 seconds, four plain-words points (finds the hidden winners in any news, the brain keeps an open score against the market, practice money first, Story mode explains headlines as you swipe). It uses stories already made today, so it costs nothing. It'll send you v5 and v6 together with captions."
   }
  ]
 }

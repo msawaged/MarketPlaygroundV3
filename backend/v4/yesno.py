@@ -440,18 +440,43 @@ def ordered_digital(allv: list[tuple], spot: float, level: float, years: float) 
     curve has no strike on one side of it within SKEW_REACH."""
     from .strategy import RISK_FREE
     own = _smile_digital(_near_line(allv, level), spot, level, years)
-    if not own:
-        return None
     nodes = []
     for k, _ in allv:
         if abs(k / spot - 1) > ORDER_WINDOW:
             continue
         d = _smile_digital(_near_line(allv, k), spot, k, years)
         if d:
-            nodes.append([k, d["p"], d["n"]])
-    curve = _through_blocks(nodes) if nodes else []
+            nodes.append([k, d["p"], d["n"], d["vol"]])
+    curve = _through_blocks([n[:3] for n in nodes]) if nodes else []
     lo = [(k, p) for k, p in curve if k <= level + 1e-9 and level - k <= SKEW_REACH * level]
     hi = [(k, p) for k, p in curve if k >= level - 1e-9 and k - level <= SKEW_REACH * level]
+    if not own:
+        # The line's own fit failed (its nearest quotes don't sit on one straight line, or its skew term is too big)
+        # while the strikes either side of it fit fine: read the curve between them, at a vol read between theirs,
+        # instead of dropping that one line to one implied vol beside neighbours read off the smile. Live Tue Nov 24,
+        # after the close, HOOD Dec 11 at $67.36: $69 46.6% (smile), $70 38.8% ("one implied volatility, the spread
+        # quotes looked out of date"), $71 36.4% (smile): in order that night, but two methods in one ladder can sit
+        # out of order, and the label said something different on one line for no visible reason. Only between two
+        # strikes the curve read, each within SKEW_REACH; otherwise None as before.
+        lo = [kp for kp in lo if kp[0] < level - 1e-9]
+        hi = [kp for kp in hi if kp[0] > level + 1e-9]
+        if not lo or not hi:
+            return None
+        (ka, pa), (kb, pb) = lo[-1], hi[0]
+        va, na = next((n[3], n[2]) for n in nodes if n[0] == ka)
+        vb, nb = next((n[3], n[2]) for n in nodes if n[0] == kb)
+        t = (level - ka) / (kb - ka)
+        sig = va + (vb - va) * t
+        if sig <= 0:
+            return None
+        sq = sig * math.sqrt(years)
+        d1 = (math.log(spot / level) + (RISK_FREE + 0.5 * sig * sig) * years) / sq
+        flat = _ncdf(d1 - sq)
+        p = min(0.99, max(0.01, pa + (pb - pa) * t))
+        vega = spot * math.sqrt(years) * math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+        slope = -(p - flat) / (math.exp(RISK_FREE * years) * vega) if vega > 1e-9 else (vb - va) / (kb - ka)
+        return {"p": p, "flat": flat, "vol": sig, "slope": slope, "n": max(na, nb), "miss": None, "local_p": None,
+                "ordered": True, "between": (ka, kb)}
     if not lo or not hi:
         return own
     (ka, pa), (kb, pb) = lo[-1], hi[0]
@@ -1105,8 +1130,11 @@ def quote(ticker: str, level: float, expiration: str) -> dict:
     elif smile:
         why_not = ("the market is closed, and one spread's last quotes can blur its odds a few points" if closed
                    else "read off one curve for this date, so a higher line never shows higher odds")
+        between = sk.get("between")
+        near = (f"read between {_money(between[0])} and {_money(between[1])}, since the quotes right at "
+                f"{_money(level)} didn't fit the smile" if between else f"near {_money(level)}")
         m_p, odds_source = sk["p"], (f"the option smile near the line: implied volatilities of {sk['n']} listed "
-                                     f"{u} options near {_money(level)} (skew included; {why_not})")
+                                     f"{u} options {near} (skew included; {why_not})")
     else:
         from .strategy import RISK_FREE
         implied = fwd[0] * math.exp(-RISK_FREE * years) if off_step else at_own["price"] if moved and not split else None

@@ -6987,6 +6987,53 @@ def test_install_counts_once_per_device_refuses_unknown_kinds_and_sums_the_week(
     assert [install.record("dismissed", None, now=d2)["counted"] for _ in range(3)] == [True, True, False]
 
 
+def test_yesno_line_whose_own_fit_fails_reads_the_curve_between_its_neighbours(monkeypatch):
+    """Live Tue Nov 24 after the close, HOOD Dec 11 at $67.36: $69 46.6% and $71 36.4% read the smile, but $70 read
+    38.8% from one implied vol ("the spread quotes looked out of date"), because the quotes nearest $70 didn't sit on
+    one straight line. Two methods in one ladder can sit out of order. Now a line whose own fit fails reads the
+    ordered curve between the strikes either side that did fit, so the whole ladder is one curve and still falls."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    spot = market.latest_price("WINR")
+    exp = TODAY + timedelta(days=17)
+    yrs = 17 / 365
+    step = round(spot / 60, 2)
+    grid = [round(spot + step * i, 2) for i in range(-14, 15)]
+    bad = grid[17]                                                  # one strike above the price with a junk vol
+    iv = {k: 0.9 - 0.5 * (k / spot - 1) + (0.08 if k == bad else 0.0) for k in grid}
+
+    def chain(u, strike, e, days=21, band=0.15):
+        out = []
+        for k in grid:
+            for t in ("call", "put"):
+                m = bs_price(spot, k, yrs, iv[k], t)
+                out.append({"symbol": f"{u}{k}{t}", "type": t, "strike": k, "expiration": exp,
+                            "bid": round(max(0.0, m * 0.97), 2), "ask": round(m * 1.03, 2), "iv": iv[k]})
+        return out
+    monkeypatch.setattr(market, "option_chain_near", chain)
+    monkeypatch.setattr(market, "option_iv", lambda *a, **k: None)
+    allv = yesno._smile_points(chain("WINR", spot, exp), spot, yrs)
+    lines = grid[12:22]
+    own = {k: yesno._smile_digital(yesno._near_line(allv, k), spot, k, yrs) for k in lines}
+    failed = [k for k in lines if not own[k]]
+    assert failed and len(failed) < len(lines) - 3                  # some lines' own fits fail beside good ones
+    sk = yesno.ordered_digital(allv, spot, failed[0], yrs)
+    assert sk and sk["between"][0] < failed[0] < sk["between"][1]
+    # Too far from any strike the curve read: still None (no reading out of nothing).
+    assert yesno.ordered_digital(allv[:3], spot, failed[0], yrs) is None
+    monkeypatch.setattr(market, "clock", lambda: {"is_open": False})
+    df = math.exp(-RISK_FREE * yrs)
+    ps = []
+    for lvl in lines:
+        q = yesno.quote("WINR", lvl, exp.isoformat())
+        assert "option smile" in q["odds_source"], (lvl, q["odds_source"])
+        if lvl in failed:
+            assert "didn't fit the smile" in q["odds_source"]
+        assert abs(q["yes"]["cost"] / q["yes"]["payout"] / df - q["market_p"]) < 0.02
+        ps.append(q["market_p"])
+    assert all(a > b for a, b in zip(ps, ps[1:])), ps
+
+
 def test_yesno_ordered_smile_has_no_flat_step_where_it_pools():
     """Live Tue Nov 24, 2:50 AM ET, HOOD Dec 11 at $67.36 (no smile saved, so the last session's raw quotes): "above
     $66", "above $67" and "above $68" all read 52.1%, because pool-adjacent-violators gave the three strikes one
