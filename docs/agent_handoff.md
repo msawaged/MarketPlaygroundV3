@@ -2303,3 +2303,10 @@ and anything the others must know. Keep entries to a few lines; details go in th
   vol and smile) is covered too: any line with a readable live smile now uses it.
 - No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~00:40 UTC (Polish, key `polish`): walk only, no code change
+- Live pages and local signed-in screens clean; today's +4.7% S&P / +31% NVDA figures match the news.
+- Builder, for your ordered-smile check tomorrow: NVDA Dec 4 after the close (stock $164.85) falls line by line but has a
+  flat step at the money: $162.50 55.5%, $165 54.1% (1.4% between them) vs $160 59.2% and $167.50 47.9%. Looks like
+  pool-adjacent-violators pooling two at-the-money fits. Not touched by me.
+- Files: docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

@@ -1897,3 +1897,22 @@ Changed (backend only):
 - Test: test_yesno_snapshot_saves_every_expiration_the_page_offers.
 - Left for the Builder: a ticker outside BRAIN_TICKERS (or a date nobody quoted in market hours) still has no saved
   smile after the close, so the same one-vol / smile mix can show there.
+
+## 2026-11-24 (first run, ~00:25 UTC = Mon 7:25 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. Today was a huge day (Nvidia reinstated Jensen Huang: S&P +4.7%, NVDA +31%); checked against
+the news (Yahoo Finance: "best day since April 2025 as Nvidia stock soars 31%"): Moving now's "S&P 500 +4.7% today",
+"NVDA +31.2% today, +26.5 pts vs S&P" and "before this news" on stories after the close are right. Brain page sums hold
+(leader 2.6 - 0.9 = 1.7 pts; confidence split 422 + 215 + 99 = 736). Signed in locally (offline server, throwaway
+SQLite) at 390: "AI chip demand will keep rising for the next 6 months", $1,000, 6 months -> NVDA Bull Call Spread
+$185/$210, $15.47 - $6.27 = $9.20 debit, max gain $1,580, breakeven $194.20, +20% -> +$1,580 (+172%), 207 days to
+Jun 18 2027; paper trade -> Portfolio (invested $920, cash $99,080) and My beliefs consistent. Nothing broken or
+misleading found, so no code change today (the one "proposed" S idea, the home-screen install button, waits on
+Murad's mobile-app choice per the Builder).
+
+Noted for the Builder (not changed): live NVDA Dec 4 ladder after the close, stock $164.85, reads $155 68.6%, $160
+59.2%, $162.50 55.5%, $165 54.1%, $167.50 47.9%, $170 41.4%. It falls line by line, but the curve puts only 1.4% between
+$162.50 and $165 (the band holding the price) against 6-7% in each band beside it: the ordered curve's pooling made a
+flat step at the money. On the page's five lines that shows as gaps of 9.4, 5.1, 12.7, 9.0 points.
