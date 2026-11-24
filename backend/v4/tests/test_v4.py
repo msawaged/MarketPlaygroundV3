@@ -6898,3 +6898,39 @@ def test_yesno_snapshot_saves_every_expiration_the_page_offers(monkeypatch):
     assert yesno.EXPIRATIONS_SHOWN == 8
     assert out["saved"] == 8 and len(seen) == 8
     assert seen[-1][1].isoformat() == exps[7]
+
+
+def test_yesno_smile_has_no_step_where_puts_hand_over_to_calls(monkeypatch):
+    """Live Mon Nov 23 after the close, NVDA Dec 4 at $164.85: the saved smile's $165 put read 78.2% and the $167.50
+    call 75.6% (puts priced off a slightly lower stock price than ours), a 3-point fit read that step as steep skew,
+    and the ladder went flat at the money: $162.50 55.5%, $165 54.1%, then $167.50 47.9%. Puts and calls are now
+    blended near the forward, so the ladder keeps falling through the stock's price."""
+    from backend.v4 import yesno
+    from backend.v4.strategy import bs_price, RISK_FREE
+    spot, yrs = 165.0, 11 / 365
+    grow = math.exp(RISK_FREE * yrs)
+    s_quotes = (spot * grow - 0.6) / grow            # the quotes' own forward is $0.60 lower (well inside parity checks)
+    iv = lambda k: 0.78 - 0.25 * (k / spot - 1)
+    grid = [132.5 + 2.5 * i for i in range(28)]
+
+    def chain(s):
+        out = []
+        for k in grid:
+            for t in ("call", "put"):
+                m = bs_price(s, k, yrs, iv(k), t)
+                out.append({"type": t, "strike": k, "bid": round(m * 0.99, 2), "ask": round(m * 1.01, 2)})
+        return out
+    lines = [157.5 + 2.5 * i for i in range(7)]
+    ladder = lambda: [yesno.ordered_digital(yesno._smile_points(chain(s_quotes), spot, yrs), spot, L, yrs)["p"]
+                      for L in lines]
+    new = ladder()
+    assert all(a - b > 0.015 for a, b in zip(new, new[1:])), new
+    monkeypatch.setattr(yesno, "SMILE_BLEND", 1e-9)                # the old hand-over: a flat step at the money
+    old = ladder()
+    assert min(a - b for a, b in zip(old, old[1:])) < 0.005, old
+    monkeypatch.undo()
+    # Quotes that agree with our stock price: puts and calls give the same vols, so the blend changes nothing.
+    clean = yesno._smile_points(chain(spot), spot, yrs)
+    monkeypatch.setattr(yesno, "SMILE_BLEND", 1e-9)
+    assert [k for k, _ in clean] == [k for k, _ in yesno._smile_points(chain(spot), spot, yrs)]
+    assert all(abs(a[1] - b[1]) < 0.003 for a, b in zip(clean, yesno._smile_points(chain(spot), spot, yrs)))

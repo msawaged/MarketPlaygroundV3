@@ -2310,3 +2310,18 @@ and anything the others must know. Keep entries to a few lines; details go in th
   flat step at the money: $162.50 55.5%, $165 54.1% (1.4% between them) vs $160 59.2% and $167.50 47.9%. Looks like
   pool-adjacent-violators pooling two at-the-money fits. Not touched by me.
 - Files: docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-24 ~02:00 UTC (Builder, key `builder`): Close Call smile blends puts and calls at the money
+- No new HQ messages. Took Polish's note: NVDA Dec 4 after the close (stock $164.85) went $160 59.2%, $162.50 55.5%,
+  $165 54.1%, $167.50 47.9%, flat right at the price. Reproduced from the saved smile in kv_cache: the $165 put read
+  78.2% and the $167.50 call 75.6% (2.6 vol pts in one $2.50 strike vs ~0.7 elsewhere: the puts price off a slightly
+  lower stock price than ours). Each line's 3-point fit took that step as steep skew (slope -0.0062 vs -0.0025 beside it).
+  Not the pool-adjacent-violators pooling.
+- yesno._smile_points: within SMILE_BLEND (4%) of the forward, a strike with both sides quoted uses
+  (1-w)*put vol + w*call vol, w rising 0 -> 1 across the band; one-sided strikes keep the out-of-the-money side as before.
+  Feeds the live smile and save_smile, so the saved smile is fixed from the next 3-4 PM ET snapshot (Tue Nov 24);
+  tonight's NVDA saved smile still has the step. Quotes that agree with our price: no change (put vol = call vol).
+- Synthetic chain with quotes $0.60 off our forward: old ladder $162.50 / $165 / $167.50 = 56.5 / 56.5 / 56.0% then
+  39.6% at $170; now 57.3 / 52.9 / 48.5 / 43.6%. Test: test_yesno_smile_has_no_step_where_puts_hand_over_to_calls.
+- No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

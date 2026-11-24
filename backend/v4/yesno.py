@@ -292,26 +292,43 @@ def skew_odds(chain: list[dict], spot: float, level: float, years: float) -> Opt
     return ordered_digital(allv, spot, level, years)
 
 
+SMILE_BLEND = 0.04          # puts and calls blended within 4% of the forward (no step at the money)
+
+
 def _smile_points(chain: list[dict], spot: float, years: float, max_gap: Optional[float] = None) -> list[tuple]:
     """(strike, implied vol) backed out of each out-of-the-money mid (puts below the forward, calls above: the liquid
-    side, the way a desk reads the smile), sorted by strike. max_gap: keep only quotes whose bid/ask gap is at most
-    that share of the mid (the saved smile keeps tight ones only)."""
+    side, the way a desk reads the smile), sorted by strike. Within SMILE_BLEND of the forward both sides are blended,
+    the call's weight rising from 0 to 1 across the band, so the smile has no step where puts hand over to calls: live
+    Mon Nov 23, NVDA Dec 4 at $165.44, the $165 put read 78.2% and the $167.50 call 75.6% (2.6 vol points in one $2.50
+    strike, against ~0.7 per strike elsewhere), and a 3-point fit read that step as steep skew, so after the close the
+    ladder went $160 59.2%, $162.50 55.5%, $165 54.1%, $167.50 47.9%: almost flat right at the stock's price. A strike
+    in the band with only one side quoted uses its out-of-the-money side, as before. max_gap: keep only quotes whose
+    bid/ask gap is at most that share of the mid (the saved smile keeps tight ones only)."""
     from .strategy import RISK_FREE
     fwd = spot * math.exp(RISK_FREE * years)
     rows = {(r["type"], float(r["strike"])): r for r in chain}
     mids = {"call": _mids([r for r in chain if r["type"] == "call"]),
             "put": _mids([r for r in chain if r["type"] == "put"])}
-    out = []
-    for k in sorted(set(mids["call"]) | set(mids["put"])):
-        kind = "put" if k < fwd else "call"
+    def side_vol(kind, k):
         m = mids[kind].get(k)
         if not m:
-            continue
+            return None
         if max_gap is not None:
             r = rows.get((kind, k)) or {}
             if float(r.get("ask") or 0) - float(r.get("bid") or 0) > max(0.05, max_gap * m):
-                continue
-        v = strike_vol(m, spot, k, years, kind)
+                return None
+        return strike_vol(m, spot, k, years, kind)
+
+    out = []
+    for k in sorted(set(mids["call"]) | set(mids["put"])):
+        w = min(1.0, max(0.0, (k / fwd - 1 + SMILE_BLEND) / (2 * SMILE_BLEND)))   # call weight: 0 below, 1 above
+        pv = side_vol("put", k) if w < 1 else None
+        cv = side_vol("call", k) if w > 0 else None
+        if pv and cv:
+            v = (1 - w) * pv + w * cv
+        else:
+            kind = "put" if k < fwd else "call"
+            v = pv if kind == "put" else cv
         if v:
             out.append((k, v))
     return out
