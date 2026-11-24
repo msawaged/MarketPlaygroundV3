@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PayoffChart from './PayoffChart';
 import { useNavigate } from 'react-router-dom';
 import { buildModel, sizePosition, scenarios, summarize, money, plainEnglish, niceDate } from '../../lib/payoff';
-import { sendFeedback, paperTrade, paperTradeOptions, getPortfolio } from '../../lib/api';
+import { sendFeedback, paperTrade, paperTradeOptions } from '../../lib/api';
+import SizeInput, { useBook } from '../ui/SizeInput';
+import { toDollars, buyPlan, contractsFor } from '../../lib/sizing';
 import Term from '../ui/Term';
 import ReplayPanel from './ReplayPanel';
 import { shareCard } from '../../lib/shareCard';
@@ -29,7 +31,7 @@ const PLAIN = {
 
 const AMOUNTS = [500, 1000, 2500, 5000];
 const MAX_AMOUNT = 100000; // the practice account starts with $100,000
-const PCTS = [5, 10, 25, 50]; // "% of my cash": a share of the practice account's spare cash (buying power)
+const PCTS = [1, 2.5, 5, 10]; // % of account (total value): position sizes a desk would actually use
 const TERM_FOR = { 'Per contract': 'contract', 'Max gain': 'max gain', Breakeven: 'breakeven' };
 
 function DirectionBadge({ direction }) {
@@ -187,22 +189,21 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const picks = (data.picks || []).filter((p) => p.shown).slice(0, 3);
   const [idx, setIdx] = useState(0);
   const budget = Number(data.prefs?.budget_usd || prefs?.budget_usd || 0);
-  const [amount, setAmount] = useState(budget || 1000);
-  const [custom, setCustom] = useState(budget && !AMOUNTS.includes(budget) ? String(budget) : '');
-  // Size by dollars, or by a share of the spare cash in the practice account (fetched when first asked for).
-  const [sizeBy, setSizeBy] = useState('usd');
-  const [pct, setPct] = useState(null);
-  const [cash, setCash] = useState(null); // null loading, -1 couldn't load
-  const byPct = () => {
-    setSizeBy('pct');
-    const start = (c) => { if (c >= 1) { setPct(10); setCustom(''); setAmount(Math.max(1, Math.floor(c * 0.1))); } };
-    if (cash == null || cash < 0) {
-      setCash(null);
-      getPortfolio().then((d) => { const c = Math.max(0, Number(d?.account?.buying_power) || 0); setCash(c); start(c); })
-        .catch(() => setCash(-1));
-    } else if (!pct) start(cash);
+  // Size like a desk: type dollars or a % of the whole account (cash plus holdings). Quick picks under the box.
+  const book = useBook();
+  const acct = book && !book.error ? book : null;
+  const [sizeMode, setSizeMode] = useState('usd');
+  const [sizeRaw, setSizeRaw] = useState(String(budget || 1000));
+  const amount = Math.round(Math.min(toDollars(sizeMode, sizeRaw, acct?.value || 0), MAX_AMOUNT) * 100) / 100;
+  const switchSize = (m) => {
+    if (m === sizeMode) return;
+    // keep the same money when switching: $2,500 of a $100,000 account <-> 2.5%
+    if (acct?.value > 0 && amount > 0) setSizeRaw(m === 'pct' ? String(Math.round((amount / acct.value) * 10000) / 100) : String(Math.round(amount)));
+    else setSizeRaw('');
+    setSizeMode(m);
   };
-  const pickPct = (x) => { setPct(x); setCustom(''); setAmount(Math.max(1, Math.floor((cash * x) / 100))); };
+  const [optMode, setOptMode] = useState('usd');
+  const [optRaw, setOptRaw] = useState('');
   const [status, setStatus] = useState({}); // pick_id -> 'up' | 'down' | 'traded' | 'tracking' | 'error:...'
   const [busy, setBusy] = useState(false);
   const [useAlt, setUseAlt] = useState({}); // pick_id -> true when showing the other version
@@ -221,6 +222,16 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
   const contracts = contractsBy[ckey] || fitN;
   const setContracts = (n) => setContractsBy((c) => ({ ...c, [ckey]: Math.max(1, Math.min(1000, n)) }));
   const optAmount = model?.kind === 'options' ? contracts * model.capitalPerUnit : amount;
+  const optBudget = toDollars(optMode, optRaw, acct?.value || 0);
+  const optFit = contractsFor(optBudget, model?.capitalPerUnit || 0);
+  const onOptRaw = (v) => {
+    setOptRaw(v);
+    const n = contractsFor(toDollars(optMode, v, acct?.value || 0), model?.capitalPerUnit || 0);
+    if (n >= 1) setContracts(n);
+  };
+  const onOptMode = (m) => { setOptMode(m); setOptRaw(''); };
+  const plan = buyPlan(amount, Number(pick?.price) || 0, { accountValue: acct?.value || 0, cash: acct ? acct.cash : null, held: acct?.held?.[pick?.ticker] || 0 });
+  const pctTxt = (x) => `${x < 10 ? x.toFixed(1) : Math.round(x)}%`;
   const sizing = useMemo(() => (model ? sizePosition(model, optAmount) : null), [model, optAmount]);
   const sum = useMemo(() => (model ? summarize(model) : null), [model]);
   const scen = useMemo(() => (model ? scenarios(model, optAmount) : []), [model, optAmount]);
@@ -536,6 +547,12 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
 
               {isOptions ? (<>
               {/* Options: how many contracts */}
+              <SizeInput title="Spend" mode={optMode} onMode={onOptMode} raw={optRaw} onRaw={onOptRaw}
+                picks={{ usd: [500, 1000, 2500, 5000], pct: PCTS }}>
+                {!optRaw ? 'Type dollars or a % of your account and we fit whole contracts to it, or set the count below.'
+                  : optFit < 1 ? `One contract needs ${money(model.capitalPerUnit)}, more than ${money(optBudget)}.`
+                  : `${money(optBudget)} fits ${optFit} contract${optFit > 1 ? 's' : ''} (${money(optFit * model.capitalPerUnit)}), leaving ${money(optBudget - optFit * model.capitalPerUnit)} unspent.`}
+              </SizeInput>
               <div>
                 <div className="text-xs text-slate-400 mb-1.5">How many contracts?</div>
                 <div className="flex items-center gap-3">
@@ -548,7 +565,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg font-extrabold">{money(contracts * model.capitalPerUnit)} <span className="text-xs font-semibold text-slate-400">total</span></div>
-                    <div className="text-[11px] text-slate-400">{money(model.capitalPerUnit)} per contract · worst case {money(Math.abs(sum.maxLoss) * contracts)}</div>
+                    <div className="text-[11px] text-slate-400">{money(model.capitalPerUnit)} per contract · worst case {money(Math.abs(sum.maxLoss) * contracts)}{acct?.value > 0 ? ` · ${pctTxt((contracts * model.capitalPerUnit / acct.value) * 100)} of account` : ''}</div>
                   </div>
                 </div>
                 {basePick.alt && (useAlt[basePick.pick_id] ? basePick.structure : basePick.alt.structure) === 'Buy Stock' && (
@@ -558,63 +575,19 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
               </div>
 
               </>) : (<>
-              {/* Investment */}
+              {/* Investment: dollars or % of account, typed first */}
               <div>
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="text-xs text-slate-400">If you put in</span>
-                  <div className="flex w-44 rounded-lg bg-slate-800 p-0.5" role="tablist" aria-label="Size the trade by">
-                    <button role="tab" aria-selected={sizeBy === 'usd'} onClick={() => { if (sizeBy === 'pct' && pct && !AMOUNTS.includes(amount)) setCustom(String(amount)); setSizeBy('usd'); setPct(null); }}
-                      className={`flex-1 rounded-md py-1 text-[11px] font-bold ${sizeBy === 'usd' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}>Dollars</button>
-                    <button role="tab" aria-selected={sizeBy === 'pct'} onClick={byPct}
-                      className={`flex-1 rounded-md py-1 text-[11px] font-bold ${sizeBy === 'pct' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}>% of my cash</button>
-                  </div>
-                </div>
-                {sizeBy === 'pct' ? (<>
-                <div className="grid grid-cols-4 gap-2">
-                  {PCTS.map((x) => (
-                    <button key={x} onClick={() => pickPct(x)} disabled={!(cash >= 1)}
-                      className={`rounded-lg py-2 text-sm font-bold border disabled:opacity-50 ${pct === x ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}>
-                      {x}%
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1.5" aria-live="polite">
-                  {cash == null ? 'Checking your practice cash…'
-                    : cash < 0 ? 'Couldn\u2019t load your practice cash. Use Dollars instead.'
-                    : cash < 1 ? 'No spare practice cash right now. Sell something on the Practice page first.'
-                    : pct ? `${pct}% of your ${money(cash)} spare practice cash is ${money(amount)}.`
-                    : `You have ${money(cash)} of practice cash to spend. Pick a share of it.`}
-                </p>
-                </>) : (<>
-                <div className="grid grid-cols-4 gap-2">
-                  {AMOUNTS.map((a) => (
-                    <button
-                      key={a}
-                      onClick={() => { setAmount(a); setCustom(''); }}
-                      className={`rounded-lg py-2 text-sm font-bold border ${a === amount && !custom ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'}`}
-                    >
-                      ${a.toLocaleString()}
-                    </button>
-                  ))}
-                </div>
-                <label className={`mt-2 flex items-center gap-2 rounded-lg border px-3 py-2 ${custom ? 'border-blue-400 bg-blue-600/10' : 'border-slate-700 bg-slate-800/60'}`}>
-                  <span className="text-xs text-slate-400 shrink-0">Or type any amount</span>
-                  <span className="ml-auto text-slate-400 font-bold">$</span>
-                  <input
-                    type="text" inputMode="decimal" placeholder="e.g. 750" value={custom}
-                    aria-label="Custom amount in dollars"
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9.]/g, '');
-                      setCustom(raw);
-                      const n = Math.round(Number(raw));
-                      if (n >= 1) setAmount(Math.min(n, MAX_AMOUNT));
-                    }}
-                    onBlur={() => { if (custom && !(Number(custom) >= 1)) { setCustom(''); setAmount(1000); } }}
-                    className="w-28 bg-transparent text-right font-bold text-white placeholder:text-slate-500 focus:outline-none"
-                  />
-                </label>
-                {Number(custom) > MAX_AMOUNT && <p className="text-[11px] text-amber-200 mt-1">The practice account holds ${MAX_AMOUNT.toLocaleString()}, so this uses ${MAX_AMOUNT.toLocaleString()}.</p>}
-                </>)}
+                <SizeInput title="Position size" mode={sizeMode} onMode={switchSize} raw={sizeRaw} onRaw={setSizeRaw}
+                  picks={{ usd: AMOUNTS, pct: PCTS }}>
+                  {!(amount >= 1) ? (sizeMode === 'pct' && !acct ? 'Loading your practice account…' : 'Type an amount.')
+                    : <>
+                      <b className="text-slate-200">{money(amount)}</b>{plan.shares > 0 ? ` buys ${plan.shares.toLocaleString('en-US', { maximumFractionDigits: 4 })} shares at $${Number(pick.price).toFixed(2)}` : ''}
+                      {plan.weight != null && <> · <b className="text-slate-200">{pctTxt(plan.weight)}</b> of your {money(acct.value)} account</>}
+                      {acct?.held?.[pick.ticker] > 0 && plan.weightAfter != null && <> · {pick.ticker} becomes {pctTxt(plan.weightAfter)} of it (you already own some)</>}
+                      {plan.cashLeft != null && !plan.over && <> · {money(plan.cashLeft)} cash left</>}
+                    </>}
+                </SizeInput>
+                {plan.over && <p className="text-[11px] text-amber-200 mt-1">That's more than your {money(acct.cash)} of spare practice cash. Size it down or sell something first.</p>}
                 {sizing?.note && <p className="text-[11px] text-slate-500 mt-1.5">{sizing.note}</p>}
               </div>
 
@@ -625,7 +598,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
                 model={model}
                 units={sizing?.units || 1}
                 ticker={pick.ticker}
-                sizeLabel={isOptions ? `${contracts} contract${contracts > 1 ? 's' : ''}` : `$${amount.toLocaleString()} of shares`}
+                sizeLabel={isOptions ? `${contracts} contract${contracts > 1 ? 's' : ''}` : `${money(amount)} of shares`}
               />
 
               {/* Scenarios */}
@@ -672,7 +645,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
             </button>
             <button
               onClick={doPaperTrade}
-              disabled={busy || st === 'traded' || st === 'tracking' || st?.startsWith?.('queued:') || st?.startsWith?.('opt:')}
+              disabled={busy || st === 'traded' || st === 'tracking' || st?.startsWith?.('queued:') || st?.startsWith?.('opt:') || (!isOptions && !avoid && (!(amount >= 1) || plan.over))}
               className="rounded-lg py-3 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-60"
             >
               {busy ? 'Placing…' : st === 'traded' || st?.startsWith?.('opt:') ? 'Paper traded' : st?.startsWith?.('queued:') ? 'Queued for the open' : st === 'tracking' ? 'Tracking' : avoid ? 'Track it' : 'Paper trade'}
@@ -682,7 +655,7 @@ export default function StrategyCard({ data, belief, riskProfile = 'moderate', o
           {st === 'down' && <p className="text-xs text-slate-400">Got it. We'll show picks like this less often.</p>}
           {st?.startsWith?.('queued:') && <p className="text-xs text-amber-200">{st.slice(7)} Find it under Portfolio.</p>}
           {st?.startsWith?.('opt:') && <p className="text-xs text-blue-300">{st.slice(4)} <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
-          {st === 'traded' && <p className="text-xs text-blue-300">Added ${amount.toLocaleString()} of {pick.ticker} to your practice portfolio. No real money. <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
+          {st === 'traded' && <p className="text-xs text-blue-300">Added {money(amount)} of {pick.ticker} to your practice portfolio. No real money. <button onClick={() => navigate('/portfolio')} className="underline font-semibold">See it in Portfolio →</button></p>}
           {st === 'tracking' && (
             <p className="text-xs text-blue-300">
               We'll grade this idea against the market at 1 week, 1 month and 3 months. 

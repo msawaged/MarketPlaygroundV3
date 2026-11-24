@@ -1,15 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-24T14:50:00Z",
- "last_run": "Built your ask: trades can now be sized by dollars or by percent, buying and selling. Selling on the Practice page: tap Sell, then pick 25%, 50%, 75% or All, or type a dollar amount; it shows the shares and what you keep before you confirm (before, Sell always sold everything). After hours a part sale waits for the open. Buying a stock idea: a 'Dollars | % of my cash' switch, with 5 / 10 / 25 / 50% of your spare practice cash ('10% of your $97,500 spare practice cash is $9,750'). Options stay sized by number of contracts. Practice money only. Two questions for you are under 'needs from Murad'.",
+ "updated_at": "2026-11-24T15:20:00Z",
+ "last_run": "Redone the way you asked: every trade ticket takes a typed amount, in dollars or % of your account. % of account means the whole account (cash plus holdings), the way a PM sizes a position. Getting in: a stock idea shows the shares it buys, its weight in the account, the new weight if you already own it, and the cash left. Options and Close Call fit whole contracts to your dollars or %, and Close Call can still take a contract count. Open positions: Sell takes any % of the position or any dollar amount, and a new Buy more adds by dollars or % of account. Quick-pick buttons stay under the box. Practice money only.",
  "working_on": "Nothing open.",
- "next": "Check on the live site that partial sells and '% of my cash' work after the deploy. Then whatever you answer below, or Close Call ladder checks after today's 3-4 PM ET save.",
- "needs_from_murad": [
-  "Percent on buys is a share of your spare practice cash. Would you rather it be a share of the whole account (cash plus what you own)?",
-  "Options and Close Call are sized by number of contracts. Want a 'spend about $X' choice there too (it picks the most whole contracts that fit)?"
- ],
+ "next": "Check the live tickets after the deploy (stock, options, Practice sell / buy more, Close Call) at phone width. Then Close Call ladder checks after today's 3-4 PM ET save.",
+ "needs_from_murad": [],
  "read_up_to": 2,
  "replies": [
+  {
+   "re": "Why would that make sense... custom percent or dollar amount for open positions or getting into a position (live chat)",
+   "body": "Redone the way you asked: every trade ticket takes a typed amount, in dollars or % of your account. % of account means the whole account (cash plus holdings), the way a PM sizes a position. Getting in: a stock idea shows the shares it buys, its weight in the account, the new weight if you already own it, and the cash left. Options and Close Call fit whole contracts to your dollars or %, and Close Call can still take a contract count. Open positions: Sell takes any % of the position or any dollar amount, and a new Buy more adds by dollars or % of account. Quick-pick buttons stay under the box. Practice money only.",
+   "at": "2026-11-24T15:20:00Z"
+  },
   {
    "re": "We need to create an option when putting in a trade whether it be a dollar amount or percentage to buy or sell",
    "body": "Built your ask: trades can now be sized by dollars or by percent, buying and selling. Selling on the Practice page: tap Sell, then pick 25%, 50%, 75% or All, or type a dollar amount; it shows the shares and what you keep before you confirm (before, Sell always sold everything). After hours a part sale waits for the open. Buying a stock idea: a 'Dollars | % of my cash' switch, with 5 / 10 / 25 / 50% of your spare practice cash ('10% of your $97,500 spare practice cash is $9,750'). Options stay sized by number of contracts. Practice money only. Two questions for you are under 'needs from Murad'.",
@@ -54,11 +56,6 @@
    "re": "Polish search (via chair)",
    "body": "Search polish, part 1 (the Chair's ask). I tried 12 searches on the live site. Typos found nothing at all: 'nvdia' and 'teslla' showed an empty page that offered to spend an AI story on the misspelling. Now, when a search finds nothing, it tries the likely spelling and says so: 'Nothing found for “nvdia”, so showing results for “nvidia”', with a 'Search “nvdia” as typed' link. It only fixes words it doesn't know that sit very close to a company name or a word in this week's stories, so real words with no story (like 'uranium') are left alone. Also, 'costco earnings' now shows the Costco card and headlines like 'costco' does. Searches still take about half a second.",
    "at": "2026-11-23T17:30:00Z"
-  },
-  {
-   "re": "(no new messages)",
-   "at": "2026-11-23T15:10:00Z",
-   "body": "Close Call gave odds that went up as the line went up when the market was closed. Before Monday's open, TSLA at $366.66 said 63% to close above $350 but 68% above $360; AMD and META had the same problem. Overnight, the free feed's option quotes get very wide (one NVDA option was quoted at $14.34 to buy back and $24.36 to buy, against $13.24 / $13.66 once the market opened), and stocks move before the open while options don't update, so the app was reading odds out of noise. Now, during market hours, the app saves each date's option prices from tight quotes only, plus a snapshot of the 15 big stocks in the last hour of trading. When the market is closed, the odds come from that saved set, moved with the stock's latest price, and the screen says so (e.g. 'saved in the last session, Fri 3:13 PM ET'). Every line now comes from the same numbers, so the odds fall as the line rises. Market-hours odds are unchanged. Practice money only; grading unchanged."
   }
  ]
 }

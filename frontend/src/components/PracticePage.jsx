@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, LineChart } from 'lucide-react';
 import Page, { Card } from './ui/Page';
 import Term from './ui/Term';
-import { getPortfolio, closePosition, cancelQueued, closeOption } from '../lib/api';
+import { getPortfolio, closePosition, cancelQueued, closeOption, paperTrade } from '../lib/api';
+import SizeInput from './ui/SizeInput';
+import { sellPlan, buyPlan, toDollars, parseAmount } from '../lib/sizing';
 
 const shares = (q) => { const n = Number(q || 0); return `${n.toLocaleString('en-US', { maximumFractionDigits: 4 })} share${n === 1 ? '' : 's'}`; };
 const usd = (v, d = 0) => `${v < 0 ? '−' : ''}$${Math.abs(Number(v || 0)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
@@ -121,69 +123,58 @@ function ClosedRow({ t }) {
   );
 }
 
-// How much to sell: a share of the position (25 / 50 / 75 / 100%) or a dollar amount. What it comes to is shown
-// before the button; the server works out the same shares (fractional, to 4 decimals) and sells all of it when
-// less than $1 would be left.
-const SELL_PCTS = [25, 50, 75, 100];
-export function sellPlan(p, mode, pct, dollars) {
-  const held = Number(p.quantity) || 0;
-  const px = Number(p.current_price) || 0;
-  const worth = held * px;
-  let qty = 0;
-  if (mode === 'pct') qty = pct >= 100 ? held : Math.floor(held * (pct / 100) * 10000) / 10000;
-  else { const d = Number(dollars); qty = d > 0 && px > 0 ? Math.floor((d / px) * 10000) / 10000 : 0; }
-  if (qty >= held || (held - qty) * px < 1) qty = held;
-  const all = qty >= held && held > 0;
-  return { qty, all, value: qty * px, left: held - qty, tooMuch: mode === 'usd' && Number(dollars) > worth + 0.005 };
-}
+// Trim or add to an open position, sized like a desk: any % of the position (or dollars) to sell; dollars or any
+// % of the account to add. What it comes to is shown before the button; the server works out the same shares
+// (fractional, to 4 decimals) and sells all of it when less than $1 would be left.
+const pctTxt = (x) => `${x < 10 ? x.toFixed(1) : Math.round(x)}%`;
 
 function SellSheet({ p, closedMarket, busy, onKeep, onSell }) {
-  const [mode, setMode] = useState('pct');
-  const [pct, setPct] = useState(100);
-  const [dollars, setDollars] = useState('');
-  const plan = sellPlan(p, mode, pct, dollars);
+  const [mode, setMode] = useState('pos');
+  const [raw, setRaw] = useState('');
+  const plan = sellPlan(p, mode === 'pos' ? 'pct' : 'usd', raw);
   const ready = plan.qty > 0;
-  const tab = (on) => `flex-1 rounded-lg py-1.5 text-xs font-bold ${on ? 'bg-slate-700 text-white' : 'text-slate-400'}`;
   return (
     <div className="mt-3 rounded-xl border border-slate-700 bg-slate-950/50 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-slate-400">How much to sell?</span>
-        <div className="flex w-40 rounded-lg bg-slate-800 p-0.5" role="tablist" aria-label="Sell by">
-          <button role="tab" aria-selected={mode === 'pct'} onClick={() => setMode('pct')} className={tab(mode === 'pct')}>% of it</button>
-          <button role="tab" aria-selected={mode === 'usd'} onClick={() => setMode('usd')} className={tab(mode === 'usd')}>Dollars</button>
-        </div>
-      </div>
-      {mode === 'pct' ? (
-        <div className="mt-2 grid grid-cols-4 gap-2">
-          {SELL_PCTS.map((x) => (
-            <button key={x} onClick={() => setPct(x)}
-              className={`rounded-lg py-2 text-sm font-bold border ${pct === x ? 'bg-red-600/90 border-red-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-200'}`}>
-              {x === 100 ? 'All' : `${x}%`}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <label className="mt-2 flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 focus-within:border-red-400">
-          <span className="text-xs text-slate-400 shrink-0">Sell about</span>
-          <span className="ml-auto text-slate-400 font-bold">$</span>
-          <input type="text" inputMode="decimal" autoFocus placeholder={String(Math.max(1, Math.floor((Number(p.market_value) || 0) / 2)))}
-            value={dollars} aria-label="Dollars of this position to sell"
-            onChange={(e) => setDollars(e.target.value.replace(/[^0-9.]/g, ''))}
-            className="w-24 bg-transparent text-right font-bold text-white placeholder:text-slate-500 focus:outline-none" />
-        </label>
-      )}
-      <p className="mt-2 text-[11px] text-slate-400" aria-live="polite">
-        {!ready ? 'Type an amount to sell.'
-          : plan.all ? `All ${shares(plan.qty)}, worth ${usd(plan.value, 2)} now${plan.tooMuch ? ` (it's only worth ${usd(p.market_value, 2)})` : ''}.`
-          : `${shares(plan.qty)}, worth ${usd(plan.value, 2)} now. You keep ${shares(plan.left)}.`}
+      <SizeInput title="Sell" modes={['pos', 'usd']} mode={mode} onMode={(m) => { setMode(m); setRaw(''); }} raw={raw} onRaw={setRaw}
+        picks={{ pos: [25, 33, 50, 100] }} accent="red">
+        {!ready ? `You hold ${shares(p.quantity)}, worth ${usd(p.market_value, 2)}. Type any % of it or a dollar amount.`
+          : plan.all ? `All ${shares(plan.qty)}, worth ${usd(plan.value, 2)} now${plan.tooMuch ? ` (that's more than you hold)` : ''}.`
+          : `${shares(plan.qty)} (${pctTxt(plan.pctOfPosition)} of the position), worth ${usd(plan.value, 2)} now. You keep ${shares(plan.left)}.`}
         {ready && closedMarket ? ' The market is closed, so it sells at the opening price, which can be different.' : ''}
-      </p>
-      <div className="mt-2 flex gap-2">
-        <button onClick={onKeep} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700">Keep</button>
-        <button onClick={() => onSell(mode === 'pct' ? { fraction: pct / 100 } : { amount_usd: plan.all ? null : Number(dollars) })}
+      </SizeInput>
+      <div className="mt-3 flex gap-2">
+        <button onClick={onKeep} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700">Cancel</button>
+        <button onClick={() => onSell(plan.all ? {} : mode === 'pos' ? { fraction: Math.min(100, parseAmount(raw)) / 100 } : { amount_usd: parseAmount(raw) })}
           disabled={busy || !ready}
           className="flex-1 rounded-xl px-3 py-2 text-xs font-bold bg-red-600 hover:bg-red-500 disabled:opacity-60">
           {busy ? 'Selling…' : closedMarket ? `Sell ${plan.all ? 'all' : shares(plan.qty)} at the open` : `Sell ${plan.all ? 'all' : shares(plan.qty)} for ${usd(plan.value)}`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BuySheet({ p, account, closedMarket, busy, onKeep, onBuy }) {
+  const [mode, setMode] = useState('usd');
+  const [raw, setRaw] = useState('');
+  const dollars = Math.round(toDollars(mode, raw, account?.total_value || 0) * 100) / 100;
+  const plan = buyPlan(dollars, Number(p.current_price) || 0, { accountValue: account?.total_value || 0, cash: account?.buying_power ?? null, held: p.quantity });
+  const ready = plan.shares > 0 && !plan.over;
+  return (
+    <div className="mt-3 rounded-xl border border-slate-700 bg-slate-950/50 p-3">
+      <SizeInput title="Add" mode={mode} onMode={(m) => { setMode(m); setRaw(''); }} raw={raw} onRaw={setRaw}
+        picks={{ usd: [500, 1000, 2500, 5000], pct: [1, 2.5, 5, 10] }}>
+        {!(plan.shares > 0) ? `${p.ticker} is ${pctTxt(((Number(p.market_value) || 0) / Math.max(1, account?.total_value || 1)) * 100)} of your account now. Type dollars or a % of the account to add.`
+          : <>{usd(plan.cost, 2)} buys {shares(plan.shares)} · {p.ticker} goes to <b className="text-slate-200">{pctTxt(plan.weightAfter)}</b> of your account
+            {plan.over ? '' : ` · ${usd(plan.cashLeft)} cash left`}. Your average cost changes.</>}
+        {plan.over && <span className="block text-amber-200">That's more than your {usd(account.buying_power)} of spare practice cash.</span>}
+        {ready && closedMarket ? ' The market is closed, so it buys at the opening price, which can be different.' : ''}
+      </SizeInput>
+      <div className="mt-3 flex gap-2">
+        <button onClick={onKeep} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700">Cancel</button>
+        <button onClick={() => onBuy(dollars)} disabled={busy || !ready}
+          className="flex-1 rounded-xl px-3 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-500 disabled:opacity-60">
+          {busy ? 'Buying…' : closedMarket ? `Buy ${usd(dollars)} more at the open` : `Buy ${usd(dollars)} more`}
         </button>
       </div>
     </div>
@@ -225,6 +216,19 @@ export default function PracticePage() {
     } finally {
       setClosing(null); setConfirm(null);
     }
+  };
+
+  const [adding, setAdding] = useState(null);
+  const buyMore = async (p, dollars) => {
+    setClosing(p.position_id);
+    try {
+      const r = await paperTrade({ ticker: p.ticker, type: 'Buy Stock', asset_class: 'equity',
+        trade_legs: [{ action: 'Buy', ticker: p.ticker }], investment_amount: dollars }, p.belief || '');
+      setToast(r?.status === 'queued' ? r.message : r?.status === 'success' ? `Added ${usd(dollars)} of ${p.ticker}.` : `Couldn't buy: ${r?.message || 'try again'}`);
+      if (r?.status === 'success' || r?.status === 'queued') setAdding(null);
+      load();
+    } catch (e) { setToast(`Couldn't buy: ${e.message}`); }
+    finally { setClosing(null); setTimeout(() => setToast(null), 5000); }
   };
 
   const cancel = async (o) => {
@@ -355,12 +359,21 @@ export default function PracticePage() {
                   <div className="mt-1"><SpyLine v={p.vs_spy} /></div>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-xs text-slate-500">Worth {usd(p.market_value)}</span>
-                    {confirm !== p.position_id && (
-                      sellQueued.has(p.ticker)
-                        ? <span className="rounded-xl px-3 py-2 text-xs font-semibold bg-amber-400/10 border border-amber-300/30 text-amber-100">Sale queued</span>
-                        : <button onClick={() => setConfirm(p.position_id)} disabled={!p.position_id} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Sell</button>
+                    {confirm !== p.position_id && adding !== p.position_id && (
+                      <span className="flex gap-2">
+                        {p.position_type === 'long' && (
+                          <button onClick={() => setAdding(p.position_id)} disabled={!p.position_id} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-blue-400">Buy more</button>
+                        )}
+                        {sellQueued.has(p.ticker)
+                          ? <span className="rounded-xl px-3 py-2 text-xs font-semibold bg-amber-400/10 border border-amber-300/30 text-amber-100">Sale queued</span>
+                          : <button onClick={() => setConfirm(p.position_id)} disabled={!p.position_id} className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-800 border border-slate-700 hover:border-red-400">Sell</button>}
+                      </span>
                     )}
                   </div>
+                  {adding === p.position_id && (
+                    <BuySheet p={p} account={a} closedMarket={Boolean(mkt && !mkt.is_open)} busy={closing === p.position_id}
+                      onKeep={() => setAdding(null)} onBuy={(d) => buyMore(p, d)} />
+                  )}
                   {confirm === p.position_id && (
                     <SellSheet p={p} closedMarket={Boolean(mkt && !mkt.is_open)} busy={closing === p.position_id}
                       onKeep={() => setConfirm(null)} onSell={(how) => sell(p, how)} />

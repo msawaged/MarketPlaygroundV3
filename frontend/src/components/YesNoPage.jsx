@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Page, { Card } from './ui/Page';
 import { yesnoExpirations, yesnoQuote, yesnoCall, yesnoMine, yesnoMyRecord, yesnoScorecard } from '../lib/api';
+import SizeInput, { useBook } from './ui/SizeInput';
+import { toDollars, contractsFor, parseAmount } from '../lib/sizing';
 
 const usd = (v, d = 0) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 // A strike as the market lists it: $185, $182.50 (not $182.5).
@@ -245,7 +247,14 @@ export default function YesNoPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [toast, setToast] = useState('');
-  const [contracts, setContracts] = useState(1);
+  // Size: a contract count, or dollars / % of the account at risk per answer (whole contracts that fit each side).
+  const [sizeMode, setSizeMode] = useState('n');
+  const [sizeRaw, setSizeRaw] = useState('1');
+  const book = useBook();
+  const budget = toDollars(sizeMode === 'n' ? 'usd' : sizeMode, sizeRaw, book?.value || 0);
+  const contractsFor_ = (t) => (sizeMode === 'n'
+    ? Math.min(1000, Math.max(0, Math.floor(parseAmount(sizeRaw))))
+    : contractsFor(budget, t?.cost || 0));
   const [mine, setMine] = useState([]);
   const [score, setScore] = useState(null);
   const [rec, setRec] = useState(null);
@@ -281,6 +290,7 @@ export default function YesNoPage() {
   const answer = async (side, trade) => {
     setBusy(true);
     try {
+      const contracts = trade ? contractsFor_(q?.[side]) : 1;
       const r = await yesnoCall({ ticker, level: Number(level), expiration: exp, side, trade, contracts });
       setToast(r?.status === 'success' ? r.message : (r?.message || 'Try again.'));
       loadMine();
@@ -346,35 +356,38 @@ export default function YesNoPage() {
               : "The brain's track record is on 90-day stock ideas, not short yes/no questions. Until a learned lean beats the market's odds on graded questions it hasn't seen, fixed starting rules move the odds a few points at most. Every answer is graded."}</li>
           </ul>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-5">
+            <SizeInput title="Size" modes={['n', 'usd', 'pct']} mode={sizeMode}
+              onMode={(m) => { setSizeMode(m); setSizeRaw(m === 'n' ? '1' : ''); }} raw={sizeRaw} onRaw={setSizeRaw}
+              picks={{ n: [1, 5, 10, 25], usd: [100, 250, 500, 1000], pct: [0.5, 1, 2, 5] }}>
+              {sizeMode === 'n' ? 'Or type dollars or a % of your account to risk, and each side buys the whole contracts that fit.'
+                : budget > 0 ? `Up to ${usdc(budget)} at risk on whichever side you pick. Each side shows its contracts.` : 'Type how much to risk.'}
+            </SizeInput>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
             {['yes', 'no'].map((side) => {
               const t = q[side];
+              const n = contractsFor_(t);
               const yes = side === 'yes';
               return (
                 <div key={side} className={`rounded-2xl border p-3 ${yes ? 'border-green-400/40 bg-green-500/[0.07]' : 'border-red-400/40 bg-red-500/[0.07]'}`}>
                   <div className={`text-2xl font-black ${yes ? 'text-green-300' : 'text-red-300'}`}>{side.toUpperCase()}</div>
-                  {t.cost != null ? (
-                    <div className="mt-1 text-sm text-slate-200">Risk <b>{usdc(t.cost * contracts)}</b> to make <b>{usdc(t.profit * contracts)}</b></div>
-                  ) : <div className="mt-1 text-sm text-slate-400">No price right now</div>}
+                  {t.cost != null ? (n >= 1 ? (<>
+                    <div className="mt-1 text-sm text-slate-200">Risk <b>{usdc(t.cost * n)}</b> to make <b>{usdc(t.profit * n)}</b></div>
+                    <div className="text-[11px] text-slate-400 tabular-nums">{n} contract{n > 1 ? 's' : ''}{book?.value > 0 ? ` · ${((t.cost * n) / book.value * 100).toFixed(1)}% of account` : ''}</div>
+                  </>) : <div className="mt-1 text-sm text-amber-200">One contract risks {usdc(t.cost)}, more than {usdc(budget)}</div>)
+                  : <div className="mt-1 text-sm text-slate-400">No price right now</div>}
                   {t.cost != null && t.breakeven != null && (
                     <div className="mt-0.5 text-xs text-slate-400 tabular-nums">Breaks even {yes ? 'above' : 'below'} {usd(t.breakeven, 2)}</div>
                   )}
-                  <button disabled={busy || t.cost == null} onClick={() => answer(side, true)}
+                  <button disabled={busy || t.cost == null || n < 1} onClick={() => answer(side, true)}
                     className={`mt-3 w-full rounded-xl py-2.5 font-bold disabled:opacity-40 ${yes ? 'bg-green-600' : 'bg-red-600'}`}>Practice trade</button>
                   <button disabled={busy} onClick={() => answer(side, false)} className="mt-2 w-full rounded-xl py-2 text-sm border border-slate-600 text-slate-200">Just call it</button>
                 </div>
               );
             })}
           </div>
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-slate-400">Contracts</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setContracts((c) => Math.max(1, c - 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700">−</button>
-              <span className="w-6 text-center font-bold tabular-nums">{contracts}</span>
-              <button onClick={() => setContracts((c) => Math.min(50, c + 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700">+</button>
-            </div>
-          </div>
-          <ListedCosts c={q.listed} open={q.market_closed === false} />
+<ListedCosts c={q.listed} open={q.market_closed === false} />
           <p className="mt-3 text-xs text-slate-500">{q.spread_note} Built from real listed {q.ticker} options. The odds are risk-neutral (what option prices imply, not a forecast); over days or weeks they sit close to real-world odds. {q.price_source === 'strikes' && q.leg_vols ? `Practice trades cost the listed mid prices of the $${strikeTxt(q.strikes[0])} and $${strikeTxt(q.strikes[1])} options, each at its own implied volatility (${(q.leg_vols[0] * 100).toFixed(1)}% and ${(q.leg_vols[1] * 100).toFixed(1)}%, so skew is included), before bid/ask costs.` : q.price_source === 'smile' && q.leg_vols ? `Practice trades price the $${strikeTxt(q.strikes[0])} and $${strikeTxt(q.strikes[1])} options at the smile's implied volatilities for those strikes (${(q.leg_vols[0] * 100).toFixed(1)}% and ${(q.leg_vols[1] * 100).toFixed(1)}%, so skew is included and YES costs about the odds shown), before bid/ask costs.` : q.price_source === 'spread' ? `Practice trades cost the listed mid price of the same $${strikeTxt(q.strikes[0])}/$${strikeTxt(q.strikes[1])} spreads (skew included), before bid/ask costs.` : q.price_source === 'line_iv' ? "Practice trades are priced at the line's implied volatility (no tight quote on the trade's strikes), before bid/ask costs." : 'Practice trades are priced at an estimated volatility (no live option quotes), before bid/ask costs.'} Practice money. Not investment advice.</p>
         </Card>
       )}

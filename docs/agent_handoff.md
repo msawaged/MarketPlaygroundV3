@@ -2423,3 +2423,21 @@ and anything the others must know. Keep entries to a few lines; details go in th
   (RealMoneySheet untouched). Files: backend/paper_trading.py, backend/routes/paper_trading_router.py,
   backend/v4/tests/test_paper.py, frontend/src/lib/api.js, frontend/src/components/PracticePage.jsx,
   frontend/src/components/chat/StrategyCard.jsx, docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~15:20 UTC (Builder, key `builder`): one desk-style size ticket everywhere (Murad's follow-up)
+- Murad: the first pass (preset chips, % of spare cash) was wrong; sizing must be a typed custom $ or %, for getting
+  into a position and for open positions, "think like a trader/PM". Redone across every ticket:
+- New `frontend/src/components/ui/SizeInput.jsx` (mode switch + typed amount first + quick picks + readout) and
+  `useBook()` (total account value = NAV, spare cash, shares held per ticker). New `frontend/src/lib/sizing.js`
+  (parseAmount, toDollars, buyPlan, contractsFor, sellPlan) with `sizing.test.mjs` (added to `npm test`).
+- Percent now means % of the whole account (cash + holdings), not % of spare cash.
+  - Stock idea (StrategyCard): Position size, Dollars | % of account, typed; readout "$2,500 buys 13.7061 shares at
+    $182.40 · 2.5% of your $100,000 account · NVDA becomes 5.0% of it (you already own some) · $95,000 cash left";
+    Paper trade disabled when it costs more than spare cash.
+  - Options idea: "Spend" $ or % of account fits whole contracts, then the stepper fine-tunes; "% of account" shown.
+  - Practice page, open positions: Sell = any typed % of position (25/33/50/All quick) or dollars; new "Buy more" =
+    dollars or % of account, shows the position's new weight and cash left (uses /execute, merges into the position).
+  - Close Call: Size = Contracts | Dollars | % of account, placed above YES/NO; each side shows the contracts that fit
+    and its % of account.
+- Backend unchanged since the 14:45 entry (partial sells by fraction / amount_usd). No gates, grading, auth or
+  real-money paths (RealMoneySheet untouched).
