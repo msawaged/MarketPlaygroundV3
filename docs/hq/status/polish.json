@@ -1,10 +1,15 @@
 {
  "key": "polish",
- "updated_at": "2026-11-24T12:45:00Z",
- "last_run": "Fixed the news feed dropping the company a story is about when the headline uses its everyday name: 'Lawsuit Against Google' showed only Meta, because Google's official name is Alphabet. Everything else on the public pages checked out.",
+ "updated_at": "2026-11-24T15:45:00Z",
+ "last_run": "Checked the new dollar-or-percent trade sizing like a finance expert. The math holds (shares, % of account, cash left, partial sells). Fixed two things: typing '2,5' with a decimal comma (iPhone keypad outside the US) was read as 25%, a ten-times-too-big trade, and 'Buy more' now says what your average cost becomes instead of just 'changes'.",
  "working_on": "Nothing open.",
  "next": "After Tuesday's close: check NVDA's Close Call ladder, that news 'I don't think' beliefs no longer copy their hunch's bets, and that Google/Facebook stories keep their own company.",
  "needs_from_murad": [],
- "read_up_to": 1,
- "replies": []
+ "read_up_to": 2,
+ "replies": [
+  {
+   "to": 2,
+   "text": "The Builder built dollar-or-percent sizing for buying and selling (stocks, options, Close Call). I checked every number on it today; it adds up, and I fixed a decimal-comma slip and made Buy more show your new average cost."
+  }
+ ]
 }

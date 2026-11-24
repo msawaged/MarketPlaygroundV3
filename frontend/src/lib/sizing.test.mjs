@@ -6,6 +6,13 @@ assert.equal(parseAmount('$2,500'), 2500);
 assert.equal(parseAmount('12.5'), 12.5);
 assert.equal(parseAmount(''), 0);
 assert.equal(parseAmount('-3'), 3); // the minus sign is stripped: amounts are sizes, never negative
+// a decimal comma (iPhone keypad outside the US) is a decimal point, never a 10x size; thousands commas still work
+assert.equal(parseAmount('2,5'), 2.5);
+assert.equal(parseAmount('12,75'), 12.75);
+assert.equal(parseAmount('0,5'), 0.5);
+assert.equal(parseAmount('1,000,000'), 1000000);
+assert.equal(parseAmount('2,500.50'), 2500.5);
+assert.equal(toDollars('pct', '2,5', 100000), 2500);
 
 // 2.5% of a $102,000 account is $2,550; percent above 100 is capped
 assert.equal(toDollars('pct', '2.5', 102000), 2550);

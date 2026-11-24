@@ -2,6 +2,7 @@
 // a typed amount first, quick picks under it, and the parent's readout of what that size means.
 import React, { useEffect, useState } from 'react';
 import { getPortfolio } from '../../lib/api';
+import { parseAmount } from '../../lib/sizing';
 
 const MODE_LABEL = { usd: 'Dollars', pct: '% of account', pos: '% of position', n: 'Contracts' };
 
@@ -36,7 +37,7 @@ export default function SizeInput({ title = 'Size', modes = ['usd', 'pct'], mode
         <div className="mt-2 flex gap-1.5">
           {quick.map((q) => (
             <button key={q} onClick={() => onRaw(String(q))}
-              className={`flex-1 rounded-lg py-1.5 text-xs font-bold border ${String(q) === String(raw).replace(/,/g, '') ? on : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+              className={`flex-1 rounded-lg py-1.5 text-xs font-bold border ${raw !== '' && Number(q) === parseAmount(raw) ? on : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
               {isPct ? (Number(q) === 100 && mode === 'pos' ? 'All' : `${q}%`) : mode === 'n' ? q : `$${Number(q).toLocaleString()}`}
             </button>
           ))}

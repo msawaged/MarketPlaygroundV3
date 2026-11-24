@@ -1999,3 +1999,25 @@ Changed:
   Schlumberger -> SLB, ...), as a whole word. Foreign tags for a different US company (Centrica "CNA") still drop.
   Test: test_movers_keeps_a_tagged_company_the_story_names_by_its_everyday_name.
 - Takes effect on the next feed rebuild; the current card keeps its stored companies until the story rolls off.
+
+## 2026-11-24 (sixth run, ~15:30 UTC = Tue 10:30 AM ET, market open)
+
+Walked /welcome, /trending, /live, /story, /account, /close-call, /journey on the live site at 390x844: no page errors,
+no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). New HQ message from Murad (#2,
+to all: dollar-or-percent trade sizing): the Builder shipped it at 14:45 / 15:20 UTC, so today's walk checked its math
+as an expert would. Signed in locally (offline server, throwaway SQLite), $2,500 each of NVDA @ $185 and DAL @ $58:
+- Checked and right: Buy more $2,500 -> 13.5135 sh (floor to 4 dp, same as the server), NVDA 5.0% of $100,000,
+  $92,500 cash left; 10% of account -> $9,999.99 / 54.054 sh, NVDA to 12.5%; Sell 33% -> 4.4594 sh, keep 9.0541,
+  $824.99; 99.99% -> sells all (under $1 left, server does the same); 0.5% -> 0.0675 sh / $12.49.
+- Found: typing "2,5" (the iPhone decimal keypad's decimal comma outside the US) in "% of account" or "% of position"
+  read as 25: a ten-times-too-big trade (parseAmount stripped every comma). The 25% chip even lit up.
+- Found: the Buy more readout ended "Your average cost changes." even when it doesn't (DAL bought at its own avg), and
+  never said to what.
+
+Changed (frontend only):
+- sizing.parseAmount: a comma is a thousands separator only before groups of three digits ("2,500", "1,000,000");
+  otherwise it's a decimal comma ("2,5" -> 2.5). Tests added to sizing.test.mjs. SizeInput lights a quick pick by the
+  parsed value, so "2,5" lights 2.5%.
+- Buy more: "Your average cost goes from $170.00 to about $177.50." / "stays $58.00." ((13.5135 x 170 + 2,500) /
+  27.027 = 177.50, the server's own blend in paper_trading.py).
+- Verified locally at 390 (portfolio avg patched to $170 to see a change).

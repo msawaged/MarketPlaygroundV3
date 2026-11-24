@@ -160,13 +160,18 @@ function BuySheet({ p, account, closedMarket, busy, onKeep, onBuy }) {
   const dollars = Math.round(toDollars(mode, raw, account?.total_value || 0) * 100) / 100;
   const plan = buyPlan(dollars, Number(p.current_price) || 0, { accountValue: account?.total_value || 0, cash: account?.buying_power ?? null, held: p.quantity });
   const ready = plan.shares > 0 && !plan.over;
+  // Average cost after the add, at today's price (the server blends the same way: total cost / total shares).
+  const held = Number(p.quantity) || 0, avg = Number(p.avg_price) || 0;
+  const newAvg = held + plan.shares > 0 ? (held * avg + plan.cost) / (held + plan.shares) : avg;
+  const avgTxt = Math.abs(newAvg - avg) < 0.005 ? `Your average cost stays ${usd(avg, 2)}.`
+    : `Your average cost goes from ${usd(avg, 2)} to about ${usd(newAvg, 2)}.`;
   return (
     <div className="mt-3 rounded-xl border border-slate-700 bg-slate-950/50 p-3">
       <SizeInput title="Add" mode={mode} onMode={(m) => { setMode(m); setRaw(''); }} raw={raw} onRaw={setRaw}
         picks={{ usd: [500, 1000, 2500, 5000], pct: [1, 2.5, 5, 10] }}>
         {!(plan.shares > 0) ? `${p.ticker} is ${pctTxt(((Number(p.market_value) || 0) / Math.max(1, account?.total_value || 1)) * 100)} of your account now. Type dollars or a % of the account to add.`
           : <>{usd(plan.cost, 2)} buys {shares(plan.shares)} · {p.ticker} goes to <b className="text-slate-200">{pctTxt(plan.weightAfter)}</b> of your account
-            {plan.over ? '' : ` · ${usd(plan.cashLeft)} cash left`}. Your average cost changes.</>}
+            {plan.over ? '' : ` · ${usd(plan.cashLeft)} cash left`}. {avgTxt}</>}
         {plan.over && <span className="block text-amber-200">That's more than your {usd(account.buying_power)} of spare practice cash.</span>}
         {ready && closedMarket ? ' The market is closed, so it buys at the opening price, which can be different.' : ''}
       </SizeInput>

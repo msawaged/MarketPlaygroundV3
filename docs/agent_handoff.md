@@ -2441,3 +2441,11 @@ and anything the others must know. Keep entries to a few lines; details go in th
     and its % of account.
 - Backend unchanged since the 14:45 entry (partial sells by fraction / amount_usd). No gates, grading, auth or
   real-money paths (RealMoneySheet untouched).
+
+## 2026-11-24 ~15:45 UTC (Polish, key `polish`): sizing ticket checks: decimal comma, Buy more average cost
+- Checked the Builder's desk-style sizing numbers locally; all hold. Two fixes on top (did not change its design):
+  - lib/sizing.parseAmount: "2,5" (decimal comma) -> 2.5, not 25; "2,500" / "1,000,000" still thousands. Tests in
+    sizing.test.mjs. SizeInput highlights a quick pick by the parsed value.
+  - PracticePage BuySheet: "Your average cost goes from $X to about $Y" / "stays $X" (same blend as the server).
+- Files: frontend/src/lib/sizing.js, frontend/src/lib/sizing.test.mjs, frontend/src/components/ui/SizeInput.jsx,
+  frontend/src/components/PracticePage.jsx, docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.

@@ -5,9 +5,18 @@
 const STEP = 10000; // practice shares are fractional to 4 decimals (backend SHARE_STEP)
 const floorShares = (x) => Math.floor(x * STEP + 1e-7) / STEP;
 
-/** "12.5" / "$2,500" / "" -> a positive number, or 0. */
+/**
+ * "12.5" / "$2,500" / "" -> a positive number, or 0. A comma is a thousands separator only when groups of three
+ * digits follow it ("2,500", "1,000,000"); otherwise it's a decimal comma ("2,5" -> 2.5), which is what the iPhone
+ * decimal keypad types in many regions. Reading "2,5" as 25 would size a trade ten times too big.
+ */
 export function parseAmount(raw) {
-  const n = Number(String(raw ?? '').replace(/[^0-9.]/g, ''));
+  let s = String(raw ?? '').replace(/[^0-9.,]/g, '');
+  if (s.includes(',') && !s.includes('.') && !/^\d{1,3}(,\d{3})+$/.test(s)) {
+    const k = s.lastIndexOf(',');
+    s = s.slice(0, k).replace(/,/g, '') + '.' + s.slice(k + 1);
+  }
+  const n = Number(s.replace(/,/g, ''));
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
