@@ -1,16 +1,17 @@
 {
  "key": "chair",
- "updated_at": "2026-11-23T20:00:00Z",
- "last_run": "Search polish and promos v6/v7 done; Murad posted. He wants the chair to catch stalled agents.",
- "working_on": "Nothing open.",
- "next": "Hourly HQ check.",
+ "updated_at": "2026-11-24T14:15:00Z",
+ "last_run": "Murad's #2: dollar-or-percent trade sizing is the Builder's next build (its run that started 13:52 UTC has the message).",
+ "working_on": "Making sure the Builder ships dollar-or-percent buy/sell sizing next, and collecting Murad's answers to its questions.",
+ "next": "Hourly HQ check; next run look for the Builder's reply and questions.",
  "needs_from_murad": [
+  "Trade sizing questions (answer in HQ, e.g. '1a 2a 3 yes 4 practice'): 1) Percent of what? a) buys = % of your free cash, sells = % of the shares you own (my suggestion) b) something else. 2) Quick buttons: 25% / 50% / 75% / All? 3) Options too (rounded down to whole contracts)? 4) Practice money only for now (agents can't touch the real-money screen; that part goes to the build chat)?",
   "Paste to the build chat: \"Add to the chair's scheduled instructions: every hourly run, even with no new HQ messages, read all docs/hq/status/*.json. If an agent is waiting on Murad for something he already OK'd or that's safe to approve (missing tools, a long run, a rebuild), wake it with fire_trigger and tell it to go. If it truly needs Murad, send him one push saying what's blocked.\"",
   "Real money: tell the build chat 'get real money ready' with what the lawyers cleared (just you, a small invited group, or everyone; stocks only or options too). Apply to Alpaca for the app's live approval. Only you flip the switches on Render.",
   "Mobile app: pick a path (1 home-screen app, 2 app-store wrapper, 3 full native). My suggestion is 1 now, 2 when you're ready for the stores. Then tell the build chat.",
   "Answer the launch list (docs/growth_plan.md section 1): 1 launch reels, 2 bio links, 3 visit counter, 4 privacy/terms pages, 5 links open on Close Call. 'yes 1-5' works."
  ],
- "read_up_to": 1,
+ "read_up_to": 2,
  "known_projects": {
   "merch": {
    "note": "MuLabs merch lives in Claude pages, not in this repo. Two lines: clean MuLabs + comic 'Mumu the cow'. Catalog drafted; next is Mumu mascot designs. To resume in a chat: 'merch agent, pick up where we left off'.",
@@ -20,6 +21,11 @@
   }
  },
  "replies": [
+  {
+   "re": 2,
+   "at": "2026-11-24T14:15:00Z",
+   "body": "Got it: next build is choosing how much to trade as a dollar amount OR a percent, for both buying and selling. Today buying only takes dollars ($ buttons or your own amount) and selling is all-or-nothing, so this adds a $ / % switch and lets you sell part of a position. The Builder owns it: its run started at 6:52 am Denver, a minute after you posted, so it has your message and will reply with its questions here. I've put the main questions in your to-do list so you can answer in one line. It's practice money only; the real-money screen stays with the build chat."
+  },
   {
    "re": "Catch stalled agents (chair chat)",
    "at": "2026-11-23T20:00:00Z",
@@ -64,11 +70,6 @@
    "re": "Test it and make a reel (chair chat)",
    "at": "2026-11-23T07:42:00Z",
    "body": "Set up: the Builder builds it on its run starting 00:51 Denver, then tests it on the live News tab with searches that aren't in our news. The marketing agent films it there first thing on its 7:47 am run and sends you the video and captions. If you see it's live before then, say 'make the reel' in HQ and I'll wake the marketing agent right away."
-  },
-  {
-   "re": "Search should make new stories (chair chat)",
-   "at": "2026-11-23T07:40:00Z",
-   "body": "Makes sense: you type anything, even something not in our news, and the AI writes a fresh story for it with the same cards. Today's search only finds stories we already picked. Handed to the Builder; it starts on its run in about 15 minutes. It will use real headlines and prices only, and keep AI cost low by saving each story for the day and limiting how many a person can make. Once it's live I'll have the reel agent redo the promo to show it."
   }
  ],
  "notes": {
