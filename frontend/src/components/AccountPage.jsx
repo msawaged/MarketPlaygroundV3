@@ -13,6 +13,7 @@ import { useBroker, refreshBroker, connectBroker, disconnectBroker, getPositions
 import RealMoneySheet from './chat/RealMoneySheet';
 import WhatsNew from './WhatsNew';
 import AlertsCard from './AlertsCard';
+import InstallCard, { useInstallOffer } from './InstallCard';
 
 function Field({ label, type = 'text', value, onChange, autoComplete, placeholder, reveal }) {
   const [show, setShow] = useState(false);
@@ -406,6 +407,7 @@ function Brokerage() {
 
 function SignedIn({ acc }) {
   const navigate = useNavigate();
+  const installOffer = useInstallOffer();
   const [name, setName] = useState(acc.name || '');
   const [saved, setSaved] = useState(false);
   const [open, setOpen] = useState(null); // 'password' | 'delete'
@@ -454,7 +456,8 @@ function SignedIn({ acc }) {
       </Card>
 
       <FaceIdCard />
-      <div className="mt-3"><AlertsCard /></div>
+      <div className="mt-3 empty:hidden"><InstallCard /></div>
+      <div className="mt-3"><AlertsCard stepsAbove={installOffer === 'ios'} /></div>
 
       <Brokerage />
 

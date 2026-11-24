@@ -101,6 +101,18 @@ export default function HQPage() {
         </Card>
       )}
 
+      {b.installs && (
+        <Card className="mt-4 !p-3">
+          <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Home-screen app · last {b.installs.days} days</div>
+          <div className="mt-2 grid grid-cols-4 gap-2 text-center tabular-nums">
+            {[['Offered', b.installs.shown], ['Added', Math.max(b.installs.accepted, b.installs.installed)], ['Not now', b.installs.dismissed], ['Opened from it', b.installs.opened_standalone]].map(([k, v]) => (
+              <div key={k}><div className="text-lg font-extrabold">{v}</div><div className="text-[10px] leading-tight text-slate-400">{k}</div></div>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-slate-500">Devices per day, no names kept. iPhone can't report an add, so watch "Opened from it" there.</p>
+        </Card>
+      )}
+
       <div className="mt-6 text-xs uppercase tracking-wider text-slate-400 font-semibold">The table</div>
       <div className="mt-2 grid grid-cols-1 gap-3">
         {b.agents.map((a) => {

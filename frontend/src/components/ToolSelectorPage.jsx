@@ -13,6 +13,7 @@ import { signedPct, pctTone, TONE } from '../lib/figures';
 import { FaceIdCard } from './AccountPage';
 import { useAccount, initials } from '../lib/auth';
 import AlertsCard from './AlertsCard';
+import InstallCard, { useInstallOffer } from './InstallCard';
 
 const ROTATE = [
   'plumbing demand is about to boom',
@@ -42,6 +43,12 @@ export default function ToolSelectorPage() {
   const faceDone = () => { try { localStorage.setItem('mp_faceid_asked', '1'); } catch { /* private mode */ } setFaceAsk(false); };
   const recent = recentBeliefs();
   const acc = useAccount();
+  // The home-screen offer comes after someone has made a call on this device (never on a first visit), one ask at a time.
+  const [installAsk, setInstallAsk] = useState(true);
+  const installOffer = useInstallOffer({ respectSnooze: true });
+  const [installSeen, setInstallSeen] = useState(false);   // stays up after a yes, to show "Added", until the card closes
+  const showInstall = installAsk && (installSeen || (!!installOffer && recent.length > 0 && !(acc && faceAsk)));
+  useEffect(() => { if (showInstall && !installSeen) setInstallSeen(true); }, [showInstall, installSeen]);
 
   useEffect(() => {
     const id = setInterval(() => setI((x) => (x + 1) % ROTATE.length), 2600);
@@ -119,7 +126,11 @@ export default function ToolSelectorPage() {
           </div>
         </form>
 
-        {alertAsk && !(acc && faceAsk) && (
+        {showInstall && (
+          <div className="mt-6"><InstallCard ask onDone={() => setInstallAsk(false)} /></div>
+        )}
+
+        {alertAsk && !(acc && faceAsk) && !showInstall && (
           <div className="mt-6 relative">
             <AlertsCard compact onDone={alertDone} />
             <button onClick={alertDone} aria-label="Not now" className="absolute top-2 right-3 text-xs text-slate-400 hover:text-slate-200">Not now</button>

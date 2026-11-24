@@ -667,6 +667,16 @@ async def push_test(body: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/install/event")
+async def install_event(body: dict):
+    """Home-screen app counts: shown / accepted / dismissed / installed / opened_standalone. Counts only."""
+    from backend.v4 import install
+    try:
+        return await run_in_threadpool(install.record, str(body.get("kind") or ""), str(body.get("device_id") or "") or None)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/unsubscribe")
 async def get_unsubscribe(a: str = "", s: str = ""):
     from fastapi.responses import HTMLResponse

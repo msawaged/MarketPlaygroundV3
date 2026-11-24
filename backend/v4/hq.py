@@ -172,4 +172,9 @@ def board() -> dict:
     needs = [{"agent": a["key"], "name": a["name"], "need": n, "at": a["status"].get("updated_at")}
              for a in agents for n in (a["status"].get("needs_from_murad") or [])]
     needs.sort(key=lambda n: n["at"] or "", reverse=True)   # newest first: the page shows the first few
-    return {"agents": agents, "thread": thread[-150:], "needs": needs}
+    try:
+        from . import install
+        installs = install.week()
+    except Exception:
+        installs = None
+    return {"agents": agents, "thread": thread[-150:], "needs": needs, "installs": installs}

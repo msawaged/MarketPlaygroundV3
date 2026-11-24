@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import { currentSubscription, disableAlerts, enableAlerts, needsHomeScreen, pushSupported, testAlert } from '../lib/push';
 
-export default function AlertsCard({ compact = false, onDone }) {
+export default function AlertsCard({ compact = false, onDone, stepsAbove = false }) {
   const [on, setOn] = useState(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -27,7 +27,9 @@ export default function AlertsCard({ compact = false, onDone }) {
               : 'The top story and the stocks it moves, around 9:35 am Eastern on trading days. Plus a heads-up when one of your calls is playing out.'}
           </p>
           {needsHomeScreen() && !on && (
-            <p className="mt-2 text-xs text-amber-200">On iPhone: tap the Share button, then <b>Add to Home Screen</b>. Open MarketPlayground from your home screen and turn alerts on there.</p>
+            <p className="mt-2 text-xs text-amber-200">{stepsAbove
+              ? <>On iPhone, alerts work from the home screen: add MarketPlayground with the steps above, open it from there and turn alerts on.</>
+              : <>On iPhone: tap the Share button, then <b>Add to Home Screen</b>. Open MarketPlayground from your home screen and turn alerts on there.</>}</p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             {!on && !needsHomeScreen() && (

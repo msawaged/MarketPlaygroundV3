@@ -9,6 +9,9 @@ import './index.css';
 
 // ✅ Main App component 
 import App from './App.jsx';
+import { initInstall } from './lib/install';
+
+initInstall();
 
 
 // ✅ Mount React app to #root element in index.html

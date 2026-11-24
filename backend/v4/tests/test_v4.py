@@ -6934,3 +6934,27 @@ def test_yesno_smile_has_no_step_where_puts_hand_over_to_calls(monkeypatch):
     monkeypatch.setattr(yesno, "SMILE_BLEND", 1e-9)
     assert [k for k, _ in clean] == [k for k, _ in yesno._smile_points(chain(spot), spot, yrs)]
     assert all(abs(a[1] - b[1]) < 0.003 for a, b in zip(clean, yesno._smile_points(chain(spot), spot, yrs)))
+
+
+def test_install_counts_once_per_device_refuses_unknown_kinds_and_sums_the_week(monkeypatch):
+    from backend.v4 import install
+    install._seen.clear()
+    monkeypatch.setattr(install, "_seen_day", None)
+    d0 = datetime(2026, 11, 24, 15, 0, tzinfo=timezone.utc)
+    assert install.record("shown", "dev-a", now=d0)["counted"] is True
+    assert install.record("shown", "dev-a", now=d0)["counted"] is False    # same device, same day: once
+    assert install.record("shown", "dev-b", now=d0)["counted"] is True
+    assert install.record("accepted", "dev-a", now=d0)["counted"] is True  # another kind counts on its own
+    assert install.record("shown", "dev-a", now=d0 + timedelta(days=1))["counted"] is True   # a new day counts again
+    with pytest.raises(ValueError):
+        install.record("hacked", "dev-a", now=d0)
+    with pytest.raises(ValueError):
+        install.record("", None, now=d0)
+    # an old day falls out of the 7-day window
+    install.record("installed", "dev-c", now=d0 - timedelta(days=10))
+    w = install.week(now=d0 + timedelta(days=1))
+    assert w["shown"] == 3 and w["accepted"] == 1 and w["installed"] == 0 and w["dismissed"] == 0 and w["days"] == 7
+    # the daily cap stops a script from inflating a number (no device id: no per-device dedupe)
+    monkeypatch.setattr(install, "DAILY_CAP", 2)
+    d2 = d0 + timedelta(days=2)
+    assert [install.record("dismissed", None, now=d2)["counted"] for _ in range(3)] == [True, True, False]

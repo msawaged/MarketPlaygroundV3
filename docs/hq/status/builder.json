@@ -1,12 +1,17 @@
 {
  "key": "builder",
- "updated_at": "2026-11-24T02:05:00Z",
- "last_run": "Close Call's odds went almost flat right at the stock's price. After tonight's close NVDA Dec 4 (stock $164.85) said 55.5% to close above $162.50 and 54.1% above $165, but 59.2% above $160 and 47.9% above $167.50. The cause: where the option smile switches from put prices to call prices, the two disagreed by 2.6 volatility points, and the app read that jump as real skew. Now, near the stock's price, put and call prices are blended, so the odds keep falling steadily through the price. When puts and calls agree, nothing changes. Tonight's NVDA numbers still use the smile saved this afternoon; the fix shows from tomorrow's 3-4 PM ET save, and in market hours right away. Practice money only; grading unchanged.",
+ "updated_at": "2026-11-24T05:35:00Z",
+ "last_run": "Built the 'Put it on your home screen' card (the Scout's proposal for your mobile-app question). After someone has made their first call, Home offers to add MarketPlayground to their phone's home screen: one tap on Android, the two Share steps on iPhone (where alerts only work from the home screen). 'Not now' hides it for 30 days; it's also on the Account page. It only counts, no names: how many were offered it, added it, said not now, and opened the app from their home screen. You'll see those last-7-day numbers at the top of this page. Right now 0 people have alerts on, so this tells us whether people install before we pay for app stores.",
  "working_on": "Nothing open.",
- "next": "Tomorrow in market hours and after the 3-4 PM ET save: check NVDA, SPY and AMD Close Call ladders fall evenly through the stock price. Home-screen install button if Murad picks the home-screen app path.",
+ "next": "Tue after the 3-4 PM ET save: check NVDA, SPY and AMD Close Call ladders fall evenly through the stock price. Watch the home-screen counts on HQ over the next 2 weeks.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": [
+  {
+   "re": "(no new messages)",
+   "body": "Built the 'Put it on your home screen' card (the Scout's proposal for your mobile-app question). After someone has made their first call, Home offers to add MarketPlayground to their phone's home screen: one tap on Android, the two Share steps on iPhone (where alerts only work from the home screen). 'Not now' hides it for 30 days; it's also on the Account page. It only counts, no names: how many were offered it, added it, said not now, and opened the app from their home screen. You'll see those last-7-day numbers at the top of this page. Right now 0 people have alerts on, so this tells us whether people install before we pay for app stores.",
+   "at": "2026-11-24T05:35:00Z"
+  },
   {
    "re": "(no new messages)",
    "body": "Close Call's odds went almost flat right at the stock's price. After tonight's close NVDA Dec 4 (stock $164.85) said 55.5% to close above $162.50 and 54.1% above $165, but 59.2% above $160 and 47.9% above $167.50. The cause: where the option smile switches from put prices to call prices, the two disagreed by 2.6 volatility points, and the app read that jump as real skew. Now, near the stock's price, put and call prices are blended, so the odds keep falling steadily through the price. When puts and calls agree, nothing changes. Tonight's NVDA numbers still use the smile saved this afternoon; the fix shows from tomorrow's 3-4 PM ET save, and in market hours right away. Practice money only; grading unchanged.",
@@ -51,11 +56,6 @@
    "re": "(no new messages)",
    "at": "2026-11-23T11:30:00Z",
    "body": "A custom story's 'Ways to play it' could bet against the story right above it. Live, the lithium story said Albemarle gains (a rival of Lithium Americas, whose costs jumped) while the play under it bet Albemarle falls: two separate AI reads. Now the idea engine is told the story's own read and never bets a name the other way, so the brain's graded call agrees with the card too. Plays saved earlier today are checked when shown (the lithium one now shows LAC and LIT, not ALB). 'Big move' plays are left alone. No research, gates or grading changed."
-  },
-  {
-   "re": "Custom stories should find where the change goes and how to play it (live chat)",
-   "at": "2026-11-23T10:00:00Z",
-   "body": "Done, all three. 1) 'Who it moves' now looks past the searched company: 3-5 names including at least one indirect play (a supplier, rival, customer or theme ETF), tagged 'indirect'. 2) The story's last card and its card on the News page show 'Ways to play it': the idea engine's top 3 picks (buy the shares, or an options version), practice money only. 3) Each new custom story's idea is saved as one of the brain's own calls and graded against the S&P 500 at 7, 30 and 90 days, so the brain learns whether ideas from searches pay off. Extra cost is about a tenth of a cent per story."
   }
  ]
 }

@@ -2330,3 +2330,24 @@ and anything the others must know. Keep entries to a few lines; details go in th
 - Live pages and local signed-in screens (bearish put spread, portfolio, My beliefs, Close Call at 375) clean; Brain
   page regime figures match Monday's SPY close in option_vol_daily.
 - Files: docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
+
+## 2026-11-24 ~05:30 UTC (Builder, key `builder`): "Put it on your home screen" install card, counted
+- No new HQ messages. Built the only "proposed" app idea (feature_ideas.md 2026-11-23), the first step on the
+  home-screen-app path the Chair and Scout recommended for Murad's message #1. It doesn't rule out an app-store wrapper
+  later; the counts are what tell us whether that's worth paying for.
+- frontend/src/lib/install.js: keeps Chrome/Edge/Android's `beforeinstallprompt` (initInstall() in index.jsx, before
+  React), `installOffer()` = 'prompt' | 'ios' | null (null once opened from the home screen), "Not now" = 30 days
+  (localStorage, try/catch), counts `opened_standalone` once a day per device.
+- frontend/src/components/InstallCard.jsx: one tap on Android/desktop Chrome; Share -> Add to Home Screen steps on
+  iPhone (mentions Safari 26's ••• menu; non-Safari iPhone browsers also get "open in Safari"). Home
+  (ToolSelectorPage): shown only once this device has made a call, one ask at a time (Face ID, then install, then
+  alerts). Account page: always offered while not installed; AlertsCard's iPhone hint points to the steps above
+  there (`stepsAbove`).
+- Backend: backend/v4/install.py + POST /v4/install/event {kind, device_id}: five kinds only, each device once per
+  kind per day (in memory), DAILY_CAP 2000 per kind; table install_counts (day, kind, n), no device or account
+  stored. hq.board() returns `installs` (last 7 days); HQ page shows Offered / Added / Not now / Opened from it.
+- Test: test_install_counts_once_per_device_refuses_unknown_kinds_and_sums_the_week.
+- No gates, grading, auth or real-money paths touched. Files: backend/v4/install.py, backend/v4/router.py,
+  backend/v4/hq.py, backend/v4/tests/test_v4.py, frontend/src/index.jsx, frontend/src/lib/install.js,
+  frontend/src/components/{InstallCard,ToolSelectorPage,AccountPage,AlertsCard,HQPage}.jsx, docs/feature_ideas.md,
+  docs/agent_handoff.md, docs/hq/status/builder.json.

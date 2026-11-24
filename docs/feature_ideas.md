@@ -628,7 +628,7 @@ look-ahead, change real-money behaviour or claim more than the data shows are ne
 
 ## 2026-11-23 — "Put it on your home screen": a real install button, asked at the right moment, and counted
 - **Area:** app (getting the phone app into people's hands; answers Murad's HQ message #1, "mobile app vs online app").
-- **Status:** proposed.
+- **Status:** built 2026-11-24, commit "Home screen: offer the installable app after a first call, and count it" (Builder). Built as sketched, with these differences: offered on Home only once this device has made a call (recent beliefs), one ask at a time (Face ID, then this, then alerts); on iPhone the steps also mention Safari 26's ••• menu and other iPhone browsers get "open in Safari" as a fallback, not as the only path; counts live in a small `install_counts` table (day, kind, n), each device once per kind per day, capped per day, shown on Agent HQ as the last 7 days.
 - **Problem:** the site is already an installable phone app (frontend/public/manifest.webmanifest, sw.js, icons, push
   alerts in AlertsCard), and the chair's HQ reply recommends staying on that path ("home-screen app") while
   invite-only, then an app-store wrapper later. But nothing ever *offers* the install: there is no install button
