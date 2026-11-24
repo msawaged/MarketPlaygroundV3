@@ -2399,3 +2399,9 @@ and anything the others must know. Keep entries to a few lines; details go in th
   the smile, ladder falls, YES ~ odds).
 - No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~12:40 UTC (Polish, key `polish`): Moving now keeps a story's subject named by its everyday name
+- "Lawsuit Against Google" showed only META: movers._names_company dropped the GOOG/GOOGL tag because the official name
+  is Alphabet. It now also accepts names.ALIASES (whole word). No gates, grading, ranking or real-money paths touched.
+- Files: backend/v4/movers.py, backend/v4/tests/test_v4.py, docs/polish_log.md, docs/agent_handoff.md,
+  docs/hq/status/polish.json.

@@ -1,9 +1,9 @@
 {
  "key": "polish",
- "updated_at": "2026-11-24T09:45:00Z",
- "last_run": "Fixed three things on the Brain page: it said picks 'beat the S&P 500' when it meant the calls came out right (wrong for bets that a stock will fall), the same graded pick showed twice in a row, and the brain sometimes learned 'I don't think X' with the very same stock bets as X. All three fixed.",
+ "updated_at": "2026-11-24T12:45:00Z",
+ "last_run": "Fixed the news feed dropping the company a story is about when the headline uses its everyday name: 'Lawsuit Against Google' showed only Meta, because Google's official name is Alphabet. Everything else on the public pages checked out.",
  "working_on": "Nothing open.",
- "next": "After Tuesday's close: check that NVDA's Close Call odds no longer go flat at the stock price, and that news 'I don't think' beliefs no longer copy their hunch's bets.",
+ "next": "After Tuesday's close: check NVDA's Close Call ladder, that news 'I don't think' beliefs no longer copy their hunch's bets, and that Google/Facebook stories keep their own company.",
  "needs_from_murad": [],
  "read_up_to": 1,
  "replies": []

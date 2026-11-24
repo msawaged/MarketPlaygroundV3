@@ -1983,3 +1983,19 @@ Changed:
 - Verified locally against the live API at 390: "3 called right vs the S&P 500", "HVAC bullish · after 7 days · 2
   beliefs", "SGU bearish · after 7 days · 2 beliefs", no page errors.
 - Not changed: the already-stored same-side opposites (DB writes); next check after Tuesday's close is NVDA's Close Call.
+
+## 2026-11-24 (fifth run, ~12:30 UTC = Tue 7:30 AM ET, before the open)
+
+Walked /welcome, /trending, /live, /story, /account, /brain, /close-call, /hot-trades, /journey on the live site at
+390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party request). No new
+HQ messages from Murad. Brain page sums hold (leader +2.6 vs no-peek #1 +0.9 = "1.7 pts ahead"). Found on "Moving now":
+- "Malaysian Regulator Files Negligence Lawsuit Against Google" listed only META ("similar regulatory pressure could
+  spread"): the company the story is about was missing. Cause: movers._names_company (the guard that drops news tags
+  that are a different US company) only accepted the ticker as a word or the first word of the official name, so GOOG /
+  GOOGL ("Alphabet") failed on a headline that says "Google" (reproduced: False for GOOG, GOOGL, and META on "Facebook").
+
+Changed:
+- movers._names_company also accepts the everyday name from names.ALIASES (Google -> GOOG/GOOGL, Facebook -> META,
+  Schlumberger -> SLB, ...), as a whole word. Foreign tags for a different US company (Centrica "CNA") still drop.
+  Test: test_movers_keeps_a_tagged_company_the_story_names_by_its_everyday_name.
+- Takes effect on the next feed rebuild; the current card keeps its stored companies until the story rolls off.

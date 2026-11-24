@@ -7064,3 +7064,15 @@ def test_yesno_ordered_smile_has_no_flat_step_where_it_pools():
     pooled = yesno._decreasing                                        # the old reading had the flat step
     nodes = [[k, yesno._smile_digital(yesno._near_line(allv, k), spot, k, yrs)["p"], 1] for k in (66.0, 67.0, 68.0)]
     assert len({round(p, 6) for _, p in pooled(nodes)}) < 3
+
+
+def test_movers_keeps_a_tagged_company_the_story_names_by_its_everyday_name():
+    """Live 2026-11-24: "Malaysian Regulator Files Negligence Lawsuit Against Google" showed only META: Google's tag
+    (official name Alphabet) failed the names-the-company check, so the story's own subject was dropped."""
+    from backend.v4 import movers
+    item = {"headline": "Malaysian Regulator Files Negligence Lawsuit Against Google", "summary": ""}
+    assert movers._names_company({"name": "Alphabet Inc. Class C Capital Stock"}, "GOOG", item)
+    assert movers._names_company({"name": "Alphabet Inc. Class A Common Stock"}, "GOOGL", item)
+    assert movers._names_company({"name": "Meta Platforms, Inc."}, "META", {"headline": "Facebook fined in EU"})
+    # a foreign tag for a different US company is still dropped (Centrica's London "CNA" is CNA Financial)
+    assert not movers._names_company({"name": "CNA Financial Corp"}, "CNA", {"headline": "Centrica raises outlook"})

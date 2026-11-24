@@ -19,6 +19,7 @@ from datetime import date, datetime, timezone
 from typing import Any, Optional
 
 from . import db, market
+from .names import ALIASES
 
 log = logging.getLogger(__name__)
 
@@ -255,7 +256,12 @@ def _names_company(info: dict, ticker: str, item: dict) -> bool:
     if re.search(rf"(?<![A-Za-z]){re.escape(ticker)}(?![A-Za-z])", text):
         return True
     words = [w for w in re.findall(r"[a-z0-9&']+", name.lower()) if w not in _NAME_FILLER]
-    return bool(words) and re.search(rf"(?<![a-z0-9]){re.escape(words[0])}(?![a-z0-9])", text.lower()) is not None
+    if words and re.search(rf"(?<![a-z0-9]){re.escape(words[0])}(?![a-z0-9])", text.lower()):
+        return True
+    # the everyday name of a company whose official name differs: "Lawsuit Against Google" names GOOG (Alphabet);
+    # without this the subject of the story was dropped from its own card (Nov 24, 2026: only META was left)
+    alias = ALIASES.get(ticker.upper())
+    return bool(alias) and re.search(rf"(?<![a-z0-9]){re.escape(alias)}(?![a-z0-9])", text.lower()) is not None
 
 
 def build(client: Any = None) -> dict:
