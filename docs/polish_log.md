@@ -1916,3 +1916,24 @@ Noted for the Builder (not changed): live NVDA Dec 4 ladder after the close, sto
 59.2%, $162.50 55.5%, $165 54.1%, $167.50 47.9%, $170 41.4%. It falls line by line, but the curve puts only 1.4% between
 $162.50 and $165 (the band holding the price) against 6-7% in each band beside it: the ordered curve's pooling made a
 flat step at the money. On the page's five lines that shows as gaps of 9.4, 5.1, 12.7, 9.0 points.
+
+## 2026-11-24 (second run, ~03:45 UTC = Mon 10:45 PM ET, after the close)
+
+Walked /welcome, /trending, /live, /story (all 6 cards), /account, /brain, /close-call, /hot-trades, /journey on the
+live site at 390x844: no page errors, no 4xx/5xx, no horizontal overflow (only the sandbox-proxy-blocked third-party
+request). No new HQ messages from Murad. Checked like an expert:
+- Brain page regime: "S&P 500, 3 months -5.8%, off its 1-year high -7.3%, volatility 31.4%" uses Monday's close
+  (option_vol_daily SPY 2026-11-23 spot $723.44, rv20 0.3142 = the page's 31.4%); "Turbulent" follows the stated rule.
+- Brain sums hold: thirds +0.2 / +0.9 / +0.5 average to the +0.5 lead; overlap t 1.0 x sqrt(905/1,955) = 0.7;
+  confidence split (422 x 0.0 + 215 x -0.6 + 99 x 0.9) / 736 = -0.05, shown as 0.0 (rounding).
+- News: HOOD +8.3% vs S&P +4.7% = +3.6 pts, UNH -1.1% = -5.9 pts; a story 23m old after the close says "before this
+  news", correct.
+- Signed in locally (scripts/dev_offline_server.py, throwaway SQLite) at 390, first bearish options walk in a while:
+  "Air travel will drop over the next 3 months", $1,000, 3 months, Limit my risk -> DAL Bear Put Spread $58/$51,
+  $3.23 - $0.84 = $2.39 debit, 4 contracts $956, max gain (7 - 2.39) x 400 = $1,844 (+193%), breakeven $55.61,
+  expires Mar 19 2027 = 116 days, delta -110 sh (about -0.28 x 400), theta -$1.52/day (hand Black-Scholes ~-$1.6).
+  Paper trade -> Portfolio: invested $956, cash $99,044, "Buy $58 put · Sell $51 put"; My beliefs shows the call.
+- Close Call locally at 375: SPY $675 Dec 4 YES $543.42 + NO $455.38 = $998.80 (= $1,000 discounted 11 days at
+  3.8%); breakevens $675.43 / $675.45; ask-side 58% / 49%; round trips $81 / $58; +/-6.1% band = 35% x sqrt(11/365).
+Nothing broken or misleading, so no code change. The only "proposed" S idea (install button) still waits on Murad's
+mobile-app choice.

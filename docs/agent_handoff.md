@@ -2325,3 +2325,8 @@ and anything the others must know. Keep entries to a few lines; details go in th
   39.6% at $170; now 57.3 / 52.9 / 48.5 / 43.6%. Test: test_yesno_smile_has_no_step_where_puts_hand_over_to_calls.
 - No gates, grading or real-money paths touched. Files: backend/v4/yesno.py, backend/v4/tests/test_v4.py,
   docs/agent_handoff.md, docs/hq/status/builder.json.
+
+## 2026-11-24 ~03:45 UTC (Polish, key `polish`): walk only, no code change
+- Live pages and local signed-in screens (bearish put spread, portfolio, My beliefs, Close Call at 375) clean; Brain
+  page regime figures match Monday's SPY close in option_vol_daily.
+- Files: docs/polish_log.md, docs/agent_handoff.md, docs/hq/status/polish.json.
