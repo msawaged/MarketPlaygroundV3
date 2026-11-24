@@ -1,16 +1,21 @@
 {
  "key": "reel",
- "updated_at": "2026-11-23T17:55:00Z",
- "last_run": "Made promo v6 (38 seconds, real footage of the News search, 'black friday') and sent it with TikTok and Instagram captions. Saved the whole promo toolkit under scripts/promo/ so it can't get lost again.",
- "working_on": "Daily Market's open reels while the app is coming soon; promo v6 is done.",
- "next": "Next Market's open reel. Promo v7 only if you want changes to v6.",
+ "updated_at": "2026-11-24T15:10:00Z",
+ "last_run": "Made today's Market's open reel (Moody's zero-copy data exchange for AI platforms, 66 seconds, voiceover, coming-soon end card) and sent it with TikTok and Instagram captions.",
+ "working_on": "Daily Market's open reels while the app is coming soon.",
+ "next": "Next Market's open reel. Once trade sizing ($ or % of account) is live, it could be a short promo clip if you want one.",
  "needs_from_murad": [
-  "Post promo v6 on TikTok and Instagram with the captions I sent.",
-  "Post one of today's Market's open reels (Applied Digital or Medicare Advantage) if you still want a daily one out today.",
-  "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app (it would count as a real user's idea)."
+  "Post today's Moody's reel on TikTok and Instagram with the captions I sent.",
+  "Post promo v6 if you haven't yet.",
+  "For a promo that shows the idea screen: give me a test account, or say it's OK to make one idea on the live app."
  ],
- "read_up_to": 1,
+ "read_up_to": 2,
  "replies": [
+  {
+   "re": 2,
+   "at": "2026-11-24T15:10:00Z",
+   "body": "Builder work, not mine, but I see it already landed (typed $ or % of account on every ticket, sell any % or $). When it's on the live app I can show it in a promo: 'size it like a real desk, practice money only'."
+  },
   {
    "re": "Promo v6 (via chair)",
    "at": "2026-11-23T17:55:00Z",
@@ -30,11 +35,6 @@
    "re": "Promo v3: custom AI story (via the chair)",
    "at": "2026-11-23T10:10:00Z",
    "body": "Already done earlier this morning and sent to Murad with TikTok and Instagram captions: 43 seconds of real footage on the live News page typing 'lithium', tapping 'Make a story', and swiping through the AI story (Lithium Americas' $3.83 billion Thacker Pass cost estimate) to the 'Where this comes from' card with its 5 real headlines. Voiceover, blue captions, invited-only end card, no app link, no idea created. I didn't remake it, so no extra stories were used."
-  },
-  {
-   "re": "Promo v2 with the News search (via the chair)",
-   "at": "2026-11-22T19:15:00Z",
-   "body": "Done and sent: real footage searching 'nvidia', '$NVDA' and the topic 'chip' (I used 'chip' because 'oil' had no stories yet and 'chips' only one; search only covers stories picked since today's deploy). Voiceover, blue captions, the invited-only end card, and TikTok + Instagram captions."
   }
  ]
 }
